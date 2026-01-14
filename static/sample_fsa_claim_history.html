@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>HealthFlex FSA – Claim History</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f9fafb;
+            color: #111827;
+            margin: 0;
+            padding: 24px;
+        }
+        
+        .history-container {
+            max-width: 760px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            padding: 24px;
+        }
+        
+        h1 {
+            color: #0A66C2;
+            font-size: 1.4rem;
+            margin-bottom: 6px;
+        }
+        
+        .meta {
+            font-size: 0.9rem;
+            color: #374151;
+            margin-bottom: 16px;
+        }
+        
+        h2 {
+            font-size: 1.1rem;
+            margin-top: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 4px;
+        }
+        
+        .balance-box {
+            display: flex;
+            justify-content: space-between;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 0.95rem;
+        }
+        
+        .balance-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .balance-item strong {
+            display: block;
+            font-size: 1.1rem;
+            margin-top: 4px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+        
+        th,
+        td {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f3f4f6;
+        }
+        
+        .right {
+            text-align: right;
+        }
+        
+        .status-approved {
+            color: #2DA44E;
+            font-weight: 600;
+        }
+        
+        .status-partial {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+        
+        .status-denied {
+            color: #9ca3af;
+            font-weight: 600;
+        }
+        
+        .note {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+        
+        .footer {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="history-container">
+        <h1>HealthFlex Flexible Spending Account</h1>
+        <div class="meta">
+            Claim History<br/> Plan Year: 2026<br/> Participant: Jane Sample
+        </div>
+
+        <h2>Account Summary</h2>
+        <div class="balance-box">
+            <div class="balance-item">
+                Annual Election
+                <strong>$2,000.00</strong>
+            </div>
+            <div class="balance-item">
+                Reimbursed YTD
+                <strong>$77.50</strong>
+            </div>
+            <div class="balance-item">
+                Available Balance
+                <strong>$1,922.50</strong>
+            </div>
+        </div>
+
+        <h2>Recent Claims</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date Submitted</th>
+                    <th>Merchant</th>
+                    <th>Description</th>
+                    <th class="right">Amount Submitted</th>
+                    <th class="right">Amount Reimbursed</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>01/18/2026</td>
+                    <td>GreenLeaf Pharmacy</td>
+                    <td>Prescription Copay – Atorvastatin</td>
+                    <td class="right">$15.00</td>
+                    <td class="right">$15.00</td>
+                    <td class="status-approved">Approved</td>
+                </tr>
+                <tr>
+                    <td>01/18/2026</td>
+                    <td>GreenLeaf Pharmacy</td>
+                    <td>Over-the-Counter Pain Reliever</td>
+                    <td class="right">$12.50</td>
+                    <td class="right">$12.50</td>
+                    <td class="status-approved">Approved</td>
+                </tr>
+                <tr>
+                    <td>01/19/2026</td>
+                    <td>GreenLeaf Pharmacy</td>
+                    <td>Vitamins & Supplements</td>
+                    <td class="right">$24.99</td>
+                    <td class="right">$0.00</td>
+                    <td class="status-denied">Denied</td>
+                </tr>
+                <tr>
+                    <td>01/20/2026</td>
+                    <td>BrightSmile Dental</td>
+                    <td>Dental Procedure Copay</td>
+                    <td class="right">$50.00</td>
+                    <td class="right">$50.00</td>
+                    <td class="status-approved">Approved</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <strong>Potential Issue:</strong><br/> A prescription medical item purchased on January 18, 2026 does not appear in this claim history. If reimbursed, the available balance would be reduced accordingly. You may need to submit a missing claim
+            with documentation.
+        </div>
+
+        <div class="footer">
+            Claim processing times may vary. Please retain all receipts for your records.<br/> Contact HealthFlex Member Services at (800) 555-9921 for assistance.
+        </div>
+    </div>
+</body>
+
+</html>

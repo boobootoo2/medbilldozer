@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Valley Medical Center – Patient Statement</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f9fafb;
+            color: #111827;
+            margin: 0;
+            padding: 24px;
+        }
+        
+        .bill-container {
+            max-width: 760px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            padding: 24px;
+        }
+        
+        h1 {
+            color: #0A66C2;
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+        
+        h2 {
+            font-size: 1.1rem;
+            margin-top: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 4px;
+        }
+        
+        .meta {
+            font-size: 0.9rem;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .meta strong {
+            display: inline-block;
+            min-width: 160px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+        
+        th,
+        td {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 8px;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f3f4f6;
+        }
+        
+        .right {
+            text-align: right;
+        }
+        
+        .total {
+            font-weight: bold;
+        }
+        
+        .note {
+            background: #f9fafb;
+            border-left: 4px solid #f59e0b;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+        
+        .footer {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bill-container">
+        <h1>Valley Medical Center</h1>
+        <div class="meta">
+            <strong>Statement Type:</strong> Patient Statement<br/>
+            <strong>Statement Date:</strong> February 2, 2026<br/>
+            <strong>Account Number:</strong> 87439201
+        </div>
+
+        <h2>Patient Information</h2>
+        <div class="meta">
+            <strong>Patient Name:</strong> John Sample<br/>
+            <strong>Date of Birth:</strong> 01/15/1975<br/>
+            <strong>Insurance:</strong> Horizon PPO Plus
+        </div>
+
+        <h2>Visit Summary</h2>
+        <div class="meta">
+            <strong>Date of Service:</strong> January 12, 2026<br/>
+            <strong>Facility:</strong> Valley Medical Center – Outpatient Endoscopy<br/>
+            <strong>Rendering Provider:</strong> Michael Reynolds, MD
+        </div>
+
+        <h2>Itemized Charges</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date of Service</th>
+                    <th>Service Description</th>
+                    <th>CPT</th>
+                    <th class="right">Billed</th>
+                    <th class="right">Allowed</th>
+                    <th class="right">Patient Responsibility</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>01/12/2026</td>
+                    <td>Screening Colonoscopy</td>
+                    <td>45378</td>
+                    <td class="right">$2,400.00</td>
+                    <td class="right">$1,200.00</td>
+                    <td class="right">$350.00</td>
+                </tr>
+                <tr>
+                    <td>01/12/2026</td>
+                    <td>Screening Colonoscopy</td>
+                    <td>45378</td>
+                    <td class="right">$2,400.00</td>
+                    <td class="right">$1,200.00</td>
+                    <td class="right">$350.00</td>
+                </tr>
+                <tr>
+                    <td>01/12/2026</td>
+                    <td>Anesthesia Services</td>
+                    <td>00812</td>
+                    <td class="right">$850.00</td>
+                    <td class="right">$500.00</td>
+                    <td class="right">$220.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Insurance Summary</h2>
+        <table>
+            <tbody>
+                <tr>
+                    <td>Total Billed Charges</td>
+                    <td class="right">$5,650.00</td>
+                </tr>
+                <tr>
+                    <td>Total Allowed Amount</td>
+                    <td class="right">$2,900.00</td>
+                </tr>
+                <tr>
+                    <td>Insurance Paid</td>
+                    <td class="right">$1,500.00</td>
+                </tr>
+                <tr class="total">
+                    <td>Patient Responsibility</td>
+                    <td class="right">$920.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <strong>Insurance Note:</strong><br/> Screening colonoscopies are covered at 100% when preventive criteria are met. Portions of this claim were processed as diagnostic services.
+        </div>
+
+        <div class="footer">
+            This statement is not a bill. Please contact Valley Medical Center Billing Services at (800) 555-0199 with questions regarding this statement.
+        </div>
+    </div>
+</body>
+
+</html>
