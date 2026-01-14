@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 from pathlib import Path
+import base64
 
 # ==================================================
 # Page config (MUST be first)
@@ -16,69 +17,77 @@ st.set_page_config(
 st.markdown("""
 <style>
 :root {
-  --brand-blue: #0A66C2;
-  --brand-green: #2DA44E;
-  --brand-warning: #F59E0B;
-  --text-secondary: #6B7280;
-  --ui-border: #E5E7EB;
+    --brand-blue: #0A66C2;
+    --brand-green: #2DA44E;
+    --brand-warning: #F59E0B;
+    --text-secondary: #6B7280;
+    --ui-border: #E5E7EB;
 }
 
 /* Container */
 .block-container {
-  padding-top: 2rem;
-  max-width: 760px;
+    padding-top: 2rem;
+    max-width: 900px;
 }
 
-/* Header */
+/* Header (logo left of title on wide screens, stacked on small screens) */
+.app-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 12px;
+}
+.med-bill-dozer-logo {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 140px;
+    height: 88px;
+    min-width: 100px;
+    flex: 0 0 auto;
+}
+.title-block { flex: 1 1 auto; }
 .app-title {
-  font-size: 2.3rem;
-  font-weight: 700;
-  color: var(--brand-blue);
-  text-align: center;
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: var(--brand-blue);
+    margin: 0;
+    font-style: italic;
 }
+.app-title .dozer { color: var(--brand-green); }
 .app-subtitle {
-  font-size: 1.05rem;
-  color: var(--text-secondary);
-  margin-bottom: 1.5rem;
-  text-align: center;
+    font-size: 1.02rem;
+    color: var(--text-secondary);
+    margin-top: 6px;
 }
 
-/* Logo */
-.logo-viewport {
-  width: 100%;
-  height: 104px;
-  overflow: hidden;
-}
-.logo-transform {
-  transform: translate(0%, -33%);
-}
-.logo-viewport .logo-transform svg {
-  width: 95%;
-  display: block;
-  margin: 0 auto;
+@media (max-width: 640px) {
+    .app-header { flex-direction: column; align-items: center; text-align: center; }
+    .med-bill-dozer-logo { margin-right: 0; width: 120px; height: 70px; }
+    .app-title { font-size: 1.6rem; }
 }
 
 /* Inputs */
 .stTextArea textarea {
-  border-radius: 10px;
-  border: 1px solid var(--ui-border);
+    border-radius: 10px;
+    border: 1px solid var(--ui-border);
 }
 
 /* Button */
 .stButton > button {
-  background-color: var(--brand-blue);
-  color: white;
-  border-radius: 10px;
-  font-weight: 600;
+    background-color: var(--brand-blue);
+    color: white;
+    border-radius: 10px;
+    font-weight: 600;
 }
 
 /* Flag cards */
 .flag-warning {
-  background-color: #FFFBEB;
-  border-left: 6px solid var(--brand-warning);
-  padding: 0.9rem;
-  border-radius: 8px;
-  margin-bottom: 0.8rem;
+    background-color: #FFFBEB;
+    border-left: 6px solid var(--brand-warning);
+    padding: 0.9rem;
+    border-radius: 8px;
+    margin-bottom: 0.8rem;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -98,31 +107,42 @@ def show_static_viewer(title: str, path: str, height: int = 520):
         )
 
 # ==================================================
-# Logo (optional)
+# Header with left-aligned logo (uses medBillDozer-logo-transparent.png)
 # ==================================================
-try:
-    svg_logo = load_static_html("medBillDozer-logo.svg")
+logo_path = Path("medBillDozer-logo-transparent.png")
+if logo_path.exists():
+    try:
+        b64 = base64.b64encode(logo_path.read_bytes()).decode()
+        st.markdown(
+            f"""
+            <style>
+            /* inline logo image (data URL) so Streamlit routing won't block tiny assets */
+            .med-bill-dozer-logo {{ background-image: url("data:image/png;base64,{b64}"); }}
+            </style>
+            <div class="app-header">
+              <div class="med-bill-dozer-logo" aria-hidden="true"></div>
+              <div class="title-block">
+                <div class="app-title"><h1>medBill<span class="dozer">Dozer</span></h1></div>
+                <div class="app-subtitle">Detecting billing, pharmacy, dental, and insurance claim issues</div>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    except Exception:
+        # fallback to simple title if reading fails
+        st.markdown('<div class="app-title">medBillDozer</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="app-subtitle">Detecting billing, pharmacy, dental, and insurance claim issues</div>',
+            unsafe_allow_html=True,
+        )
+else:
+    # image missing: fall back to plain title/subtitle
+    st.markdown('<div class="app-title">medBillDozer</div>', unsafe_allow_html=True)
     st.markdown(
-        f"""
-        <div class="logo-viewport">
-          <div class="logo-transform">
-            {svg_logo}
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True
+        '<div class="app-subtitle">Detecting billing, pharmacy, dental, and insurance claim issues</div>',
+        unsafe_allow_html=True,
     )
-except Exception:
-    pass
-
-# ==================================================
-# Header
-# ==================================================
-st.markdown('<div class="app-title">medBillDozer</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="app-subtitle">Detecting billing, pharmacy, dental, and insurance claim issues</div>',
-    unsafe_allow_html=True
-)
 
 st.markdown(
     "Paste a bill, receipt, or claim history below. "
