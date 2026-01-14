@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Horizon PPO – Claim History</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f9fafb;
+            color: #111827;
+            margin: 0;
+            padding: 24px;
+        }
+        
+        .history-container {
+            max-width: 780px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            padding: 24px;
+        }
+        
+        h1 {
+            color: #0A66C2;
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+        
+        .meta {
+            font-size: 0.9rem;
+            color: #374151;
+            margin-bottom: 16px;
+        }
+        
+        h2 {
+            font-size: 1.1rem;
+            margin-top: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 4px;
+        }
+        
+        .summary-box {
+            display: flex;
+            justify-content: space-between;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            padding: 14px;
+            margin-top: 12px;
+            font-size: 0.95rem;
+        }
+        
+        .summary-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .summary-item strong {
+            display: block;
+            font-size: 1.15rem;
+            margin-top: 4px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+        
+        th,
+        td {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f3f4f6;
+        }
+        
+        .right {
+            text-align: right;
+        }
+        
+        .status-paid {
+            color: #2DA44E;
+            font-weight: 600;
+        }
+        
+        .note {
+            background: #f0fdf4;
+            border-left: 4px solid #2DA44E;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+        
+        .footer {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="history-container">
+        <h1>Horizon PPO Plus</h1>
+        <div class="meta">
+            Insurance Claim History<br/> Plan Year: 2026<br/> Member: John Sample
+        </div>
+
+        <h2>Plan Summary</h2>
+        <div class="summary-box">
+            <div class="summary-item">
+                Annual Deductible
+                <strong>$1,500.00</strong>
+            </div>
+            <div class="summary-item">
+                Deductible Met
+                <strong>$1,500.00</strong>
+            </div>
+            <div class="summary-item">
+                Out-of-Pocket Maximum
+                <strong>$3,000.00</strong>
+            </div>
+        </div>
+
+        <h2>Claim Activity</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date of Service</th>
+                    <th>Provider</th>
+                    <th>Description</th>
+                    <th class="right">Allowed</th>
+                    <th class="right">Insurance Paid</th>
+                    <th class="right">Copay</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>01/12/2026</td>
+                    <td>Valley Medical Center</td>
+                    <td>Screening Colonoscopy</td>
+                    <td class="right">$1,200.00</td>
+                    <td class="right">$1,100.00</td>
+                    <td class="right">$100.00</td>
+                    <td class="status-paid">Paid</td>
+                </tr>
+                <tr>
+                    <td>01/12/2026</td>
+                    <td>Anesthesia Associates</td>
+                    <td>Anesthesia Services</td>
+                    <td class="right">$500.00</td>
+                    <td class="right">$400.00</td>
+                    <td class="right">$100.00</td>
+                    <td class="status-paid">Paid</td>
+                </tr>
+                <tr>
+                    <td>01/18/2026</td>
+                    <td>GreenLeaf Pharmacy</td>
+                    <td>Prescription Colonoscopy Prep</td>
+                    <td class="right">$38.00</td>
+                    <td class="right">$0.00</td>
+                    <td class="right">$38.00</td>
+                    <td class="status-paid">Paid</td>
+                </tr>
+                <tr>
+                    <td>01/20/2026</td>
+                    <td>BrightSmile Dental</td>
+                    <td>Dental Procedure Copay</td>
+                    <td class="right">$100.00</td>
+                    <td class="right">$0.00</td>
+                    <td class="right">$100.00</td>
+                    <td class="status-paid">Paid</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <strong>Important:</strong><br/> All copays listed above are <strong>FSA-eligible medical expenses</strong>. These amounts may be reimbursed through the member’s Flexible Spending Account. After FSA reimbursement, the member’s effective out-of-pocket
+            cost is <strong>$0.00</strong>.
+        </div>
+
+        <div class="footer">
+            This explanation of benefits is not a bill. Please contact Horizon Member Services at (800) 555-4433 with questions.
+        </div>
+    </div>
+</body>
+
+</html>

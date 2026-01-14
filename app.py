@@ -120,13 +120,13 @@ except Exception:
 # ==================================================
 st.markdown('<div class="app-title">medBillDozer</div>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="app-subtitle">Detecting medical billing, pharmacy, dental, and FSA errors</div>',
+    '<div class="app-subtitle">Detecting billing, pharmacy, dental, and insurance claim issues</div>',
     unsafe_allow_html=True
 )
 
 st.markdown(
     "Paste a bill, receipt, or claim history below. "
-    "medBillDozer flags **likely administrative errors** and suggests next steps."
+    "medBillDozer flags **likely administrative and cost reconciliation issues**."
 )
 
 # ==================================================
@@ -135,23 +135,28 @@ st.markdown(
 st.markdown("### Demo Documents")
 
 show_static_viewer(
-    "🏥 Example Hospital Bill – Colonoscopy",
+    "🏥 Hospital Bill – Colonoscopy",
     "static/sample_colonoscopy_bill.html"
 )
 
 show_static_viewer(
-    "💊 Example Pharmacy Receipt – FSA Scenario",
+    "💊 Pharmacy Receipt – FSA Scenario",
     "static/sample_pharmacy_receipt_fsa.html"
 )
 
 show_static_viewer(
-    "🦷 Example Dental Crown Bill",
+    "🦷 Dental Crown Bill",
     "static/sample_dental_crown_bill.html"
 )
 
 show_static_viewer(
-    "📊 Example FSA Claim History",
+    "📊 FSA Claim History",
     "static/sample_fsa_claim_history.html"
+)
+
+show_static_viewer(
+    "🧾 Insurance Claim History – $0 Out-of-Pocket",
+    "static/sample_insurance_claim_history_zero_oop.html"
 )
 
 # ==================================================
@@ -171,27 +176,50 @@ analyze = st.button("Analyze with medBillDozer")
 # Analysis logic (demo-grade heuristics)
 # ==================================================
 def analyze_text(text: str):
+    t = text.lower()
     flags = []
 
-    # Duplicate procedure
-    if text.lower().count("45378") > 1 or text.lower().count("d2740") > 1:
-        flags.append(("Possible duplicate procedure", "Same procedure code appears more than once."))
+    # Duplicate procedures
+    if t.count("45378") > 1 or t.count("d2740") > 1:
+        flags.append((
+            "Possible duplicate procedure",
+            "The same procedure code appears more than once for the same date of service."
+        ))
 
-    # Lab fee bundling
-    if "lab fee" in text.lower() and "crown" in text.lower():
-        flags.append(("Potential unbundled lab fee", "Lab fees are often included in crown allowances."))
+    # Dental lab fee bundling
+    if "lab fee" in t and "crown" in t:
+        flags.append((
+            "Potential unbundled lab fee",
+            "Lab fees are often included in crown allowances and may not be separately billable."
+        ))
 
     # Preventive coverage mismatch
-    if "screening" in text.lower() and "not covered" in text.lower():
-        flags.append(("Coverage mismatch", "Preventive services may be covered at 100%."))
+    if "screening" in t and ("patient responsibility" in t or "not covered" in t):
+        flags.append((
+            "Preventive coverage mismatch",
+            "Preventive services are often covered at 100% with no patient cost."
+        ))
 
     # FSA eligibility mix
-    if "vitamin" in text.lower() and "fsa" in text.lower():
-        flags.append(("Mixed FSA eligibility", "Receipt includes both eligible and non-eligible items."))
+    if "vitamin" in t and "fsa" in t:
+        flags.append((
+            "Mixed FSA eligibility",
+            "Receipt includes both FSA-eligible and non-eligible items."
+        ))
 
     # Missing FSA claim
-    if "polyethylene glycol" in text.lower() and "claim history" in text.lower():
-        flags.append(("Missing FSA claim", "An FSA-eligible item does not appear in claim history."))
+    if "polyethylene glycol" in t and "claim history" in t:
+        flags.append((
+            "Missing FSA claim",
+            "An FSA-eligible prescription appears on the receipt but not in the claim history."
+        ))
+
+    # Insurance shows $0 OOP but bill shows balance
+    if "out-of-pocket" in t and "$0.00" in t and "patient responsibility" in t:
+        flags.append((
+            "Bill conflicts with insurance outcome",
+            "Insurance claims show $0 out-of-pocket, but the bill indicates a balance due."
+        ))
 
     return flags
 
@@ -223,17 +251,17 @@ if analyze:
 
         st.markdown("### Suggested Next Steps")
         st.markdown(
-            "1. Request an itemized statement or explanation of benefits.\n"
-            "2. Ask whether duplicate or bundled services were applied correctly.\n"
-            "3. Confirm preventive or frequency-based coverage rules.\n"
-            "4. Submit missing FSA claims with supporting receipts."
+            "1. Compare the bill against insurance claim history and EOBs.\n"
+            "2. Ask providers whether preventive or bundled services were applied correctly.\n"
+            "3. Submit missing FSA claims with receipts if applicable.\n"
+            "4. Request corrected statements when insurance indicates no patient cost."
         )
 
         st.markdown("#### Sample outreach script")
         st.code(
-            "Hello, I’m reviewing my recent statement and noticed a few items that may "
-            "have been billed incorrectly or not processed. Could you please review "
-            "these charges and provide clarification?"
+            "Hello, I’m reviewing my recent statement and insurance claims. "
+            "My insurer indicates no out-of-pocket cost, but this bill shows a balance. "
+            "Could you please review and provide a corrected statement?"
         )
 
 # ==================================================
