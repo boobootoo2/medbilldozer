@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Valley Medical Center – Patient Statement</title>
+    <title>GreenLeaf Pharmacy – Receipt</title>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -13,54 +13,48 @@
             padding: 24px;
         }
         
-        .bill-container {
-            max-width: 760px;
+        .receipt-container {
+            max-width: 520px;
             margin: 0 auto;
             background: #ffffff;
             border: 1px solid #e5e7eb;
-            padding: 24px;
+            padding: 20px;
         }
         
         h1 {
+            text-align: center;
+            font-size: 1.4rem;
             color: #0A66C2;
-            font-size: 1.5rem;
             margin-bottom: 4px;
         }
         
-        h2 {
-            font-size: 1.1rem;
-            margin-top: 24px;
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 4px;
-        }
-        
         .meta {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #374151;
-            margin-bottom: 8px;
+            text-align: center;
+            margin-bottom: 16px;
         }
         
-        .meta strong {
-            display: inline-block;
-            min-width: 160px;
+        hr {
+            border: none;
+            border-top: 1px dashed #d1d5db;
+            margin: 16px 0;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 12px;
+            font-size: 0.9rem;
         }
         
         th,
         td {
-            border-bottom: 1px solid #e5e7eb;
-            padding: 8px;
-            font-size: 0.9rem;
+            padding: 6px 0;
             text-align: left;
         }
         
         th {
-            background-color: #f3f4f6;
+            border-bottom: 1px solid #e5e7eb;
         }
         
         .right {
@@ -69,115 +63,86 @@
         
         .total {
             font-weight: bold;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 8px;
         }
         
-        .note {
-            background: #f9fafb;
+        .fsa {
+            font-size: 0.8rem;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f0fdf4;
+            border-left: 4px solid #2DA44E;
+        }
+        
+        .non-fsa {
+            background-color: #fffbeb;
             border-left: 4px solid #f59e0b;
-            padding: 12px;
-            margin-top: 16px;
-            font-size: 0.9rem;
         }
         
         .footer {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #6b7280;
-            margin-top: 24px;
+            margin-top: 20px;
+            text-align: center;
         }
     </style>
 </head>
 
 <body>
-    <div class="bill-container">
-        <h1>Valley Medical Center</h1>
+    <div class="receipt-container">
+        <h1>GreenLeaf Pharmacy</h1>
         <div class="meta">
-            <strong>Statement Type:</strong> Patient Statement<br/>
-            <strong>Statement Date:</strong> February 2, 2026<br/>
-            <strong>Account Number:</strong> 87439201
+            Store #1042<br/> 128 Main Street, Briarwood, NY<br/> (555) 555-7712
         </div>
 
-        <h2>Patient Information</h2>
         <div class="meta">
-            <strong>Patient Name:</strong> John Sample<br/>
-            <strong>Date of Birth:</strong> 01/15/1975<br/>
-            <strong>Insurance:</strong> Horizon PPO Plus
+            Receipt #: 88420391<br/> Date: January 18, 2026 &nbsp; Time: 3:42 PM
         </div>
 
-        <h2>Visit Summary</h2>
-        <div class="meta">
-            <strong>Date of Service:</strong> January 12, 2026<br/>
-            <strong>Facility:</strong> Valley Medical Center – Outpatient Endoscopy<br/>
-            <strong>Rendering Provider:</strong> Michael Reynolds, MD
-        </div>
+        <hr/>
 
-        <h2>Itemized Charges</h2>
         <table>
             <thead>
                 <tr>
-                    <th>Date of Service</th>
-                    <th>Service Description</th>
-                    <th>CPT</th>
-                    <th class="right">Billed</th>
-                    <th class="right">Allowed</th>
-                    <th class="right">Patient Responsibility</th>
+                    <th>Item</th>
+                    <th class="right">Amount</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>01/12/2026</td>
-                    <td>Screening Colonoscopy</td>
-                    <td>45378</td>
-                    <td class="right">$2,400.00</td>
-                    <td class="right">$1,200.00</td>
-                    <td class="right">$350.00</td>
+                    <td>Polyethylene Glycol Solution (Colonoscopy Prep)</td>
+                    <td class="right">$38.00</td>
                 </tr>
                 <tr>
-                    <td>01/12/2026</td>
-                    <td>Screening Colonoscopy</td>
-                    <td>45378</td>
-                    <td class="right">$2,400.00</td>
-                    <td class="right">$1,200.00</td>
-                    <td class="right">$350.00</td>
+                    <td>Prescription Copay – Atorvastatin 20mg</td>
+                    <td class="right">$15.00</td>
                 </tr>
                 <tr>
-                    <td>01/12/2026</td>
-                    <td>Anesthesia Services</td>
-                    <td>00812</td>
-                    <td class="right">$850.00</td>
-                    <td class="right">$500.00</td>
-                    <td class="right">$220.00</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h2>Insurance Summary</h2>
-        <table>
-            <tbody>
-                <tr>
-                    <td>Total Billed Charges</td>
-                    <td class="right">$5,650.00</td>
+                    <td>Over-the-Counter Pain Reliever</td>
+                    <td class="right">$12.50</td>
                 </tr>
                 <tr>
-                    <td>Total Allowed Amount</td>
-                    <td class="right">$2,900.00</td>
-                </tr>
-                <tr>
-                    <td>Insurance Paid</td>
-                    <td class="right">$1,500.00</td>
+                    <td>Vitamins & Supplements</td>
+                    <td class="right">$24.99</td>
                 </tr>
                 <tr class="total">
-                    <td>Patient Responsibility</td>
-                    <td class="right">$920.00</td>
+                    <td>Total</td>
+                    <td class="right">$90.49</td>
                 </tr>
             </tbody>
         </table>
 
-        <div class="note">
-            <strong>Insurance Note:</strong><br/> Screening colonoscopies are covered at 100% when preventive criteria are met. Portions of this claim were processed as diagnostic services.
+        <div class="fsa">
+            <strong>FSA Eligibility Notes:</strong><br/> • Polyethylene Glycol Solution — <strong>FSA Eligible</strong> (Prescription medical item)<br/> • Prescription Copay — <strong>FSA Eligible</strong><br/> • Over-the-Counter Pain Reliever — <strong>FSA Eligible with receipt</strong><br/>            • Vitamins & Supplements — <strong>Not FSA Eligible</strong> (General health item)
+        </div>
+
+        <div class="fsa non-fsa">
+            <strong>Potential Issue:</strong><br/> This receipt includes both FSA-eligible and non-eligible items. Submitting the full amount may result in partial reimbursement or denial.
         </div>
 
         <div class="footer">
-            This statement is not a bill. Please contact Valley Medical Center Billing Services at (800) 555-0199 with questions regarding this statement.
+            Keep this receipt for your records.<br/> FSA reimbursements are subject to plan rules and administrator review.
         </div>
     </div>
 </body>

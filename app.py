@@ -2,6 +2,16 @@ import streamlit as st
 import streamlit.components.v1 as components
 from pathlib import Path
 import base64
+import os
+import json
+import urllib.request
+import ssl
+try:
+    import certifi
+    _CA_BUNDLE = certifi.where()
+except Exception:
+    _CA_BUNDLE = None
+from typing import List, Dict, Any
 
 # ==================================================
 # Page config (MUST be first)
@@ -106,6 +116,44 @@ def show_static_viewer(title: str, path: str, height: int = 520):
             scrolling=True
         )
 
+
+def call_openai_chat(api_key: str, messages: List[Dict[str, str]], model: str = "gpt-3.5-turbo") -> Dict[str, Any]:
+    """Call the OpenAI Chat Completions API using the standard REST endpoint.
+    Uses urllib to avoid extra dependencies. Returns parsed JSON response.
+    """
+    url = "https://api.openai.com/v1/chat/completions"
+    payload = {
+        "model": model,
+        "messages": messages,
+        "temperature": 0.0,
+        "max_tokens": 800,
+    }
+    data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(url, data=data, method="POST")
+    req.add_header("Content-Type", "application/json")
+    req.add_header("Authorization", f"Bearer {api_key}")
+
+    # Build an SSL context that uses certifi's CA bundle when available. This avoids
+    # macOS Python SSL verification issues where the system cert store isn't configured.
+    ctx = None
+    if _CA_BUNDLE:
+        ctx = ssl.create_default_context(cafile=_CA_BUNDLE)
+    else:
+        ctx = ssl.create_default_context()
+
+    try:
+        with urllib.request.urlopen(req, timeout=60, context=ctx) as resp:
+            resp_bytes = resp.read()
+            return json.loads(resp_bytes.decode("utf-8"))
+    except ssl.SSLCertVerificationError as e:
+        # Provide a clear actionable error for macOS users.
+        raise RuntimeError(
+            "SSL certificate verification failed when contacting OpenAI. "
+            "On macOS, run the 'Install Certificates.command' that comes with your Python installation, "
+            "or install the 'certifi' package (pip install certifi) and restart. "
+            f"Original error: {e}"
+        )
+
 # ==================================================
 # Header with left-aligned logo (uses medBillDozer-logo-transparent.png)
 # ==================================================
@@ -188,7 +236,17 @@ bill_text = st.text_area(
     "Paste bill, receipt, or claim history text",
     height=240,
     placeholder="Paste text here..."
+    , key="text_area_1"
 )
+
+# expose a stable widget key so external integrations can reference it
+bill_text = st.session_state.get("text_area_1", bill_text)
+
+# Offer OpenAI-assisted analysis when the API key is present in the environment
+OPENAI_KEY = os.environ.get("OPENAI_API_KEY")
+use_openai = False
+if OPENAI_KEY:
+    use_openai = st.checkbox("Run OpenAI-assisted analysis (uses $OPENAI_API_KEY)", value=False)
 
 analyze = st.button("Analyze with medBillDozer")
 
@@ -268,6 +326,56 @@ if analyze:
                 )
         else:
             st.info("No obvious issues detected. Manual review may still be helpful.")
+
+        # If the environment provides an OpenAI API key and the user opted in, run the LLM prompt
+        if OPENAI_KEY and use_openai:
+            st.markdown("### OpenAI-assisted analysis")
+            with st.spinner("Running OpenAI analysis..."):
+                system_msg = {
+                    "role": "system",
+                    "content": (
+                        "You are an assistant specialized in analyzing medical bills, EOBs, receipts, "
+                        "and insurance claim histories. Identify billing errors (duplicate procedure codes for the same "
+                        "date of service, mismatched allowed/paid amounts, apparent balance-due vs insurer-paid conflicts), "
+                        "and specifically detect instances where an FSA-eligible copay or patient responsibility amount "
+                        "appears in a bill but is NOT listed in any provided FSA claim history."
+                    )
+                }
+
+                user_msg = {
+                    "role": "user",
+                    "content": (
+                        "Analyze the following document and return a strict JSON object with the key `issues` containing "
+                        "an array of issues. Each issue should include: `type` (one of: duplicate_code, missing_fsa_copay, "
+                        "inconsistent_insurance, other), `code` (if applicable), `date` (if applicable), `evidence` (short text "
+                        "excerpt supporting the finding), and `recommended_action` (short guidance). Only return valid JSON.\n\n"
+                        f"DOCUMENT:\n{bill_text}"
+                    )
+                }
+
+                try:
+                    resp = call_openai_chat(OPENAI_KEY, [system_msg, user_msg])
+                    content = resp.get("choices", [])[0].get("message", {}).get("content", "")
+                    # attempt to parse JSON from model output
+                    parsed = None
+                    try:
+                        parsed = json.loads(content)
+                    except Exception:
+                        # sometimes the model wraps JSON in markdown; try to extract the first JSON block
+                        import re
+                        m = re.search(r"\{[\s\S]*\}", content)
+                        if m:
+                            try:
+                                parsed = json.loads(m.group(0))
+                            except Exception:
+                                parsed = None
+
+                    if parsed:
+                        st.json(parsed)
+                    else:
+                        st.text_area("OpenAI raw response", content, height=240)
+                except Exception as e:
+                    st.error(f"OpenAI request failed: {e}")
 
         st.markdown("### Suggested Next Steps")
         st.markdown(
