@@ -3,6 +3,10 @@ import streamlit.components.v1 as components
 from pathlib import Path
 import base64
 from _modules.llm_interface import ProviderRegistry
+try:
+    from _modules.medgemma_hosted_provider import MedGemmaHostedProvider
+except Exception:
+    MedGemmaHostedProvider = None
 
 # ==================================================
 # Page config (MUST be first)
@@ -183,6 +187,15 @@ show_static_viewer(
     "static/sample_insurance_claim_history_zero_oop.html"
 )
 
+# If hosted MedGemma provider is available and HF_API_TOKEN is set, register it so it appears in the provider list
+try:
+    if MedGemmaHostedProvider is not None:
+        hosted = MedGemmaHostedProvider()
+        if hosted.health_check():
+            ProviderRegistry.register("medgemma-hosted", hosted)
+except Exception:
+    pass
+
 # ==================================================
 # Input
 # ==================================================
@@ -191,12 +204,17 @@ st.markdown("### Analyze a Document")
 bill_text = st.text_area(
     "Paste bill, receipt, or claim history text",
     height=240,
-    placeholder="Paste text here..."
-    , key="text_area_1"
+    placeholder="Paste text here...",
+    key="text_area_1",
 )
 
 # expose a stable widget key so external integrations can reference it
 bill_text = st.session_state.get("text_area_1", bill_text)
+
+# Provider selector: show all registered providers (local and any medgemma variants)
+providers = ProviderRegistry.list()
+default_index = providers.index("local") if "local" in providers else 0
+selected_provider = st.selectbox("Analysis provider", providers, index=default_index)
 
 analyze = st.button("Analyze with medBillDozer")
 
@@ -213,12 +231,19 @@ if analyze:
     else:
         st.success("Analysis complete")
 
-        provider = ProviderRegistry.get("local")
+        provider = ProviderRegistry.get(selected_provider)
         if provider is None:
             st.error("No analysis provider registered (expected 'local').")
+            result = None
         else:
-            result = provider.analyze_document(bill_text)
-            if result.issues:
+            try:
+                result = provider.analyze_document(bill_text)
+            except Exception as e:
+                # Surface friendly error messages to the user (do not crash the app)
+                st.error(f"Analysis failed: {e}")
+                result = None
+
+            if result and result.issues:
                 st.markdown("### Flagged Issues")
                 for issue in result.issues:
                     # Render each issue using the same visual treatment as before
@@ -232,7 +257,7 @@ if analyze:
                         """,
                         unsafe_allow_html=True
                     )
-            else:
+            elif result:
                 st.info("No obvious issues detected. Manual review may still be helpful.")
 
         
