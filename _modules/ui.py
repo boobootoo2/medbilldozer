@@ -11,6 +11,10 @@ import re
 from bs4 import BeautifulSoup
 
 
+def toggle_expander_state(key: str):
+    st.session_state[key] = not st.session_state.get(key, False)
+
+
 # ==================================================
 # Notifications
 # ==================================================
@@ -212,6 +216,7 @@ def render_demo_documents():
         html_docs.append(html_doc)
         text_docs.append(html_to_plain_text(html_doc))
 
+    # ---------- Global controls ----------
     col1, col2 = st.columns(2)
 
     with col1:
@@ -226,19 +231,27 @@ def render_demo_documents():
 
     st.divider()
 
-    for (title, _), html_doc, text_doc in zip(docs, html_docs, text_docs):
-        with st.expander(title, expanded=False):
+    # ---------- Document rows ----------
+    for i, ((title, _), html_doc, text_doc) in enumerate(zip(docs, html_docs, text_docs)):
+        expander_key = f"demo_open_{i}"
+
+        c1, c2, c3 = st.columns([6, 1.5, 1.5])
+
+        with c1:
+            label = f"▾ {title}" if st.session_state.get(expander_key) else f"▸ {title}"
+            if st.button(label, key=f"toggle_{i}", use_container_width=True):
+                toggle_expander_state(expander_key)
+
+        with c2:
+            copy_to_clipboard_button("📋 Copy", text_doc)
+
+        with c3:
+            if st.button("⬇️ Paste", key=f"paste_{i}"):
+                st.session_state["text_area_1"] = text_doc
+
+        if st.session_state.get(expander_key):
             components.html(html_doc, height=420, scrolling=True)
-
-            c1, c2 = st.columns(2)
-
-            with c1:
-                copy_to_clipboard_button("📋 Copy (plain text)", text_doc)
-
-            with c2:
-                if st.button("⬇️ Paste into analyzer", key=f"paste_{title}"):
-                    st.session_state["text_area_1"] = text_doc
-
+            st.markdown("---")
 
 # ==================================================
 # Inputs
