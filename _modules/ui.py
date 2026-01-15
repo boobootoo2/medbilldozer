@@ -72,8 +72,8 @@ def inject_css():
         padding: 0.4rem 0.75rem !important;
         border-radius: 8px !important;
         border: none !important;
-        background: #0A66C2 !important;
-        color: white !important;
+        background: #0A66C2;
+        color: white;
         font-weight: 600 !important;
         cursor: pointer !important;
         transition:
@@ -84,8 +84,9 @@ def inject_css():
 
     /* Hover */
     .st-key-analyze_button button[data-testid="stBaseButton-secondary"]:hover {
-        background: #084f9e !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            background: #E5E7EB;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            color: rgb(49, 51, 63);
     }
 
     /* Focus (keyboard) */
@@ -167,13 +168,30 @@ def copy_to_clipboard_button(label: str, text: str):
 
     components.html(
         f"""
+        <style>
+        button#{button_id} {{
+            background: #0A66C2;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            color: white;
+        }}
+        button#{button_id}:hover {{
+            background: #E5E7EB;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            color: rgb(49, 51, 63);
+        }}
+        button#{button_id}:focus-visible {{
+            outline: 2px solid #FFFFFF;
+            outline-offset: -2px;
+        }}
+        button#{button_id}:active {{
+            transform: scale(0.97);
+        }}
+        </style>
         <button id="{button_id}"
             style="
                 padding: 0.4rem 0.75rem;
                 border-radius: 8px;
                 border: none;
-                background: #0A66C2;
-                color: white;
                 font-weight: 600;
                 cursor: pointer;
             ">
@@ -205,23 +223,37 @@ def render_document_rows(docs, html_docs, text_docs):
         with stylable_container(
             key=f"doc_section_{i}",
             css_styles="""
-                button[data-testid="stButton"] {
-                    border-radius: 8px;
-                    font-weight: 600;
-                }
-                [data-testid="stHorizontalBlock"] > div:nth-child(1) button {
-                    background: transparent;
-                    border: none;
-                    text-align: left;
-                }
-                [data-testid="stHorizontalBlock"] > div:nth-child(1) button > div {
-                    justify-content: flex-start;
-                }
-                [data-testid="stHorizontalBlock"] > div:nth-child(2) button,
-                [data-testid="stHorizontalBlock"] > div:nth-child(3) button {
-                    background: #F3F4F6;
-                    border: 1px solid #E5E7EB;
-                }
+                /* ===============================
+   Column 3 (Inverse / Secondary)
+   =============================== */
+
+[data-testid="stHorizontalBlock"] > div:nth-child(3) button {
+    background: #F3F4F6;              /* light base */
+    border: 1px solid #E5E7EB;
+    color: rgb(49, 51, 63);
+    transition:
+        background-color 120ms ease,
+        box-shadow 120ms ease,
+        transform 80ms ease;
+}
+
+/* Hover → darker (inverse of primary) */
+[data-testid="stHorizontalBlock"] > div:nth-child(3) button:hover {
+    background: #E5E7EB;              /* darker on hover */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* Focus (keyboard) */
+[data-testid="stHorizontalBlock"] > div:nth-child(3) button:focus-visible {
+    outline: 2px solid #0A66C2;
+    outline-offset: 2px;
+}
+
+/* Active (press) */
+[data-testid="stHorizontalBlock"] > div:nth-child(3) button:active {
+    transform: scale(0.97);
+}
+
             """
         ):
             c1, c2, c3 = st.columns([6, 1.5, 1.5])
