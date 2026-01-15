@@ -2,6 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 from pathlib import Path
 import base64
+import os
 from _modules.llm_interface import ProviderRegistry
 try:
     from _modules.medgemma_hosted_provider import MedGemmaHostedProvider
@@ -213,8 +214,29 @@ bill_text = st.session_state.get("text_area_1", bill_text)
 
 # Provider selector: show all registered providers (local and any medgemma variants)
 providers = ProviderRegistry.list()
-default_index = providers.index("local") if "local" in providers else 0
-selected_provider = st.selectbox("Analysis provider", providers, index=default_index)
+
+# Map internal provider keys to human-friendly labels shown in the UI.
+# Keep a reverse map so we can look up the selected provider key.
+display_map = {}
+display_labels = []
+for key in providers:
+    if key == "local":
+        label = "Local — Heuristics (offline, fast, safe)"
+    elif key == "medgemma":
+        label = "Local MedGemma (requires local model)"
+    elif key == "medgemma-hosted":
+        model_id = os.getenv("HF_MODEL_ID", "google/medgemma-4b-it")
+        label = f"Hosted MedGemma — {model_id}"
+    else:
+        label = key
+    display_labels.append(label)
+    display_map[label] = key
+
+# Choose a sensible default (local heuristics preferred)
+default_label = next((lab for lab, k in display_map.items() if k == "local"), display_labels[0])
+selected_label = st.selectbox("Analysis provider", display_labels, index=display_labels.index(default_label))
+# Map back to the provider key the rest of the app expects
+selected_provider = display_map[selected_label]
 
 analyze = st.button("Analyze with medBillDozer")
 
