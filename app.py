@@ -260,6 +260,12 @@ if analyze:
             elif result:
                 st.info("No obvious issues detected. Manual review may still be helpful.")
 
+        # Helpful reminder for users after results
+        st.info(
+            "Billing and claim errors are common and often resolved once identified. "
+            "This tool helps patients know what to question before paying."
+        )
+
         
 
         st.markdown("### Suggested Next Steps")
