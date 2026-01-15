@@ -2,6 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 from pathlib import Path
 import base64
+from _modules.llm_interface import ProviderRegistry
 
 # ==================================================
 # Page config (MUST be first)
@@ -200,55 +201,8 @@ bill_text = st.session_state.get("text_area_1", bill_text)
 analyze = st.button("Analyze with medBillDozer")
 
 # ==================================================
-# Analysis logic (demo-grade heuristics)
+# Analysis logic (delegated to a model-agnostic provider)
 # ==================================================
-def analyze_text(text: str):
-    t = text.lower()
-    flags = []
-
-    # Duplicate procedures
-    if t.count("45378") > 1 or t.count("d2740") > 1:
-        flags.append((
-            "Possible duplicate procedure",
-            "The same procedure code appears more than once for the same date of service."
-        ))
-
-    # Dental lab fee bundling
-    if "lab fee" in t and "crown" in t:
-        flags.append((
-            "Potential unbundled lab fee",
-            "Lab fees are often included in crown allowances and may not be separately billable."
-        ))
-
-    # Preventive coverage mismatch
-    if "screening" in t and ("patient responsibility" in t or "not covered" in t):
-        flags.append((
-            "Preventive coverage mismatch",
-            "Preventive services are often covered at 100% with no patient cost."
-        ))
-
-    # FSA eligibility mix
-    if "vitamin" in t and "fsa" in t:
-        flags.append((
-            "Mixed FSA eligibility",
-            "Receipt includes both FSA-eligible and non-eligible items."
-        ))
-
-    # Missing FSA claim
-    if "polyethylene glycol" in t and "claim history" in t:
-        flags.append((
-            "Missing FSA claim",
-            "An FSA-eligible prescription appears on the receipt but not in the claim history."
-        ))
-
-    # Insurance shows $0 OOP but bill shows balance
-    if "out-of-pocket" in t and "$0.00" in t and "patient responsibility" in t:
-        flags.append((
-            "Bill conflicts with insurance outcome",
-            "Insurance claims show $0 out-of-pocket, but the bill indicates a balance due."
-        ))
-
-    return flags
 
 # ==================================================
 # Results
@@ -259,22 +213,27 @@ if analyze:
     else:
         st.success("Analysis complete")
 
-        flags = analyze_text(bill_text)
-
-        if flags:
-            st.markdown("### Flagged Issues")
-            for title, reason in flags:
-                st.markdown(
-                    f"""
-                    <div class="flag-warning">
-                      <strong>{title}</strong><br/>
-                      {reason}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+        provider = ProviderRegistry.get("local")
+        if provider is None:
+            st.error("No analysis provider registered (expected 'local').")
         else:
-            st.info("No obvious issues detected. Manual review may still be helpful.")
+            result = provider.analyze_document(bill_text)
+            if result.issues:
+                st.markdown("### Flagged Issues")
+                for issue in result.issues:
+                    # Render each issue using the same visual treatment as before
+                    st.markdown(
+                        f"""
+                        <div class="flag-warning">
+                          <strong>{issue.summary}</strong><br/>
+                          <em>Type:</em> {issue.type} <br/>
+                          {issue.evidence or ''}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+            else:
+                st.info("No obvious issues detected. Manual review may still be helpful.")
 
         
 
