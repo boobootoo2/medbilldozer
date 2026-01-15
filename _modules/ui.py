@@ -1,11 +1,19 @@
 # _modules/ui.py
+
 import streamlit as st
 import streamlit.components.v1 as components
 from pathlib import Path
 import base64
 import os
+import html
+import uuid
+import re
+from bs4 import BeautifulSoup
 
 
+# ==================================================
+# Notifications
+# ==================================================
 def show_empty_warning():
     st.warning("Please paste a document to analyze.")
 
@@ -79,31 +87,6 @@ def inject_css():
         margin-top: 6px;
     }
 
-    @media (max-width: 640px) {
-        .app-header {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        .med-bill-dozer-logo {
-            width: 120px;
-            height: 70px;
-        }
-        .app-title { font-size: 1.6rem; }
-    }
-
-    .stTextArea textarea {
-        border-radius: 10px;
-        border: 1px solid var(--ui-border);
-    }
-
-    .stButton > button {
-        background-color: var(--brand-blue);
-        color: white;
-        border-radius: 10px;
-        font-weight: 600;
-    }
-
     .flag-warning {
         background-color: #FFFBEB;
         border-left: 6px solid var(--brand-warning);
@@ -122,33 +105,28 @@ def render_header():
     logo_path = Path("images/medBillDozer-logo-transparent.png")
 
     if logo_path.exists():
-        try:
-            b64 = base64.b64encode(logo_path.read_bytes()).decode()
-            st.markdown(
-                f"""
-                <style>
-                .med-bill-dozer-logo {{
-                    background-image: url("data:image/png;base64,{b64}");
-                }}
-                </style>
-                <div class="app-header">
-                  <div class="med-bill-dozer-logo"></div>
-                  <div class="title-block">
-                    <h1 class="app-title">
-                        medBill<span class="dozer">Dozer</span>
-                    </h1>
-                    <div class="app-subtitle">
-                        Detecting billing, pharmacy, dental, and insurance claim issues
-                    </div>
-                  </div>
+        b64 = base64.b64encode(logo_path.read_bytes()).decode()
+        st.markdown(
+            f"""
+            <style>
+            .med-bill-dozer-logo {{
+                background-image: url("data:image/png;base64,{b64}");
+            }}
+            </style>
+            <div class="app-header">
+              <div class="med-bill-dozer-logo"></div>
+              <div class="title-block">
+                <h1 class="app-title">
+                    medBill<span class="dozer">Dozer</span>
+                </h1>
+                <div class="app-subtitle">
+                    Detecting billing, pharmacy, dental, and insurance claim issues
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
-        except Exception:
-            _fallback_title()
-    else:
-        _fallback_title()
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     st.markdown(
         "Paste a bill, receipt, or claim history below. "
@@ -156,41 +134,110 @@ def render_header():
     )
 
 
-def _fallback_title():
-    st.markdown('<h1 class="app-title">medBillDozer</h1>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="app-subtitle">Detecting billing, pharmacy, dental, and insurance claim issues</div>',
-        unsafe_allow_html=True
-    )
-
-
 # ==================================================
-# Static viewers
+# Utilities
 # ==================================================
-def _load_static_html(path: str) -> str:
+def _read_html(path: str) -> str:
     return Path(path).read_text(encoding="utf-8")
 
 
-def static_viewer(title: str, path: str, height: int = 520):
-    with st.expander(title, expanded=False):
-        components.html(
-            _load_static_html(path),
-            height=height,
-            scrolling=True
-        )
+def html_to_plain_text(html_doc: str) -> str:
+    soup = BeautifulSoup(html_doc, "html.parser")
+
+    for tag in soup(["script", "style"]):
+        tag.decompose()
+
+    text = soup.get_text(separator="\n")
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = re.sub(r"[ \t]+", " ", text)
+
+    return text.strip()
 
 
+def copy_to_clipboard_button(label: str, text: str):
+    button_id = f"copy_{uuid.uuid4().hex}"
+    escaped = html.escape(text)
+
+    components.html(
+        f"""
+        <button id="{button_id}"
+            style="
+                padding: 0.4rem 0.75rem;
+                border-radius: 8px;
+                border: none;
+                background: #0A66C2;
+                color: white;
+                font-weight: 600;
+                cursor: pointer;
+            ">
+            {label}
+        </button>
+
+        <script>
+        const btn = document.getElementById("{button_id}");
+        btn.addEventListener("click", async () => {{
+            try {{
+                await navigator.clipboard.writeText(`{escaped}`);
+                btn.innerText = "✅ Copied";
+                setTimeout(() => btn.innerText = "{label}", 1500);
+            }} catch (e) {{
+                btn.innerText = "❌ Failed";
+            }}
+        }});
+        </script>
+        """,
+        height=45,
+    )
+
+
+# ==================================================
+# Demo Documents (FULLY REFACTORED)
+# ==================================================
 def render_demo_documents():
     st.markdown("### Demo Documents")
 
-    static_viewer("🏥 Hospital Bill – Colonoscopy", "static/sample_colonoscopy_bill.html")
-    static_viewer("💊 Pharmacy Receipt – FSA Scenario", "static/sample_pharmacy_receipt_fsa.html")
-    static_viewer("🦷 Dental Crown Bill", "static/sample_dental_crown_bill.html")
-    static_viewer("📊 FSA Claim History", "static/sample_fsa_claim_history.html")
-    static_viewer(
-        "🧾 Insurance Claim History – $0 Out-of-Pocket",
-        "static/sample_insurance_claim_history_zero_oop.html"
-    )
+    docs = [
+        ("🏥 Hospital Bill – Colonoscopy", "static/sample_colonoscopy_bill.html"),
+        ("💊 Pharmacy Receipt – FSA Scenario", "static/sample_pharmacy_receipt_fsa.html"),
+        ("🦷 Dental Crown Bill", "static/sample_dental_crown_bill.html"),
+        ("📊 FSA Claim History", "static/sample_fsa_claim_history.html"),
+        ("🧾 Insurance Claim History – $0 Out-of-Pocket", "static/sample_insurance_claim_history_zero_oop.html"),
+    ]
+
+    html_docs = []
+    text_docs = []
+
+    for _, path in docs:
+        html_doc = _read_html(path)
+        html_docs.append(html_doc)
+        text_docs.append(html_to_plain_text(html_doc))
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        copy_to_clipboard_button(
+            "📋 Copy ALL demo documents",
+            "\n\n---\n\n".join(text_docs)
+        )
+
+    with col2:
+        if st.button("⬇️ Paste ALL into analyzer"):
+            st.session_state["text_area_1"] = "\n\n---\n\n".join(text_docs)
+
+    st.divider()
+
+    for (title, _), html_doc, text_doc in zip(docs, html_docs, text_docs):
+        with st.expander(title, expanded=False):
+            components.html(html_doc, height=420, scrolling=True)
+
+            c1, c2 = st.columns(2)
+
+            with c1:
+                copy_to_clipboard_button("📋 Copy (plain text)", text_doc)
+
+            with c2:
+                if st.button("⬇️ Paste into analyzer", key=f"paste_{title}"):
+                    st.session_state["text_area_1"] = text_doc
 
 
 # ==================================================
@@ -198,15 +245,12 @@ def render_demo_documents():
 # ==================================================
 def render_input_area():
     st.markdown("### Analyze a Document")
-
-    bill_text = st.text_area(
+    return st.text_area(
         "Paste bill, receipt, or claim history text",
         height=240,
         placeholder="Paste text here...",
         key="text_area_1",
     )
-
-    return st.session_state.get("text_area_1", bill_text)
 
 
 def render_provider_selector(providers: list[str]) -> str:
@@ -216,21 +260,16 @@ def render_provider_selector(providers: list[str]) -> str:
     for key in providers:
         if key == "local":
             label = "Local — Heuristics (offline, fast, safe)"
-        elif key == "medgemma":
-            label = "Local MedGemma (requires local model)"
         elif key == "medgemma-hosted":
-            model_id = os.getenv("HF_MODEL_ID", "google/medgemma-4b-it")
-            label = f"Hosted MedGemma — {model_id}"
+            label = f"Hosted MedGemma — {os.getenv('HF_MODEL_ID', 'google/medgemma-4b-it')}"
         else:
             label = key
 
         labels.append(label)
         display_map[label] = key
 
-    default_label = next(l for l in labels if "Local — Heuristics" in l)
-    selected_label = st.selectbox("Analysis provider", labels, index=labels.index(default_label))
-
-    return display_map[selected_label]
+    selected = st.selectbox("Analysis provider", labels, index=0)
+    return display_map[selected]
 
 
 def render_analyze_button() -> bool:
@@ -254,27 +293,12 @@ def render_results(result):
                 """,
                 unsafe_allow_html=True
             )
-    elif result:
+    else:
         st.info("No obvious issues detected. Manual review may still be helpful.")
 
     st.info(
         "Billing and claim errors are common and often resolved once identified. "
         "This tool helps patients know what to question before paying."
-    )
-
-    st.markdown("### Suggested Next Steps")
-    st.markdown(
-        "1. Compare the bill against insurance claim history and EOBs.\n"
-        "2. Ask providers whether preventive or bundled services were applied correctly.\n"
-        "3. Submit missing FSA claims with receipts if applicable.\n"
-        "4. Request corrected statements when insurance indicates no patient cost."
-    )
-
-    st.markdown("#### Sample outreach script")
-    st.code(
-        "Hello, I’m reviewing my recent statement and insurance claims. "
-        "My insurer indicates no out-of-pocket cost, but this bill shows a balance. "
-        "Could you please review and provide a corrected statement?"
     )
 
 
