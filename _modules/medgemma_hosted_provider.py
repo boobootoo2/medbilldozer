@@ -1,23 +1,94 @@
 import os
+import json
 import requests
 from _modules.llm_interface import LLMProvider, AnalysisResult, Issue
 
-# Allow overriding the hosted inference URL via env var for flexibility.
-# Default to the standard inference API endpoint (router endpoints may vary by account).
-# Determine the correct hosted URL:
-# 1. Use HF_MODEL_URL if explicitly provided.
-# 2. If HF_ENDPOINT_BASE is provided (e.g. your deployed endpoint base),
-#    construct a model path against it.
-# 3. Fall back to the public HF Inference API model path.
-HF_MODEL_URL = os.getenv("HF_MODEL_URL")
-# Allow overriding which model id to request (useful for router chat)
 HF_MODEL_ID = os.getenv("HF_MODEL_ID", "google/medgemma-4b-it")
-if not HF_MODEL_URL:
-    hf_endpoint_base = os.getenv("HF_ENDPOINT_BASE")
-    if hf_endpoint_base:
-        HF_MODEL_URL = f"{hf_endpoint_base.rstrip('/')}/v1/models/{HF_MODEL_ID.split('/')[-1]}"
-    else:
-        HF_MODEL_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL_ID}"
+HF_MODEL_URL = os.getenv(
+    "HF_MODEL_URL",
+    f"https://router.huggingface.co/v1/chat/completions"
+)
+
+
+SYSTEM_PROMPT = """
+You are a medical billing analysis system.
+
+You MUST return valid JSON only.
+Do not include prose, explanations, or markdown outside JSON.
+
+Be conservative and factual.
+Only estimate savings when the document itself clearly supports it.
+Never guess insurance outcomes.
+Never exceed patient responsibility amounts shown on the document.
+"""
+
+TASK_PROMPT = """
+Analyze the following medical billing documents.
+
+Identify administrative or billing issues.
+
+For each issue, determine whether a MAX POTENTIAL PATIENT SAVINGS
+can be calculated directly from the document.
+
+Rules for estimating max_savings:
+
+1. Duplicate charges
+   - Same CPT code
+   - Same date of service
+   - Identical billed/allowed/patient responsibility
+   → max_savings = patient responsibility for ONE duplicate line item
+
+2. Math or reconciliation errors
+   → max_savings = difference implied by the document
+
+3. Preventive vs diagnostic or coding issues
+   → Do NOT estimate savings unless the patient responsibility amount
+     could clearly be eliminated
+
+4. If savings cannot be confidently estimated
+   → max_savings = null
+
+Return STRICT JSON using this schema:
+
+{
+  "issues": [
+    {
+      "type": string,
+      "summary": string,
+      "evidence": string,
+      "max_savings": number | null
+    }
+  ]
+}
+
+Document:
+"""
+
+
+import re
+import json
+
+def _extract_json(text: str) -> dict:
+    """
+    Extract the first valid JSON object from model output.
+    Handles leading whitespace, prose, or accidental formatting.
+    """
+    if not text:
+        raise ValueError("Empty model output")
+
+    # Trim obvious whitespace
+    cleaned = text.strip()
+
+    # Fast path: already valid JSON
+    if cleaned.startswith("{"):
+        return json.loads(cleaned)
+
+    # Fallback: extract first {...} block
+    match = re.search(r"\{[\s\S]*\}", cleaned)
+    if not match:
+        raise ValueError(f"No JSON object found in model output:\n{text}")
+
+    return json.loads(match.group(0))
 
 
 class MedGemmaHostedProvider(LLMProvider):
@@ -34,131 +105,51 @@ class MedGemmaHostedProvider(LLMProvider):
         if not self.token:
             raise RuntimeError("HF_API_TOKEN not set")
 
-        # Prepare possible auth header variants. Some HF deployments expect
-        # an Authorization: Bearer <token>, others use an endpoint-specific
-        # x-api-key header. Try both if available.
-        auth_token = self.token
-        api_key = os.getenv("HF_API_KEY")
-        header_variants = []
-        if auth_token:
-            header_variants.append({"Authorization": f"Bearer {auth_token}", "Content-Type": "application/json"})
-        if api_key:
-            header_variants.append({"x-api-key": api_key, "Content-Type": "application/json"})
-        # As a last resort try no-auth headers (some internal endpoints handle auth differently)
-        header_variants.append({"Content-Type": "application/json"})
-
-        prompt = (
-            "You analyze healthcare billing, pharmacy, dental, and insurance documents.\n"
-            "Identify possible administrative or billing issues.\n\n"
-            f"Document:\n{text}\n\n"
-            "Return a concise bullet list of potential issues."
-        )
-
-        payload = {
-            "inputs": prompt,
-            "parameters": {
-                "max_new_tokens": 180,
-                "temperature": 0.2,
-                "do_sample": False
-            }
+        headers = {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json",
         }
 
-        # Try a list of candidate endpoints (in order). This helps handle
-        # different deployment URL shapes (user-provided endpoint base, HF router,
-        # etc.) and fall back gracefully.
-        candidates = []
-        # explicit HF_MODEL_URL first
-        if os.getenv("HF_MODEL_URL"):
-            candidates.append(os.getenv("HF_MODEL_URL"))
-        # endpoint base variants
-        if os.getenv("HF_ENDPOINT_BASE"):
-            base = os.getenv("HF_ENDPOINT_BASE").rstrip("/")
-            model_name = HF_MODEL_ID.split("/")[-1]
-            candidates.append(f"{base}/v1/models/{model_name}")
-            candidates.append(f"{base}/v1/models/{model_name}:predict")
-        # router model path (may 404 for chat-only models)
-        candidates.append(f"https://router.huggingface.co/models/{HF_MODEL_ID}")
-        # router chat completions (works for chat-capable models)
-        candidates.append("https://router.huggingface.co/v1/chat/completions")
+        prompt = f"{SYSTEM_PROMPT}\n{TASK_PROMPT}\n{text}"
 
-        last_errs = []
-        response = None
-        for url in candidates:
-            for hdr in header_variants:
-                try:
-                    # choose payload shape: chat completions vs single-input text generation
-                    if url.endswith("/v1/chat/completions"):
-                        chat_payload = {
-                            "model": HF_MODEL_ID,
-                            "messages": [{"role": "user", "content": prompt}],
-                            "max_tokens": 180,
-                            "temperature": 0.2,
-                        }
-                        response = requests.post(url, headers=hdr, json=chat_payload, timeout=90)
-                    else:
-                        response = requests.post(url, headers=hdr, json=payload, timeout=90)
+        payload = {
+            "model": HF_MODEL_ID,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.0,
+            "max_tokens": 600,
+        }
 
-                    response.raise_for_status()
-                    # success
-                    break
-                except requests.exceptions.HTTPError as err:
-                    text = ""
-                    try:
-                        text = response.text
-                    except Exception:
-                        pass
-                    last_errs.append((url, hdr, f"HTTPError: {err} - {text[:1000]}"))
-                    # try next header variant
-                except requests.exceptions.RequestException as err:
-                    last_errs.append((url, hdr, f"RequestException: {err}"))
-                    # try next header variant
+        response = requests.post(
+            HF_MODEL_URL,
+            headers=headers,
+            json=payload,
+            timeout=120,
+        )
+        response.raise_for_status()
 
-            if response is not None and response.status_code < 400:
-                break
-
-        if response is None or response.status_code >= 400:
-            # Aggregate errors for troubleshooting
-            msgs = "\n".join([f"{u} -> {m}" for u, m in last_errs])
-            raise RuntimeError(f"All hosted model endpoints failed. Attempts:\n{msgs}")
+        data = response.json()
 
         try:
-            data = response.json()
-        except ValueError:
-            # non-json response
-            raise RuntimeError(f"Hosted model returned a non-JSON response from {response.url}: {response.text[:1000]}")
-
-        # Normalize generated text from different response shapes
-        generated_text = ""
-        # Chat completions: {choices: [{message: {content: "..."}}]}
-        if isinstance(data, dict) and "choices" in data and data.get("choices"):
-            try:
-                first = data["choices"][0]
-                if isinstance(first.get("message"), dict):
-                    generated_text = first["message"].get("content", "")
-                elif "text" in first:
-                    generated_text = first.get("text", "")
-                else:
-                    if isinstance(first.get("delta"), dict):
-                        generated_text = first["delta"].get("content", "")
-            except Exception:
-                generated_text = ""
-        # Some model endpoints return list with generated_text
-        if not generated_text and isinstance(data, list) and data:
-            generated_text = data[0].get("generated_text", "")
-        if not generated_text and isinstance(data, dict):
-            generated_text = data.get("generated_text", "") or data.get("output", "")
+            content = data["choices"][0]["message"]["content"]
+            parsed = _extract_json(content)
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to parse model JSON output: {e}\nRaw output:\n{content}"
+            )
 
         issues = []
-        for line in generated_text.splitlines():
-            line = line.strip("-• ").strip()
-            if line:
-                issues.append(
-                    Issue(
-                        type="model_signal",
-                        summary=line,
-                        recommended_action="Review this item against your bill, EOB, or claim history."
-                    )
+        for item in parsed.get("issues", []):
+            issues.append(
+                Issue(
+                    type=item.get("type", "model_signal"),
+                    summary=item.get("summary", ""),
+                    evidence=item.get("evidence"),
+                    max_savings=item.get("max_savings"),
+                    recommended_action="Review this item against your bill or EOB.",
                 )
+            )
+
+        total_max = sum(i.max_savings or 0 for i in issues)
 
         return AnalysisResult(
             issues=issues,
@@ -166,5 +157,6 @@ class MedGemmaHostedProvider(LLMProvider):
                 "provider": self.name(),
                 "model": HF_MODEL_ID,
                 "hosted": True,
-            }
+                "total_max_savings": round(total_max, 2),
+            },
         )

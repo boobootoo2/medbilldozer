@@ -9,6 +9,64 @@ import re
 from bs4 import BeautifulSoup
 
 # ==================================================
+# Savings estimation helpers (UI-only)
+# ==================================================
+def calculate_max_savings(issues):
+    """
+    Returns:
+      total_max (float)
+      breakdown (list of dicts)
+    """
+    total = 0.0
+    breakdown = []
+
+    for issue in issues:
+        max_savings = getattr(issue, "max_savings", None)
+
+        if max_savings is None:
+            continue
+
+        total += max_savings
+        breakdown.append({
+            "summary": issue.summary,
+            "max_savings": round(max_savings, 2),
+        })
+
+    return round(total, 2), breakdown
+
+
+def render_savings_breakdown(title: str, total: float, breakdown: list[dict]):
+    st.markdown(f"#### 💰 Max Potential Savings — {title}")
+
+    if not breakdown:
+        st.caption("No directly quantifiable savings identified.")
+        return
+
+    for item in breakdown:
+        st.markdown(
+            f"- **{item['summary']}**: up to **${item['max_savings']:,.2f}**"
+        )
+
+    st.markdown(
+        f"""
+        <div style="
+            margin-top: 0.6rem;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--ui-border);
+            border-radius: 8px;
+            font-weight: 600;
+        ">
+            Max potential savings for this document:
+            <span style="float:right;">
+                ${total:,.2f}
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# ==================================================
 # State helpers
 # ==================================================
 def toggle_expander_state(key: str):
@@ -89,17 +147,34 @@ def inject_css():
             color: rgb(49, 51, 63);
     }
 
-    /* Focus (keyboard) */
-    .st-key-analyze_button button[data-testid="stBaseButton-secondary"]:focus-visible {
-        outline: 2px dashed #FFFFFF !important;
-        outline-offset: -2px;
-    }
 
     /* Active */
     .st-key-analyze_button button[data-testid="stBaseButton-secondary"]:active {
         transform: scale(0.97);
     }
+    /* ===============================
+    Override Streamlit error borders
+    =============================== */
 
+    /* Remove red borders */
+    .st-dr,
+    .st-dq,
+    .st-dp {
+        border-color: transparent !important;
+    }
+
+    /* Apply unified dashed outline */
+    .st-dr,
+    .st-dq,
+    .st-dp {
+        outline: 3px dashed #000000 !important;
+        outline-offset: 4px !important;
+    }
+    *:focus-visible {
+        box-shadow: rgba(255, 75, 75, 0) 0px 0px 0px 0.2rem !important;
+        outline: 3px dashed #000000 !important;
+        outline-offset: 4px !important; 
+    }
 
     </style>
     """, unsafe_allow_html=True)
@@ -180,8 +255,9 @@ def copy_to_clipboard_button(label: str, text: str):
             color: rgb(49, 51, 63);
         }}
         button#{button_id}:focus-visible {{
-            outline: 2px dashed #FFFFFF;
-            outline-offset: -2px;
+            box-shadow: rgba(255, 75, 75, 0) 0px 0px 0px 0.2rem !important;
+            outline: 3px dashed #000000 !important;
+            outline-offset: 4px !important;
         }}
         button#{button_id}:active {{
             transform: scale(0.97);
@@ -336,6 +412,46 @@ def render_analyze_button() -> bool:
 # Results
 # ==================================================
 def render_results(result):
+    if not result:
+        st.info("No analysis results available.")
+        return
+
+    issues = result.issues or []
+
+    # ---------- Issues ----------
+    if issues:
+        st.markdown("### Flagged Issues")
+        for issue in issues:
+            st.markdown(
+                f"""
+                <div class="flag-warning">
+                  <strong>{issue.summary}</strong><br/>
+                  {issue.evidence or ""}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+    else:
+        st.info("No obvious issues detected.")
+
+    # ---------- Savings ----------
+    total_max, breakdown = calculate_max_savings(issues)
+
+    st.divider()
+
+    render_savings_breakdown(
+        title="This Document",
+        total=total_max,
+        breakdown=breakdown,
+    )
+
+    # ---------- Disclaimer ----------
+    st.caption(
+        "“Max potential savings” represents the maximum amount that could be "
+        "removed from patient responsibility if all identified issues were "
+        "resolved favorably. Final amounts depend on insurer adjudication."
+    )
+
     if result and result.issues:
         st.markdown("### Flagged Issues")
         for issue in result.issues:

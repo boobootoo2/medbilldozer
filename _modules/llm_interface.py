@@ -42,18 +42,25 @@ class Issue:
     date: Optional[str] = None
     recommended_action: Optional[str] = None
 
+    # NEW: maximum patient-facing savings if resolved favorably
+    max_savings: Optional[float] = None
+
 
 @dataclass
 class AnalysisResult:
     issues: List[Issue]
+
+    # meta now explicitly supports savings aggregation
     meta: Dict[str, Any]
 
 
 class LLMProvider(ABC):
-    """Abstract provider contract.
-
-    Implementations should be synchronous for simplicity. Networked
-    providers may provide async wrappers if desired.
+    """
+    Providers should:
+    - Identify billing/claim issues
+    - Populate Issue.max_savings ONLY when the document itself
+      clearly supports a maximum patient-facing savings amount
+    - Leave max_savings as None when uncertain
     """
 
     @abstractmethod
@@ -93,12 +100,6 @@ class ProviderRegistry:
 
 
 class LocalHeuristicProvider(LLMProvider):
-    """A simple provider that applies local heuristics to find common issues.
-
-    This is safe to run offline and is the recommended default for a
-    consumer-facing app that shouldn't call external LLMs by default.
-    """
-
     def name(self) -> str:
         return "local-heuristic"
 
@@ -106,51 +107,46 @@ class LocalHeuristicProvider(LLMProvider):
         t = text.lower()
         issues: List[Issue] = []
 
-        # Duplicate CPT/code heuristics
-        codes = re.findall(r"\b[0-9]{3,5}\b|\b[a-zA-Z]\d{3,4}\b", text)
-        # simple frequency map
-        freq: Dict[str, int] = {}
-        for c in codes:
-            freq[c] = freq.get(c, 0) + 1
-        for c, count in freq.items():
+        # --- Duplicate CPT heuristic ---
+        # Capture CPT + dollar amounts in same line
+        line_items = re.findall(
+            r"(?P<date>\d{2}/\d{2}/\d{4}).*?(?P<cpt>\b\d{4,5}\b).*?\$(?P<patient>\d+\.\d{2})",
+            text
+        )
+
+        seen = {}
+        for date, cpt, patient_amt in line_items:
+            key = (date, cpt, patient_amt)
+            seen[key] = seen.get(key, 0) + 1
+
+        for (date, cpt, patient_amt), count in seen.items():
             if count > 1:
+                amt = float(patient_amt)
                 issues.append(Issue(
-                    type="duplicate_code",
-                    summary=f"Procedure code {c} appears {count} times",
-                    evidence=f"Found {count} occurrences of code {c}",
-                    code=c,
-                    recommended_action="Confirm whether multiple entries are separate services or duplicate billing; request corrected statement if duplicate."
+                    type="duplicate_charge",
+                    summary=f"Duplicate billing for CPT {cpt} on {date}",
+                    evidence=(
+                        f"The same CPT {cpt} appears {count} times on {date}, "
+                        f"each with a patient responsibility of ${amt:.2f}."
+                    ),
+                    code=cpt,
+                    date=date,
+                    recommended_action=(
+                        "Ask the provider to confirm whether one of the duplicate "
+                        "charges can be removed."
+                    ),
+                    max_savings=amt  # ← THIS is the key addition
                 ))
 
-        # FSA-related heuristics: look for polyethylene glycol or 'copay' and check claim history mentions
-        if "polyethylene glycol" in t or "polyethylene-glycol" in t:
-            if "claim history" in t and "polyethylene glycol" not in t.split("claim history", 1)[1].lower():
-                issues.append(Issue(
-                    type="missing_fsa_copay",
-                    summary="FSA-eligible prescription appears on receipt but not in claim history",
-                    evidence="Polyethylene Glycol appears in receipt text while claim history section lacks it",
-                    recommended_action="Submit the missing claim to your FSA administrator with receipt attached."
-                ))
+        meta = {
+            "provider": self.name(),
+            "issue_count": len(issues),
+            "total_max_savings": round(
+                sum(i.max_savings or 0 for i in issues),
+                2
+            )
+        }
 
-        # General mixed FSA eligibility
-        if "vitamin" in t and "fsa" in t:
-            issues.append(Issue(
-                type="mixed_fsa_eligibility",
-                summary="Receipt contains both FSA-eligible and non-eligible items",
-                evidence="Found 'vitamin' together with FSA references",
-                recommended_action="Separate eligible items when submitting; keep receipts."
-            ))
-
-        # Insurance conflict heuristic
-        if "out-of-pocket" in t and "$0.00" in t and "patient responsibility" in t:
-            issues.append(Issue(
-                type="inconsistent_insurance",
-                summary="Insurer shows $0 out-of-pocket but bill shows patient responsibility",
-                evidence="Found both 'out-of-pocket: $0.00' and a patient balance in the document",
-                recommended_action="Compare EOBs to the bill and request corrected statement from provider/insurer."
-            ))
-
-        meta = {"provider": self.name(), "found_codes": list(freq.keys())}
         return AnalysisResult(issues=issues, meta=meta)
 
 
