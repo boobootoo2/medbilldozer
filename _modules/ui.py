@@ -255,7 +255,32 @@ def render_input_area():
 
 
 def render_provider_selector(providers: list[str]) -> str:
-    return st.selectbox("Analysis provider", providers)
+    display_map = {}
+
+    for provider in providers:
+        if provider == "local":
+            label = (
+                "Local Analysis — Rules & Heuristics "
+                "(offline, fastest, no AI model)"
+            )
+        elif provider == "medgemma-hosted":
+            label = (
+                "AI Medical Model — Google MedGemma 4B "
+                "(google/medgemma-4b-it)"
+            )
+        else:
+            label = provider  # fallback
+
+        display_map[label] = provider
+
+    selected_label = st.selectbox(
+        "Analysis method",
+        list(display_map.keys()),
+        index=0,
+    )
+
+    return display_map[selected_label]
+
 
 
 def render_analyze_button() -> bool:
