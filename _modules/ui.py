@@ -91,7 +91,7 @@ def inject_css():
 
     /* Focus (keyboard) */
     .st-key-analyze_button button[data-testid="stBaseButton-secondary"]:focus-visible {
-        outline: 2px solid #FFFFFF !important;
+        outline: 2px dashed #FFFFFF !important;
         outline-offset: -2px;
     }
 
@@ -180,7 +180,7 @@ def copy_to_clipboard_button(label: str, text: str):
             color: rgb(49, 51, 63);
         }}
         button#{button_id}:focus-visible {{
-            outline: 2px solid #FFFFFF;
+            outline: 2px dashed #FFFFFF;
             outline-offset: -2px;
         }}
         button#{button_id}:active {{
@@ -223,36 +223,9 @@ def render_document_rows(docs, html_docs, text_docs):
         with stylable_container(
             key=f"doc_section_{i}",
             css_styles="""
-                /* ===============================
-   Column 3 (Inverse / Secondary)
-   =============================== */
-
-[data-testid="stHorizontalBlock"] > div:nth-child(3) button {
-    background: #F3F4F6;              /* light base */
-    border: 1px solid #E5E7EB;
-    color: rgb(49, 51, 63);
-    transition:
-        background-color 120ms ease,
-        box-shadow 120ms ease,
-        transform 80ms ease;
-}
-
-/* Hover → darker (inverse of primary) */
-[data-testid="stHorizontalBlock"] > div:nth-child(3) button:hover {
-    background: #E5E7EB;              /* darker on hover */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-/* Focus (keyboard) */
-[data-testid="stHorizontalBlock"] > div:nth-child(3) button:focus-visible {
-    outline: 2px solid #0A66C2;
-    outline-offset: 2px;
-}
-
-/* Active (press) */
-[data-testid="stHorizontalBlock"] > div:nth-child(3) button:active {
-    transform: scale(0.97);
-}
+            [class*="st-key-toggle_"] button > div {
+                justify-content: flex-start;
+            }
 
             """
         ):
