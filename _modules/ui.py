@@ -64,6 +64,42 @@ def inject_css():
         border-radius: 8px;
         margin-bottom: 0.8rem;
     }
+    /* ===============================
+    Analyze button (PRIMARY)
+    =============================== */
+
+    .st-key-analyze_button button[data-testid="stBaseButton-secondary"] {
+        padding: 0.4rem 0.75rem !important;
+        border-radius: 8px !important;
+        border: none !important;
+        background: #0A66C2 !important;
+        color: white !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        transition:
+            background-color 120ms ease,
+            box-shadow 120ms ease,
+            transform 80ms ease;
+    }
+
+    /* Hover */
+    .st-key-analyze_button button[data-testid="stBaseButton-secondary"]:hover {
+        background: #084f9e !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    /* Focus (keyboard) */
+    .st-key-analyze_button button[data-testid="stBaseButton-secondary"]:focus-visible {
+        outline: 2px solid #FFFFFF !important;
+        outline-offset: -2px;
+    }
+
+    /* Active */
+    .st-key-analyze_button button[data-testid="stBaseButton-secondary"]:active {
+        transform: scale(0.97);
+    }
+
+
     </style>
     """, unsafe_allow_html=True)
 
@@ -284,68 +320,11 @@ def render_provider_selector(providers: list[str]) -> str:
 
 
 def render_analyze_button() -> bool:
-    clicked_flag = "analyze_clicked"
-
-    button_id = f"analyze_{uuid.uuid4().hex}"
-
-    components.html(
-        f"""
-        <button id="{button_id}"
-            style="
-                padding: 0.4rem 0.75rem;
-                border-radius: 8px;
-                border: none;
-                background: #0A66C2;
-                color: white;
-                font-weight: 600;
-                cursor: pointer;
-                display: inline-flex;
-                align-items: center;
-                gap: 0.4rem;
-            ">
-            🚜 Analyze with medBillDozer
-        </button>
-
-        <script>
-        const btn = document.getElementById("{button_id}");
-        btn.addEventListener("click", () => {{
-            window.parent.postMessage(
-                {{ type: "analyze-clicked" }},
-                "*"
-            );
-        }});
-        </script>
-        """,
-        height=48,
+    return st.button(
+        "🚜 Analyze with medBillDozer",
+        key="analyze_button",
+        use_container_width=True,
     )
-
-    # Listen for click via session_state
-    if clicked_flag not in st.session_state:
-        st.session_state[clicked_flag] = False
-
-    # Streamlit receives the click
-    if st.session_state.get(clicked_flag):
-        st.session_state[clicked_flag] = False
-        return True
-
-    # Register JS → Streamlit bridge
-    st.components.v1.html(
-        """
-        <script>
-        window.addEventListener("message", (event) => {
-            if (event.data?.type === "analyze-clicked") {
-                const input = window.parent.document.querySelector(
-                    'input[data-testid="stTextInput"]'
-                );
-            }
-        });
-        </script>
-        """,
-        height=0,
-    )
-
-    return False
-
 
 
 # ==================================================
