@@ -118,7 +118,7 @@ def show_static_viewer(title: str, path: str, height: int = 520):
 # ==================================================
 # Header with left-aligned logo (uses medBillDozer-logo-transparent.png)
 # ==================================================
-logo_path = Path("medBillDozer-logo-transparent.png")
+logo_path = Path("images/medBillDozer-logo-transparent.png")
 if logo_path.exists():
     try:
         b64 = base64.b64encode(logo_path.read_bytes()).decode()
