@@ -1,4 +1,5 @@
-import os
+import streamlit as st
+
 from _modules.llm_interface import ProviderRegistry
 from _modules.ui import (
     setup_page,
@@ -10,6 +11,9 @@ from _modules.ui import (
     render_analyze_button,
     render_results,
     render_footer,
+    show_empty_warning,
+    show_analysis_success,
+    show_analysis_error,
 )
 
 try:
@@ -19,55 +23,75 @@ except Exception:
 
 
 # ==================================================
-# UI bootstrap
+# Bootstrap UI
 # ==================================================
-setup_page()
-inject_css()
-render_header()
-render_demo_documents()
+def bootstrap_ui():
+    setup_page()
+    inject_css()
+    render_header()
+    render_demo_documents()
 
 
 # ==================================================
 # Provider registration
 # ==================================================
-try:
-    if MedGemmaHostedProvider is not None:
-        hosted = MedGemmaHostedProvider()
-        if hosted.health_check():
-            ProviderRegistry.register("medgemma-hosted", hosted)
-except Exception:
-    pass
+def register_providers():
+    if MedGemmaHostedProvider is None:
+        return
+
+    try:
+        provider = MedGemmaHostedProvider()
+        if provider.health_check():
+            ProviderRegistry.register("medgemma-hosted", provider)
+    except Exception:
+        # Silent fail — app still works with local provider
+        pass
 
 
 # ==================================================
-# Inputs
+# Main analysis flow
 # ==================================================
-bill_text = render_input_area()
-providers = ProviderRegistry.list()
-selected_provider = render_provider_selector(providers)
-analyze = render_analyze_button()
-
-
-# ==================================================
-# Analysis
-# ==================================================
-if analyze:
+def handle_analysis(bill_text: str, provider_key: str):
     if not bill_text.strip():
-        from _modules.ui import show_empty_warning
         show_empty_warning()
-    else:
-        from _modules.ui import show_analysis_success
-        show_analysis_success()
+        return
 
-        provider = ProviderRegistry.get(selected_provider)
-        if not provider:
-            st.error("No analysis provider registered.")
-        else:
-            try:
-                result = provider.analyze_document(bill_text)
-                render_results(result)
-            except Exception as e:
-                st.error(f"Analysis failed: {e}")
+    provider = ProviderRegistry.get(provider_key)
+    if not provider:
+        show_analysis_error("No analysis provider registered.")
+        return
+
+    with st.spinner("🚜 medBillDozer is analyzing your document…"):
+        try:
+            result = provider.analyze_document(bill_text)
+        except Exception as e:
+            show_analysis_error(f"Analysis failed: {e}")
+            return
+
+    show_analysis_success()
+    render_results(result)
 
 
-render_footer()
+# ==================================================
+# App entry
+# ==================================================
+def main():
+    bootstrap_ui()
+    register_providers()
+
+    # ---------- Inputs ----------
+    bill_text = render_input_area()
+    providers = ProviderRegistry.list()
+    selected_provider = render_provider_selector(providers)
+
+    analyze_clicked = render_analyze_button()
+
+    # ---------- Analysis ----------
+    if analyze_clicked:
+        handle_analysis(bill_text, selected_provider)
+
+    render_footer()
+
+
+if __name__ == "__main__":
+    main()
