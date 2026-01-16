@@ -1,4 +1,5 @@
 import streamlit as st
+from _modules.privacy_ui import render_privacy_dialog
 
 from _modules.llm_interface import ProviderRegistry
 from _modules.ui import (
@@ -79,6 +80,9 @@ def main():
     bootstrap_ui()
     register_providers()
 
+    # 🔒 Privacy dialog (opens on page load)
+    render_privacy_dialog()
+
     # ---------- Inputs ----------
     bill_text = render_input_area()
     providers = ProviderRegistry.list()
@@ -86,11 +90,11 @@ def main():
 
     analyze_clicked = render_analyze_button()
 
-    # ---------- Analysis ----------
     if analyze_clicked:
         handle_analysis(bill_text, selected_provider)
 
     render_footer()
+
 
 
 if __name__ == "__main__":

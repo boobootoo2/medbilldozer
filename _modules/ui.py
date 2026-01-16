@@ -170,6 +170,16 @@ def inject_css():
         outline: 3px dashed #000000 !important;
         outline-offset: 4px !important;
     }
+    div[data-baseweb="select"] .st-dr,
+    div[data-baseweb="select"] .st-dq,
+    div[data-baseweb="select"] .st-dp {
+        outline: transparent !important;
+    }
+    div[tabindex="0" ]:focus-visible .st-dr,
+    div[tabindex="0" ]:focus-visible .st-dq,
+    div[tabindex="0" ]:focus-visible .st-dp {
+        outline: 3px dashed #000000 !important;
+    }
     *:focus-visible {
         box-shadow: rgba(255, 75, 75, 0) 0px 0px 0px 0.2rem !important;
         outline: 3px dashed #000000 !important;
