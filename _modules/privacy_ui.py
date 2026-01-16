@@ -30,19 +30,31 @@ def _privacy_dialog():
                 """
                 ### Privacy Policy
 
-                - No personal or medical data is collected
-                - No tracking or profiling
-                - No third-party scripts
-                - Cookies (if enabled) store preferences only
+                #### Medical & Health Information Disclaimer
 
-                This application is a hackathon demo and **not a medical device**.
+                **medBillDozer does not collect, store, transmit, or retain any
+                personal health information (PHI).**
+
+                Any medical or insurance text entered into the application is
+                processed **only within the current user session** and is not
+                saved, logged, or shared with third parties.
+
+                medBillDozer is a **hackathon demonstration project** and is
+                **not a covered entity or business associate under HIPAA**, and
+                it is **not intended for clinical decision-making or medical advice**.
+
+                #### General Privacy Practices
+
+                - No analytics, tracking pixels, or third-party scripts  
+                - No user accounts or identity tracking  
+                - Cookies (if enabled) are used only for local preferences  
                 """
             )
 
     st.divider()
 
     # ==================================================
-    # Cookie policy section (GDPR + CPRA compliant)
+    # Cookie policy section
     # ==================================================
     st.markdown("### Cookie Preferences")
 
@@ -87,7 +99,6 @@ def _privacy_dialog():
         type="primary",
         disabled=not accept_privacy,
     ):
-        # For now, store only in session (cookies come next)
         st.session_state["privacy_accepted"] = True
         st.session_state["cookie_preferences"] = {
             "essential": True,
