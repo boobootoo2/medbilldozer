@@ -315,7 +315,7 @@ def render_document_rows(docs, html_docs, text_docs):
 
             """
         ):
-            c1, c2, c3 = st.columns([6, 1.5, 1.5])
+            c1, c2 = st.columns([7, 2])
 
             with c1:
                 label = f"▾ {title}" if is_open else f"▸ {title}"
@@ -325,9 +325,6 @@ def render_document_rows(docs, html_docs, text_docs):
             with c2:
                 copy_to_clipboard_button("📋 Copy", text_doc)
 
-            with c3:
-                if st.button("⬇️ Paste", key=f"paste_{i}"):
-                    st.session_state["text_area_1"] = text_doc
 
             if is_open:
                 components.html(html_doc, height=420, scrolling=True)
@@ -358,12 +355,10 @@ def render_demo_documents():
 
     combined_text = "\n\n---\n\n".join(text_docs)
 
-    col1, col2 = st.columns(2)
-    with col1:
-        copy_to_clipboard_button("📋 Copy ALL demo documents", combined_text)
-    with col2:
-        if st.button("⬇️ Paste ALL into analyzer", key="paste_all_demo"):
-            st.session_state["text_area_1"] = combined_text
+    copy_to_clipboard_button(
+        "📋 Copy ALL demo documents",
+        combined_text
+    )
 
     st.divider()
 
@@ -461,21 +456,6 @@ def render_results(result):
         "removed from patient responsibility if all identified issues were "
         "resolved favorably. Final amounts depend on insurer adjudication."
     )
-
-    if result and result.issues:
-        st.markdown("### Flagged Issues")
-        for issue in result.issues:
-            st.markdown(
-                f"""
-                <div class="flag-warning">
-                  <strong>{issue.summary}</strong><br/>
-                  {issue.evidence or ""}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-    else:
-        st.info("No obvious issues detected.")
 
 
 # ==================================================
