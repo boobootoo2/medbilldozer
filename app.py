@@ -1,3 +1,5 @@
+# app.py
+
 import streamlit as st
 from _modules.privacy_ui import render_privacy_dialog
 
@@ -39,13 +41,11 @@ def bootstrap_ui():
 def register_providers():
     if MedGemmaHostedProvider is None:
         return
-
     try:
         provider = MedGemmaHostedProvider()
         if provider.health_check():
             ProviderRegistry.register("medgemma-hosted", provider)
     except Exception:
-        # Silent fail — app still works with local provider
         pass
 
 
@@ -80,10 +80,9 @@ def main():
     bootstrap_ui()
     register_providers()
 
-    # 🔒 Privacy dialog (opens on page load)
+    # 🔒 Session-scoped privacy dialog
     render_privacy_dialog()
 
-    # ---------- Inputs ----------
     bill_text = render_input_area()
     providers = ProviderRegistry.list()
     selected_provider = render_provider_selector(providers)
@@ -94,6 +93,9 @@ def main():
         handle_analysis(bill_text, selected_provider)
 
     render_footer()
+    with st.sidebar:
+        st.markdown("## 🔍 DEBUG: Session State")
+        st.write(st.session_state)
 
 
 

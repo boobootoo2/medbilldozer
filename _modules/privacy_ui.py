@@ -2,8 +2,32 @@
 
 import streamlit as st
 
+
+def _init_privacy_state():
+    """Initialize session-scoped privacy state exactly once."""
+    st.session_state.setdefault("privacy_accepted", False)
+    st.session_state.setdefault(
+        "cookie_preferences",
+        {
+            "essential": True,
+            "preferences": False,
+            "analytics": False,
+        },
+    )
+
+
+def get_privacy_debug_state():
+    """Return a snapshot of privacy-related session state (safe for debugging)."""
+    return {
+        "privacy_accepted": st.session_state.get("privacy_accepted"),
+        "cookie_preferences": st.session_state.get("cookie_preferences"),
+    }
+
+
 @st.dialog("🔒 Privacy & Cookie Preferences")
 def _privacy_dialog():
+    _init_privacy_state()
+
     st.markdown(
         """
         **Welcome to medBillDozer**
@@ -14,13 +38,14 @@ def _privacy_dialog():
     )
 
     # ==================================================
-    # Privacy acceptance (checkbox + policy accordion)
+    # Privacy acceptance
     # ==================================================
     col1, col2 = st.columns([1, 3])
 
     with col1:
         accept_privacy = st.checkbox(
             "I agree",
+            value=st.session_state["privacy_accepted"],
             key="privacy_accept_checkbox",
         )
 
@@ -32,29 +57,19 @@ def _privacy_dialog():
 
                 #### Medical & Health Information Disclaimer
 
-                **medBillDozer does not collect, store, transmit, or retain any
-                personal health information (PHI).**
+                **medBillDozer does not collect, store, transmit, or retain PHI.**
 
-                Any medical or insurance text entered into the application is
-                processed **only within the current user session** and is not
-                saved, logged, or shared with third parties.
+                Any medical or insurance text is processed **only in the current session**.
 
-                medBillDozer is a **hackathon demonstration project** and is
-                **not a covered entity or business associate under HIPAA**, and
-                it is **not intended for clinical decision-making or medical advice**.
-
-                #### General Privacy Practices
-
-                - No analytics, tracking pixels, or third-party scripts  
-                - No user accounts or identity tracking  
-                - Cookies (if enabled) are used only for local preferences  
+                This is a **hackathon demo**, not a HIPAA-covered service and not
+                intended for medical advice.
                 """
             )
 
     st.divider()
 
     # ==================================================
-    # Cookie policy section
+    # Cookie preferences (session-scoped)
     # ==================================================
     st.markdown("### Cookie Preferences")
 
@@ -62,32 +77,17 @@ def _privacy_dialog():
         "Essential cookies (required)",
         value=True,
         disabled=True,
-        help="Required for basic application functionality.",
     )
 
     preference_cookies = st.checkbox(
         "Preference cookies",
-        help="Remember UI choices such as ignored issues.",
+        value=st.session_state["cookie_preferences"]["preferences"],
     )
 
     analytics_cookies = st.checkbox(
         "Analytics cookies",
-        help="Allow anonymous usage analytics to improve the app.",
+        value=st.session_state["cookie_preferences"]["analytics"],
     )
-
-    with st.expander("About Cookies"):
-        st.markdown(
-            """
-            **Cookie Categories Explained**
-
-            - **Essential**: Required for core functionality (always enabled)
-            - **Preferences**: Store user-selected settings
-            - **Analytics**: Anonymous usage data only (opt-in)
-
-            We do **not** sell or share data, in compliance with
-            GDPR and California CPRA/CCPA.
-            """
-        )
 
     st.divider()
 
@@ -109,8 +109,8 @@ def _privacy_dialog():
 
 
 def render_privacy_dialog():
-    """
-    Open the privacy dialog once per session.
-    """
-    if not st.session_state.get("privacy_accepted"):
+    """Open the privacy dialog once per session."""
+    _init_privacy_state()
+
+    if not st.session_state["privacy_accepted"]:
         _privacy_dialog()
