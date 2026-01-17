@@ -1,7 +1,9 @@
 # app.py
 
 import streamlit as st
+
 from _modules.privacy_ui import render_privacy_dialog
+from _modules.ui_documents import render_document_inputs
 
 from _modules.llm_interface import ProviderRegistry
 from _modules.ui import (
@@ -9,7 +11,6 @@ from _modules.ui import (
     inject_css,
     render_header,
     render_demo_documents,
-    render_input_area,
     render_provider_selector,
     render_analyze_button,
     render_results,
@@ -30,13 +31,6 @@ except Exception:
 # ==================================================
 def debug_enabled() -> bool:
     return st.query_params.get("debug") == "1"
-
-
-def render_debug_sidebar():
-    with st.sidebar:
-        st.markdown("## 🧪 Debug Mode")
-        st.caption("Session-scoped server state")
-        st.json(dict(st.session_state))
 
 
 # ==================================================
@@ -64,11 +58,10 @@ def register_providers():
 
 
 # ==================================================
-# Main analysis flow
+# Main analysis flow (single document)
 # ==================================================
-def handle_analysis(bill_text: str, provider_key: str):
+def handle_analysis(bill_text: str, provider_key: str, document_id: str):
     if not bill_text.strip():
-        show_empty_warning()
         return
 
     provider = ProviderRegistry.get(provider_key)
@@ -76,13 +69,14 @@ def handle_analysis(bill_text: str, provider_key: str):
         show_analysis_error("No analysis provider registered.")
         return
 
-    with st.spinner("🚜 medBillDozer is analyzing your document…"):
+    with st.spinner(f"🚜 Analyzing document {document_id}…"):
         try:
             result = provider.analyze_document(bill_text)
         except Exception as e:
             show_analysis_error(f"Analysis failed: {e}")
             return
 
+    st.markdown(f"## 📄 Document `{document_id}`")
     show_analysis_success()
     render_results(result)
 
@@ -94,21 +88,36 @@ def main():
     bootstrap_ui()
     register_providers()
 
-    # 🔒 Session-scoped privacy dialog
+    # 🔒 Privacy dialog (session-scoped)
     render_privacy_dialog()
 
-    # 🧪 Debug sidebar (enabled via ?debug=1)
-    if debug_enabled():
-        render_debug_sidebar()
+    # 📄 Multi-document input
+    documents = render_document_inputs()
 
-    bill_text = render_input_area()
     providers = ProviderRegistry.list()
     selected_provider = render_provider_selector(providers)
 
     analyze_clicked = render_analyze_button()
 
     if analyze_clicked:
-        handle_analysis(bill_text, selected_provider)
+        if not documents:
+            show_empty_warning()
+        else:
+            for doc in documents:
+                handle_analysis(
+                    bill_text=doc["text"],
+                    provider_key=selected_provider,
+                    document_id=doc["document_id"],
+                )
+
+    # 🧪 Debug sidebar (URL-based)
+    if debug_enabled():
+        with st.sidebar:
+            st.markdown("## 🧪 Debug Mode")
+            st.write("Documents:")
+            st.json(documents)
+            st.write("Session State:")
+            st.json(dict(st.session_state))
 
     render_footer()
 
