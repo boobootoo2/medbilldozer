@@ -26,6 +26,20 @@ except Exception:
 
 
 # ==================================================
+# Debug mode (URL-based)
+# ==================================================
+def debug_enabled() -> bool:
+    return st.query_params.get("debug") == "1"
+
+
+def render_debug_sidebar():
+    with st.sidebar:
+        st.markdown("## 🧪 Debug Mode")
+        st.caption("Session-scoped server state")
+        st.json(dict(st.session_state))
+
+
+# ==================================================
 # Bootstrap UI
 # ==================================================
 def bootstrap_ui():
@@ -83,6 +97,10 @@ def main():
     # 🔒 Session-scoped privacy dialog
     render_privacy_dialog()
 
+    # 🧪 Debug sidebar (enabled via ?debug=1)
+    if debug_enabled():
+        render_debug_sidebar()
+
     bill_text = render_input_area()
     providers = ProviderRegistry.list()
     selected_provider = render_provider_selector(providers)
@@ -93,10 +111,6 @@ def main():
         handle_analysis(bill_text, selected_provider)
 
     render_footer()
-    with st.sidebar:
-        st.markdown("## 🔍 DEBUG: Session State")
-        st.write(st.session_state)
-
 
 
 if __name__ == "__main__":
