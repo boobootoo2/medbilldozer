@@ -105,7 +105,7 @@ def main():
         else:
             for doc in documents:
                 handle_analysis(
-                    bill_text=doc["text"],
+                    bill_text=doc["raw_text"],
                     provider_key=selected_provider,
                     document_id=doc["document_id"],
                 )

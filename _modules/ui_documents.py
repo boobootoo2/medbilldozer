@@ -31,8 +31,9 @@ def render_document_inputs():
 
     st.session_state.setdefault(
         "documents",
-        [{"id": 0, "text": ""}],
+        [{"id": 0, "raw_text": ""}],
     )
+
 
     st.markdown("### Paste bill, receipt, or claim history text")
 
@@ -42,12 +43,16 @@ def render_document_inputs():
         with st.container(border=True):
             st.markdown(f"**Document {i + 1}**")
 
-            doc["text"] = st.text_area(
-                "",
-                value=doc["text"],
+            key = f"doc_text_{i}"
+            doc["raw_text"] = st.text_area(
+                "Document text",
+                value=doc.get("raw_text", ""),
                 height=200,
-                key=f"doc_text_{doc['id']}",
+                key=key,
+                label_visibility="collapsed",
             )
+
+
 
             if len(docs) > 1:
                 if st.button("Remove", key=f"remove_{doc['id']}"):
@@ -56,18 +61,19 @@ def render_document_inputs():
 
     if st.button("➕ Add another document"):
         next_id = max(d["id"] for d in docs) + 1
-        docs.append({"id": next_id, "text": ""})
+        docs.append({"id": next_id, "raw_text": ""})
         st.rerun()
 
     structured_docs = []
     for idx, doc in enumerate(docs):
-        if doc["text"].strip():
+        if doc["raw_text"].strip():
             structured_docs.append(
-                {
-                    "index": idx,
-                    "text": doc["text"],
-                    "document_id": _make_document_id(doc["text"], idx),
-                }
-            )
+            {
+                "index": idx,
+                "raw_text": doc["raw_text"],
+                "document_id": _make_document_id(doc["raw_text"], idx),
+            }
+        )
+
 
     return structured_docs
