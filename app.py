@@ -4,6 +4,11 @@ import streamlit as st
 
 from _modules.privacy_ui import render_privacy_dialog
 from _modules.ui_documents import render_document_inputs
+from _modules.document_identity import maybe_enhance_identity
+from _modules.fact_extractor import extract_facts
+from _modules.openai_langextractor import extract_facts_openai
+
+
 
 from _modules.llm_interface import ProviderRegistry
 from _modules.ui import (
@@ -104,11 +109,18 @@ def main():
             show_empty_warning()
         else:
             for doc in documents:
+                
+                if doc.get("facts") is None:
+                    doc["facts"] = extract_facts_openai(doc["raw_text"])
+                    
                 handle_analysis(
                     bill_text=doc["raw_text"],
                     provider_key=selected_provider,
                     document_id=doc["document_id"],
                 )
+                doc["facts"] = extract_facts(doc["raw_text"])
+                maybe_enhance_identity(doc)
+
 
     # 🧪 Debug sidebar (URL-based)
     if debug_enabled():

@@ -74,16 +74,14 @@ def _privacy_dialog():
         type="primary",
         disabled=not accept_privacy,
     ):
-        st.session_state["privacy_accepted"] = True
-        st.session_state["cookie_preferences"] = {
-            "essential": True,
-            "preferences": preferences,
-            "analytics": analytics,
-        }
+        st.session_state.privacy_acknowledged = True
         st.rerun()
 
 
+
 def render_privacy_dialog():
-    _init_privacy_state()
-    if not st.session_state["privacy_accepted"]:
-        _privacy_dialog()
+    if st.session_state.get("privacy_acknowledged"):
+        return
+
+    _privacy_dialog()
+

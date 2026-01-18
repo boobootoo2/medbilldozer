@@ -52,6 +52,9 @@ def render_document_inputs():
                 label_visibility="collapsed",
             )
 
+            doc["raw_text"] = st.session_state[key]
+
+
 
 
             if len(docs) > 1:
@@ -68,12 +71,15 @@ def render_document_inputs():
     for idx, doc in enumerate(docs):
         if doc["raw_text"].strip():
             structured_docs.append(
-            {
-                "index": idx,
-                "raw_text": doc["raw_text"],
-                "document_id": _make_document_id(doc["raw_text"], idx),
-            }
-        )
+                {
+                    "index": idx,
+                    "raw_text": doc["raw_text"],
+                    "document_id": _make_document_id(doc["raw_text"], idx),
+                    "facts": None,
+                }
+            )
+
+
 
 
     return structured_docs
