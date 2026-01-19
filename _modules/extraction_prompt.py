@@ -11,7 +11,7 @@ FACT_KEYS: List[str] = [
     "date_of_service",
     "time_of_service",
     "date_range_start",
-"date_range_end",
+    "date_range_end",
 
     # --- Provider / facility ---
     "provider_name",
