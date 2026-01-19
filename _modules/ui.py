@@ -297,38 +297,40 @@ def copy_to_clipboard_button(label: str, text: str):
 # ==================================================
 # Document Rows (SINGLE SOURCE OF TRUTH)
 # ==================================================
-def render_document_rows(docs, html_docs, text_docs):
+def render_document_rows(docs, html_docs, text_docs, key_prefix=""):
     from streamlit_extras.stylable_container import stylable_container
 
     for i, ((title, _), html_doc, text_doc) in enumerate(
-        zip(docs, html_docs, text_docs)
-    ):
-        expander_key = f"demo_open_{i}"
+    zip(docs, html_docs, text_docs)
+):
+        expander_key = f"{key_prefix}demo_open_{i}"
         is_open = st.session_state.get(expander_key, False)
 
         with stylable_container(
-            key=f"doc_section_{i}",
-            css_styles="""
-            [class*="st-key-toggle_"] button > div {
-                justify-content: flex-start;
-            }
-
-            """
+            key=f"{key_prefix}doc_section_{i}",
+            css_styles=""" ... """
         ):
             c1, c2 = st.columns([7, 2])
 
             with c1:
                 label = f"▾ {title}" if is_open else f"▸ {title}"
-                if st.button(label, key=f"toggle_{i}", use_container_width=True):
+                if st.button(label, key=f"{key_prefix}toggle_{i}", use_container_width=True):
                     toggle_expander_state(expander_key)
 
             with c2:
-                copy_to_clipboard_button("📋 Copy", text_doc)
-
+                copy_to_clipboard_button(
+                    label="📋 Copy",
+                    text=text_doc,
+                )
 
             if is_open:
-                components.html(html_doc, height=420, scrolling=True)
+                components.html(
+                    html_doc,
+                    height=420,
+                    scrolling=True,
+                )
                 st.markdown("---")
+
 
 
 # ==================================================
@@ -362,7 +364,7 @@ def render_demo_documents():
 
     st.divider()
 
-    render_document_rows(docs, html_docs, text_docs)
+    render_document_rows(docs, html_docs, text_docs, key_prefix="demo_")
 
 
 # ==================================================

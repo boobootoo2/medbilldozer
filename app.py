@@ -10,6 +10,7 @@ from _modules.openai_langextractor import extract_facts_openai
 from _modules.fact_normalizer import normalize_facts
 from _modules.extraction_providers import EXTRACTOR_OPTIONS
 from _modules.openai_analysis_provider import OpenAIAnalysisProvider
+from _modules.orchestrator_agent import OrchestratorAgent
 
 
 
@@ -102,70 +103,122 @@ def handle_analysis(bill_text: str, provider_key: str, document_id: str):
 # App entry
 # ==================================================
 def main():
+    # --------------------------------------------------
+    # Bootstrap + providers
+    # --------------------------------------------------
     bootstrap_ui()
     register_providers()
 
-    # 🔒 Privacy dialog (session-scoped)
+    # --------------------------------------------------
+    # Defaults (can be overridden in debug)
+    # --------------------------------------------------
+    extractor_override = None
+    analyzer_override = None
+
+    # --------------------------------------------------
+    # Privacy (session-scoped)
+    # --------------------------------------------------
     render_privacy_dialog()
 
-    # 📄 Multi-document input
+    # --------------------------------------------------
+    # Document input (UI ONCE)
+    # --------------------------------------------------
     documents = render_document_inputs()
 
+    # --------------------------------------------------
+    # Analysis provider selector (user-facing)
+    # --------------------------------------------------
     providers = ProviderRegistry.list()
     selected_provider = render_provider_selector(providers)
 
+    # --------------------------------------------------
+    # Debug controls (sidebar only)
+    # --------------------------------------------------
+    if debug_enabled():
+        with st.sidebar:
+            st.markdown("## 🧪 Debug Mode")
+
+            extractor_override = st.selectbox(
+                "Fact Extraction Model",
+                {
+                    "Agent decides": None,
+                    "OpenAI": "openai",
+                    "Local heuristic": "heuristic",
+                }.items(),
+                format_func=lambda x: x[0],
+            )[1]
+
+            analyzer_override = st.selectbox(
+                "Analysis Model",
+                {
+                    "Agent decides": None,
+                    "OpenAI": "openai",
+                    "MedGemma": "medgemma-hosted",
+                }.items(),
+                format_func=lambda x: x[0],
+            )[1]
+
+    # --------------------------------------------------
+    # Orchestrator (NO UI inside)
+    # --------------------------------------------------
+    agent = OrchestratorAgent(
+        extractor_override=extractor_override,
+        analyzer_override=analyzer_override or selected_provider,
+    )
+
+    # --------------------------------------------------
+    # Analyze action
+    # --------------------------------------------------
     analyze_clicked = render_analyze_button()
 
     if analyze_clicked:
         if not documents:
             show_empty_warning()
-        else:
-            for doc in documents:
-                
-                extractor = st.session_state.get("fact_extractor", "openai")
+            return
 
-                if doc.get("facts") is None:
-                    raw_facts = extract_facts_openai(doc["raw_text"])
-                    doc["facts"] = normalize_facts(raw_facts)
+        for doc in documents:
+            with st.spinner(f"🚜 Processing document {doc['document_id']}…"):
+                result = agent.run(doc["raw_text"])
 
-                # 2️⃣ Enhance identity FIRST
-                maybe_enhance_identity(doc)
+            # Persist results
+            doc["facts"] = result["facts"]
+            doc["analysis"] = result["analysis"]
+            doc["_orchestration"] = result["_orchestration"]
 
-                # 3️⃣ Now analyze using the upgraded ID
-                handle_analysis(
-                    bill_text=doc["raw_text"],
-                    provider_key=selected_provider,
-                    document_id=doc["document_id"],  # ← NOW the hash
-                )
-                st.session_state.setdefault("extracted_facts", {})
-                st.session_state["extracted_facts"][doc["document_id"]] = doc["facts"]
+            # Identity AFTER facts
+            maybe_enhance_identity(doc)
 
+            # Debug storage
+            st.session_state.setdefault("extracted_facts", {})
+            st.session_state["extracted_facts"][doc["document_id"]] = doc["facts"]
 
+            # Render results (unique per doc)
+            st.markdown(f"## 📄 Document `{doc['document_id']}`")
+            show_analysis_success()
+            render_results(doc["analysis"])
 
-    # 🧪 Debug sidebar (URL-based)
+    # --------------------------------------------------
+    # Debug output (read-only)
+    # --------------------------------------------------
     if debug_enabled():
         with st.sidebar:
-            st.markdown("## 🧪 Debug Mode")
-
-            # 🔽 Extractor selector
-            extractor_label = st.selectbox(
-                "Fact Extraction Model",
-                options=list(EXTRACTOR_OPTIONS.keys()),
-                index=0,
-                key="debug_extractor_label",
-            )
-
-            st.session_state["fact_extractor"] = EXTRACTOR_OPTIONS[extractor_label]
-
             st.markdown("### Documents")
             st.json(documents)
+
+            st.markdown("### Orchestration Decisions")
+            st.json({
+                d["document_id"]: d.get("_orchestration")
+                for d in documents
+            })
 
             st.markdown("### Session State")
             st.json(dict(st.session_state))
 
-
-
+    # --------------------------------------------------
+    # Footer (ONCE)
+    # --------------------------------------------------
     render_footer()
+
 
 
 if __name__ == "__main__":
