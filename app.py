@@ -8,7 +8,7 @@ from _modules.ui_documents import render_document_inputs
 from _modules.document_identity import maybe_enhance_identity
 from _modules.openai_langextractor import extract_facts_openai
 from _modules.fact_normalizer import normalize_facts
-
+from _modules.extraction_providers import EXTRACTOR_OPTIONS
 
 
 from _modules.llm_interface import ProviderRegistry
@@ -111,6 +111,8 @@ def main():
         else:
             for doc in documents:
                 
+                extractor = st.session_state.get("fact_extractor", "openai")
+
                 if doc.get("facts") is None:
                     raw_facts = extract_facts_openai(doc["raw_text"])
                     doc["facts"] = normalize_facts(raw_facts)
@@ -134,17 +136,22 @@ def main():
         with st.sidebar:
             st.markdown("## 🧪 Debug Mode")
 
-            for i, doc in enumerate(documents):
-                st.markdown(f"### Document {i + 1}")
-                st.json({
-                    "document_id": doc.get("document_id"),
-                    "legacy_document_id": doc.get("legacy_document_id"),
-                    "facts": doc.get("facts"),
-                    "identity": doc.get("_identity"),
-                })
+            # 🔽 Extractor selector
+            extractor_label = st.selectbox(
+                "Fact Extraction Model",
+                options=list(EXTRACTOR_OPTIONS.keys()),
+                index=0,
+                key="debug_extractor_label",
+            )
+
+            st.session_state["fact_extractor"] = EXTRACTOR_OPTIONS[extractor_label]
+
+            st.markdown("### Documents")
+            st.json(documents)
 
             st.markdown("### Session State")
             st.json(dict(st.session_state))
+
 
 
     render_footer()

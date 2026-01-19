@@ -1,29 +1,16 @@
-import re
-from typing import Dict, Optional
+from _modules.openai_langextractor import extract_facts_openai
+# from _modules.gemini_langextractor import extract_facts_gemini
+# from _modules.heuristic_extractor import extract_facts_heuristic
 
-def extract_facts(raw_text: str) -> Dict[str, Optional[str]]:
-    """
-    Minimal heuristic extractor.
-    Safe, deterministic, no AI.
-    """
 
-    facts = {
-        "patient_name": None,
-        "date_of_service": None,
-        "provider_name": None,
-        "document_type": None,
-    }
+def extract_facts(raw_text: str, provider: str):
+    if provider == "openai":
+        return extract_facts_openai(raw_text)
 
-    # Date heuristic
-    match = re.search(r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}", raw_text)
-    if match:
-        facts["date_of_service"] = match.group(0)
+    # if provider == "gemini":
+    #     return extract_facts_gemini(raw_text)
 
-    # Very light document-type heuristic
-    lowered = raw_text.lower()
-    if "receipt" in lowered:
-        facts["document_type"] = "receipt"
-    elif "statement" in lowered:
-        facts["document_type"] = "statement"
+    # if provider == "heuristic":
+    #     return extract_facts_heuristic(raw_text)
 
-    return facts
+    raise ValueError(f"Unknown extractor provider: {provider}")
