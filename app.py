@@ -114,16 +114,19 @@ def main():
                 if doc.get("facts") is None:
                     raw_facts = extract_facts_openai(doc["raw_text"])
                     doc["facts"] = normalize_facts(raw_facts)
-                    
-                st.session_state.setdefault("extracted_facts", {})
-                st.session_state["extracted_facts"][doc["document_id"]] = doc["facts"]
-                    
+
+                # 2️⃣ Enhance identity FIRST
+                maybe_enhance_identity(doc)
+
+                # 3️⃣ Now analyze using the upgraded ID
                 handle_analysis(
                     bill_text=doc["raw_text"],
                     provider_key=selected_provider,
-                    document_id=doc["document_id"],
+                    document_id=doc["document_id"],  # ← NOW the hash
                 )
-                maybe_enhance_identity(doc)
+                st.session_state.setdefault("extracted_facts", {})
+                st.session_state["extracted_facts"][doc["document_id"]] = doc["facts"]
+
 
 
     # 🧪 Debug sidebar (URL-based)
@@ -131,14 +134,18 @@ def main():
         with st.sidebar:
             st.markdown("## 🧪 Debug Mode")
 
-            st.markdown("### 📄 Documents")
-            st.json(documents)
+            for i, doc in enumerate(documents):
+                st.markdown(f"### Document {i + 1}")
+                st.json({
+                    "document_id": doc.get("document_id"),
+                    "legacy_document_id": doc.get("legacy_document_id"),
+                    "facts": doc.get("facts"),
+                    "identity": doc.get("_identity"),
+                })
 
-            st.markdown("### 🧠 Extracted Facts")
-            st.json(st.session_state.get("extracted_facts", {}))
-
-            st.markdown("### 🧾 Session State (raw)")
+            st.markdown("### Session State")
             st.json(dict(st.session_state))
+
 
     render_footer()
 

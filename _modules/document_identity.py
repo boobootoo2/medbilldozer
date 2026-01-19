@@ -23,25 +23,25 @@ def hash_canonical(canonical: str) -> str:
 def maybe_enhance_identity(doc: dict) -> None:
     """
     Adds a fact-based identity IF facts exist.
-    Never removes or overwrites existing document_id.
+    Upgrades document_id to the fact-hash once available.
     Safe to call repeatedly.
     """
-    print(f"Enhancing identity for doc: {doc.get('document_id')}")
+
     if doc.get("_identity"):
-        print(f"  Already has identity, skipping.")
         return
 
     facts = doc.get("facts")
     if not facts:
-        print(f"  No facts found, skipping.")
         return
 
     canonical = build_canonical_string(facts)
-    print(f"Canonical string: {canonical}")
     digest = hash_canonical(canonical)
-    print(f"Document hash: {digest}")
 
     doc["_identity"] = {
         "canonical": canonical,
         "hash": digest,
     }
+
+    # 🔁 BACKWARD-COMPATIBLE UPGRADE
+    doc["legacy_document_id"] = doc.get("document_id")
+    doc["document_id"] = digest
