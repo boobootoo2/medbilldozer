@@ -5,16 +5,11 @@ import re
 from typing import Dict, Optional
 from openai import OpenAI
 
+from _modules.extraction_prompt import (
+    FACT_KEYS,
+    build_fact_extraction_prompt,
+)
 
-FACT_KEYS = [
-    "patient_name",
-    "date_of_birth",
-    "date_of_service",
-    "provider_name",
-    "facility_name",
-    "procedure_code",
-    "document_type",
-]
 
 client = OpenAI()
 
@@ -45,70 +40,9 @@ def extract_facts_openai(raw_text: str) -> Dict[str, Optional[str]]:
     if not raw_text or not raw_text.strip():
         return _safe_empty_result()
 
-    prompt = f"""
-You extract structured facts from healthcare-related documents.
+    prompt = build_fact_extraction_prompt(raw_text)
 
-Return ONLY valid JSON with EXACTLY these keys:
-patient_name, date_of_birth, date_of_service, provider_name, facility_name, procedure_code, document_type
-
-INTERPRETATION RULES:
-
-- patient_name:
-  Only extract if explicitly labeled
-  Examples: "Patient Name", "Member Name"
-  Otherwise use null
-
-- date_of_birth:
-  Only if explicitly labeled
-  Examples: "DOB", "Date of Birth"
-  Otherwise use null
-
-- date_of_service:
-  • Medical bills: labeled "Date of Service"
-  • Pharmacy receipts: transaction date (e.g., "Date:", "Transaction Date")
-  Preserve the original text format exactly
-
-- provider_name:
-  • Medical bills:
-      – Rendering or billing provider
-      – Must be explicitly labeled
-  • Pharmacy receipts:
-      – Pharmacy or store name
-      – Often appears at the top of the receipt
-      – Example: "GreenLeaf Pharmacy"
-  Otherwise use null
-
-- facility_name:
-  • Hospital names, clinics, or store locations
-  • Extract only if clearly stated
-
-- procedure_code:
-  • CPT or HCPCS codes only
-  • Must be explicitly present
-  • Never infer or guess
-
-- document_type:
-  Choose exactly ONE:
-  • medical_bill → hospital or physician billing statements
-  • pharmacy_receipt → retail or mail-order pharmacy receipts
-  • insurance_document → EOBs, claims summaries, insurer letters
-  • fsa_receipt → FSA/HSA transaction or reimbursement records
-  • unknown → none of the above clearly apply
-
-GLOBAL RULES:
-- Extract values only
-- Do not infer missing information
-- Use null if not explicitly present
-- No extra keys
-- No explanations or comments
-- Output JSON only (no markdown)
-
-DOCUMENT:
-\"\"\"
-{raw_text}
-\"\"\"
-"""
-
+ 
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
