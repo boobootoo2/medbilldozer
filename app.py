@@ -1,11 +1,11 @@
 # app.py
 
+from annotated_types import doc
 import streamlit as st
 
 from _modules.privacy_ui import render_privacy_dialog
 from _modules.ui_documents import render_document_inputs
 from _modules.document_identity import maybe_enhance_identity
-from _modules.fact_extractor import extract_facts
 from _modules.openai_langextractor import extract_facts_openai
 
 
@@ -113,12 +113,14 @@ def main():
                 if doc.get("facts") is None:
                     doc["facts"] = extract_facts_openai(doc["raw_text"])
                     
+                st.session_state.setdefault("extracted_facts", {})
+                st.session_state["extracted_facts"][doc["document_id"]] = doc["facts"]
+                    
                 handle_analysis(
                     bill_text=doc["raw_text"],
                     provider_key=selected_provider,
                     document_id=doc["document_id"],
                 )
-                doc["facts"] = extract_facts(doc["raw_text"])
                 maybe_enhance_identity(doc)
 
 
@@ -126,9 +128,14 @@ def main():
     if debug_enabled():
         with st.sidebar:
             st.markdown("## 🧪 Debug Mode")
-            st.write("Documents:")
+
+            st.markdown("### 📄 Documents")
             st.json(documents)
-            st.write("Session State:")
+
+            st.markdown("### 🧠 Extracted Facts")
+            st.json(st.session_state.get("extracted_facts", {}))
+
+            st.markdown("### 🧾 Session State (raw)")
             st.json(dict(st.session_state))
 
     render_footer()
