@@ -35,6 +35,14 @@ except Exception:
     MedGemmaHostedProvider = None
 
 
+ENGINE_OPTIONS = {
+    "Smart (Recommended)": None,
+    "OpenAI": "openai",
+    "Google Gemini": "gemini",
+    "Local (Offline)": "heuristic",
+}
+
+
 # ==================================================
 # Debug mode (URL-based)
 # ==================================================
@@ -128,8 +136,17 @@ def main():
     # --------------------------------------------------
     # Analysis provider selector (user-facing)
     # --------------------------------------------------
-    providers = ProviderRegistry.list()
-    selected_provider = render_provider_selector(providers)
+    if debug_enabled():
+        providers = ProviderRegistry.list()
+        selected_provider = render_provider_selector(providers)  # keep in debug for now
+    else:
+        engine_label = st.selectbox(
+            "Analysis Engine",
+            options=list(ENGINE_OPTIONS.keys()),
+            index=0,
+        )
+        selected_provider = ENGINE_OPTIONS[engine_label]
+
 
     # --------------------------------------------------
     # Debug controls (sidebar only)
@@ -172,6 +189,10 @@ def main():
     analyze_clicked = render_analyze_button()
 
     if analyze_clicked:
+        if selected_provider == "heuristic":
+            show_analysis_error("Local (Offline) analysis isn't wired yet. Use Smart/OpenAI for now.")
+            return
+
         if not documents:
             show_empty_warning()
             return
