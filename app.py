@@ -7,6 +7,7 @@ from _modules.privacy_ui import render_privacy_dialog
 from _modules.ui_documents import render_document_inputs
 from _modules.document_identity import maybe_enhance_identity
 from _modules.openai_langextractor import extract_facts_openai
+from _modules.fact_normalizer import normalize_facts
 
 
 
@@ -111,7 +112,8 @@ def main():
             for doc in documents:
                 
                 if doc.get("facts") is None:
-                    doc["facts"] = extract_facts_openai(doc["raw_text"])
+                    raw_facts = extract_facts_openai(doc["raw_text"])
+                    doc["facts"] = normalize_facts(raw_facts)
                     
                 st.session_state.setdefault("extracted_facts", {})
                 st.session_state["extracted_facts"][doc["document_id"]] = doc["facts"]
