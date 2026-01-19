@@ -197,6 +197,17 @@ CLASSIFICATION RULES:
 • explanation of benefits language
 → document_type = insurance_claim_history
 
+IMPORTANT CLASSIFICATION PRIORITY (highest wins):
+
+1. If CDT dental codes (Dxxxx) are present → dental_bill
+2. Else if CPT or HCPCS codes are present → medical_bill
+3. Else if receipt number + prices + merchant → pharmacy_receipt
+4. Else if plan year + balances + reimbursements → fsa_claim_history
+5. Else if deductible / allowed / paid / copay table → insurance_claim_history
+6. Else → unknown
+
+You MUST choose exactly one document_type.
+
 
 
 -----------------------------------

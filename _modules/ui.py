@@ -381,17 +381,13 @@ def render_provider_selector(providers: list[str]) -> str:
 
     for provider in providers:
         if provider == "local":
-            label = (
-                "Local Analysis — Rules & Heuristics "
-                "(offline, fastest, no AI model)"
-            )
+            label = "Local Analysis — Rules & Heuristics (offline)"
         elif provider == "medgemma-hosted":
-            label = (
-                "AI Medical Model — Google MedGemma 4B "
-                "(google/medgemma-4b-it)"
-            )
+            label = "AI Medical Model — Google MedGemma 4B"
+        elif provider == "openai":
+            label = "AI Analysis — OpenAI GPT-4o Mini"
         else:
-            label = provider  # fallback
+            label = provider
 
         display_map[label] = provider
 
@@ -402,7 +398,6 @@ def render_provider_selector(providers: list[str]) -> str:
     )
 
     return display_map[selected_label]
-
 
 
 def render_analyze_button() -> bool:

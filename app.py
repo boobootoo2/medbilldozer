@@ -9,6 +9,8 @@ from _modules.document_identity import maybe_enhance_identity
 from _modules.openai_langextractor import extract_facts_openai
 from _modules.fact_normalizer import normalize_facts
 from _modules.extraction_providers import EXTRACTOR_OPTIONS
+from _modules.openai_analysis_provider import OpenAIAnalysisProvider
+
 
 
 from _modules.llm_interface import ProviderRegistry
@@ -53,14 +55,23 @@ def bootstrap_ui():
 # Provider registration
 # ==================================================
 def register_providers():
-    if MedGemmaHostedProvider is None:
-        return
+    # --- MedGemma ---
+    if MedGemmaHostedProvider is not None:
+        try:
+            provider = MedGemmaHostedProvider()
+            if provider.health_check():
+                ProviderRegistry.register("medgemma-hosted", provider)
+        except Exception:
+            pass
+
+    # --- OpenAI ---
     try:
-        provider = MedGemmaHostedProvider()
-        if provider.health_check():
-            ProviderRegistry.register("medgemma-hosted", provider)
-    except Exception:
-        pass
+        openai_provider = OpenAIAnalysisProvider()
+        if openai_provider.health_check():
+            ProviderRegistry.register("openai", openai_provider)
+    except Exception as e:
+        print(f"[openai] provider registration failed: {e}")
+
 
 
 # ==================================================
