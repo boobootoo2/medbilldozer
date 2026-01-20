@@ -11,7 +11,7 @@ from _modules.fact_normalizer import normalize_facts
 from _modules.extraction_providers import EXTRACTOR_OPTIONS
 from _modules.openai_analysis_provider import OpenAIAnalysisProvider
 from _modules.orchestrator_agent import OrchestratorAgent
-
+from _modules.workflow_store import persist_workflow_log
 
 
 from _modules.llm_interface import ProviderRegistry
@@ -201,6 +201,13 @@ def main():
         for doc in documents:
             with st.spinner(f"🚜 Processing document {doc['document_id']}…"):
                 result = agent.run(doc["raw_text"])
+                
+                # --------------------------------------------------
+                # Session persistence (in-memory, per run)
+                # --------------------------------------------------
+                st.session_state.setdefault("workflow_logs", {})
+                st.session_state["workflow_logs"][doc["document_id"]] = result["_workflow_log"]
+
 
             # Persist results
             doc["facts"] = result["facts"]
