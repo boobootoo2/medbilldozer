@@ -7,6 +7,8 @@ import html
 import uuid
 import re
 from bs4 import BeautifulSoup
+from _modules.runtime_flags import debug_enabled
+
 
 # ==================================================
 # Savings estimation helpers (UI-only)
@@ -397,6 +399,7 @@ def render_provider_selector(providers: list[str]) -> str:
         "Analysis method",
         list(display_map.keys()),
         index=0,
+        disabled=debug_enabled(),
     )
 
     return display_map[selected_label]

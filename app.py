@@ -46,8 +46,8 @@ ENGINE_OPTIONS = {
 # ==================================================
 # Debug mode (URL-based)
 # ==================================================
-def debug_enabled() -> bool:
-    return st.query_params.get("debug") == "1"
+from _modules.runtime_flags import debug_enabled
+
 
 
 # ==================================================
