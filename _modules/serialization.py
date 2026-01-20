@@ -2,16 +2,18 @@
 
 from _modules.llm_interface import Issue, AnalysisResult
 
-def issue_to_dict(issue: Issue) -> dict:
+def issue_to_dict(issue):
     return {
-        "type": issue.type,
-        "summary": issue.summary,
-        "evidence": issue.evidence,
-        "code": issue.code,
-        "date": issue.date,
-        "recommended_action": issue.recommended_action,
-        "max_savings": issue.max_savings,
+        "type": getattr(issue, "type", None)
+                or getattr(issue, "category", None)
+                or issue.__class__.__name__,
+
+        "summary": getattr(issue, "summary", None),
+        "description": getattr(issue, "description", None),
+        "confidence": getattr(issue, "confidence", None),
+        "computed": getattr(issue, "computed", None),
     }
+
 
 def analysis_to_dict(analysis: AnalysisResult) -> dict:
     return {

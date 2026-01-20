@@ -9,6 +9,12 @@ from _modules.openai_analysis_provider import OpenAIAnalysisProvider
 from _modules.orchestrator_agent import OrchestratorAgent
 from _modules.serialization import analysis_to_dict
 
+from _modules.transaction_normalization import (
+    normalize_line_items,
+    deduplicate_transactions,
+)
+
+
 from _modules.llm_interface import ProviderRegistry
 from _modules.ui import (
     setup_page,
@@ -202,6 +208,12 @@ def main():
     )
 
     # --------------------------------------------------
+    # Cross-document transaction collection (per run)
+    # --------------------------------------------------
+    all_normalized_transactions = []
+
+
+    # --------------------------------------------------
     # Analyze action
     # --------------------------------------------------
     analyze_clicked = render_analyze_button()
@@ -240,6 +252,35 @@ def main():
 
             # Identity AFTER facts
             maybe_enhance_identity(doc)
+
+            # --------------------------------------------------
+            # Transaction normalization (document-independent)
+            # --------------------------------------------------
+            line_items = result.get("line_items", [])
+
+            normalized_transactions = normalize_line_items(
+                line_items=line_items,
+                source_document_id=doc["document_id"],
+            )
+
+            all_normalized_transactions.extend(normalized_transactions)
+
+            # --------------------------------------------------
+            # Cross-document de-duplication
+            # --------------------------------------------------
+            unique_transactions, transaction_provenance = deduplicate_transactions(
+                all_normalized_transactions
+            )
+
+            # Persist for debug / downstream use
+            st.session_state["normalized_transactions"] = [
+                tx.__dict__ for tx in unique_transactions.values()
+            ]
+
+            st.session_state["transaction_provenance"] = transaction_provenance
+            # --------------------------------------------------
+
+
 
             # Debug storage
             st.session_state.setdefault("extracted_facts", {})
@@ -292,6 +333,12 @@ def main():
 
             st.markdown("### Session State")
             st.json(dict(st.session_state))
+            st.markdown("### Normalized Transactions")
+            st.json(st.session_state.get("normalized_transactions", []))
+
+            st.markdown("### Transaction Provenance")
+            st.json(st.session_state.get("transaction_provenance", {}))
+
 
     # --------------------------------------------------
     # Footer (ONCE)
