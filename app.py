@@ -37,8 +37,8 @@ except Exception:
 
 ENGINE_OPTIONS = {
     "Smart (Recommended)": None,
-    "OpenAI": "openai",
-    "Google Gemini": "gemini",
+    "gpt-4o-mini": "gpt-4o-mini",
+    "gemini-3-flash-preview": "gemini-3-flash-preview",
     "Local (Offline)": "heuristic",
 }
 
@@ -69,7 +69,7 @@ def register_providers():
         try:
             provider = MedGemmaHostedProvider()
             if provider.health_check():
-                ProviderRegistry.register("medgemma-hosted", provider)
+                ProviderRegistry.register("medgemma-4b-it", provider)
         except Exception:
             pass
 
@@ -77,7 +77,7 @@ def register_providers():
     try:
         openai_provider = OpenAIAnalysisProvider()
         if openai_provider.health_check():
-            ProviderRegistry.register("openai", openai_provider)
+            ProviderRegistry.register("gpt-4o-mini", openai_provider)
     except Exception as e:
         print(f"[openai] provider registration failed: {e}")
 
@@ -159,7 +159,8 @@ def main():
                 "Fact Extraction Model",
                 {
                     "Agent decides": None,
-                    "OpenAI": "openai",
+                    "gpt-4o-mini": "gpt-4o-mini",
+                    "gemini-3-flash-preview": "gemini-3-flash-preview",          # 👈 added
                     "Local heuristic": "heuristic",
                 }.items(),
                 format_func=lambda x: x[0],
@@ -169,8 +170,8 @@ def main():
                 "Analysis Model",
                 {
                     "Agent decides": None,
-                    "OpenAI": "openai",
-                    "MedGemma": "medgemma-hosted",
+                    "gpt-4o-mini": "gpt-4o-mini",
+                    "medgemma-4b-it": "medgemma-4b-it",
                 }.items(),
                 format_func=lambda x: x[0],
             )[1]

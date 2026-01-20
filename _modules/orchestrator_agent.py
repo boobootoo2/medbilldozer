@@ -6,6 +6,7 @@ import uuid
 import re
 
 from _modules.openai_langextractor import extract_facts_openai
+from _modules.gemini_langextractor import extract_facts_gemini
 from _modules.local_heuristic_extractor import extract_facts_local
 from _modules.fact_normalizer import normalize_facts
 from _modules.llm_interface import ProviderRegistry
@@ -44,9 +45,9 @@ DOCUMENT_SIGNALS = {
 
 
 DOCUMENT_EXTRACTOR_MAP = {
-    "medical_bill": "openai",     # or medgemma later
+    "medical_bill": "openai",
     "insurance_eob": "openai",
-    "pharmacy_receipt": "heuristic",
+    "pharmacy_receipt": "gemini",   # 👈 change
     "dental_bill": "openai",
     "generic": "openai",
 }
@@ -142,9 +143,14 @@ class OrchestratorAgent:
         # --------------------------------------------------
         # 3️⃣ Extract facts
         # --------------------------------------------------
+        
         if extractor == "heuristic":
             facts = extract_facts_local(raw_text)
-        else:
+            
+        elif extractor == "gemini":
+            facts = extract_facts_gemini(raw_text)
+
+        else:  # openai default
             facts = extract_facts_openai(raw_text)
 
         facts = normalize_facts(facts)
