@@ -7,6 +7,7 @@ from _modules.ui_documents import render_document_inputs
 from _modules.document_identity import maybe_enhance_identity
 from _modules.openai_analysis_provider import OpenAIAnalysisProvider
 from _modules.orchestrator_agent import OrchestratorAgent
+from _modules.serialization import analysis_to_dict
 
 from _modules.llm_interface import ProviderRegistry
 from _modules.ui import (
@@ -42,58 +43,6 @@ ENGINE_OPTIONS = {
 # ==================================================
 # Savings aggregation helpers
 # ==================================================
-def _to_float(value) -> float:
-    try:
-        if value is None:
-            return 0.0
-        if isinstance(value, (int, float)):
-            return float(value)
-        if isinstance(value, str):
-            # Strip common currency formatting
-            cleaned = (
-                value.replace("$", "")
-                .replace(",", "")
-                .strip()
-            )
-            # Handle empty / non-numeric strings defensively
-            return float(cleaned) if cleaned else 0.0
-        return float(value)
-    except Exception:
-        return 0.0
-
-
-def extract_potential_savings(analysis: dict) -> float:
-    """
-    Best-effort extraction of potential savings from an analysis result.
-    Returns 0.0 if nothing is found.
-
-    Supported shapes (any can exist simultaneously; we sum all):
-      - analysis["summary"]["potential_savings"]
-      - analysis["potential_savings"]
-      - analysis["issues"][] / analysis["findings"][] entries with "potential_savings"
-    """
-    if not analysis or not isinstance(analysis, dict):
-        return 0.0
-
-    total = 0.0
-
-    # Case 1: Explicit summary field
-    summary = analysis.get("summary", {})
-    if isinstance(summary, dict):
-        total += _to_float(summary.get("potential_savings"))
-
-    # Case 2: Flat field
-    total += _to_float(analysis.get("potential_savings"))
-
-    # Case 3: Line-item issues/findings
-    issues = analysis.get("issues") or analysis.get("findings") or []
-    if isinstance(issues, list):
-        for issue in issues:
-            if isinstance(issue, dict):
-                total += _to_float(issue.get("potential_savings"))
-
-    # Keep it tidy
-    return round(total, 2)
 
 
 def render_total_savings_summary(total_potential_savings: float, per_document_savings: dict):
@@ -283,6 +232,7 @@ def main():
             # Persist results
             doc["facts"] = result.get("facts")
             doc["analysis"] = result.get("analysis")
+            doc["analysis_json"] = analysis_to_dict(result["analysis"])
             doc["_orchestration"] = result.get("_orchestration")
 
             # Identity AFTER facts
@@ -295,9 +245,15 @@ def main():
             # --------------------------------------------------
             # Savings aggregation
             # --------------------------------------------------
-            doc_savings = extract_potential_savings(doc.get("analysis") or {})
+            analysis = doc.get("analysis")
+
+            doc_savings = 0.0
+            if analysis and hasattr(analysis, "meta"):
+                doc_savings = analysis.meta.get("total_max_savings", 0.0)
+
             per_document_savings[doc["document_id"]] = doc_savings
             total_potential_savings += doc_savings
+
 
             # Render results (unique per doc)
             st.markdown(f"## 📄 Document `{doc['document_id']}`")

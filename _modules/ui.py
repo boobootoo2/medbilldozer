@@ -425,7 +425,10 @@ def render_results(result):
         st.info("No analysis results available.")
         return
 
-    issues = result.issues or []
+    if isinstance(result, dict):
+        issues = result.get("issues", [])
+    else:
+        issues = result.issues or []
 
     # ---------- Issues ----------
     if issues:
@@ -454,7 +457,6 @@ def render_results(result):
         breakdown=breakdown,
     )
 
-    # ---------- Disclaimer ----------
     st.caption(
         "“Max potential savings” represents the maximum amount that could be "
         "removed from patient responsibility if all identified issues were "

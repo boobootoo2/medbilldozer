@@ -10,7 +10,22 @@ from _modules.gemini_langextractor import extract_facts_gemini
 from _modules.local_heuristic_extractor import extract_facts_local
 from _modules.fact_normalizer import normalize_facts
 from _modules.llm_interface import ProviderRegistry
+from _modules.llm_interface import Issue
 
+def normalize_issues(issues: list[Issue]) -> list[Issue]:
+    for issue in issues:
+        # Ensure attribute exists
+        if not hasattr(issue, "max_savings"):
+            issue.max_savings = None
+
+        # Normalize numeric values
+        if issue.max_savings is not None:
+            try:
+                issue.max_savings = round(float(issue.max_savings), 2)
+            except Exception:
+                issue.max_savings = None
+
+    return issues
 
 # --------------------------------------------------
 # Regex-based document classification
@@ -172,13 +187,26 @@ class OrchestratorAgent:
 
         # --------------------------------------------------
         # 5️⃣ Analyze (fact-aware if supported)
-        # --------------------------------------------------
+        # call provider (fact-aware if possible)
         try:
             analysis = provider.analyze_document(raw_text, facts=facts)
             workflow_log["analysis"]["mode"] = "facts+text"
         except TypeError:
             analysis = provider.analyze_document(raw_text)
             workflow_log["analysis"]["mode"] = "text_only"
+
+        # normalize + enforce invariants
+        analysis.issues = normalize_issues(analysis.issues)
+
+        if not hasattr(analysis, "meta") or analysis.meta is None:
+            analysis.meta = {}
+
+        analysis.meta["total_max_savings"] = round(
+            sum(i.max_savings or 0 for i in analysis.issues),
+            2
+        )
+
+
 
         workflow_log["analysis"]["result"] = analysis
 
