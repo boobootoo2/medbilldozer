@@ -187,6 +187,10 @@ def inject_css():
         outline: 3px dashed #000000 !important;
         outline-offset: 4px !important; 
     }
+    
+    [class*="st-key-demo_toggle_"] button div {
+        justify-content: flex-start;
+    }
 
     </style>
     """, unsafe_allow_html=True)
