@@ -1,18 +1,12 @@
 # app.py
 
-from annotated_types import doc
 import streamlit as st
 
 from _modules.privacy_ui import render_privacy_dialog
 from _modules.ui_documents import render_document_inputs
 from _modules.document_identity import maybe_enhance_identity
-from _modules.openai_langextractor import extract_facts_openai
-from _modules.fact_normalizer import normalize_facts
-from _modules.extraction_providers import EXTRACTOR_OPTIONS
 from _modules.openai_analysis_provider import OpenAIAnalysisProvider
 from _modules.orchestrator_agent import OrchestratorAgent
-from _modules.workflow_store import persist_workflow_log
-
 
 from _modules.llm_interface import ProviderRegistry
 from _modules.ui import (
@@ -34,6 +28,8 @@ try:
 except Exception:
     MedGemmaHostedProvider = None
 
+from _modules.runtime_flags import debug_enabled
+
 
 ENGINE_OPTIONS = {
     "Smart (Recommended)": None,
@@ -44,10 +40,78 @@ ENGINE_OPTIONS = {
 
 
 # ==================================================
-# Debug mode (URL-based)
+# Savings aggregation helpers
 # ==================================================
-from _modules.runtime_flags import debug_enabled
+def _to_float(value) -> float:
+    try:
+        if value is None:
+            return 0.0
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, str):
+            # Strip common currency formatting
+            cleaned = (
+                value.replace("$", "")
+                .replace(",", "")
+                .strip()
+            )
+            # Handle empty / non-numeric strings defensively
+            return float(cleaned) if cleaned else 0.0
+        return float(value)
+    except Exception:
+        return 0.0
 
+
+def extract_potential_savings(analysis: dict) -> float:
+    """
+    Best-effort extraction of potential savings from an analysis result.
+    Returns 0.0 if nothing is found.
+
+    Supported shapes (any can exist simultaneously; we sum all):
+      - analysis["summary"]["potential_savings"]
+      - analysis["potential_savings"]
+      - analysis["issues"][] / analysis["findings"][] entries with "potential_savings"
+    """
+    if not analysis or not isinstance(analysis, dict):
+        return 0.0
+
+    total = 0.0
+
+    # Case 1: Explicit summary field
+    summary = analysis.get("summary", {})
+    if isinstance(summary, dict):
+        total += _to_float(summary.get("potential_savings"))
+
+    # Case 2: Flat field
+    total += _to_float(analysis.get("potential_savings"))
+
+    # Case 3: Line-item issues/findings
+    issues = analysis.get("issues") or analysis.get("findings") or []
+    if isinstance(issues, list):
+        for issue in issues:
+            if isinstance(issue, dict):
+                total += _to_float(issue.get("potential_savings"))
+
+    # Keep it tidy
+    return round(total, 2)
+
+
+def render_total_savings_summary(total_potential_savings: float, per_document_savings: dict):
+    """
+    Render a single aggregate summary once per run.
+    """
+    if total_potential_savings <= 0:
+        return
+
+    st.markdown("## 💰 Estimated Total Potential Savings")
+    st.metric(
+        label="Across all analyzed documents",
+        value=f"${total_potential_savings:,.2f}",
+    )
+
+    with st.expander("See savings by document"):
+        for doc_id, amount in per_document_savings.items():
+            st.markdown(f"- **{doc_id}**: ${amount:,.2f}")
 
 
 # ==================================================
@@ -77,7 +141,12 @@ def register_providers():
     try:
         openai_provider = OpenAIAnalysisProvider()
         if openai_provider.health_check():
+            # Primary key
             ProviderRegistry.register("gpt-4o-mini", openai_provider)
+
+            # 👇 ADD THIS ALIAS
+            ProviderRegistry.register("openai", openai_provider)
+
     except Exception as e:
         print(f"[openai] provider registration failed: {e}")
 
@@ -147,7 +216,6 @@ def main():
         )
         selected_provider = ENGINE_OPTIONS[engine_label]
 
-
     # --------------------------------------------------
     # Debug controls (sidebar only)
     # --------------------------------------------------
@@ -160,7 +228,7 @@ def main():
                 {
                     "Agent decides": None,
                     "gpt-4o-mini": "gpt-4o-mini",
-                    "gemini-3-flash-preview": "gemini-3-flash-preview",          # 👈 added
+                    "gemini-3-flash-preview": "gemini-3-flash-preview",
                     "Local heuristic": "heuristic",
                 }.items(),
                 format_func=lambda x: x[0],
@@ -198,33 +266,53 @@ def main():
             show_empty_warning()
             return
 
+        # Aggregate savings across all documents for this run
+        total_potential_savings = 0.0
+        per_document_savings = {}
+
         for doc in documents:
             with st.spinner(f"🚜 Processing document {doc['document_id']}…"):
                 result = agent.run(doc["raw_text"])
-                
+
                 # --------------------------------------------------
                 # Session persistence (in-memory, per run)
                 # --------------------------------------------------
                 st.session_state.setdefault("workflow_logs", {})
-                st.session_state["workflow_logs"][doc["document_id"]] = result["_workflow_log"]
-
+                st.session_state["workflow_logs"][doc["document_id"]] = result.get("_workflow_log")
 
             # Persist results
-            doc["facts"] = result["facts"]
-            doc["analysis"] = result["analysis"]
-            doc["_orchestration"] = result["_orchestration"]
+            doc["facts"] = result.get("facts")
+            doc["analysis"] = result.get("analysis")
+            doc["_orchestration"] = result.get("_orchestration")
 
             # Identity AFTER facts
             maybe_enhance_identity(doc)
 
             # Debug storage
             st.session_state.setdefault("extracted_facts", {})
-            st.session_state["extracted_facts"][doc["document_id"]] = doc["facts"]
+            st.session_state["extracted_facts"][doc["document_id"]] = doc.get("facts")
+
+            # --------------------------------------------------
+            # Savings aggregation
+            # --------------------------------------------------
+            doc_savings = extract_potential_savings(doc.get("analysis") or {})
+            per_document_savings[doc["document_id"]] = doc_savings
+            total_potential_savings += doc_savings
 
             # Render results (unique per doc)
             st.markdown(f"## 📄 Document `{doc['document_id']}`")
             show_analysis_success()
             render_results(doc["analysis"])
+
+        total_potential_savings = round(total_potential_savings, 2)
+
+        # Persist aggregate metrics (optional, but useful for debug / export later)
+        st.session_state.setdefault("aggregate_metrics", {})
+        st.session_state["aggregate_metrics"]["total_potential_savings"] = total_potential_savings
+        st.session_state["aggregate_metrics"]["per_document_savings"] = per_document_savings
+
+        # Render the aggregate summary ONCE (after all documents)
+        render_total_savings_summary(total_potential_savings, per_document_savings)
 
     # --------------------------------------------------
     # Debug output (read-only)
@@ -240,6 +328,9 @@ def main():
                 for d in documents
             })
 
+            st.markdown("### Aggregate Metrics")
+            st.json(st.session_state.get("aggregate_metrics", {}))
+
             st.markdown("### Session State")
             st.json(dict(st.session_state))
 
@@ -247,7 +338,6 @@ def main():
     # Footer (ONCE)
     # --------------------------------------------------
     render_footer()
-
 
 
 if __name__ == "__main__":
