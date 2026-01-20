@@ -207,6 +207,9 @@ def main():
     analyze_clicked = render_analyze_button()
 
     if analyze_clicked:
+        if not documents:
+            show_empty_warning()
+            return
         if selected_provider == "heuristic":
             show_analysis_error("Local (Offline) analysis isn't wired yet. Use Smart/OpenAI for now.")
             return

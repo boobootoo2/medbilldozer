@@ -1,94 +1,77 @@
-# _modules/ui_documents.py
-
 import streamlit as st
-import hashlib
 
-
-def _make_document_id(text: str, index: int) -> str:
-    """
-    Human-readable, semi-stable document ID.
-    Backward compatible.
-    """
-    date_hint = "unknown-date"
-    vendor_hint = "unknown-vendor"
-
-    for line in text.splitlines():
-        if "202" in line:
-            date_hint = line.strip()[:10]
-            break
-
-    raw = f"{vendor_hint}|{date_hint}|{index}"
-    short_hash = hashlib.sha1(raw.encode()).hexdigest()[:6]
-
-    return f"{vendor_hint}-{date_hint}-{short_hash}"
-
-
+# ==================================================
+# Document Inputs (dynamic, single by default)
+# ==================================================
 def render_document_inputs():
-    """
-    Renders editable document inputs.
+    st.markdown("### Analyze a Document")
 
-    Returns:
-        List[dict] — structured documents ready for analysis
-    """
+    # ------------------------------
+    # Initialize state ONCE
+    # ------------------------------
+    if "doc_inputs" not in st.session_state:
+        st.session_state.doc_inputs = [""]  # ✅ ONE input by default
 
-    # --------------------------------------------------
-    # 1️⃣ Initialize session documents ONCE
-    # --------------------------------------------------
-    if "documents" not in st.session_state:
-        st.session_state["documents"] = [
-            {"id": 0, "raw_text": ""}
-        ]
+    # ------------------------------
+    # Render inputs
+    # ------------------------------
+    raw_fields = []
 
-    docs = st.session_state["documents"]
+    for i, value in enumerate(st.session_state.doc_inputs):
+        text = st.text_area(
+            f"Document {i + 1}",
+            value=value,
+            height=220,
+            key=f"doc_input_{i}",
+        )
+        raw_fields.append(text)
 
-    st.markdown("### Paste bill, receipt, or claim history text")
-
-    # --------------------------------------------------
-    # 2️⃣ Render editors
-    # --------------------------------------------------
-    for i, doc in enumerate(docs):
-        with st.container(border=True, key=f"input_doc_container_{doc['id']}"):
-            st.markdown(f"**Document {i + 1}**")
-
-            doc["raw_text"] = st.text_area(
-                "Document text",
-                value=doc.get("raw_text", ""),
-                height=220,
-                key=f"input_doc_text_{doc['id']}",
-                label_visibility="collapsed",
-            )
-
-            if len(docs) > 1:
-                if st.button("Remove", key=f"remove_doc_{doc['id']}"):
-                    docs.remove(doc)
-                    st.rerun()
-
-    # --------------------------------------------------
-    # 3️⃣ Add document
-    # --------------------------------------------------
+    # ------------------------------
+    # Add another document
+    # ------------------------------
     if st.button("➕ Add another document"):
-        next_id = max(d["id"] for d in docs) + 1
-        docs.append({"id": next_id, "raw_text": ""})
+        st.session_state.doc_inputs.append("")
         st.rerun()
 
-    # --------------------------------------------------
-    # 4️⃣ Build structured docs (NO mutation)
-    # --------------------------------------------------
-    structured_docs = []
+    # ------------------------------
+    # Validation (duplicates only)
+    # ------------------------------
+    errors = []
+    seen = {}
 
-    for idx, doc in enumerate(docs):
-        text = doc.get("raw_text", "").strip()
-        if not text:
+    for idx, text in enumerate(raw_fields, start=1):
+        normalized = " ".join((text or "").split())
+        if not normalized:
+            continue  # empty is allowed
+
+        h = hash(normalized)
+        if h in seen:
+            errors.append(
+                f"Document {idx} is a duplicate of document {seen[h]}."
+            )
+        else:
+            seen[h] = idx
+
+    if errors:
+        st.error("⚠️ Please fix the following input issues:")
+        for err in errors:
+            st.markdown(f"- {err}")
+        return []  # 🚫 BLOCK analysis
+
+    # ------------------------------
+    # Build documents (non-empty only)
+    # ------------------------------
+    documents = []
+
+    for raw in raw_fields:
+        if not raw.strip():
             continue
 
-        structured_docs.append(
-            {
-                "index": idx,
-                "raw_text": text,
-                "document_id": _make_document_id(text, idx),
-                "facts": None,
-                "analysis": None,
-            }
-        )
+        documents.append({
+            "raw_text": raw,
+            "facts": None,
+            "analysis": None,
+            "document_id": None,
+        })
 
-    return structured_docs
+    return documents
