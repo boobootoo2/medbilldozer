@@ -11,9 +11,8 @@ from dataclasses import dataclass
 from typing import List, Optional, Dict, Any
 import re
 
-
 # ==================================================
-# Data models
+# Domain models (canonical)
 # ==================================================
 
 @dataclass

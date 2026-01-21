@@ -5,12 +5,14 @@ import streamlit as st
 from _modules.privacy_ui import render_privacy_dialog
 from _modules.ui_documents import render_document_inputs
 from _modules.document_identity import maybe_enhance_identity
-from _modules.openai_analysis_provider import OpenAIAnalysisProvider
 from _modules.orchestrator_agent import OrchestratorAgent
 from _modules.serialization import analysis_to_dict
 
 from _modules.coverage_matrix import build_coverage_matrix
 from _modules.ui_coverage_matrix import render_coverage_matrix
+
+from _modules.openai_analysis_provider import OpenAIAnalysisProvider
+from _modules.gemini_analysis_provider import GeminiAnalysisProvider
 
 
 from _modules.transaction_normalization import (
@@ -88,27 +90,28 @@ def bootstrap_ui():
 # ==================================================
 def register_providers():
     # --- MedGemma ---
-    if MedGemmaHostedProvider is not None:
-        try:
-            provider = MedGemmaHostedProvider()
-            if provider.health_check():
-                ProviderRegistry.register("medgemma-4b-it", provider)
-        except Exception:
-            pass
+    try:
+        provider = MedGemmaHostedProvider()
+        if provider.health_check():
+            ProviderRegistry.register("medgemma-4b-it", provider)
+    except Exception as e:
+        print(f"[medgemma] provider registration failed: {e}")
+
+    # --- Gemini ---
+    try:
+        gemini_provider = GeminiAnalysisProvider("gemini-1.5-flash")
+        if gemini_provider.health_check():
+            ProviderRegistry.register("gemini-1.5-flash", gemini_provider)
+    except Exception as e:
+        print(f"[gemini] provider registration failed: {e}")
 
     # --- OpenAI ---
     try:
-        openai_provider = OpenAIAnalysisProvider()
+        openai_provider = OpenAIAnalysisProvider("gpt-4o-mini")
         if openai_provider.health_check():
-            # Primary key
             ProviderRegistry.register("gpt-4o-mini", openai_provider)
-
-            # 👇 ADD THIS ALIAS
-            ProviderRegistry.register("openai", openai_provider)
-
     except Exception as e:
         print(f"[openai] provider registration failed: {e}")
-
 
 
 # ==================================================

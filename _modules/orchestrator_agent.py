@@ -13,11 +13,10 @@ from _modules.gemini_langextractor import (
     extract_facts_gemini,
     run_prompt_gemini,
 )
-
+from _modules.llm_interface import ProviderRegistry, Issue
 from _modules.local_heuristic_extractor import extract_facts_local
 from _modules.fact_normalizer import normalize_facts
 from _modules.llm_interface import ProviderRegistry
-from _modules.llm_interface import Issue
 from _modules.receipt_line_item_prompt import build_receipt_line_item_prompt
 from _modules.medical_line_item_prompt import build_medical_line_item_prompt
 from _modules.dental_line_item_prompt import build_dental_line_item_prompt
@@ -48,15 +47,59 @@ def _clean_llm_json(text: str) -> str:
 
     return text.strip()
 
-def _run_phase2_prompt(prompt: str, extractor: str) -> Optional[str]:
-    if extractor == "gemini":
-        return run_prompt_gemini(prompt)
-    if extractor == "openai":
-        return run_prompt_openai(prompt)
+def model_backend(model: str) -> Optional[str]:
+    if model.startswith("gpt-"):
+        return "openai"
+    if model.startswith("gemini-"):
+        return "gemini"
     return None
 
 
-def normalize_issues(issues: list[Issue]) -> list[Issue]:
+def _run_phase2_prompt(prompt: str, model: str) -> Optional[str]:
+    backend = model_backend(model)
+
+    if backend == "openai":
+        return run_prompt_openai(prompt)
+
+    if backend == "gemini":
+        return run_prompt_gemini(prompt)
+
+    return None
+
+
+
+def compute_deterministic_savings(facts: dict) -> float:
+    savings = 0.0
+
+    # --- Duplicate medical CPTs ---
+    items = facts.get("medical_line_items", [])
+    seen = set()
+    for item in items:
+        key = (item.get("date_of_service"), item.get("cpt_code"))
+        if key in seen:
+            savings += item.get("patient_responsibility", 0) or 0
+        else:
+            seen.add(key)
+
+    # --- Duplicate dental procedures ---
+    items = facts.get("dental_line_items", [])
+    seen = set()
+    for item in items:
+        key = (item.get("date_of_service"), item.get("cdt_code"))
+        if key in seen:
+            savings += item.get("patient_responsibility", 0) or 0
+        else:
+            seen.add(key)
+
+    # --- Non-covered / denied FSA items ---
+    for item in facts.get("fsa_claim_items", []):
+        if item.get("amount_reimbursed", 0) == 0:
+            savings += item.get("amount_submitted", 0) or 0
+
+    return round(savings, 2)
+
+
+def normalize_issues(issues: list) -> list:
     for issue in issues:
         # Ensure attribute exists
         if not hasattr(issue, "max_savings"):
@@ -104,12 +147,13 @@ DOCUMENT_SIGNALS = {
 
 
 DOCUMENT_EXTRACTOR_MAP = {
-    "medical_bill": "openai",
-    "insurance_eob": "openai",
-    "pharmacy_receipt": "gemini",   # 👈 change
-    "dental_bill": "openai",
-    "generic": "openai",
+    "medical_bill": "gpt-4o-mini",
+    "insurance_eob": "gpt-4o-mini",
+    "pharmacy_receipt": "gemini-1.5-flash",
+    "dental_bill": "gpt-4o-mini",
+    "generic": "gpt-4o-mini",
 }
+
 
 
 def classify_document(text: str) -> Dict:
@@ -348,11 +392,28 @@ class OrchestratorAgent:
         # --------------------------------------------------
         # 4️⃣ Choose analyzer
         # --------------------------------------------------
-        analyzer_key = self.analyzer_override or "openai"
+        analyzer_key = self.analyzer_override
+        if not analyzer_key:
+            raise RuntimeError("Analyzer model must be specified (e.g. gpt-4o-mini)")
+
         provider = ProviderRegistry.get(analyzer_key)
 
         if not provider:
-            raise RuntimeError(f"No analysis provider: {analyzer_key}")
+            fallback = "gpt-4o-mini"
+            provider = ProviderRegistry.get(fallback)
+
+            if not provider:
+                raise RuntimeError(
+                    f"No analysis provider: {analyzer_key} (and fallback missing)"
+                )
+
+            workflow_log["analysis"]["fallback_used"] = {
+                "requested": analyzer_key,
+                "used": fallback,
+            }
+
+            analyzer_key = fallback
+
 
         workflow_log["analysis"]["analyzer"] = analyzer_key
 
@@ -369,13 +430,27 @@ class OrchestratorAgent:
         # normalize + enforce invariants
         analysis.issues = normalize_issues(analysis.issues)
 
+        deterministic = compute_deterministic_savings(facts)
+
+        analysis.meta["deterministic_savings"] = deterministic
+        analysis.meta["total_max_savings"] = max(
+            analysis.meta.get("total_max_savings", 0),
+            deterministic,
+        )
+
+
         if not hasattr(analysis, "meta") or analysis.meta is None:
             analysis.meta = {}
 
-        analysis.meta["total_max_savings"] = round(
+        llm_total = round(
             sum(i.max_savings or 0 for i in analysis.issues),
             2
         )
+
+        deterministic = analysis.meta.get("deterministic_savings", 0.0)
+
+        analysis.meta["total_max_savings"] = max(llm_total, deterministic)
+        analysis.meta["llm_max_savings"] = llm_total
 
 
 

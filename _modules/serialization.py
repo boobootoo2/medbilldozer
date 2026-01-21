@@ -1,6 +1,5 @@
 # _modules/serialization.py
 
-from _modules.llm_interface import Issue, AnalysisResult
 
 def issue_to_dict(issue):
     return {
@@ -15,17 +14,23 @@ def issue_to_dict(issue):
     }
 
 
-def analysis_to_dict(analysis: AnalysisResult) -> dict:
+# _modules/serialization.py
+
+def analysis_to_dict(result) -> dict:
+    """
+    Convert an AnalysisResult-like object into a pure dict.
+    Duck-typed to avoid importing domain models.
+    """
     return {
-        "issues": [issue_to_dict(i) for i in analysis.issues],
-        "meta": analysis.meta or {},
+        "issues": [
+            {
+                "type": getattr(issue, "type", None),
+                "summary": getattr(issue, "summary", None),
+                "evidence": getattr(issue, "evidence", None),
+                "max_savings": getattr(issue, "max_savings", None),
+            }
+            for issue in getattr(result, "issues", [])
+        ],
+        "meta": getattr(result, "meta", {}),
     }
 
-def dict_to_issue(data: dict) -> Issue:
-    return Issue(**data)
-
-def dict_to_analysis(data: dict) -> AnalysisResult:
-    return AnalysisResult(
-        issues=[dict_to_issue(i) for i in data.get("issues", [])],
-        meta=data.get("meta", {}),
-    )
