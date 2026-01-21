@@ -2,7 +2,7 @@ import json
 from typing import Dict, Optional
 from google import genai
 
-from _modules.extraction_prompt import FACT_KEYS, build_fact_extraction_prompt
+from _modules.extractors.extraction_prompt import FACT_KEYS, build_fact_extraction_prompt
 
 client = genai.Client()
 

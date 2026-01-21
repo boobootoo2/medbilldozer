@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-from _modules.llm_interface import LLMProvider, AnalysisResult, Issue
+from _modules.providers.llm_interface import LLMProvider, AnalysisResult, Issue
 
 HF_MODEL_ID = os.getenv("HF_MODEL_ID", "google/medgemma-4b-it")
 HF_MODEL_URL = os.getenv(

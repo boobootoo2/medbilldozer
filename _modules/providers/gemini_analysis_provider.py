@@ -1,17 +1,16 @@
-from openai import OpenAI
 import json
 from typing import Optional, Dict
 
-from _modules.llm_interface import Issue, AnalysisResult, LLMProvider
+from _modules.providers.llm_interface import Issue, AnalysisResult, LLMProvider
+from _modules.extractors.gemini_langextractor import run_prompt_gemini
 
 
-class OpenAIAnalysisProvider(LLMProvider):
+class GeminiAnalysisProvider(LLMProvider):
     """
-    OpenAI-powered analysis provider.
+    Gemini-powered analysis provider.
     """
 
-    def __init__(self, model: str = "gpt-4o-mini"):
-        self.client = OpenAI()
+    def __init__(self, model: str = "gemini-1.5-flash"):
         self.model = model
 
     def name(self) -> str:
@@ -22,6 +21,7 @@ class OpenAIAnalysisProvider(LLMProvider):
         raw_text: str,
         facts: Optional[Dict] = None
     ) -> AnalysisResult:
+
         prompt = f"""
 You are a healthcare billing analysis assistant.
 
@@ -46,28 +46,10 @@ DOCUMENT:
 {raw_text}
 """
 
-        response = self.client.chat.completions.create(
-            model=self.model,
-            temperature=0,
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You analyze healthcare billing documents and return "
-                        "ONLY valid JSON. No prose."
-                    ),
-                },
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-            ],
-        )
-
-        analysis_text = response.choices[0].message.content or "[]"
+        response_text = run_prompt_gemini(prompt) or "[]"
 
         try:
-            raw_issues = json.loads(analysis_text)
+            raw_issues = json.loads(response_text)
             if not isinstance(raw_issues, list):
                 raw_issues = []
         except json.JSONDecodeError:

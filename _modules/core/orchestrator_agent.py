@@ -5,23 +5,23 @@ from datetime import datetime
 import uuid
 import re
 
-from _modules.openai_langextractor import (
+from _modules.extractors.openai_langextractor import (
     extract_facts_openai,
     run_prompt_openai,
 )
-from _modules.gemini_langextractor import (
+from _modules.extractors.gemini_langextractor import (
     extract_facts_gemini,
     run_prompt_gemini,
 )
-from _modules.llm_interface import ProviderRegistry, Issue
-from _modules.local_heuristic_extractor import extract_facts_local
-from _modules.fact_normalizer import normalize_facts
-from _modules.llm_interface import ProviderRegistry
-from _modules.receipt_line_item_prompt import build_receipt_line_item_prompt
-from _modules.medical_line_item_prompt import build_medical_line_item_prompt
-from _modules.dental_line_item_prompt import build_dental_line_item_prompt
-from _modules.insurance_claim_item_prompt import build_insurance_claim_item_prompt
-from _modules.fsa_claim_item_prompt import build_fsa_claim_item_prompt
+from _modules.providers.llm_interface import ProviderRegistry, Issue
+from _modules.extractors.local_heuristic_extractor import extract_facts_local
+from _modules.extractors.fact_normalizer import normalize_facts
+from _modules.providers.llm_interface import ProviderRegistry
+from _modules.prompts.receipt_line_item_prompt import build_receipt_line_item_prompt
+from _modules.prompts.medical_line_item_prompt import build_medical_line_item_prompt
+from _modules.prompts.dental_line_item_prompt import build_dental_line_item_prompt
+from _modules.prompts.insurance_claim_item_prompt import build_insurance_claim_item_prompt
+from _modules.prompts.fsa_claim_item_prompt import build_fsa_claim_item_prompt
 import json
 
 

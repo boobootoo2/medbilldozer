@@ -3,7 +3,7 @@
 import re
 from typing import Dict, Optional
 
-from _modules.extraction_prompt import FACT_KEYS
+from _modules.extractors.extraction_prompt import FACT_KEYS
 
 
 # -----------------------------

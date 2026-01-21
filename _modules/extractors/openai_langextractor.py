@@ -5,7 +5,7 @@ import re
 from typing import Dict, Optional
 from openai import OpenAI
 
-from _modules.extraction_prompt import (
+from _modules.extractors.extraction_prompt import (
     FACT_KEYS,
     build_fact_extraction_prompt,
 )

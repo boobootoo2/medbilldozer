@@ -2,27 +2,27 @@
 
 import streamlit as st
 
-from _modules.privacy_ui import render_privacy_dialog
-from _modules.ui_documents import render_document_inputs
-from _modules.document_identity import maybe_enhance_identity
-from _modules.orchestrator_agent import OrchestratorAgent
-from _modules.serialization import analysis_to_dict
+from _modules.ui.privacy_ui import render_privacy_dialog
+from _modules.ui.ui_documents import render_document_inputs
+from _modules.core.document_identity import maybe_enhance_identity
+from _modules.core.orchestrator_agent import OrchestratorAgent
+from _modules.utils.serialization import analysis_to_dict
 
-from _modules.coverage_matrix import build_coverage_matrix
-from _modules.ui_coverage_matrix import render_coverage_matrix
+from _modules.core.coverage_matrix import build_coverage_matrix
+from _modules.ui.ui_coverage_matrix import render_coverage_matrix
 
-from _modules.openai_analysis_provider import OpenAIAnalysisProvider
-from _modules.gemini_analysis_provider import GeminiAnalysisProvider
+from _modules.providers.openai_analysis_provider import OpenAIAnalysisProvider
+from _modules.providers.gemini_analysis_provider import GeminiAnalysisProvider
 
 
-from _modules.transaction_normalization import (
+from _modules.core.transaction_normalization import (
     normalize_line_items,
     deduplicate_transactions,
 )
 
 
-from _modules.llm_interface import ProviderRegistry
-from _modules.ui import (
+from _modules.providers.llm_interface import ProviderRegistry
+from _modules.ui.ui import (
     setup_page,
     inject_css,
     render_header,
@@ -37,11 +37,11 @@ from _modules.ui import (
 )
 
 try:
-    from _modules.medgemma_hosted_provider import MedGemmaHostedProvider
+    from _modules.providers.medgemma_hosted_provider import MedGemmaHostedProvider
 except Exception:
     MedGemmaHostedProvider = None
 
-from _modules.runtime_flags import debug_enabled
+from _modules.utils.runtime_flags import debug_enabled
 
 
 ENGINE_OPTIONS = {

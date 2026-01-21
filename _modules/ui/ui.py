@@ -7,7 +7,7 @@ import html
 import uuid
 import re
 from bs4 import BeautifulSoup
-from _modules.runtime_flags import debug_enabled
+from _modules.utils.runtime_flags import debug_enabled
 
 
 # ==================================================
