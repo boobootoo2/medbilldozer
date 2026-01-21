@@ -1,0 +1,244 @@
+{
+  "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
+  "total_modules": 25,
+  "modules": [
+    {
+      "name": "_modules.ui.privacy_ui",
+      "filepath": "_modules/ui/privacy_ui.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 3,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.ui.ui",
+      "filepath": "_modules/ui/ui.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 19,
+      "num_dependencies": 1,
+      "constants": []
+    },
+    {
+      "name": "_modules.ui.ui_coverage_matrix",
+      "filepath": "_modules/ui/ui_coverage_matrix.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 1,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.ui.ui_documents",
+      "filepath": "_modules/ui/ui_documents.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 4,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.core.coverage_matrix",
+      "filepath": "_modules/core/coverage_matrix.py",
+      "has_docstring": false,
+      "num_classes": 1,
+      "num_functions": 1,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.core.transaction_normalization",
+      "filepath": "_modules/core/transaction_normalization.py",
+      "has_docstring": false,
+      "num_classes": 1,
+      "num_functions": 5,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.core.document_identity",
+      "filepath": "_modules/core/document_identity.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 7,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.core.orchestrator_agent",
+      "filepath": "_modules/core/orchestrator_agent.py",
+      "has_docstring": false,
+      "num_classes": 1,
+      "num_functions": 9,
+      "num_dependencies": 10,
+      "constants": [
+        "DOCUMENT_SIGNALS",
+        "DOCUMENT_EXTRACTOR_MAP"
+      ]
+    },
+    {
+      "name": "_modules.providers.gemini_analysis_provider",
+      "filepath": "_modules/providers/gemini_analysis_provider.py",
+      "has_docstring": false,
+      "num_classes": 1,
+      "num_functions": 0,
+      "num_dependencies": 2,
+      "constants": []
+    },
+    {
+      "name": "_modules.providers.medgemma_hosted_provider",
+      "filepath": "_modules/providers/medgemma_hosted_provider.py",
+      "has_docstring": false,
+      "num_classes": 1,
+      "num_functions": 1,
+      "num_dependencies": 1,
+      "constants": [
+        "HF_MODEL_ID",
+        "HF_MODEL_URL",
+        "SYSTEM_PROMPT",
+        "TASK_PROMPT"
+      ]
+    },
+    {
+      "name": "_modules.providers.llm_interface",
+      "filepath": "_modules/providers/llm_interface.py",
+      "has_docstring": true,
+      "num_classes": 5,
+      "num_functions": 0,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.providers.openai_analysis_provider",
+      "filepath": "_modules/providers/openai_analysis_provider.py",
+      "has_docstring": false,
+      "num_classes": 1,
+      "num_functions": 0,
+      "num_dependencies": 1,
+      "constants": []
+    },
+    {
+      "name": "_modules.utils.runtime_flags",
+      "filepath": "_modules/utils/runtime_flags.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 1,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.utils.serialization",
+      "filepath": "_modules/utils/serialization.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 2,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.prompts.medical_line_item_prompt",
+      "filepath": "_modules/prompts/medical_line_item_prompt.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 1,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.prompts.dental_line_item_prompt",
+      "filepath": "_modules/prompts/dental_line_item_prompt.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 1,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.prompts.fsa_claim_item_prompt",
+      "filepath": "_modules/prompts/fsa_claim_item_prompt.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 1,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.prompts.insurance_claim_item_prompt",
+      "filepath": "_modules/prompts/insurance_claim_item_prompt.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 1,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.prompts.receipt_line_item_prompt",
+      "filepath": "_modules/prompts/receipt_line_item_prompt.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 1,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.extractors.fact_normalizer",
+      "filepath": "_modules/extractors/fact_normalizer.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 4,
+      "num_dependencies": 0,
+      "constants": [
+        "DATE_INPUT_FORMATS",
+        "TIME_INPUT_FORMATS"
+      ]
+    },
+    {
+      "name": "_modules.extractors.local_heuristic_extractor",
+      "filepath": "_modules/extractors/local_heuristic_extractor.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 4,
+      "num_dependencies": 1,
+      "constants": []
+    },
+    {
+      "name": "_modules.extractors.extraction_prompt",
+      "filepath": "_modules/extractors/extraction_prompt.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 1,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.extractors.gemini_langextractor",
+      "filepath": "_modules/extractors/gemini_langextractor.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 3,
+      "num_dependencies": 1,
+      "constants": []
+    },
+    {
+      "name": "_modules.extractors.openai_langextractor",
+      "filepath": "_modules/extractors/openai_langextractor.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 4,
+      "num_dependencies": 1,
+      "constants": []
+    },
+    {
+      "name": "app",
+      "filepath": "app.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 4,
+      "num_dependencies": 14,
+      "constants": [
+        "ENGINE_OPTIONS"
+      ]
+    }
+  ]
+}
