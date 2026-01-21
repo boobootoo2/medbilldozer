@@ -164,12 +164,41 @@ def inject_css():
     .st-dp {
         border-color: transparent !important;
     }
-
+    
+    /* Checkbox styling - default and focus states */
+    .stCheckbox > [data-baseweb="checkbox"] > span {
+        background-color: #000000 !important;
+    }
+    
+    [type="checkbox"]:focus {
+        outline-offset: 4px !important;
+        outline: 3px dashed #000000 !important;
+    }
+    
+    /* Override Streamlit's red checkbox focus styles */
+    .st-g7 {
+        background-color: #000000 !important;
+    }
+    .st-g6 {
+        background-image: url(data:image/svg+xml,%0A%20%20%20%20%3Csvg%20width%3D%2217%22%20height%3D%2213%22%20viewBox%3D%220%200%2017%2013%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%20%20%20%20%20%20%3Cpath%20d%3D%22M6.50002%2012.6L0.400024%206.60002L2.60002%204.40002L6.50002%208.40002L13.9%200.900024L16.1%203.10002L6.50002%2012.6Z%22%20fill%3D%22%23f0f2f6%22%2F%3E%0A%20%20%20%20%3C%2Fsvg%3E%0A%20%20) !important;
+    }
+    .st-g5,
+    .st-g4,
+    .st-g3,
+    .st-g2 {
+        border-color: transparent !important;
+    }
+    
+    /* Apply dashed outline to checkbox wrapper on focus */
+    .stCheckbox:focus-within > [data-baseweb="checkbox"] {
+        outline: 3px dashed #000000 !important;
+        outline-offset: 4px !important;
+    }
+    
     /* Apply unified dashed outline */
     .st-dr,
     .st-dq,
     .st-dp {
-        outline: 3px dashed #000000 !important;
         outline-offset: 4px !important;
     }
     div[data-baseweb="select"] .st-dr,
