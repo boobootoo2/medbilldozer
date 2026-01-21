@@ -19,7 +19,13 @@ from _modules.fact_normalizer import normalize_facts
 from _modules.llm_interface import ProviderRegistry
 from _modules.llm_interface import Issue
 from _modules.receipt_line_item_prompt import build_receipt_line_item_prompt
+from _modules.medical_line_item_prompt import build_medical_line_item_prompt
+from _modules.dental_line_item_prompt import build_dental_line_item_prompt
+from _modules.insurance_claim_item_prompt import build_insurance_claim_item_prompt
+from _modules.fsa_claim_item_prompt import build_fsa_claim_item_prompt
+
 import json
+
 
 def _clean_llm_json(text: str) -> str:
     """
@@ -42,6 +48,12 @@ def _clean_llm_json(text: str) -> str:
 
     return text.strip()
 
+def _run_phase2_prompt(prompt: str, extractor: str) -> Optional[str]:
+    if extractor == "gemini":
+        return run_prompt_gemini(prompt)
+    if extractor == "openai":
+        return run_prompt_openai(prompt)
+    return None
 
 
 def normalize_issues(issues: list[Issue]) -> list[Issue]:
@@ -211,16 +223,11 @@ class OrchestratorAgent:
         # --------------------------------------------------
         document_type = facts.get("document_type")
 
-        if document_type in ("pharmacy_receipt", "fsa_receipt"):
+        if document_type == "pharmacy_receipt":
             try:
                 prompt = build_receipt_line_item_prompt(raw_text)
 
-                if extractor == "gemini":
-                    raw_response = run_prompt_gemini(prompt)
-                elif extractor == "openai":
-                    raw_response = run_prompt_openai(prompt)
-                else:
-                    raw_response = None
+                raw_response = _run_phase2_prompt(prompt, extractor)
 
                 if raw_response:
                     cleaned = _clean_llm_json(raw_response)
@@ -237,7 +244,105 @@ class OrchestratorAgent:
                 workflow_log["extraction"]["receipt_extraction_error"] = str(e)
                 print("[receipt extraction error]", e)
 
+        # --------------------------------------------------
+        # 3️⃣c Phase-2 medical line-item extraction (OPTIONAL)
+        # --------------------------------------------------
+        if document_type == "medical_bill":
+            try:
+                prompt = build_medical_line_item_prompt(raw_text)
 
+                raw_response = _run_phase2_prompt(prompt, extractor)
+
+
+                if raw_response:
+                    cleaned = _clean_llm_json(raw_response)
+                    parsed = json.loads(cleaned)
+                    items = parsed.get("medical_line_items", [])
+
+                    if isinstance(items, list) and items:
+                        facts["medical_line_items"] = items
+                        workflow_log["extraction"]["medical_item_count"] = len(items)
+                    else:
+                        workflow_log["extraction"]["medical_item_count"] = 0
+
+            except Exception as e:
+                workflow_log["extraction"]["medical_extraction_error"] = str(e)
+                print("[medical extraction error]", e)
+
+        # --------------------------------------------------
+        # 3️⃣d Phase-2 dental line-item extraction (OPTIONAL)
+        # --------------------------------------------------
+        if document_type == "dental_bill":
+            try:
+                prompt = build_dental_line_item_prompt(raw_text)
+
+                raw_response = _run_phase2_prompt(prompt, extractor)
+
+
+                if raw_response:
+                    cleaned = _clean_llm_json(raw_response)
+                    parsed = json.loads(cleaned)
+                    items = parsed.get("dental_line_items", [])
+
+                    if isinstance(items, list) and items:
+                        facts["dental_line_items"] = items
+                        workflow_log["extraction"]["dental_item_count"] = len(items)
+                    else:
+                        workflow_log["extraction"]["dental_item_count"] = 0
+
+            except Exception as e:
+                workflow_log["extraction"]["dental_extraction_error"] = str(e)
+                print("[dental extraction error]", e)
+
+        # --------------------------------------------------
+        # 3️⃣e Phase-2 insurance claim row extraction (OPTIONAL)
+        # --------------------------------------------------
+        if document_type == "insurance_eob":
+            try:
+                prompt = build_insurance_claim_item_prompt(raw_text)
+
+                raw_response = _run_phase2_prompt(prompt, extractor)
+
+
+                if raw_response:
+                    cleaned = _clean_llm_json(raw_response)
+                    parsed = json.loads(cleaned)
+                    items = parsed.get("insurance_claim_items", [])
+
+                    if isinstance(items, list) and items:
+                        facts["insurance_claim_items"] = items
+                        workflow_log["extraction"]["insurance_item_count"] = len(items)
+                    else:
+                        workflow_log["extraction"]["insurance_item_count"] = 0
+
+            except Exception as e:
+                workflow_log["extraction"]["insurance_extraction_error"] = str(e)
+                print("[insurance extraction error]", e)
+
+        # --------------------------------------------------
+        # 3️⃣f Phase-2 FSA claim row extraction (OPTIONAL)
+        # --------------------------------------------------
+        if document_type == "fsa_claim_history":
+            try:
+                prompt = build_fsa_claim_item_prompt(raw_text)
+
+                raw_response = _run_phase2_prompt(prompt, extractor)
+
+
+                if raw_response:
+                    cleaned = _clean_llm_json(raw_response)
+                    parsed = json.loads(cleaned)
+                    items = parsed.get("fsa_claim_items", [])
+
+                    if isinstance(items, list) and items:
+                        facts["fsa_claim_items"] = items
+                        workflow_log["extraction"]["fsa_item_count"] = len(items)
+                    else:
+                        workflow_log["extraction"]["fsa_item_count"] = 0
+
+            except Exception as e:
+                workflow_log["extraction"]["fsa_extraction_error"] = str(e)
+                print("[fsa extraction error]", e)
 
 
         # --------------------------------------------------
