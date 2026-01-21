@@ -297,7 +297,7 @@ class OrchestratorAgent:
         # --------------------------------------------------
         # 3️⃣e Phase-2 insurance claim row extraction (OPTIONAL)
         # --------------------------------------------------
-        if document_type == "insurance_eob":
+        if document_type in ("insurance_eob", "insurance_claim_history", "insurance_document"):
             try:
                 prompt = build_insurance_claim_item_prompt(raw_text)
 

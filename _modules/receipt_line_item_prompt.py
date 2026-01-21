@@ -26,6 +26,10 @@ RULES:
 - Do NOT include totals as line items
 - Ignore headers like "Item", "Amount", "Total"
 
+Each receipt item must correspond to a purchasable product or copay.
+Do not extract totals, headings, or explanatory text.
+
+
 DOCUMENT:
 {document_text}
 """

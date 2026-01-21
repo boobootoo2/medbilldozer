@@ -26,6 +26,9 @@ RULES:
 - Status examples: Approved, Denied, Pending. If missing, null.
 - Return JSON only. No markdown, no commentary.
 
+Each row must represent a reimbursement decision, not a purchase.
+
+
 DOCUMENT:
 {document_text}
 """

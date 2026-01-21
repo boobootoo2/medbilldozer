@@ -1,32 +1,43 @@
-def build_insurance_claim_item_prompt(document_text: str) -> str:
+def build_insurance_claim_item_prompt(raw_text: str) -> str:
     return f"""
-You are extracting claim line items from an insurance claim history or EOB-style table.
+You are extracting INSURANCE CLAIM HISTORY rows (EOB-style adjudication rows).
 
-Extract EACH row in the "Claim Activity" (or similar) table.
+Only extract rows from a table section like:
+- "Claim Activity"
+- "Claim History"
 
-Return ONLY valid JSON in the following format:
+Each extracted row MUST include at least:
+- Date of Service
+- Provider
+- Description
+AND at least TWO of these financial fields:
+- Allowed
+- Insurance Paid
+- Copay
+- Status
+
+DO NOT extract "Itemized Charges" from provider bills or dental statements.
+If you see a section titled "Itemized Charges", return an empty list.
+
+Return ONLY valid JSON in this exact format:
 
 {{
   "insurance_claim_items": [
     {{
-      "date_of_service": "YYYY-MM-DD | null",
-      "provider": "string | null",
+      "date_of_service": "YYYY-MM-DD or null",
+      "provider": "string",
       "description": "string",
-      "allowed": number | null,
-      "insurance_paid": number | null,
-      "copay": number | null,
-      "status": "string | null"
+      "allowed": number or null,
+      "insurance_paid": number or null,
+      "copay": number or null,
+      "status": "Paid | Denied | Pending | null"
     }}
   ]
 }}
 
-RULES:
-- Only include actual claim rows (NOT plan summary).
-- Keep duplicates as separate entries (do NOT merge them).
-- Parse money values as numbers (no $).
-- Status examples: Paid, Denied, Pending. If missing, null.
-- Return JSON only. No markdown, no commentary.
+If no insurance claim rows exist, return:
+{{ "insurance_claim_items": [] }}
 
-DOCUMENT:
-{document_text}
+RAW DOCUMENT:
+\"\"\"{raw_text}\"\"\"
 """

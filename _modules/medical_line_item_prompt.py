@@ -1,34 +1,44 @@
-def build_medical_line_item_prompt(document_text: str) -> str:
+def build_medical_line_item_prompt(raw_text: str) -> str:
     return f"""
-You are extracting line items from a medical provider bill or patient statement.
+You are extracting MEDICAL BILL LINE ITEMS from a provider statement.
 
-Extract EACH row in the "Itemized Charges" (or similar) section.
+ONLY extract rows from sections labeled like:
+- Itemized Charges
+- Service Description
+- CPT
+- Billed / Allowed / Patient Responsibility
 
-Return ONLY valid JSON in the following format:
+DO NOT:
+- Extract insurance payments
+- Extract claim history
+- Extract totals or summaries
+
+Each item must represent a single billed service.
+
+Return JSON in this exact format:
 
 {{
   "medical_line_items": [
     {{
-      "date_of_service": "YYYY-MM-DD | null",
+      "date_of_service": "YYYY-MM-DD or null",
       "description": "string",
-      "cpt_code": "string | null",
-      "billed": number | null,
-      "allowed": number | null,
-      "patient_responsibility": number | null,
-      "units": number | null
+      "cpt_code": "string or null",
+      "billed": number or null,
+      "allowed": number or null,
+      "patient_responsibility": number or null,
+      "units": number or null
     }}
   ]
 }}
 
-RULES:
-- Only include actual charge rows (NOT totals / summaries).
-- Keep duplicates as separate entries (do NOT merge them).
-- CPT/HCPCS codes are 5 digits (e.g., 45378, 00812). If missing, use null.
-- Parse money values as numbers (no $).
-- Units: if not present, use null (do NOT guess).
-- If the document has columns for billed/allowed/patient responsibility, extract them.
-- Return JSON only. No markdown, no commentary.
+If no medical line items exist, return:
 
-DOCUMENT:
-{document_text}
+{{
+  "medical_line_items": []
+}}
+
+RAW DOCUMENT:
+\"\"\"
+{raw_text}
+\"\"\"
 """
