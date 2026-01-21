@@ -1,4 +1,66 @@
 import streamlit as st
+import re
+from datetime import datetime
+
+def _shorten_provider(name: str, max_len=28) -> str:
+    if not name:
+        return "Unknown Provider"
+    name = re.sub(r"\s+", " ", name).strip()
+    return name[:max_len]
+
+def _format_date(date_str: str) -> str:
+    """
+    Accepts many formats, returns YYYY-MM-DD or YYYY-MM
+    """
+    if not date_str:
+        return "Unknown Date"
+
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%B %d, %Y"):
+        try:
+            return datetime.strptime(date_str, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+
+    # Month-only fallback
+    try:
+        return datetime.strptime(date_str, "%B %Y").strftime("%Y-%m")
+    except Exception:
+        return date_str
+
+def make_user_friendly_document_id(
+    facts: dict,
+    fallback_index: int | None = None,
+) -> str:
+    provider = _shorten_provider(
+        facts.get("facility")
+        or facts.get("provider")
+        or facts.get("merchant")
+    )
+
+    date = _format_date(
+        facts.get("date_of_service")
+        or facts.get("statement_date")
+    )
+
+    doc_type = (
+        facts.get("document_type")
+        or facts.get("claim_type")
+        or facts.get("visit_type")
+    )
+
+    account = facts.get("account_number") or facts.get("claim_number")
+
+    tail = doc_type or (f"Acct {account}" if account else None)
+
+    label = f"{provider} · {date}"
+    if tail:
+        label += f" · {tail}"
+
+    if fallback_index is not None:
+        label += f" ({fallback_index})"
+
+    return label
+
 
 # ==================================================
 # Document Inputs (dynamic, single by default)
