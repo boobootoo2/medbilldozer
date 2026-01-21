@@ -1,4 +1,9 @@
 # _modules/local_heuristic_extractor.py
+"""Deterministic local heuristic fact extractor.
+
+Provides regex-based fact extraction as a fast, cost-free alternative to LLM-based extraction.
+Conservative by design - only extracts facts with high confidence patterns.
+"""
 
 import re
 from typing import Dict, Optional
@@ -11,15 +16,38 @@ from _modules.extractors.extraction_prompt import FACT_KEYS
 # -----------------------------
 
 def _safe_empty() -> Dict[str, Optional[str]]:
+    """Return empty facts dictionary with all keys set to None.
+    
+    Returns:
+        Dictionary with all FACT_KEYS mapped to None
+    """
     return {k: None for k in FACT_KEYS}
 
 
 def _find_first(pattern: str, text: str) -> Optional[str]:
+    """Find first match of regex pattern in text.
+    
+    Args:
+        pattern: Regex pattern with capture group
+        text: Text to search
+        
+    Returns:
+        Captured group text (stripped) or None if no match
+    """
     match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
     return match.group(1).strip() if match else None
 
 
 def _find_date(patterns: list[str], text: str) -> Optional[str]:
+    """Try multiple date patterns and return first match.
+    
+    Args:
+        patterns: List of regex patterns to try in order
+        text: Text to search
+        
+    Returns:
+        First matched date string or None if no patterns match
+    """
     for p in patterns:
         value = _find_first(p, text)
         if value:

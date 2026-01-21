@@ -8,6 +8,11 @@ client = genai.Client()
 
 
 def _safe_empty_result() -> Dict[str, Optional[str]]:
+    """Return empty facts dictionary with all keys set to None.
+    
+    Returns:
+        Dictionary with all FACT_KEYS mapped to None
+    """
     return {k: None for k in FACT_KEYS}
 
 

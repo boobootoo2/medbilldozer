@@ -1,4 +1,10 @@
 # _modules/openai_langextractor.py
+"""OpenAI-based LLM fact extractor and generic prompt runner.
+
+Provides OpenAI GPT-powered fact extraction from healthcare documents and
+utility functions for running arbitrary prompts against OpenAI models.
+Safe by design - never raises exceptions, always returns complete schema.
+"""
 
 import json
 import re
@@ -15,6 +21,11 @@ client = OpenAI()
 
 
 def _safe_empty_result() -> Dict[str, Optional[str]]:
+    """Return empty facts dictionary with all keys set to None.
+    
+    Returns:
+        Dictionary with all FACT_KEYS mapped to None
+    """
     return {k: None for k in FACT_KEYS}
 
 

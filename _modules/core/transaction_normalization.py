@@ -1,3 +1,8 @@
+"""Transaction normalization and deduplication.
+
+Provides utilities to normalize billing transactions from various document formats
+into a canonical structure, build unique fingerprints, and deduplicate across documents.
+"""
 # _modules/transaction_normalization.py
 
 from dataclasses import dataclass
@@ -13,10 +18,26 @@ import json
 # ==================================================
 
 def _norm_str(value: Optional[str]) -> str:
+    """Normalize string to lowercase with trimmed whitespace.
+    
+    Args:
+        value: String to normalize
+    
+    Returns:
+        str: Normalized lowercase string or empty string if None
+    """
     return value.strip().lower() if value else ""
 
 
 def _norm_money(value: Optional[Decimal]) -> str:
+    """Format money value to standardized string.
+    
+    Args:
+        value: Decimal amount
+    
+    Returns:
+        str: Formatted amount with 2 decimal places or empty string if None
+    """
     if value is None:
         return ""
     return f"{Decimal(value):.2f}"
@@ -35,6 +56,21 @@ def build_transaction_fingerprint(
     units: int,
     billed_amount: Optional[Decimal],
 ) -> str:
+    """Build canonical fingerprint for transaction deduplication.
+    
+    Creates a unique hash based on normalized transaction attributes.
+    
+    Args:
+        patient_dob: Patient date of birth
+        provider_name: Provider or facility name
+        date_of_service: Service date
+        cpt_code: CPT procedure code
+        units: Number of units
+        billed_amount: Billed amount
+    
+    Returns:
+        str: SHA256 hash of canonical transaction representation
+    """
     parts = {
         "patient_dob": _norm_str(patient_dob),
         "provider": _norm_str(provider_name),
@@ -54,6 +90,11 @@ def build_transaction_fingerprint(
 
 @dataclass
 class NormalizedTransaction:
+    """Normalized representation of a billing transaction.
+    
+    Provides a standardized structure for transactions from different document types
+    with a unique canonical_id for deduplication.
+    """
     canonical_id: str
     source_document_id: str
 
@@ -78,6 +119,15 @@ def normalize_line_items(
     line_items: List[dict],
     source_document_id: str,
 ) -> List[NormalizedTransaction]:
+    """Convert raw line items to normalized transaction objects.
+    
+    Args:
+        line_items: List of raw line item dicts from document facts
+        source_document_id: ID of source document for provenance tracking
+    
+    Returns:
+        List[NormalizedTransaction]: Normalized transactions with canonical IDs
+    """
     normalized: List[NormalizedTransaction] = []
 
     for item in line_items:
@@ -128,6 +178,16 @@ def deduplicate_transactions(
     Dict[str, NormalizedTransaction],
     Dict[str, List[str]],
 ]:
+    """Deduplicate transactions and track provenance.
+    
+    Args:
+        transactions: List of normalized transactions (may contain duplicates)
+    
+    Returns:
+        Tuple of:
+            - Dict mapping canonical_id to unique transaction
+            - Dict mapping canonical_id to list of source document IDs
+    """
     unique: Dict[str, NormalizedTransaction] = {}
     provenance: Dict[str, List[str]] = defaultdict(list)
 

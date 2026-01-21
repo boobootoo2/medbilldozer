@@ -1,3 +1,8 @@
+"""MedBillDozer - Medical billing error detection application.
+
+Main Streamlit application that orchestrates document analysis, provider registration,
+and UI rendering for detecting billing, pharmacy, dental, and insurance claim issues.
+"""
 # app.py
 
 import streamlit as st
@@ -58,8 +63,11 @@ ENGINE_OPTIONS = {
 
 
 def render_total_savings_summary(total_potential_savings: float, per_document_savings: dict):
-    """
-    Render a single aggregate summary once per run.
+    """Render aggregate savings summary across all analyzed documents.
+    
+    Args:
+        total_potential_savings: Total potential savings amount
+        per_document_savings: Dict mapping document IDs to their savings amounts
     """
     if total_potential_savings <= 0:
         return
@@ -79,6 +87,11 @@ def render_total_savings_summary(total_potential_savings: float, per_document_sa
 # Bootstrap UI
 # ==================================================
 def bootstrap_ui():
+    """Initialize and render core UI components.
+    
+    Sets up page configuration, CSS styles, header, and demo documents.
+    Must be called at the start of the application.
+    """
     setup_page()
     inject_css()
     render_header()
@@ -89,6 +102,11 @@ def bootstrap_ui():
 # Provider registration
 # ==================================================
 def register_providers():
+    """Register available LLM analysis providers.
+    
+    Attempts to register MedGemma, Gemini, and OpenAI providers.
+    Only registers providers that pass health checks.
+    """
     # --- MedGemma ---
     try:
         provider = MedGemmaHostedProvider()
@@ -118,6 +136,16 @@ def register_providers():
 # App entry
 # ==================================================
 def main():
+    """Main application entry point.
+    
+    Orchestrates the complete workflow:
+    1. Bootstrap UI and register providers
+    2. Render privacy dialog
+    3. Collect document inputs
+    4. Analyze documents with selected provider
+    5. Display results and savings summary
+    6. Render coverage matrix and debug info
+    """
     # --------------------------------------------------
     # Bootstrap + providers
     # --------------------------------------------------

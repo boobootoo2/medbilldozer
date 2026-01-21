@@ -1,4 +1,14 @@
+"""Prompt builder for medical bill line item extraction."""
+
 def build_medical_line_item_prompt(raw_text: str) -> str:
+    """Build prompt for extracting line items from medical bills.
+    
+    Args:
+        raw_text: Raw medical bill text
+    
+    Returns:
+        str: Formatted prompt for LLM extraction
+    """
     return f"""
 You are extracting MEDICAL BILL LINE ITEMS from a provider statement.
 

@@ -1,3 +1,9 @@
+"""Gemini-powered healthcare document analysis provider.
+
+Provides Google Gemini-based analysis of healthcare documents to identify billing issues,
+discrepancies, and potential patient savings.
+"""
+
 import json
 from typing import Optional, Dict
 

@@ -1,7 +1,15 @@
+"""Privacy dialog and cookie preferences UI.
+
+Provides privacy acknowledgment dialog with cookie preference management.
+"""
 import streamlit as st
 
 
 def _init_privacy_state():
+    """Initialize privacy and cookie preference state in session.
+    
+    Sets default values for privacy acceptance and cookie preferences.
+    """
     st.session_state.setdefault("privacy_accepted", False)
     st.session_state.setdefault(
         "cookie_preferences",
@@ -15,6 +23,10 @@ def _init_privacy_state():
 
 @st.dialog("🔒 Privacy & Cookie Preferences")
 def _privacy_dialog():
+    """Display privacy policy and cookie preferences dialog.
+    
+    Shows HIPAA disclaimer, privacy policy, and cookie preference toggles.
+    """
     _init_privacy_state()
 
     st.markdown(
@@ -112,6 +124,11 @@ def _privacy_dialog():
 
 
 def render_privacy_dialog():
+    """Render privacy dialog if not already acknowledged.
+    
+    Shows the privacy dialog on first visit. Subsequent visits skip the dialog
+    based on session state.
+    """
     if st.session_state.get("privacy_acknowledged"):
         return
 

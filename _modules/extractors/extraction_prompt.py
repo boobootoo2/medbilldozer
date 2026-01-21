@@ -1,3 +1,8 @@
+"""Core fact extraction prompt builder.
+
+Provides provider-agnostic prompts for extracting structured facts from
+healthcare documents including bills, receipts, and claim histories.
+"""
 # _modules/extraction_prompt.py
 
 from typing import List
@@ -32,9 +37,15 @@ FACT_KEYS: List[str] = [
 
 
 def build_fact_extraction_prompt(document_text: str) -> str:
-    """
-    Provider-agnostic prompt for structured healthcare fact extraction.
+    """Build provider-agnostic prompt for structured healthcare fact extraction.
+    
     Compatible with OpenAI, Gemini, MedGemma, or local LLMs.
+    
+    Args:
+        document_text: Raw document text
+    
+    Returns:
+        str: Formatted extraction prompt requesting JSON with FACT_KEYS
     """
 
     return f"""

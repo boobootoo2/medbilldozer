@@ -1,4 +1,14 @@
+"""Prompt builder for FSA/HSA claim history extraction."""
+
 def build_fsa_claim_item_prompt(document_text: str) -> str:
+    """Build prompt for extracting claim rows from FSA/HSA claim history.
+    
+    Args:
+        document_text: Raw FSA/HSA claim history text
+    
+    Returns:
+        str: Formatted prompt for LLM extraction
+    """
     return f"""
 You are extracting claim rows from an FSA/HSA claim history.
 

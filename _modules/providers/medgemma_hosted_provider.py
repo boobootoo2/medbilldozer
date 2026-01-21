@@ -1,3 +1,9 @@
+"""MedGemma hosted model analysis provider.
+
+Provides MedGemma (medical domain-specific LLM) hosted on Hugging Face
+for specialized medical billing analysis.
+"""
+
 import os
 import json
 import requests

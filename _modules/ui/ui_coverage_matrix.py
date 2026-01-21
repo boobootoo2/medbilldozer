@@ -1,7 +1,18 @@
+"""Coverage matrix UI rendering.
+
+Displays cross-document coverage relationships in a formatted table.
+"""
 # _modules/ui_coverage_matrix.py
 import streamlit as st
 
 def render_coverage_matrix(rows):
+    """Render coverage matrix as a formatted dataframe.
+    
+    Shows receipts, FSA claims, and insurance payments side-by-side for comparison.
+    
+    Args:
+        rows: List of CoverageRow objects
+    """
     if not rows:
         st.caption("No cross-document coverage relationships found.")
         return

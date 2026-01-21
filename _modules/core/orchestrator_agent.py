@@ -1,4 +1,10 @@
 # _modules/orchestrator_agent.py
+"""Main workflow orchestration for healthcare document analysis.
+
+Coordinates document classification, fact extraction, line item parsing,
+and issue analysis through a multi-phase pipeline. Provides deterministic
+issue detection and LLM-based analysis integration.
+"""
 
 from typing import Dict, Optional
 from datetime import datetime
@@ -26,9 +32,16 @@ import json
 
 
 def _clean_llm_json(text: str) -> str:
-    """
-    Cleans LLM output so it can be parsed as JSON.
-    Safe for OpenAI and Gemini.
+    """Clean LLM output for JSON parsing.
+    
+    Removes markdown fences, leading commentary, and other artifacts
+    that prevent JSON parsing.
+    
+    Args:
+        text: Raw LLM output string
+        
+    Returns:
+        Cleaned string ready for JSON parsing
     """
     if not text:
         return text
@@ -47,6 +60,14 @@ def _clean_llm_json(text: str) -> str:
     return text.strip()
 
 def model_backend(model: str) -> Optional[str]:
+    """Determine backend provider from model name.
+    
+    Args:
+        model: Model identifier string (e.g., 'gpt-4', 'gemini-1.5-flash')
+        
+    Returns:
+        Backend name ('openai', 'gemini') or None if unknown
+    """
     if model.startswith("gpt-"):
         return "openai"
     if model.startswith("gemini-"):
@@ -55,6 +76,15 @@ def model_backend(model: str) -> Optional[str]:
 
 
 def _run_phase2_prompt(prompt: str, model: str) -> Optional[str]:
+    """Execute phase 2 line item parsing prompt using appropriate backend.
+    
+    Args:
+        prompt: Formatted prompt string for line item extraction
+        model: Model identifier to use for execution
+        
+    Returns:
+        LLM response text or None if backend not supported
+    """
     backend = model_backend(model)
 
     if backend == "openai":
@@ -163,6 +193,16 @@ def deterministic_issues_from_facts(facts: dict) -> list[Issue]:
     return issues
 
 def compute_deterministic_savings(facts: dict) -> float:
+    """Calculate total savings from deterministic issues.
+    
+    Sums max_savings from all deterministic issues identified in facts.
+    
+    Args:
+        facts: Facts dictionary containing line items and extracted data
+        
+    Returns:
+        Total potential savings amount in dollars
+    """
     savings = 0.0
 
     # --- Duplicate medical CPTs ---
@@ -251,6 +291,17 @@ DOCUMENT_EXTRACTOR_MAP = {
 
 
 def classify_document(text: str) -> Dict:
+    """Classify document type using regex pattern matching.
+    
+    Scores document against known patterns for medical bills, dental bills,
+    pharmacy receipts, insurance claims, and FSA claims.
+    
+    Args:
+        text: Raw document text
+        
+    Returns:
+        Dict with document_type, confidence score, and pattern match scores
+    """
     scores = {}
 
     for doc_type, patterns in DOCUMENT_SIGNALS.items():
@@ -278,7 +329,17 @@ def classify_document(text: str) -> Dict:
 
 
 def extract_pre_facts(text: str) -> Dict:
-    """Lightweight heuristic facts (cheap, deterministic)."""
+    """Extract lightweight heuristic facts before full extraction.
+    
+    Provides fast, cheap feature detection (CPT codes, dental codes, Rx markers)
+    for downstream routing and optimization.
+    
+    Args:
+        text: Raw document text
+        
+    Returns:
+        Dict with boolean flags and document statistics
+    """
     return {
         "contains_cpt": bool(re.search(r"\bCPT\b", text)),
         "contains_dental_code": bool(re.search(r"\bD\d{4}\b", text)),

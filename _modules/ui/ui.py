@@ -15,9 +15,15 @@ from _modules.utils.runtime_flags import debug_enabled
 # ==================================================
 def calculate_max_savings(issues):
     """
+    Calculate the maximum potential savings from a list of billing issues.
+    
+    Args:
+        issues: List of Issue objects with optional max_savings attribute
+    
     Returns:
-      total_max (float)
-      breakdown (list of dicts)
+        tuple: (total_max (float), breakdown (list of dicts))
+            - total_max: Sum of all max_savings values
+            - breakdown: List of dicts with summary and max_savings per issue
     """
     total = 0.0
     breakdown = []
@@ -38,6 +44,13 @@ def calculate_max_savings(issues):
 
 
 def render_savings_breakdown(title: str, total: float, breakdown: list[dict]):
+    """Render a formatted savings breakdown UI component.
+    
+    Args:
+        title: Section title for the savings display
+        total: Total maximum potential savings amount
+        breakdown: List of dicts with 'summary' and 'max_savings' keys
+    """
     st.markdown(f"#### 💰 Max Potential Savings — {title}")
 
     if not breakdown:
@@ -72,6 +85,11 @@ def render_savings_breakdown(title: str, total: float, breakdown: list[dict]):
 # State helpers
 # ==================================================
 def toggle_expander_state(key: str):
+    """Toggle the boolean state of an expander in session state.
+    
+    Args:
+        key: Session state key to toggle
+    """
     st.session_state[key] = not st.session_state.get(key, False)
 
 
@@ -79,12 +97,19 @@ def toggle_expander_state(key: str):
 # Notifications
 # ==================================================
 def show_empty_warning():
+    """Display warning message when no document is provided."""
     st.warning("Please paste a document to analyze.")
 
 def show_analysis_success():
+    """Display success message after analysis completion."""
     st.success("Analysis complete")
 
 def show_analysis_error(msg: str):
+    """Display error message during analysis.
+    
+    Args:
+        msg: Error message to display
+    """
     st.error(msg)
 
 
@@ -92,6 +117,10 @@ def show_analysis_error(msg: str):
 # Page config (MUST be first in app.py)
 # ==================================================
 def setup_page():
+    """Configure Streamlit page settings. Must be called first in app.py.
+    
+    Sets page title and centered layout.
+    """
     st.set_page_config(
         page_title="medBillDozer",
         layout="centered"
@@ -102,6 +131,15 @@ def setup_page():
 # CSS (brand + layout)
 # ==================================================
 def inject_css():
+    """Inject custom CSS styles for branding and UI consistency.
+    
+    Includes styles for:
+    - Brand colors and variables
+    - Button styling (analyze button, copy buttons)
+    - Checkbox focus states with dashed outlines
+    - Accessibility improvements
+    - Layout and spacing
+    """
     st.markdown("""
     <style>
     :root {
@@ -229,6 +267,10 @@ def inject_css():
 # Header
 # ==================================================
 def render_header():
+    """Render the application header with logo and tagline.
+    
+    Displays the medBillDozer logo and descriptive text about the application's purpose.
+    """
     logo_path = Path("images/medBillDozer-logo-transparent.png")
 
     if logo_path.exists():
@@ -269,10 +311,28 @@ def render_header():
 # Utilities
 # ==================================================
 def _read_html(path: str) -> str:
+    """Read HTML file contents from disk.
+    
+    Args:
+        path: Path to HTML file
+    
+    Returns:
+        str: HTML file contents
+    """
     return Path(path).read_text(encoding="utf-8")
 
 
 def html_to_plain_text(html_doc: str) -> str:
+    """Convert HTML document to plain text.
+    
+    Removes script and style tags, extracts text content, and normalizes whitespace.
+    
+    Args:
+        html_doc: HTML content as string
+    
+    Returns:
+        str: Cleaned plain text content
+    """
     soup = BeautifulSoup(html_doc, "html.parser")
     for tag in soup(["script", "style"]):
         tag.decompose()
@@ -283,6 +343,14 @@ def html_to_plain_text(html_doc: str) -> str:
 
 
 def copy_to_clipboard_button(label: str, text: str):
+    """Render a custom button that copies text to clipboard.
+    
+    Uses HTML/JavaScript component to enable clipboard functionality.
+    
+    Args:
+        label: Button label text
+        text: Text content to copy when clicked
+    """
     button_id = f"copy_{uuid.uuid4().hex}"
     escaped = html.escape(text)
 
@@ -333,6 +401,14 @@ def copy_to_clipboard_button(label: str, text: str):
 # Document Rows (SINGLE SOURCE OF TRUTH)
 # ==================================================
 def render_document_rows(docs, html_docs, text_docs, key_prefix=""):
+    """Render expandable document rows with toggle and copy functionality.
+    
+    Args:
+        docs: List of (title, path) tuples
+        html_docs: List of HTML content strings
+        text_docs: List of plain text content strings
+        key_prefix: Prefix for Streamlit widget keys to avoid collisions
+    """
     from streamlit_extras.stylable_container import stylable_container
 
     for i, ((title, _), html_doc, text_doc) in enumerate(
@@ -372,6 +448,15 @@ def render_document_rows(docs, html_docs, text_docs, key_prefix=""):
 # Demo Documents (CLEAN + FINAL)
 # ==================================================
 def render_demo_documents():
+    """Render the demo documents section with sample medical bills.
+    
+    Displays 5 demo documents:
+    - Hospital bill (colonoscopy)
+    - Pharmacy receipt (FSA)
+    - Dental crown bill
+    - FSA claim history
+    - Insurance claim history
+    """
     st.markdown("### Demo Documents")
 
     docs = [
@@ -406,6 +491,11 @@ def render_demo_documents():
 # Inputs
 # ==================================================
 def render_input_area():
+    """Render the main text input area for document analysis.
+    
+    Returns:
+        str: User input text from the text area
+    """
     return st.text_area(
         "Paste bill, receipt, or claim history text",
         height=240,
@@ -414,6 +504,16 @@ def render_input_area():
 
 
 def render_provider_selector(providers: list[str]) -> str:
+    """Render analysis provider selection dropdown.
+    
+    Maps provider IDs to user-friendly display names.
+    
+    Args:
+        providers: List of available provider IDs
+    
+    Returns:
+        str: Selected provider ID
+    """
     display_map = {}
 
     for provider in providers:
@@ -439,6 +539,11 @@ def render_provider_selector(providers: list[str]) -> str:
 
 
 def render_analyze_button() -> bool:
+    """Render the primary 'Analyze with medBillDozer' button.
+    
+    Returns:
+        bool: True if button was clicked, False otherwise
+    """
     return st.button(
         "🚜 Analyze with medBillDozer",
         key="analyze_button",
@@ -450,6 +555,11 @@ def render_analyze_button() -> bool:
 # Results
 # ==================================================
 def render_results(result):
+    """Render analysis results including flagged issues and savings breakdown.
+    
+    Args:
+        result: AnalysisResult object or dict containing issues and metadata
+    """
     if not result:
         st.info("No analysis results available.")
         return
@@ -497,6 +607,7 @@ def render_results(result):
 # Footer
 # ==================================================
 def render_footer():
+    """Render application footer with disclaimer."""
     st.caption(
         "medBillDozer is a prototype for educational purposes only."
     )

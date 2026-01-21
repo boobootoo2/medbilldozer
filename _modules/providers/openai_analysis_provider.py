@@ -1,3 +1,9 @@
+"""OpenAI-powered healthcare document analysis provider.
+
+Provides GPT-based analysis of healthcare documents to identify billing issues,
+discrepancies, and potential patient savings.
+"""
+
 from openai import OpenAI
 import json
 from typing import Optional, Dict
