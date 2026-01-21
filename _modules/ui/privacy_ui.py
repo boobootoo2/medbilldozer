@@ -50,6 +50,38 @@ def _privacy_dialog():
     st.divider()
 
     st.markdown("### Cookie Preferences")
+    
+    with st.expander("ℹ️ What are cookies and what do they do?"):
+        st.markdown(
+            """
+            **Cookie Types & Purposes**
+            
+            **Essential Cookies** (Required)  
+            - Enable core functionality like session management
+            - Remember your privacy preferences during your visit
+            - Required for the application to work properly
+            - Cannot be disabled
+            
+            **Preference Cookies** (Optional)  
+            - Remember your UI preferences (theme, language, layout)
+            - Save your analysis method selection
+            - Store document viewing preferences
+            - Make your experience more personalized
+            
+            **Analytics Cookies** (Optional)  
+            - Help us understand how the app is used
+            - Identify which features are most helpful
+            - Improve performance and user experience
+            - All data is anonymized and aggregated
+            
+            **What You're Agreeing To:**
+            - Essential cookies are automatically enabled
+            - Optional cookies are only set if you enable them
+            - You can change preferences at any time
+            - No personal or medical data is ever stored in cookies
+            - All processing happens locally in your browser session
+            """
+        )
 
     st.checkbox(
         "Essential cookies (required)",
