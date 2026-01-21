@@ -270,10 +270,6 @@ def main():
 
             st.session_state["transaction_provenance"] = transaction_provenance
 
-            # --------------------------------------------------
-
-
-
             # Debug storage
             st.session_state.setdefault("extracted_facts", {})
             st.session_state["extracted_facts"][doc["document_id"]] = doc.get("facts")
