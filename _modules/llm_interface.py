@@ -25,6 +25,11 @@ class Issue:
     recommended_action: Optional[str] = None
     max_savings: Optional[float] = None
 
+    # 👇 NEW (does not break existing code)
+    source: str = "llm"          # "llm" | "deterministic"
+    confidence: Optional[float] = None
+
+
 
 @dataclass
 class AnalysisResult:

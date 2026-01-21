@@ -22,7 +22,6 @@ from _modules.medical_line_item_prompt import build_medical_line_item_prompt
 from _modules.dental_line_item_prompt import build_dental_line_item_prompt
 from _modules.insurance_claim_item_prompt import build_insurance_claim_item_prompt
 from _modules.fsa_claim_item_prompt import build_fsa_claim_item_prompt
-
 import json
 
 
@@ -67,6 +66,101 @@ def _run_phase2_prompt(prompt: str, model: str) -> Optional[str]:
     return None
 
 
+
+def deterministic_issues_from_facts(facts: dict) -> list[Issue]:
+    issues = []
+
+    # --- Duplicate medical CPTs ---
+    seen = set()
+    for item in facts.get("medical_line_items", []):
+        key = (item.get("date_of_service"), item.get("cpt_code"))
+        if key in seen:
+            issues.append(Issue(
+                type="duplicate_charge",
+                summary="Duplicate medical procedure billed",
+                evidence=(
+                    f"CPT {item.get('cpt_code')} appears more than once on "
+                    f"{item.get('date_of_service')} with patient responsibility "
+                    f"${item.get('patient_responsibility')}"
+                ),
+                max_savings=item.get("patient_responsibility"),
+                confidence=1.0,
+                source="deterministic",
+            ))
+        else:
+            seen.add(key)
+
+    # --- Duplicate dental CDT codes ---
+    seen = set()
+    for item in facts.get("dental_line_items", []):
+        key = (item.get("date_of_service"), item.get("cdt_code"))
+        if key in seen:
+            issues.append(Issue(
+                type="duplicate_charge",
+                summary="Duplicate dental procedure billed",
+                evidence=(
+                    f"CDT {item.get('cdt_code')} billed multiple times on "
+                    f"{item.get('date_of_service')}"
+                ),
+                max_savings=item.get("patient_responsibility"),
+                confidence=1.0,
+                source="deterministic",
+            ))
+        else:
+            seen.add(key)
+
+    return issues
+
+
+
+def deterministic_issues_from_facts(facts: dict) -> list[Issue]:
+    issues = []
+
+    # --- Duplicate medical CPTs ---
+    seen = set()
+    for item in facts.get("medical_line_items", []):
+        key = (item.get("date_of_service"), item.get("cpt_code"))
+        if key in seen:
+            issues.append(Issue(
+                type="duplicate_charge",
+                summary="Duplicate medical procedure billed",
+                evidence=(
+                    f"CPT {item.get('cpt_code')} appears more than once on "
+                    f"{item.get('date_of_service')}"
+                ),
+                code=item.get("cpt_code"),
+                date=item.get("date_of_service"),
+                max_savings=item.get("patient_responsibility"),
+                recommended_action="Contact the provider or insurer to verify duplicate billing.",
+                source="deterministic",
+                confidence=1.0,
+            ))
+        else:
+            seen.add(key)
+
+    # --- Duplicate dental CDT codes ---
+    seen = set()
+    for item in facts.get("dental_line_items", []):
+        key = (item.get("date_of_service"), item.get("cdt_code"))
+        if key in seen:
+            issues.append(Issue(
+                type="duplicate_charge",
+                summary="Duplicate dental procedure billed",
+                evidence=(
+                    f"CDT {item.get('cdt_code')} billed multiple times on "
+                    f"{item.get('date_of_service')}"
+                ),
+                code=item.get("cdt_code"),
+                date=item.get("date_of_service"),
+                max_savings=item.get("patient_responsibility"),
+                recommended_action="Ask the dental office whether this procedure was billed twice.",
+                source="deterministic",
+                confidence=1.0,
+            ))
+        else:
+            seen.add(key)
+
+    return issues
 
 def compute_deterministic_savings(facts: dict) -> float:
     savings = 0.0
@@ -422,6 +516,11 @@ class OrchestratorAgent:
         # call provider (fact-aware if possible)
         try:
             analysis = provider.analyze_document(raw_text, facts=facts)
+            # --- Add deterministic issues as first-class issues ---
+            deterministic_issues = deterministic_issues_from_facts(facts)
+
+            analysis.issues = (analysis.issues or []) + deterministic_issues
+
             workflow_log["analysis"]["mode"] = "facts+text"
         except TypeError:
             analysis = provider.analyze_document(raw_text)
@@ -433,10 +532,16 @@ class OrchestratorAgent:
         deterministic = compute_deterministic_savings(facts)
 
         analysis.meta["deterministic_savings"] = deterministic
-        analysis.meta["total_max_savings"] = max(
-            analysis.meta.get("total_max_savings", 0),
-            deterministic,
+        analysis.meta["llm_max_savings"] = round(
+            sum(i.max_savings or 0 for i in analysis.issues if getattr(i, "source", None) != "deterministic"),
+            2
         )
+
+        analysis.meta["total_max_savings"] = round(
+            sum(i.max_savings or 0 for i in analysis.issues),
+            2
+        )
+
 
 
         if not hasattr(analysis, "meta") or analysis.meta is None:
