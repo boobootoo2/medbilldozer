@@ -218,7 +218,7 @@ If the document appears to be a receipt:
 - Identify the merchant or pharmacy name
 - Extract receipt number, store ID, date, and time
 - Address and phone number often appear near the top
-- Line items are NOT required at this stage
+- Line items are extracted in a separate step after document classification.
 
 -----------------------------------
 OUTPUT RULES

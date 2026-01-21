@@ -5,12 +5,44 @@ from datetime import datetime
 import uuid
 import re
 
-from _modules.openai_langextractor import extract_facts_openai
-from _modules.gemini_langextractor import extract_facts_gemini
+from _modules.openai_langextractor import (
+    extract_facts_openai,
+    run_prompt_openai,
+)
+from _modules.gemini_langextractor import (
+    extract_facts_gemini,
+    run_prompt_gemini,
+)
+
 from _modules.local_heuristic_extractor import extract_facts_local
 from _modules.fact_normalizer import normalize_facts
 from _modules.llm_interface import ProviderRegistry
 from _modules.llm_interface import Issue
+from _modules.receipt_line_item_prompt import build_receipt_line_item_prompt
+import json
+
+def _clean_llm_json(text: str) -> str:
+    """
+    Cleans LLM output so it can be parsed as JSON.
+    Safe for OpenAI and Gemini.
+    """
+    if not text:
+        return text
+
+    text = text.strip()
+
+    # Remove ```json fences
+    text = re.sub(r"^```(?:json)?", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"```$", "", text)
+
+    # Strip leading commentary before JSON
+    first_brace = text.find("{")
+    if first_brace != -1:
+        text = text[first_brace:]
+
+    return text.strip()
+
+
 
 def normalize_issues(issues: list[Issue]) -> list[Issue]:
     for issue in issues:
@@ -173,6 +205,40 @@ class OrchestratorAgent:
         workflow_log["extraction"]["extractor"] = extractor
         workflow_log["extraction"]["facts"] = facts
         workflow_log["extraction"]["fact_count"] = len(facts or {})
+        
+        # --------------------------------------------------
+        # 3️⃣b Phase-2 receipt line-item extraction (OPTIONAL)
+        # --------------------------------------------------
+        document_type = facts.get("document_type")
+
+        if document_type in ("pharmacy_receipt", "fsa_receipt"):
+            try:
+                prompt = build_receipt_line_item_prompt(raw_text)
+
+                if extractor == "gemini":
+                    raw_response = run_prompt_gemini(prompt)
+                elif extractor == "openai":
+                    raw_response = run_prompt_openai(prompt)
+                else:
+                    raw_response = None
+
+                if raw_response:
+                    cleaned = _clean_llm_json(raw_response)
+                    parsed = json.loads(cleaned)
+                    receipt_items = parsed.get("receipt_items", [])
+
+                    if isinstance(receipt_items, list) and receipt_items:
+                        facts["receipt_items"] = receipt_items
+                        workflow_log["extraction"]["receipt_item_count"] = len(receipt_items)
+                    else:
+                        workflow_log["extraction"]["receipt_item_count"] = 0
+
+            except Exception as e:
+                workflow_log["extraction"]["receipt_extraction_error"] = str(e)
+                print("[receipt extraction error]", e)
+
+
+
 
         # --------------------------------------------------
         # 4️⃣ Choose analyzer

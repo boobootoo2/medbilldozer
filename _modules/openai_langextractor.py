@@ -64,3 +64,22 @@ def extract_facts_openai(raw_text: str) -> Dict[str, Optional[str]]:
     except Exception as e:
         print(f"[langextract] failed: {e}")
         return _safe_empty_result()
+
+def run_prompt_openai(prompt: str) -> str:
+    """
+    Runs a raw prompt using OpenAI and returns the text response.
+    Intended for Phase-2 extraction (receipt items, line items, etc).
+    SAFE: raises to caller (caller must catch).
+    """
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        temperature=0,
+        messages=[
+            {"role": "system", "content": "You extract structured data and return valid JSON only."},
+            {"role": "user", "content": prompt},
+        ],
+    )
+
+    content = response.choices[0].message.content or ""
+    return _clean_json(content)

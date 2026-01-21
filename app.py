@@ -256,7 +256,10 @@ def main():
             # --------------------------------------------------
             # Transaction normalization (document-independent)
             # --------------------------------------------------
-            line_items = result.get("line_items", [])
+            line_items = (result.get("facts") or {}).get("line_items", [])
+
+            if not line_items:
+                st.warning(f"No line items extracted for document {doc['document_id']}")
 
             normalized_transactions = normalize_line_items(
                 line_items=line_items,
@@ -266,18 +269,18 @@ def main():
             all_normalized_transactions.extend(normalized_transactions)
 
             # --------------------------------------------------
-            # Cross-document de-duplication
+            # Cross-document de-duplication (ONCE per run)
             # --------------------------------------------------
             unique_transactions, transaction_provenance = deduplicate_transactions(
                 all_normalized_transactions
             )
 
-            # Persist for debug / downstream use
             st.session_state["normalized_transactions"] = [
                 tx.__dict__ for tx in unique_transactions.values()
             ]
 
             st.session_state["transaction_provenance"] = transaction_provenance
+
             # --------------------------------------------------
 
 

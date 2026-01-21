@@ -37,3 +37,17 @@ def extract_facts_gemini(raw_text: str) -> Dict[str, Optional[str]]:
     except Exception as e:
         print(f"[gemini extractor] failed: {e}")
         return _safe_empty_result()
+
+def run_prompt_gemini(prompt: str) -> str:
+    """
+    Runs a raw prompt using Gemini and returns the text response.
+    Intended for Phase-2 extraction.
+    SAFE: raises to caller (caller must catch).
+    """
+
+    response = client.models.generate_content(
+        model="gemini-3-flash-preview",
+        contents=prompt,
+    )
+
+    return (response.text or "").strip()
