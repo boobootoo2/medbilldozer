@@ -23,6 +23,30 @@ make docs          # Generate documentation
 make docs-view     # Generate and view in browser
 ```
 
+### Git Pre-Commit Hook
+
+To ensure documentation stays up-to-date automatically, install the pre-commit hook:
+
+```bash
+# Install the hook
+make install-hooks
+
+# Or manually
+bash scripts/install-hooks.sh
+```
+
+Once installed, documentation will be automatically regenerated and staged with every commit. The hook:
+
+- Runs `make docs` before each commit
+- Detects if documentation files changed
+- Automatically stages updated docs with your commit
+- Ensures docs never fall out of sync with code
+
+To skip the hook temporarily (not recommended):
+```bash
+git commit --no-verify
+```
+
 ### Generated Documentation
 
 The script creates the following files in the `docs/` directory:
