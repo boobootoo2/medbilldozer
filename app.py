@@ -115,35 +115,9 @@ def register_providers():
 
 
 # ==================================================
-# Main analysis flow (single document)
-# ==================================================
-def handle_analysis(bill_text: str, provider_key: str, document_id: str):
-    if not bill_text.strip():
-        return
-
-    provider = ProviderRegistry.get(provider_key)
-    if not provider:
-        show_analysis_error("No analysis provider registered.")
-        return
-
-    with st.spinner(f"🚜 Analyzing document {document_id}…"):
-        try:
-            result = provider.analyze_document(bill_text)
-        except Exception as e:
-            show_analysis_error(f"Analysis failed: {e}")
-            return
-
-    st.markdown(f"## 📄 Document `{document_id}`")
-    show_analysis_success()
-    render_results(result)
-
-
-# ==================================================
 # App entry
 # ==================================================
 def main():
-    coverage_rows = []
-
     # --------------------------------------------------
     # Bootstrap + providers
     # --------------------------------------------------
@@ -243,10 +217,6 @@ def main():
             return
         if selected_provider == "heuristic":
             show_analysis_error("Local (Offline) analysis isn't wired yet. Use Smart/OpenAI for now.")
-            return
-
-        if not documents:
-            show_empty_warning()
             return
 
         # Aggregate savings across all documents for this run
