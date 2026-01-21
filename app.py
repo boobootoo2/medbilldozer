@@ -212,12 +212,19 @@ def main():
             )[1]
 
     # --------------------------------------------------
+    # Resolve Smart (None) to a concrete analyzer
+    # --------------------------------------------------
+    if selected_provider is None:
+        selected_provider = "gpt-4o-mini"
+
+    # --------------------------------------------------
     # Orchestrator (NO UI inside)
     # --------------------------------------------------
     agent = OrchestratorAgent(
         extractor_override=extractor_override,
         analyzer_override=analyzer_override or selected_provider,
     )
+
 
     # --------------------------------------------------
     # Cross-document transaction collection (per run)
