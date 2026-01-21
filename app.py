@@ -9,6 +9,10 @@ from _modules.openai_analysis_provider import OpenAIAnalysisProvider
 from _modules.orchestrator_agent import OrchestratorAgent
 from _modules.serialization import analysis_to_dict
 
+from _modules.coverage_matrix import build_coverage_matrix
+from _modules.ui_coverage_matrix import render_coverage_matrix
+
+
 from _modules.transaction_normalization import (
     normalize_line_items,
     deduplicate_transactions,
@@ -135,6 +139,8 @@ def handle_analysis(bill_text: str, provider_key: str, document_id: str):
 # App entry
 # ==================================================
 def main():
+    coverage_rows = []
+
     # --------------------------------------------------
     # Bootstrap + providers
     # --------------------------------------------------
@@ -170,6 +176,9 @@ def main():
             index=0,
         )
         selected_provider = ENGINE_OPTIONS[engine_label]
+
+    coverage_rows = build_coverage_matrix(documents)
+    render_coverage_matrix(coverage_rows)
 
     # --------------------------------------------------
     # Debug controls (sidebar only)
@@ -316,6 +325,8 @@ def main():
 
         # Render the aggregate summary ONCE (after all documents)
         render_total_savings_summary(total_potential_savings, per_document_savings)
+        coverage_rows = build_coverage_matrix(documents)
+        render_coverage_matrix(coverage_rows)
 
     # --------------------------------------------------
     # Debug output (read-only)
@@ -342,6 +353,9 @@ def main():
             st.markdown("### Transaction Provenance")
             st.json(st.session_state.get("transaction_provenance", {}))
 
+            st.markdown("### Coverage Matrix (Raw)")
+            st.json([row.__dict__ for row in coverage_rows])
+            
 
     # --------------------------------------------------
     # Footer (ONCE)
