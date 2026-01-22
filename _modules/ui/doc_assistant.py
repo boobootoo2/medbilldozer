@@ -443,21 +443,53 @@ def render_doc_assistant():
     
     with col1:
         if st.button("🚀 Getting Started", width="stretch"):
-            st.session_state.assistant_question = "How do I get started with medBillDozer?"
+            question = "How do I use medBillDozer to analyze my medical bills as a patient?"
+            dispatch_billy_event("BILLY_TALK_START")
+            answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
+            dispatch_billy_event("BILLY_TALK_STOP")
+            st.session_state.assistant_history.append({
+                "question": question,
+                "answer": answer,
+            })
+            st.rerun()
     
     with col2:
         if st.button("🔒 Privacy Info", width="stretch"):
-            st.session_state.assistant_question = "Is my medical data private and secure?"
+            question = "Is my medical bill data private and secure when I use this app?"
+            dispatch_billy_event("BILLY_TALK_START")
+            answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
+            dispatch_billy_event("BILLY_TALK_STOP")
+            st.session_state.assistant_history.append({
+                "question": question,
+                "answer": answer,
+            })
+            st.rerun()
     
     col3, col4 = st.sidebar.columns(2)
     
     with col3:
         if st.button("💰 Savings", width="stretch"):
-            st.session_state.assistant_question = "How do I interpret the savings estimates?"
+            question = "What do the savings estimates mean and how accurate are they?"
+            dispatch_billy_event("BILLY_TALK_START")
+            answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
+            dispatch_billy_event("BILLY_TALK_STOP")
+            st.session_state.assistant_history.append({
+                "question": question,
+                "answer": answer,
+            })
+            st.rerun()
     
     with col4:
         if st.button("❓ Troubleshoot", width="stretch"):
-            st.session_state.assistant_question = "My analysis failed. What should I do?"
+            question = "The analysis didn't work or I got an error. What should I try?"
+            dispatch_billy_event("BILLY_TALK_START")
+            answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
+            dispatch_billy_event("BILLY_TALK_STOP")
+            st.session_state.assistant_history.append({
+                "question": question,
+                "answer": answer,
+            })
+            st.rerun()
 
     # Question input
     user_question = st.sidebar.text_input(

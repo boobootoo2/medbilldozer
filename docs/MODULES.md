@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 26
+**Total Modules:** 27
 
 ### Application (1 modules)
 
@@ -40,13 +40,14 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (5 modules)
+### UI Components (6 modules)
 
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.ui**: No description
 - **_modules.ui.ui_coverage_matrix**: Coverage matrix UI rendering.
 - **_modules.ui.ui_documents**: Document input and management UI.
+- **_modules.ui.ui_pipeline_dag**: Pipeline DAG Visualization - Visual representation of document analysis workflow.
 
 ### Utilities (2 modules)
 
@@ -1163,6 +1164,7 @@ Render application footer with disclaimer.
 
 ### Dependencies
 
+- `_modules.ui.ui_pipeline_dag`
 - `_modules.utils.runtime_flags`
 
 ## Module: `_modules.ui.ui_coverage_matrix`
@@ -1237,6 +1239,100 @@ returns list of document dicts ready for analysis.
 Returns:
     list[dict]: List of document dicts with 'raw_text', 'facts', 'analysis', 'document_id' keys.
                Returns empty list if validation fails.
+
+
+## Module: `_modules.ui.ui_pipeline_dag`
+
+**Source:** `_modules/ui/ui_pipeline_dag.py`
+
+### Description
+
+Pipeline DAG Visualization - Visual representation of document analysis workflow.
+
+Displays a directed acyclic graph showing the data pipeline stages for each
+document's analysis: classification → extraction → phase-2 parsing → analysis.
+
+### Functions
+
+#### `create_pipeline_dag_container(document_id)`
+
+Create an empty expandable container for live pipeline updates.
+
+Returns the container and placeholder objects for progressive updates.
+
+Args:
+    document_id: Optional document identifier for display
+    
+Returns:
+    tuple: (expander, placeholder) for updating the DAG
+
+#### `update_pipeline_dag(placeholder, workflow_log, document_id)`
+
+Update an existing pipeline DAG placeholder with current workflow state.
+
+Args:
+    placeholder: Streamlit placeholder object to update
+    workflow_log: Current workflow log dict with pipeline stages
+    document_id: Optional friendly document identifier for display
+
+#### `render_pipeline_dag(workflow_log, document_id)`
+
+Render a visual DAG showing the document processing pipeline.
+
+Displays the complete workflow stages with status indicators:
+- Pre-extraction (classification & feature detection)
+- Extraction (fact extraction with chosen extractor)
+- Phase-2 parsing (line-item extraction by document type)
+- Analysis (issue detection with chosen analyzer)
+
+Args:
+    workflow_log: Workflow log dict from OrchestratorAgent containing pipeline stages
+    document_id: Optional document identifier for display
+
+#### `_build_dag_html(pre_extraction, extraction, analysis, live_update) -> str`
+
+Build HTML representation of the DAG with status indicators.
+
+Args:
+    pre_extraction: Pre-extraction stage data
+    extraction: Extraction stage data
+    analysis: Analysis stage data
+    live_update: Whether this is a live update (shows in-progress states)
+    
+Returns:
+    HTML string with styled DAG visualization
+
+#### `_build_phase2_node(label, count, doc_type, extraction, has_extraction) -> str`
+
+Build Phase-2 parsing node HTML if line items were extracted.
+
+Args:
+    label: Display label for the phase-2 stage
+    count: Number of line items extracted
+    doc_type: Document type
+    extraction: Extraction stage data for error checking
+    has_extraction: Whether extraction stage is complete
+    
+Returns:
+    HTML string for the phase-2 node
+
+#### `_render_detailed_logs(pre_extraction, extraction, analysis)`
+
+Render detailed logs in expandable JSON format.
+
+Args:
+    pre_extraction: Pre-extraction stage data
+    extraction: Extraction stage data
+    analysis: Analysis stage data
+
+#### `render_pipeline_comparison(workflow_logs)`
+
+Render side-by-side comparison of multiple document pipelines.
+
+Useful for batch analysis to compare processing paths across documents.
+
+Args:
+    workflow_logs: List of workflow log dicts from multiple document analyses
 
 
 ## Module: `_modules.utils.runtime_flags`
@@ -1366,5 +1462,6 @@ Orchestrates the complete workflow:
 - `_modules.ui.ui`
 - `_modules.ui.ui_coverage_matrix`
 - `_modules.ui.ui_documents`
+- `_modules.ui.ui_pipeline_dag`
 - `_modules.utils.runtime_flags`
 - `_modules.utils.serialization`
