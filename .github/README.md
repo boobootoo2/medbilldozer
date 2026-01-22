@@ -47,11 +47,3 @@ pip install -r requirements-test.txt
 # Run tests
 python3 -m pytest tests/ -v
 ```
-
-### Badge
-
-Add this badge to your README.md to show test status:
-
-```markdown
-![Tests](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml/badge.svg)
-```
