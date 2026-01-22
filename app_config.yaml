@@ -1,0 +1,115 @@
+# medBillDozer Application Configuration
+# This file controls optional features and application behavior
+
+# ============================================================================
+# FEATURE FLAGS
+# ============================================================================
+
+features:
+  # Documentation Assistant - AI-powered help sidebar with Billy/Billie avatar
+  assistant:
+    enabled: true
+    default_provider: "openai"  # "openai" or "gemini"
+    default_character: "billy"  # "billy" or "billie"
+  
+  # Pipeline DAG - Visual workflow representation for document processing
+  dag:
+    enabled: true
+    expanded_by_default: true
+    show_comparison_table: true  # Show multi-document comparison table
+  
+  # Debug Mode - Show internal processing details and JSON outputs
+  debug:
+    enabled: false
+    show_orchestration: true
+    show_workflow_logs: true
+    show_raw_analysis: true
+  
+  # Privacy UI - Data privacy information and controls
+  privacy_ui:
+    enabled: true
+  
+  # Coverage Matrix - Insurance coverage tracking (if applicable)
+  coverage_matrix:
+    enabled: true
+
+# ============================================================================
+# UI PREFERENCES
+# ============================================================================
+
+ui:
+  # Page configuration
+  page_title: "medBillDozer"
+  page_icon: "🚜"
+  layout: "wide"  # "wide" or "centered"
+  
+  # Sidebar configuration
+  sidebar:
+    show_logo: true
+    show_quick_help_buttons: true
+    max_conversation_history: 3  # Number of recent assistant conversations to show
+  
+  # Results display
+  results:
+    show_savings_estimate: true
+    show_line_items: true
+    show_detailed_facts: true
+    expand_issues_by_default: true
+
+# ============================================================================
+# DEMO DOCUMENTS
+# ============================================================================
+
+demo:
+  enabled: true
+  available_demos:
+    - "sample_colonoscopy_bill.html"
+    - "sample_dental_crown_bill.html"
+    - "sample_pharmacy_receipt_fsa.html"
+    - "sample_insurance_claim_history_zero_oop.html"
+    - "sample_fsa_claim_history.html"
+
+# ============================================================================
+# AI PROVIDER DEFAULTS
+# ============================================================================
+
+ai_providers:
+  # Default provider for document analysis
+  default_analysis_provider: "openai"  # "openai" or "gemini"
+  
+  # Available providers (users can switch in UI if multiple enabled)
+  available_providers:
+    - "openai"
+    - "gemini"
+  
+  # Model preferences (used if provider supports multiple models)
+  models:
+    openai:
+      analysis: "gpt-4o-mini"
+      assistant: "gpt-4o-mini"
+    gemini:
+      analysis: "gemini-2.0-flash-exp"
+      assistant: "gemini-2.0-flash-exp"
+
+# ============================================================================
+# PROCESSING LIMITS
+# ============================================================================
+
+limits:
+  max_documents_per_batch: 10
+  max_document_size_chars: 100000
+  analysis_timeout_seconds: 120
+
+# ============================================================================
+# DEVELOPER OPTIONS
+# ============================================================================
+
+developer:
+  # Show technical errors to users (vs friendly error messages)
+  show_technical_errors: false
+  
+  # Enable performance profiling
+  enable_profiling: false
+  
+  # Log level for console output
+  log_level: "INFO"  # "DEBUG", "INFO", "WARNING", "ERROR"
