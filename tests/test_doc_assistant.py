@@ -15,13 +15,25 @@ from unittest.mock import patch, Mock, MagicMock, mock_open
 import base64
 import sys
 
-# Mock streamlit and its submodules before importing DocumentationAssistant
+# Mock all external dependencies before importing DocumentationAssistant
+# Mock Streamlit
 streamlit_mock = MagicMock()
 streamlit_mock.components = MagicMock()
 streamlit_mock.components.v1 = MagicMock()
 sys.modules['streamlit'] = streamlit_mock
 sys.modules['streamlit.components'] = streamlit_mock.components
 sys.modules['streamlit.components.v1'] = streamlit_mock.components.v1
+
+# Mock OpenAI
+openai_mock = MagicMock()
+sys.modules['openai'] = openai_mock
+
+# Mock Google GenAI
+google_mock = MagicMock()
+google_genai_mock = MagicMock()
+google_mock.genai = google_genai_mock
+sys.modules['google'] = google_mock
+sys.modules['google.genai'] = google_genai_mock
 
 from _modules.ui.doc_assistant import DocumentationAssistant
 
