@@ -13,6 +13,16 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch, Mock, MagicMock, mock_open
 import base64
+import sys
+
+# Mock streamlit and its submodules before importing DocumentationAssistant
+streamlit_mock = MagicMock()
+streamlit_mock.components = MagicMock()
+streamlit_mock.components.v1 = MagicMock()
+sys.modules['streamlit'] = streamlit_mock
+sys.modules['streamlit.components'] = streamlit_mock.components
+sys.modules['streamlit.components.v1'] = streamlit_mock.components.v1
+
 from _modules.ui.doc_assistant import DocumentationAssistant
 
 
