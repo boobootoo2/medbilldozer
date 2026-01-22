@@ -155,3 +155,5 @@ wcwidth==0.2.14
 websockets==15.0.1
 wheel==0.45.1
 yarl==1.22.0
+pytest==8.3.4
+pytest-mock==3.14.0
