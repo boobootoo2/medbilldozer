@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 26
+**Total Modules:** 28
 
 ### Application (1 modules)
 
@@ -40,16 +40,18 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (5 modules)
+### UI Components (6 modules)
 
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.ui**: No description
 - **_modules.ui.ui_coverage_matrix**: Coverage matrix UI rendering.
 - **_modules.ui.ui_documents**: Document input and management UI.
+- **_modules.ui.ui_pipeline_dag**: Pipeline DAG Visualization - Visual representation of document analysis workflow.
 
-### Utilities (2 modules)
+### Utilities (3 modules)
 
+- **_modules.utils.config**: Application Configuration Manager.
 - **_modules.utils.runtime_flags**: Runtime flags and feature toggles.
 - **_modules.utils.serialization**: Serialization utilities for converting analysis objects to dicts.
 
@@ -912,6 +914,10 @@ Documentation Assistant - AI-powered help sidebar.
 Provides contextual help and answers to user questions by reading
 the comprehensive documentation as a source of truth.
 
+### Constants
+
+- **`_BILLY_IMAGES_CACHE`**: `None`
+
 ### Classes
 
 #### `DocumentationAssistant`
@@ -947,6 +953,12 @@ AI-powered documentation assistant that provides contextual help.
 
 ### Functions
 
+#### `dispatch_billy_event(event_type)`
+
+#### `_get_billy_images()`
+
+Load and cache Billy avatar images as base64 data URIs.
+
 #### `calculate_blink_probability() -> bool`
 
 Calculate if avatar should blink using Fourier transform harmonics.
@@ -959,8 +971,6 @@ Returns:
     True if avatar should blink, False otherwise
 
 #### `render_doc_assistant()`
-
-Render the documentation assistant in the sidebar.
 
 #### `render_contextual_help(context)`
 
@@ -1169,6 +1179,7 @@ Render application footer with disclaimer.
 
 ### Dependencies
 
+- `_modules.ui.ui_pipeline_dag`
 - `_modules.utils.runtime_flags`
 
 ## Module: `_modules.ui.ui_coverage_matrix`
@@ -1243,6 +1254,172 @@ returns list of document dicts ready for analysis.
 Returns:
     list[dict]: List of document dicts with 'raw_text', 'facts', 'analysis', 'document_id' keys.
                Returns empty list if validation fails.
+
+
+## Module: `_modules.ui.ui_pipeline_dag`
+
+**Source:** `_modules/ui/ui_pipeline_dag.py`
+
+### Description
+
+Pipeline DAG Visualization - Visual representation of document analysis workflow.
+
+Displays a directed acyclic graph showing the data pipeline stages for each
+document's analysis: classification → extraction → phase-2 parsing → analysis.
+
+### Functions
+
+#### `create_pipeline_dag_container(document_id)`
+
+Create an empty expandable container for live pipeline updates.
+
+Returns the container and placeholder objects for progressive updates.
+
+Args:
+    document_id: Optional document identifier for display
+    
+Returns:
+    tuple: (expander, placeholder) for updating the DAG
+
+#### `update_pipeline_dag(placeholder, workflow_log, document_id)`
+
+Update an existing pipeline DAG placeholder with current workflow state.
+
+Args:
+    placeholder: Streamlit placeholder object to update
+    workflow_log: Current workflow log dict with pipeline stages
+    document_id: Optional friendly document identifier for display
+
+#### `render_pipeline_dag(workflow_log, document_id)`
+
+Render a visual DAG showing the document processing pipeline.
+
+Displays the complete workflow stages with status indicators:
+- Pre-extraction (classification & feature detection)
+- Extraction (fact extraction with chosen extractor)
+- Phase-2 parsing (line-item extraction by document type)
+- Analysis (issue detection with chosen analyzer)
+
+Args:
+    workflow_log: Workflow log dict from OrchestratorAgent containing pipeline stages
+    document_id: Optional document identifier for display
+
+#### `_build_dag_html(pre_extraction, extraction, analysis, live_update) -> str`
+
+Build HTML representation of the DAG with status indicators.
+
+Args:
+    pre_extraction: Pre-extraction stage data
+    extraction: Extraction stage data
+    analysis: Analysis stage data
+    live_update: Whether this is a live update (shows in-progress states)
+    
+Returns:
+    HTML string with styled DAG visualization
+
+#### `_build_phase2_node(label, count, doc_type, extraction, has_extraction) -> str`
+
+Build Phase-2 parsing node HTML if line items were extracted.
+
+Args:
+    label: Display label for the phase-2 stage
+    count: Number of line items extracted
+    doc_type: Document type
+    extraction: Extraction stage data for error checking
+    has_extraction: Whether extraction stage is complete
+    
+Returns:
+    HTML string for the phase-2 node
+
+#### `_render_detailed_logs(pre_extraction, extraction, analysis)`
+
+Render detailed logs in expandable JSON format.
+
+Args:
+    pre_extraction: Pre-extraction stage data
+    extraction: Extraction stage data
+    analysis: Analysis stage data
+
+#### `render_pipeline_comparison(workflow_logs)`
+
+Render side-by-side comparison of multiple document pipelines.
+
+Useful for batch analysis to compare processing paths across documents.
+
+Args:
+    workflow_logs: List of workflow log dicts from multiple document analyses
+
+
+## Module: `_modules.utils.config`
+
+**Source:** `_modules/utils/config.py`
+
+### Description
+
+Application Configuration Manager.
+
+Loads and provides access to application configuration from app_config.yaml.
+Provides fallback defaults if config file is missing or incomplete.
+
+### Classes
+
+#### `AppConfig`
+
+Application configuration manager with fallback defaults.
+
+**Methods:**
+
+- **`__init__(self, config_path)`**
+  - Initialize configuration manager.
+
+- **`_load_config(self) -> Dict[str, Any]`**
+  - Load configuration from YAML file with fallback to defaults.
+
+- **`_deep_merge(self, base, override) -> Dict`**
+  - Deep merge two dictionaries, with override taking precedence.
+
+- **`get(self, key_path, default) -> Any`**
+  - Get configuration value by dot-notation path.
+
+- **`is_feature_enabled(self, feature_name) -> bool`**
+  - Check if a feature is enabled.
+
+- **`reload(self)`**
+  - Reload configuration from file.
+
+
+### Functions
+
+#### `get_config() -> AppConfig`
+
+Get the global configuration instance.
+
+Returns:
+    AppConfig instance
+
+#### `reload_config()`
+
+Reload the global configuration from file.
+
+#### `is_assistant_enabled() -> bool`
+
+Check if documentation assistant feature is enabled.
+
+#### `is_dag_enabled() -> bool`
+
+Check if pipeline DAG visualization is enabled.
+
+#### `is_debug_enabled() -> bool`
+
+Check if debug mode is enabled.
+
+#### `is_privacy_ui_enabled() -> bool`
+
+Check if privacy UI is enabled.
+
+#### `is_coverage_matrix_enabled() -> bool`
+
+Check if coverage matrix feature is enabled.
 
 
 ## Module: `_modules.utils.runtime_flags`
@@ -1372,5 +1549,7 @@ Orchestrates the complete workflow:
 - `_modules.ui.ui`
 - `_modules.ui.ui_coverage_matrix`
 - `_modules.ui.ui_documents`
+- `_modules.ui.ui_pipeline_dag`
+- `_modules.utils.config`
 - `_modules.utils.runtime_flags`
 - `_modules.utils.serialization`

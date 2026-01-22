@@ -8,9 +8,62 @@ import streamlit as st
 from pathlib import Path
 from typing import Optional, Dict, List
 import re
-import base64
 import time
-import numpy as np
+import random
+import streamlit.components.v1 as components
+import base64
+
+
+# Module-level cache for avatar images (loaded once per server, not per session)
+_BILLY_IMAGES_CACHE = None
+
+def dispatch_billy_event(event_type: str):
+    components.html(
+        f"""
+        <script>
+            window.parent.document.dispatchEvent(
+                new CustomEvent("billy-event", {{
+                    detail: {{ type: "{event_type}" }}
+                }})
+            );
+        </script>
+        """,
+        height=0,
+    )
+
+
+
+def _get_billy_images():
+    """Load and cache Billy avatar images as base64 data URIs."""
+    global _BILLY_IMAGES_CACHE
+    
+    if _BILLY_IMAGES_CACHE is None:
+        avatar_dir = Path(__file__).parent.parent.parent / "static" / "images" / "avatars"
+        avatar_images = [
+            "billy__eyes_open__ready.png",           # 0
+            "billy__eyes_closed__ready.png",         # 1
+            "billy__eyes_open__talking.png",         # 2
+            "billy__eyes_closed__talking.png",       # 3
+            "billy__eyes_open__happy.png",           # 4
+            "billy__eyes_open__billdozer_up.png",    # 5
+            "billy__eyes_open__billdozer_down.png",  # 6
+            "billy__eyes_open__smiling.png",         # 7
+        ]
+        
+        # Convert to base64 data URIs
+        b64_images = []
+        for img_name in avatar_images:
+            img_path = avatar_dir / img_name
+            if img_path.exists():
+                with open(img_path, 'rb') as f:
+                    b64 = base64.b64encode(f.read()).decode()
+                    b64_images.append(f"data:image/png;base64,{b64}")
+            else:
+                b64_images.append("")
+        
+        _BILLY_IMAGES_CACHE = b64_images
+    
+    return _BILLY_IMAGES_CACHE
 
 
 class DocumentationAssistant:
@@ -241,7 +294,191 @@ def calculate_blink_probability() -> bool:
 
 
 def render_doc_assistant():
+    if "assistant_talking" not in st.session_state:
+        st.session_state.assistant_talking = False
+    
+    # Initialize avatar character selection
+    if "avatar_character" not in st.session_state:
+        st.session_state.avatar_character = "billy"
+
     """Render the documentation assistant in the sidebar."""
+    
+    def render_assistant_avatar():
+        talking = st.session_state.assistant_talking
+        character = st.session_state.avatar_character
+        character_name = character.capitalize()
+        
+        # Embedded HTML/CSS/JS from avatar_prototype.html
+        avatar_html = f"""
+        <div style="display: flex; justify-content: center; padding: 12px 0;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div class="child-div nameplate {character}" id="billyAvatar">
+                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_open__ready.png" style="display: block;">
+                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_closed__ready.png" style="display: none;">
+                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_open__talking.png" style="display: none;">
+                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_closed__talking.png" style="display: none;">
+                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_open__smiling.png" style="display: none;">
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            .child-div {{
+                width: 80px;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+                position: relative;
+            }}
+            
+            .avatar-img {{
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                object-fit: cover;
+                background: white;
+                border: 2px solid rgba(255, 255, 255, 0.8);
+            }}
+            
+            .child-div.nameplate::after {{
+                content: "";
+                position: absolute;
+                top: 100%;
+                margin-top: 8px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 92px;
+                height: 26px;
+                border-radius: 6px;
+                background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.15) 18%, rgba(20,20,20,0.95) 55%, rgba(255,255,255,0.18) 100%);
+                box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(0,0,0,0.85), 0 3px 6px rgba(0,0,0,0.35);
+                z-index: 1;
+            }}
+            
+            .child-div.nameplate.billy::before {{
+                content: "Billy D.";
+                position: absolute;
+                top: calc(100% + 16px);
+                left: 50%;
+                transform: translateX(-50%);
+                width: 92px;
+                text-align: center;
+                font-size: 12px;
+                font-weight: 900;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                color: #ffffff;
+                text-shadow: 0 1px 0 rgba(0,0,0,0.95), 0 -1px 0 rgba(255,255,255,0.35), 0 0 8px rgba(255,255,255,0.35);
+                z-index: 2;
+            }}
+            
+            .child-div.nameplate.billie::before {{
+                content: "Billie D.";
+                position: absolute;
+                top: calc(100% + 16px);
+                left: 50%;
+                transform: translateX(-50%);
+                width: 92px;
+                text-align: center;
+                font-size: 12px;
+                font-weight: 900;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                color: #ffffff;
+                text-shadow: 0 1px 0 rgba(0,0,0,0.95), 0 -1px 0 rgba(255,255,255,0.35), 0 0 8px rgba(255,255,255,0.35);
+                z-index: 2;
+            }}
+        </style>
+        
+        <script>
+    let idleTimers = [];
+    let talkingTimers = [];
+    const div = document.getElementById('billyAvatar');
+
+    function showOnly(index) {{
+        const imgs = div.querySelectorAll('img');
+        imgs.forEach((img, i) => {{
+            img.style.display = i === index ? 'block' : 'none';
+        }});
+    }}
+
+    function scheduleBlink() {{
+        const delay = Math.random() * 4000 + 4000;
+        const timer = setTimeout(() => {{
+            if (div.classList.contains('talking')) return;
+            showOnly(1);
+            setTimeout(() => {{
+                showOnly(0);
+                scheduleBlink();
+            }}, 150);
+        }}, delay);
+        idleTimers.push(timer);
+    }}
+
+    function startTalking() {{
+        idleTimers.forEach(t => clearTimeout(t));
+        idleTimers = [];
+
+        div.classList.add('talking');
+
+        function cycleTalking() {{
+            if (!div.classList.contains('talking')) return;
+            const index = Math.floor(Math.random() * 2) + 2;
+            showOnly(index);
+            const timer = setTimeout(cycleTalking, Math.random() * 800 + 400);
+            talkingTimers.push(timer);
+        }}
+
+        cycleTalking();
+    }}
+
+    function stopTalking() {{
+        div.classList.remove('talking');
+        talkingTimers.forEach(t => clearTimeout(t));
+        talkingTimers = [];
+        showOnly(4); // smiling
+        setTimeout(() => {{
+            showOnly(0);
+            scheduleBlink();
+        }}, 5000);
+    }}
+
+    // 🔑 LISTEN FOR EVENTS FROM STREAMLIT
+    window.parent.document.addEventListener("billy-event", (event) => {{
+        if (!event.detail || !event.detail.type) return;
+
+        switch (event.detail.type) {{
+            case "BILLY_TALK_START":
+                startTalking();
+                break;
+            case "BILLY_TALK_STOP":
+                stopTalking();
+                break;
+        }}
+    }});
+
+
+    scheduleBlink();
+</script>
+
+        """
+        
+        with st.sidebar:
+            components.html(avatar_html, height=140)
+    
+    # Render avatar at the top
+    render_assistant_avatar()
+    
+    # Toggle button for character switch
+    current_character = st.session_state.avatar_character
+    other_character = "billie" if current_character == "billy" else "billy"
+    button_label = f"Switch to {other_character.capitalize()}"
+    
+    if st.sidebar.button(button_label, key="character_toggle"):
+        st.session_state.avatar_character = other_character
+        st.rerun()
+    
     st.sidebar.markdown("---")
     
     # Smile state tracking (explicit, no magic numbers)
@@ -364,7 +601,7 @@ def render_doc_assistant():
 
     
     # AI provider selection
-    ai_provider = st.sidebar.radio(
+    ai_provider = st.sidebar.selectbox(
         "Assistant AI Provider:",
         ["openai", "gemini"],
         help="Choose which AI service to use for the assistant"
@@ -376,23 +613,55 @@ def render_doc_assistant():
     col1, col2 = st.sidebar.columns(2)
     
     with col1:
-        if st.button("🚀 Getting Started", use_container_width=True):
-            st.session_state.assistant_question = "How do I get started with medBillDozer?"
+        if st.button("🚀 Getting Started", width="stretch"):
+            question = "How do I use medBillDozer to analyze my medical bills as a patient?"
+            dispatch_billy_event("BILLY_TALK_START")
+            answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
+            dispatch_billy_event("BILLY_TALK_STOP")
+            st.session_state.assistant_history.append({
+                "question": question,
+                "answer": answer,
+            })
+            st.rerun()
     
     with col2:
-        if st.button("🔒 Privacy Info", use_container_width=True):
-            st.session_state.assistant_question = "Is my medical data private and secure?"
+        if st.button("🔒 Privacy Info", width="stretch"):
+            question = "Is my medical bill data private and secure when I use this app?"
+            dispatch_billy_event("BILLY_TALK_START")
+            answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
+            dispatch_billy_event("BILLY_TALK_STOP")
+            st.session_state.assistant_history.append({
+                "question": question,
+                "answer": answer,
+            })
+            st.rerun()
     
     col3, col4 = st.sidebar.columns(2)
     
     with col3:
-        if st.button("💰 Savings", use_container_width=True):
-            st.session_state.assistant_question = "How do I interpret the savings estimates?"
+        if st.button("💰 Savings", width="stretch"):
+            question = "What do the savings estimates mean and how accurate are they?"
+            dispatch_billy_event("BILLY_TALK_START")
+            answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
+            dispatch_billy_event("BILLY_TALK_STOP")
+            st.session_state.assistant_history.append({
+                "question": question,
+                "answer": answer,
+            })
+            st.rerun()
     
     with col4:
-        if st.button("❓ Troubleshoot", use_container_width=True):
-            st.session_state.assistant_question = "My analysis failed. What should I do?"
-    
+        if st.button("❓ Troubleshoot", width="stretch"):
+            question = "The analysis didn't work or I got an error. What should I try?"
+            dispatch_billy_event("BILLY_TALK_START")
+            answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
+            dispatch_billy_event("BILLY_TALK_STOP")
+            st.session_state.assistant_history.append({
+                "question": question,
+                "answer": answer,
+            })
+            st.rerun()
+
     # Question input
     user_question = st.sidebar.text_input(
         "Ask a question:",
@@ -406,42 +675,19 @@ def render_doc_assistant():
         del st.session_state.assistant_question
     
     # Ask button
-    ask_button = st.sidebar.button("Ask Assistant", type="primary", use_container_width=True)
+    ask_button = st.sidebar.button("Ask Assistant", type="primary", width="stretch")
     
-    # Check if we're in the middle of processing
-    if 'processing_question' in st.session_state and st.session_state.processing_question:
-        # Get the queued question
-        question = st.session_state.queued_question
-        provider = st.session_state.queued_provider
-        
-        # Set speaking state for animation
-        st.session_state.assistant_is_speaking = True
-        
+    # Process question
+    if ask_button and user_question.strip():
         with st.spinner("🤔 Consulting documentation..."):
-            answer = st.session_state.doc_assistant.get_answer(question, provider)
-
-            # Stop talking → smile for 10 seconds
-            st.session_state.assistant_is_speaking = False
-            st.session_state.assistant_smile_until = time.time() + 10.0
-            st.session_state.processing_question = False
+            answer = st.session_state.doc_assistant.get_answer(user_question, ai_provider)
             
             # Add to history
             st.session_state.assistant_history.append({
-                'question': question,
+                'question': user_question,
                 'answer': answer
             })
-        
-        st.rerun()
-    
-    # Process question button click
-    if ask_button and user_question.strip():
-        # Start speaking animation immediately
-        st.session_state.assistant_is_speaking = True
-        # Queue the question for processing
-        st.session_state.processing_question = True
-        st.session_state.queued_question = user_question
-        st.session_state.queued_provider = ai_provider
-        st.rerun()
+            st.rerun()
     
     # Display conversation history (most recent first)
     if st.session_state.assistant_history:
@@ -455,7 +701,7 @@ def render_doc_assistant():
     
     # Clear history button
     if st.session_state.assistant_history:
-        if st.sidebar.button("Clear History", use_container_width=True):
+        if st.sidebar.button("Clear History", width="stretch"):
             st.session_state.assistant_history = []
             st.rerun()
     
@@ -481,14 +727,6 @@ def render_contextual_help(context: str):
     Args:
         context: Current context (e.g., 'input', 'results', 'error')
     """
-    # Initialize dismissed help state
-    if 'dismissed_help' not in st.session_state:
-        st.session_state.dismissed_help = set()
-    
-    # Check if this context has been dismissed
-    if context in st.session_state.dismissed_help:
-        return
-    
     help_messages = {
         'input': {
             'icon': '📝',
@@ -519,47 +757,6 @@ def render_contextual_help(context: str):
     
     if context in help_messages:
         help_info = help_messages[context]
-        
-        # Create dismissible bubble with custom HTML
-        st.sidebar.markdown(f"""
-        <style>
-        .help-bubble {{
-            position: relative;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }}
-        .help-bubble-header {{
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.5rem;
-        }}
-        .help-bubble-title {{
-            font-weight: 600;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }}
-        .help-bubble-message {{
-            font-size: 0.9rem;
-            line-height: 1.5;
-            opacity: 0.95;
-        }}
-        </style>
-        <div class="help-bubble">
-            <div class="help-bubble-header">
-                <div class="help-bubble-title">{help_info['icon']} {help_info['title']}</div>
-            </div>
-            <div class="help-bubble-message">{help_info['message']}</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Add dismiss button below the bubble
-        if st.sidebar.button(f"✕ Dismiss", key=f"dismiss_{context}", use_container_width=True):
-            st.session_state.dismissed_help.add(context)
-            st.rerun()
+        st.sidebar.info(
+            f"{help_info['icon']} **{help_info['title']}**\n\n{help_info['message']}"
+        )

@@ -41,6 +41,11 @@ from _modules.ui.ui import (
     show_analysis_success,
     show_analysis_error,
 )
+from _modules.ui.ui_pipeline_dag import (
+    render_pipeline_comparison,
+    create_pipeline_dag_container,
+    update_pipeline_dag,
+)
 
 try:
     from _modules.providers.medgemma_hosted_provider import MedGemmaHostedProvider
@@ -48,6 +53,14 @@ except Exception:
     MedGemmaHostedProvider = None
 
 from _modules.utils.runtime_flags import debug_enabled
+from _modules.utils.config import (
+    get_config,
+    is_assistant_enabled,
+    is_dag_enabled,
+    is_debug_enabled,
+    is_privacy_ui_enabled,
+    is_coverage_matrix_enabled,
+)
 
 
 ENGINE_OPTIONS = {
@@ -163,12 +176,14 @@ def main():
     # --------------------------------------------------
     # Privacy (session-scoped)
     # --------------------------------------------------
-    render_privacy_dialog()
+    if is_privacy_ui_enabled():
+        render_privacy_dialog()
 
     # --------------------------------------------------
     # Documentation Assistant (sidebar)
     # --------------------------------------------------
-    render_doc_assistant()
+    if is_assistant_enabled():
+        render_doc_assistant()
 
     # --------------------------------------------------
     # Document input (UI ONCE)
@@ -179,7 +194,10 @@ def main():
     # --------------------------------------------------
     # Analysis provider selector (user-facing)
     # --------------------------------------------------
-    if debug_enabled():
+    # Use config debug setting OR legacy runtime flag
+    debug_mode = is_debug_enabled() or debug_enabled()
+    
+    if debug_mode:
         providers = ProviderRegistry.list()
         selected_provider = render_provider_selector(providers)  # keep in debug for now
     else:
@@ -190,13 +208,14 @@ def main():
         )
         selected_provider = ENGINE_OPTIONS[engine_label]
 
-    coverage_rows = build_coverage_matrix(documents)
-    render_coverage_matrix(coverage_rows)
+    if is_coverage_matrix_enabled():
+        coverage_rows = build_coverage_matrix(documents)
+        render_coverage_matrix(coverage_rows)
 
     # --------------------------------------------------
     # Debug controls (sidebar only)
     # --------------------------------------------------
-    if debug_enabled():
+    if debug_mode:
         with st.sidebar:
             st.markdown("## 🧪 Debug Mode")
 
@@ -264,7 +283,18 @@ def main():
         total_potential_savings = 0.0
         per_document_savings = {}
 
-        for doc in documents:
+        for idx, doc in enumerate(documents, 1):
+            # Use index-based ID initially (will be replaced with friendly ID after facts extraction)
+            initial_doc_id = f"Document {idx}"
+            
+            # Render document header first
+            st.markdown(f"## 📄 {initial_doc_id}")
+            
+            # Create DAG container immediately (shows "In Progress" state) if enabled
+            dag_placeholder = None
+            if is_dag_enabled():
+                dag_expander, dag_placeholder = create_pipeline_dag_container(document_id=str(idx))
+            
             with st.spinner(f"🚜 Processing document {doc['document_id']}…"):
                 result = agent.run(doc["raw_text"])
 
@@ -273,15 +303,26 @@ def main():
                 # --------------------------------------------------
                 st.session_state.setdefault("workflow_logs", {})
                 st.session_state["workflow_logs"][doc["document_id"]] = result.get("_workflow_log")
+            
+            # Update DAG with completed workflow (AFTER spinner closes)
+            if is_dag_enabled() and dag_placeholder:
+                update_pipeline_dag(dag_placeholder, result.get("_workflow_log"))
 
             # Persist results
             doc["facts"] = result.get("facts")
             doc["analysis"] = result.get("analysis")
             doc["analysis_json"] = analysis_to_dict(result["analysis"])
             doc["_orchestration"] = result.get("_orchestration")
+            doc["_workflow_log"] = result.get("_workflow_log")
 
             # Identity AFTER facts
             maybe_enhance_identity(doc)
+            
+            # Update DAG again with friendly document name now that we have it
+            if is_dag_enabled() and dag_placeholder:
+                friendly_doc_id = doc.get("document_id") if doc.get("document_id") != initial_doc_id else None
+                if friendly_doc_id:
+                    update_pipeline_dag(dag_placeholder, result.get("_workflow_log"), document_id=friendly_doc_id)
 
             # --------------------------------------------------
             # Transaction normalization (document-independent)
@@ -328,10 +369,13 @@ def main():
             total_potential_savings += doc_savings
 
 
-            # Render results (unique per doc)
-            st.markdown(f"## 📄 Document `{doc['document_id']}`")
+            # Render results (unique per doc) - DAG already shown above
             show_analysis_success()
-            render_results(doc["analysis"])
+            # Pass dict with just issues (DAG already rendered progressively above)
+            render_results({
+                "issues": doc["analysis"].issues if doc.get("analysis") else [],
+                "_workflow_log": None  # Don't render DAG again
+            })
 
         total_potential_savings = round(total_potential_savings, 2)
 
@@ -342,8 +386,20 @@ def main():
 
         # Render the aggregate summary ONCE (after all documents)
         render_total_savings_summary(total_potential_savings, per_document_savings)
-        coverage_rows = build_coverage_matrix(documents)
-        render_coverage_matrix(coverage_rows)
+        
+        if is_coverage_matrix_enabled():
+            coverage_rows = build_coverage_matrix(documents)
+            render_coverage_matrix(coverage_rows)
+        
+        # Render multi-document pipeline comparison if multiple documents and DAG enabled
+        if is_dag_enabled() and len(documents) > 1:
+            config = get_config()
+            show_comparison = config.get("features.dag.show_comparison_table", True)
+            if show_comparison:
+                st.divider()
+                workflow_logs = [doc.get("_workflow_log") for doc in documents if doc.get("_workflow_log")]
+                if workflow_logs:
+                    render_pipeline_comparison(workflow_logs)
         
         # Show results context help
         render_contextual_help('results')
@@ -351,7 +407,7 @@ def main():
     # --------------------------------------------------
     # Debug output (read-only)
     # --------------------------------------------------
-    if debug_enabled():
+    if debug_mode:
         with st.sidebar:
             st.markdown("### Documents")
             st.json(documents)

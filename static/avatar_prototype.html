@@ -1,0 +1,296 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .container-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            padding: 40px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        /* Hook for future animation */
+        
+        .container.talking {
+            outline: 3px solid #ff9800;
+        }
+        
+        .child-div {
+            width: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            border-radius: 4px;
+        }
+        
+        .avatar-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: white;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+        
+        button {
+            padding: 10px 18px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background-color: #ff9800;
+            color: white;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        .child-div img {
+            display: none;
+        }
+        
+        .child-div img:first-child {
+            display: block;
+        }
+        /* Make room for the nameplate below the avatars */
+        
+        .child-div.nameplate {
+            position: relative;
+            overflow: visible;
+        }
+        /* Plate */
+        
+        .child-div.nameplate::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            margin-top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92px;
+            height: 26px;
+            border-radius: 6px;
+            background: linear-gradient( 180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.15) 18%, rgba(20, 20, 20, 0.95) 55%, rgba(255, 255, 255, 0.18) 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.85), 0 3px 6px rgba(0, 0, 0, 0.35);
+            z-index: 1;
+            /* 🔑 plate layer */
+        }
+        /* Text */
+        
+        .child-div.nameplate::before {
+            position: absolute;
+            top: calc(100% + 16px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 0 1px 0 rgba(0, 0, 0, 0.95), 0 -1px 0 rgba(255, 255, 255, 0.35), 0 0 8px rgba(255, 255, 255, 0.35);
+            z-index: 2;
+            /* 🔑 text ABOVE plate */
+        }
+        /* Names */
+        
+        .child-div.nameplate.billy::before {
+            content: "Billy D.";
+        }
+        
+        .child-div.nameplate.billie::before {
+            content: "Billie D.";
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-wrapper">
+        <div class="container" id="avatarContainer">
+            <!-- Child 1: billy__* -->
+            <div class="child-div nameplate billy">
+                <img class="avatar-img" src="images/avatars/billy__eyes_open__ready.png" style="display: block;">
+                <img class="avatar-img" src="images/avatars/billy__eyes_closed__ready.png" style="display: none;">
+                <img class="avatar-img" src="images/avatars/billy__eyes_open__talking.png" style="display: none;">
+                <img class="avatar-img" src="images/avatars/billy__eyes_closed__talking.png" style="display: none;">
+                <img class="avatar-img" src="images/avatars/billy__eyes_open__smiling.png" style="display: none;">
+            </div>
+
+            <!-- Child 2: billie__* -->
+            <div class="child-div nameplate billie">
+                <img class="avatar-img" src="images/avatars/billie__eyes_open__ready.png" style="display: block;">
+                <img class="avatar-img" src="images/avatars/billie__eyes_closed__ready.png" style="display: none;">
+                <img class="avatar-img" src="images/avatars/billie__eyes_open__talking.png" style="display: none;">
+                <img class="avatar-img" src="images/avatars/billie__eyes_closed__ready.png" style="display: none;">
+                <img class="avatar-img" src="images/avatars/billie__eyes_open__smiling.png" style="display: none;">
+            </div>
+        </div>
+
+        <button id="talkToggle">Talking</button>
+    </div>
+
+    <script>
+        const button = document.getElementById("talkToggle");
+        const container = document.getElementById("avatarContainer");
+
+        let idleTimers = [];
+        let talkingTimers = [];
+
+        button.addEventListener("click", () => {
+            const isTalking = container.classList.toggle("talking");
+
+            if (isTalking) {
+                button.textContent = "Stop Talking";
+                stopIdleBlinking();
+                startTalking();
+            } else {
+                button.textContent = "Talking";
+                stopTalkingWithSmile();
+            }
+        });
+
+        /* --------------------
+           IDLE BLINKING
+        -------------------- */
+
+        function startIdleBlinking() {
+            stopIdleBlinking();
+
+            document.querySelectorAll(".child-div").forEach(div => {
+                scheduleBlink(div);
+            });
+        }
+
+        function stopIdleBlinking() {
+            idleTimers.forEach(t => clearTimeout(t));
+            idleTimers = [];
+        }
+
+        function scheduleBlink(div) {
+            const delay = Math.random() * 4000 + 4000; // 4–8 seconds
+
+            const timer = setTimeout(() => {
+                if (container.classList.contains("talking")) return;
+
+                const imgs = div.querySelectorAll("img");
+                if (imgs.length < 2) return;
+
+                showOnly(div, 1);
+
+                setTimeout(() => {
+                    showOnly(div, 0);
+                    scheduleBlink(div);
+                }, 1000);
+            }, delay);
+
+            idleTimers.push(timer);
+        }
+
+        /* --------------------
+           TALKING ANIMATION
+        -------------------- */
+
+        function startTalking() {
+            stopTalking();
+
+            document.querySelectorAll(".child-div").forEach(div => {
+                cycleTalking(div);
+            });
+        }
+
+        function stopTalking() {
+            talkingTimers.forEach(t => clearTimeout(t));
+            talkingTimers = [];
+        }
+
+        function cycleTalking(div) {
+            if (!container.classList.contains("talking")) return;
+
+            const imgs = div.querySelectorAll("img");
+            if (imgs.length < 4) return;
+
+            const index = Math.floor(Math.random() * 4); // images 0–3
+            showOnly(div, index);
+
+            const delay = Math.random() * 1000 + 1000; // 1–3 seconds
+            const timer = setTimeout(() => cycleTalking(div), delay);
+
+            talkingTimers.push(timer);
+        }
+
+        /* --------------------
+           STOP TALKING → SMILE
+        -------------------- */
+
+        function stopTalkingWithSmile() {
+            stopTalking();
+
+            document.querySelectorAll(".child-div").forEach(div => {
+                const imgs = div.querySelectorAll("img");
+                if (imgs.length < 5) return;
+
+                // show smiling image (last)
+                showOnly(div, imgs.length - 1);
+            });
+
+            // after 5 seconds, return to idle
+            setTimeout(() => {
+                document.querySelectorAll(".child-div").forEach(div => {
+                    showOnly(div, 0);
+                });
+                startIdleBlinking();
+            }, 5000);
+        }
+
+        /* --------------------
+           UTILITY
+        -------------------- */
+
+        function showOnly(div, index) {
+            const imgs = div.querySelectorAll("img");
+            imgs.forEach((img, i) => {
+                img.style.display = i === index ? "block" : "none";
+            });
+        }
+
+        // Start idle blinking on load
+        startIdleBlinking();
+    </script>
+
+
+
+
+</body>
+
+</html>

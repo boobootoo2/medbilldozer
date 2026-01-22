@@ -1,15 +1,17 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 26,
+  "total_modules": 28,
   "modules": [
     {
       "name": "_modules.ui.doc_assistant",
       "filepath": "_modules/ui/doc_assistant.py",
       "has_docstring": true,
       "num_classes": 1,
-      "num_functions": 3,
+      "num_functions": 5,
       "num_dependencies": 0,
-      "constants": []
+      "constants": [
+        "_BILLY_IMAGES_CACHE"
+      ]
     },
     {
       "name": "_modules.ui.privacy_ui",
@@ -26,7 +28,16 @@
       "has_docstring": false,
       "num_classes": 0,
       "num_functions": 19,
-      "num_dependencies": 1,
+      "num_dependencies": 2,
+      "constants": []
+    },
+    {
+      "name": "_modules.ui.ui_pipeline_dag",
+      "filepath": "_modules/ui/ui_pipeline_dag.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 7,
+      "num_dependencies": 0,
       "constants": []
     },
     {
@@ -125,6 +136,15 @@
       "num_classes": 1,
       "num_functions": 0,
       "num_dependencies": 1,
+      "constants": []
+    },
+    {
+      "name": "_modules.utils.config",
+      "filepath": "_modules/utils/config.py",
+      "has_docstring": true,
+      "num_classes": 1,
+      "num_functions": 7,
+      "num_dependencies": 0,
       "constants": []
     },
     {
@@ -244,7 +264,7 @@
       "has_docstring": true,
       "num_classes": 0,
       "num_functions": 4,
-      "num_dependencies": 15,
+      "num_dependencies": 17,
       "constants": [
         "ENGINE_OPTIONS"
       ]

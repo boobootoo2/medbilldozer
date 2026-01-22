@@ -8,6 +8,7 @@ import uuid
 import re
 from bs4 import BeautifulSoup
 from _modules.utils.runtime_flags import debug_enabled
+from _modules.ui.ui_pipeline_dag import render_pipeline_dag, render_pipeline_comparison
 
 
 # ==================================================
@@ -269,7 +270,7 @@ def render_header():
     
     Displays the medBillDozer logo and descriptive text about the application's purpose.
     """
-    logo_path = Path("images/medBillDozer-logo-transparent.png")
+    logo_path = Path("static/images/medBillDozer-logo-transparent.png")
 
     if logo_path.exists():
         b64 = base64.b64encode(logo_path.read_bytes()).decode()
@@ -473,13 +474,6 @@ def render_demo_documents():
         html_docs.append(html_doc)
         text_docs.append(html_to_plain_text(html_doc))
 
-    combined_text = "\n\n---\n\n".join(text_docs)
-
-    copy_to_clipboard_button(
-        "📋 Copy ALL demo documents",
-        combined_text
-    )
-
     st.divider()
 
     render_document_rows(docs, html_docs, text_docs, key_prefix="demo_")
@@ -564,8 +558,15 @@ def render_results(result):
 
     if isinstance(result, dict):
         issues = result.get("issues", [])
+        workflow_log = result.get("_workflow_log")
     else:
         issues = result.issues or []
+        workflow_log = getattr(result, "_workflow_log", None)
+
+    # ---------- Pipeline DAG Visualization ----------
+    if workflow_log:
+        render_pipeline_dag(workflow_log)
+        st.divider()
 
     # ---------- Issues ----------
     if issues:
