@@ -41,13 +41,6 @@ streamlit run app.py
    - Paste into document input area
    - Click analyze and get instant feedback
 
-## Documentation
-
-- **📖 [Quick Start Guide](docs/QUICKSTART.md)** - Get up and running in 5 minutes
-- **📚 [User Guide](docs/USER_GUIDE.md)** - Comprehensive end-user documentation
-- **⚙️ [Configuration Guide](CONFIG_README.md)** - Feature flags and app configuration
-- **🔧 [Technical Documentation](docs/)** - API reference, modules, dependencies
-- **📝 [Contributing](DOCUMENTATION.md)** - How to contribute and maintain docs
 
 ## Demo
 
