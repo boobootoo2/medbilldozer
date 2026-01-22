@@ -6,12 +6,13 @@ explaining them in plain language.
 
 ## Features
 
-- **📖 [Quick Start Guide](docs/QUICKSTART.md)** - Get up and running in 5 minutes
-- **📚 [User Guide](docs/USER_GUIDE.md)** - Comprehensive end-user documentation
-- **⚙️ [Configuration Guide](CONFIG_README.md)** - Feature flags and app configuration
-- **🔧 [Technical Documentation](docs/)** - API reference, modules, dependencies
-- **🧠 [MedGemma & HAI-DEF Alignment](docs/HAI_DEF_ALIGNMENT.md)** - How this project uses healthcare-aligned foundation models
-- **📝 [Contributing](DOCUMENTATION.md)** - How to contribute and maintain docs
+- **📖 [Quick Start Guide](./docs/QUICKSTART.md)** - Get up and running in 5 minutes
+- **📚 [User Guide](./docs/USER_GUIDE.md)** - Comprehensive end-user documentation
+- **⚙️ [Configuration Guide](./CONFIG_README.md)** - Feature flags and app configuration
+- **🔧 [Technical Documentation](./docs/)** - API reference, modules, dependencies
+- **🧠 [MedGemma & HAI-DEF Alignment](./docs/HAI_DEF_ALIGNMENT.md)** - How this project uses healthcare-aligned foundation models
+- **📝 [Contributing](./DOCUMENTATION.md)** - How to contribute and maintain docs
+
 
 ## Quick Start
 
