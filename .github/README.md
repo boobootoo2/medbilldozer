@@ -1,66 +1,85 @@
-[![Tests](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml/badge.svg)](
-https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml
-)
-
 # medBillDozer
 
-**medBillDozer** is an AI-powered application that helps individuals identify potential errors, overcharges, and reconciliation issues in medical bills, insurance claims, and explanations of benefits (EOBs).
+**medBillDozer** is an AI-powered assistant that helps patients audit medical bills
+and explanations of benefits (EOBs) by detecting likely billing errors and
+explaining them in plain language.
 
-Users can paste the text of a medical bill, receipt, or claim history, and medBillDozer analyzes the document to surface:
-- Potential billing inconsistencies
-- Duplicate or mismatched charges
-- Coverage gaps between bills, claims, and EOBs
-- Estimated maximum potential savings when issues are resolved
+## Features
 
-The application is designed to be:
-- **Human-centered**: Clear explanations and evidence for every issue
-- **Privacy-aware**: No data is stored beyond the current session
-- **Explainable**: Findings are backed by extracted facts from the document
-- **Extensible**: Supports multiple extraction and analysis providers
+- **📖 [Quick Start Guide](docs/QUICKSTART.md)** - Get up and running in 5 minutes
+- **📚 [User Guide](docs/USER_GUIDE.md)** - Comprehensive end-user documentation
+- **⚙️ [Configuration Guide](CONFIG_README.md)** - Feature flags and app configuration
+- **🔧 [Technical Documentation](docs/)** - API reference, modules, dependencies
+- **🧠 [MedGemma & HAI-DEF Alignment](docs/HAI_DEF_ALIGNMENT.md)** - How this project uses healthcare-aligned foundation models
+- **📝 [Contributing](DOCUMENTATION.md)** - How to contribute and maintain docs
 
-medBillDozer is built with Streamlit and uses a hybrid approach combining deterministic rules with large language models for document understanding.
+## Quick Start
 
-# GitHub Actions Workflows
-
-## python-app.yml - Automated Testing
-
-This workflow runs the test suite automatically on:
-- Every push to `main` or `develop` branches
-- Every pull request targeting `main` or `develop`
-- Manual trigger via GitHub Actions UI
-
-### What it does
-
-1. **Multi-version testing**: Tests run on Python 3.10, 3.11, 3.12, and 3.13
-2. **Fast setup**: Uses pip caching for faster dependency installation
-3. **Minimal dependencies**: Only installs test dependencies (pytest, pytest-mock, PyYAML)
-4. **No secrets needed**: Tests are designed to run without API keys
-5. **Clear output**: Verbose test output with summary
-
-### Test Results
-
-Tests run in parallel across all Python versions. Each must pass independently.
-
-Current test coverage:
-- `test_config.py`: 29 tests
-- `test_doc_assistant.py`: 31 tests
-- **Total**: 60 tests
-
-### Viewing Results
-
-1. Go to the **Actions** tab in GitHub
-2. Select a workflow run to see results
-3. Check the **Test Summary** for quick overview
-4. Expand test steps for detailed output
-
-### Local Testing
-
-To run the same tests locally:
+### Installation
 
 ```bash
-# Install test dependencies
-pip install -r requirements-test.txt
-
-# Run tests
-python3 -m pytest tests/ -v
+pip install -r requirements.txt
+streamlit run app.py
 ```
+
+### 5-Minute Tutorial
+
+1. **Set up an API key** (optional - or use free "Local Heuristic" mode):
+   ```bash
+   export OPENAI_API_KEY="your-key-here"
+   # or use GOOGLE_API_KEY for Gemini
+   ```
+
+2. **Launch and try a demo**:
+   - Accept privacy policy
+   - Check "🏥 Colonoscopy Bill" in demo section
+   - Click "Analyze with medBillDozer"
+   - Review savings and issues found!
+
+3. **Analyze your own bills**:
+   - Copy text from any medical bill, EOB, or receipt
+   - Paste into document input area
+   - Click analyze and get instant feedback
+
+## Documentation
+
+- **📖 [Quick Start Guide](docs/QUICKSTART.md)** - Get up and running in 5 minutes
+- **📚 [User Guide](docs/USER_GUIDE.md)** - Comprehensive end-user documentation
+- **⚙️ [Configuration Guide](CONFIG_README.md)** - Feature flags and app configuration
+- **🔧 [Technical Documentation](docs/)** - API reference, modules, dependencies
+- **📝 [Contributing](DOCUMENTATION.md)** - How to contribute and maintain docs
+
+## Demo
+
+See the video demo submitted to the MedGemma Impact Challenge.
+
+## What Documents Can I Analyze?
+
+✅ Medical procedure bills (with CPT codes)  
+✅ Dental treatment bills (with CDT codes)  
+✅ Pharmacy receipts  
+✅ Insurance Explanation of Benefits (EOB)  
+✅ FSA/HSA claim statements  
+
+## Privacy & Security
+
+Your data never leaves your control:
+- ✅ No data storage or databases
+- ✅ Session-only processing
+- ✅ No user accounts or tracking
+- ✅ Clear on browser close
+
+**Note**: Document text is sent to your chosen AI provider for analysis. Use "Local Heuristic" mode for 100% offline processing.
+
+## Disclaimer
+
+This project is a **prototype for educational purposes only**.
+
+⚠️ medBillDozer does NOT provide:
+- Medical, legal, or financial advice
+- HIPAA-compliant healthcare services
+- Guaranteed savings or outcomes
+- Professional billing review
+
+**Always verify findings** with your insurance company and consult qualified professionals for billing disputes.
+
