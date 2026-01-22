@@ -6,12 +6,14 @@ explaining them in plain language.
 
 ## Features
 
-- **📖 [Quick Start Guide](./docs/QUICKSTART.md)** - Get up and running in 5 minutes
-- **📚 [User Guide](./docs/USER_GUIDE.md)** - Comprehensive end-user documentation
-- **⚙️ [Configuration Guide](./CONFIG_README.md)** - Feature flags and app configuration
-- **🔧 [Technical Documentation](./docs/)** - API reference, modules, dependencies
-- **🧠 [MedGemma & HAI-DEF Alignment](./docs/HAI_DEF_ALIGNMENT.md)** - How this project uses healthcare-aligned foundation models
-- **📝 [Contributing](./DOCUMENTATION.md)** - How to contribute and maintain docs
+
+- **📖 [Quick Start Guide](https://github.com/boobootoo2/medbilldozer/blob/main/docs/QUICKSTART.md)** – Get up and running in 5 minutes
+- **📚 [User Guide](https://github.com/boobootoo2/medbilldozer/blob/main/docs/USER_GUIDE.md)** – Comprehensive end-user documentation
+- **⚙️ [Configuration Guide](https://github.com/boobootoo2/medbilldozer/blob/main/CONFIG_README.md)** – Feature flags and app configuration
+- **🔧 [Technical Documentation](https://github.com/boobootoo2/medbilldozer/blob/main/docs/)** – API reference, modules, dependencies
+- **🧠 [MedGemma & HAI-DEF Alignment](https://github.com/boobootoo2/medbilldozer/blob/main/docs/HAI_DEF_ALIGNMENT.md)** – How this project uses healthcare-aligned foundation models
+- **📝 [Contributing](https://github.com/boobootoo2/medbilldozer/blob/main/DOCUMENTATION.md)** – How to contribute and maintain docs
+
 
 
 ## Quick Start
