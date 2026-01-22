@@ -498,6 +498,10 @@ SAFE: never raises, preserves keys.
 
 ### Functions
 
+#### `_get_client()`
+
+Get or create the Gemini client lazily.
+
 #### `_safe_empty_result() -> Dict[str, Optional[str]]`
 
 Return empty facts dictionary with all keys set to None.

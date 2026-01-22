@@ -4,7 +4,15 @@ from google import genai
 
 from _modules.extractors.extraction_prompt import FACT_KEYS, build_fact_extraction_prompt
 
-client = genai.Client()
+# Lazy client initialization to avoid requiring API key at import time
+_client = None
+
+def _get_client():
+    """Get or create the Gemini client lazily."""
+    global _client
+    if _client is None:
+        _client = genai.Client()
+    return _client
 
 
 def _safe_empty_result() -> Dict[str, Optional[str]]:
@@ -28,7 +36,7 @@ def extract_facts_gemini(raw_text: str) -> Dict[str, Optional[str]]:
     prompt = build_fact_extraction_prompt(raw_text)
 
     try:
-        response = client.models.generate_content(
+        response = _get_client().models.generate_content(
             model="gemini-3-flash-preview",
             contents=prompt,
         )
@@ -50,7 +58,7 @@ def run_prompt_gemini(prompt: str) -> str:
     SAFE: raises to caller (caller must catch).
     """
 
-    response = client.models.generate_content(
+    response = _get_client().models.generate_content(
         model="gemini-3-flash-preview",
         contents=prompt,
     )

@@ -245,7 +245,7 @@
       "filepath": "_modules/extractors/gemini_langextractor.py",
       "has_docstring": false,
       "num_classes": 0,
-      "num_functions": 3,
+      "num_functions": 4,
       "num_dependencies": 1,
       "constants": []
     },
