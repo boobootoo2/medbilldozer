@@ -548,6 +548,15 @@ def render_contextual_help(context: str):
     Args:
         context: Current context (e.g., 'input', 'results', 'error')
     """
+    # Initialize dismissed alerts in session state
+    if 'dismissed_alerts' not in st.session_state:
+        st.session_state.dismissed_alerts = set()
+    
+    # Check if this alert has been dismissed
+    alert_key = f"help_{context}"
+    if alert_key in st.session_state.dismissed_alerts:
+        return
+    
     help_messages = {
         'input': {
             'icon': '📝',
@@ -578,6 +587,17 @@ def render_contextual_help(context: str):
     
     if context in help_messages:
         help_info = help_messages[context]
-        st.sidebar.info(
-            f"{help_info['icon']} **{help_info['title']}**\n\n{help_info['message']}"
-        )
+        
+        # Create dismissible alert with custom HTML
+        # Use a Streamlit button container for dismissing
+        col1, col2 = st.sidebar.columns([9, 1])
+        
+        with col1:
+            st.sidebar.info(
+                f"{help_info['icon']} **{help_info['title']}**\n\n{help_info['message']}"
+            )
+        
+        with col2:
+            if st.button("✕", key=f"dismiss_{alert_key}", help="Dismiss"):
+                st.session_state.dismissed_alerts.add(alert_key)
+                st.rerun()
