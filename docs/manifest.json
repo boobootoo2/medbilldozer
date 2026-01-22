@@ -7,7 +7,7 @@
       "filepath": "_modules/ui/doc_assistant.py",
       "has_docstring": true,
       "num_classes": 1,
-      "num_functions": 4,
+      "num_functions": 5,
       "num_dependencies": 0,
       "constants": [
         "_BILLY_IMAGES_CACHE"

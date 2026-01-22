@@ -929,6 +929,9 @@ AI-powered documentation assistant that provides contextual help.
 - **`__init__(self)`**
   - Initialize the documentation assistant with documentation content.
 
+- **`get_avatar_image(self, state) -> str`**
+  - Get base64 encoded avatar image.
+
 - **`_load_documentation(self)`**
   - Load all documentation files into memory.
 
@@ -955,6 +958,17 @@ AI-powered documentation assistant that provides contextual help.
 #### `_get_billy_images()`
 
 Load and cache Billy avatar images as base64 data URIs.
+
+#### `calculate_blink_probability() -> bool`
+
+Calculate if avatar should blink using Fourier transform harmonics.
+
+This follows the randomized algorithms for blinking used by an android on the Enterprise.
+Uses harmonic analysis to create natural-seeming but mathematically precise blink timing,
+similar to how Data's positronic neural net regulated involuntary humanoid behaviors.
+
+Returns:
+    True if avatar should blink, False otherwise
 
 #### `render_doc_assistant()`
 
