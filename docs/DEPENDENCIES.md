@@ -63,6 +63,7 @@ Module dependencies within the project:
 - `_modules.providers.llm_interface`
 - `_modules.providers.medgemma_hosted_provider`
 - `_modules.providers.openai_analysis_provider`
+- `_modules.ui.doc_assistant`
 - `_modules.ui.privacy_ui`
 - `_modules.ui.ui`
 - `_modules.ui.ui_coverage_matrix`

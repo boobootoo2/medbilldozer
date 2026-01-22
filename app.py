@@ -9,6 +9,7 @@ import streamlit as st
 
 from _modules.ui.privacy_ui import render_privacy_dialog
 from _modules.ui.ui_documents import render_document_inputs
+from _modules.ui.doc_assistant import render_doc_assistant, render_contextual_help
 from _modules.core.document_identity import maybe_enhance_identity
 from _modules.core.orchestrator_agent import OrchestratorAgent
 from _modules.utils.serialization import analysis_to_dict
@@ -95,6 +96,7 @@ def bootstrap_ui():
     setup_page()
     inject_css()
     render_header()
+    render_contextual_help('demo')
     render_demo_documents()
 
 
@@ -164,8 +166,14 @@ def main():
     render_privacy_dialog()
 
     # --------------------------------------------------
+    # Documentation Assistant (sidebar)
+    # --------------------------------------------------
+    render_doc_assistant()
+
+    # --------------------------------------------------
     # Document input (UI ONCE)
     # --------------------------------------------------
+    render_contextual_help('input')
     documents = render_document_inputs()
 
     # --------------------------------------------------
@@ -242,10 +250,15 @@ def main():
     if analyze_clicked:
         if not documents:
             show_empty_warning()
+            render_contextual_help('error')
             return
         if selected_provider == "heuristic":
             show_analysis_error("Local (Offline) analysis isn't wired yet. Use Smart/OpenAI for now.")
+            render_contextual_help('error')
             return
+
+        # Show analyzing context
+        render_contextual_help('analyzing')
 
         # Aggregate savings across all documents for this run
         total_potential_savings = 0.0
@@ -331,6 +344,9 @@ def main():
         render_total_savings_summary(total_potential_savings, per_document_savings)
         coverage_rows = build_coverage_matrix(documents)
         render_coverage_matrix(coverage_rows)
+        
+        # Show results context help
+        render_contextual_help('results')
 
     # --------------------------------------------------
     # Debug output (read-only)

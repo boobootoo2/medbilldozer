@@ -53,6 +53,22 @@ This folder contains comprehensive documentation for medBillDozer, organized by 
 
 ---
 
+### 🤖 [Assistant Guide](ASSISTANT.md) (8 KB)
+
+**Perfect for**: Users who want to use the AI-powered help system
+
+**Contents**:
+- How to use the documentation assistant
+- Quick help button guide
+- Example questions and answers
+- AI provider comparison
+- Contextual help system
+- Troubleshooting the assistant
+
+**Start here if**: You need help while using the app!
+
+---
+
 ## 🔧 For Developers
 
 ### 📦 [Modules Reference](MODULES.md) (31 KB)

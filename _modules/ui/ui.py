@@ -249,14 +249,12 @@ def inject_css():
     div[tabindex="0" ]:focus-visible .st-dp {
         outline: 3px dashed #000000 !important;
     }
-    *:focus-visible {
-        box-shadow: rgba(255, 75, 75, 0) 0px 0px 0px 0.2rem !important;
-        outline: 3px dashed #000000 !important;
-        outline-offset: 4px !important; 
-    }
-    
     [class*="st-key-demo_toggle_"] button div {
         justify-content: flex-start;
+    }
+    [type="textarea"],
+    [data-baseweb="select"] > div > div {
+        background-color: rgba(0, 0, 0, 0) !important;
     }
 
     </style>

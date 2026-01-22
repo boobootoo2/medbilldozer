@@ -1,7 +1,16 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 25,
+  "total_modules": 26,
   "modules": [
+    {
+      "name": "_modules.ui.doc_assistant",
+      "filepath": "_modules/ui/doc_assistant.py",
+      "has_docstring": true,
+      "num_classes": 1,
+      "num_functions": 2,
+      "num_dependencies": 0,
+      "constants": []
+    },
     {
       "name": "_modules.ui.privacy_ui",
       "filepath": "_modules/ui/privacy_ui.py",
@@ -235,7 +244,7 @@
       "has_docstring": true,
       "num_classes": 0,
       "num_functions": 4,
-      "num_dependencies": 14,
+      "num_dependencies": 15,
       "constants": [
         "ENGINE_OPTIONS"
       ]

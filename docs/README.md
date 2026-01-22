@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 25
+**Total Modules:** 26
 
 ### Application (1 modules)
 
@@ -40,8 +40,9 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (4 modules)
+### UI Components (5 modules)
 
+- **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.ui**: No description
 - **_modules.ui.ui_coverage_matrix**: Coverage matrix UI rendering.

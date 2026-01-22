@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 25
+**Total Modules:** 26
 
 ### Application (1 modules)
 
@@ -40,8 +40,9 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (4 modules)
+### UI Components (5 modules)
 
+- **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.ui**: No description
 - **_modules.ui.ui_coverage_matrix**: Coverage matrix UI rendering.
@@ -900,6 +901,61 @@ OpenAI-powered analysis provider.
 
 - `_modules.providers.llm_interface`
 
+## Module: `_modules.ui.doc_assistant`
+
+**Source:** `_modules/ui/doc_assistant.py`
+
+### Description
+
+Documentation Assistant - AI-powered help sidebar.
+
+Provides contextual help and answers to user questions by reading
+the comprehensive documentation as a source of truth.
+
+### Classes
+
+#### `DocumentationAssistant`
+
+AI-powered documentation assistant that provides contextual help.
+
+**Methods:**
+
+- **`__init__(self)`**
+  - Initialize the documentation assistant with documentation content.
+
+- **`_load_documentation(self)`**
+  - Load all documentation files into memory.
+
+- **`_build_context_prompt(self, user_question) -> str`**
+  - Build a comprehensive context prompt from documentation.
+
+- **`get_answer_openai(self, user_question) -> str`**
+  - Get answer using OpenAI API.
+
+- **`get_answer_gemini(self, user_question) -> str`**
+  - Get answer using Google Gemini API.
+
+- **`get_answer(self, user_question, provider) -> str`**
+  - Get answer using specified AI provider.
+
+- **`search_docs(self, query) -> List[Dict[str, str]]`**
+  - Search documentation for relevant sections.
+
+
+### Functions
+
+#### `render_doc_assistant()`
+
+Render the documentation assistant in the sidebar.
+
+#### `render_contextual_help(context)`
+
+Render contextual help based on current page/action.
+
+Args:
+    context: Current context (e.g., 'input', 'results', 'error')
+
+
 ## Module: `_modules.ui.privacy_ui`
 
 **Source:** `_modules/ui/privacy_ui.py`
@@ -1297,6 +1353,7 @@ Orchestrates the complete workflow:
 - `_modules.providers.llm_interface`
 - `_modules.providers.medgemma_hosted_provider`
 - `_modules.providers.openai_analysis_provider`
+- `_modules.ui.doc_assistant`
 - `_modules.ui.privacy_ui`
 - `_modules.ui.ui`
 - `_modules.ui.ui_coverage_matrix`
