@@ -1,3 +1,5 @@
+[![Run Success](https://github.com/boobootoo2/medbilldozer/actions/workflows/<WORKFLOW_FILE>.yml/badge.svg)](https://github.com/boobootoo2/medbilldozer/actions)
+
 # medBillDozer
 
 **medBillDozer** is an AI-powered assistant that helps patients audit medical bills
