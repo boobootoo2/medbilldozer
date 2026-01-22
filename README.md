@@ -6,12 +6,12 @@ explaining them in plain language.
 
 ## Features
 
-- 🔍 **Automated Error Detection** - Flags duplicate charges and math inconsistencies
-- 💊 **Multi-Document Support** - Medical, dental, pharmacy, FSA/HSA, and insurance claims
-- 💰 **Savings Calculator** - Quantifies potential dollar savings from each issue
-- 🤖 **AI-Powered Analysis** - OpenAI GPT, Google Gemini, MedGemma, or local heuristic options
-- 🔒 **Privacy-First** - No data storage, session-only processing
-- 📋 **Dispute Checklists** - Patient-friendly recommended actions
+- **📖 [Quick Start Guide](docs/QUICKSTART.md)** - Get up and running in 5 minutes
+- **📚 [User Guide](docs/USER_GUIDE.md)** - Comprehensive end-user documentation
+- **⚙️ [Configuration Guide](CONFIG_README.md)** - Feature flags and app configuration
+- **🔧 [Technical Documentation](docs/)** - API reference, modules, dependencies
+- **🧠 [MedGemma & HAI-DEF Alignment](docs/HAI_DEF_ALIGNMENT.md)** - How this project uses healthcare-aligned foundation models
+- **📝 [Contributing](DOCUMENTATION.md)** - How to contribute and maintain docs
 
 ## Quick Start
 
