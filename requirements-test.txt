@@ -1,0 +1,7 @@
+# Test dependencies only
+# These are the minimal requirements to run the test suite
+# without needing API keys or heavy dependencies
+
+pytest==8.3.4
+pytest-mock==3.14.0
+PyYAML>=6.0  # Required for config.py tests
