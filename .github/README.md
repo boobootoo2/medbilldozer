@@ -1,3 +1,8 @@
+[![Tests](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml/badge.svg)](
+https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml
+)
+
+
 # GitHub Actions Workflows
 
 ## python-app.yml - Automated Testing
