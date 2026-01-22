@@ -235,46 +235,52 @@ Please provide a helpful, accurate answer based on the documentation above. If t
 def render_doc_assistant():
     if "assistant_talking" not in st.session_state:
         st.session_state.assistant_talking = False
+    
+    # Initialize avatar character selection
+    if "avatar_character" not in st.session_state:
+        st.session_state.avatar_character = "billy"
 
     """Render the documentation assistant in the sidebar."""
     
     def render_assistant_avatar():
         talking = st.session_state.assistant_talking
+        character = st.session_state.avatar_character
+        character_name = character.capitalize()
         
         # Embedded HTML/CSS/JS from avatar_prototype.html
-        avatar_html = """
+        avatar_html = f"""
         <div style="display: flex; justify-content: center; padding: 12px 0;">
             <div style="display: flex; flex-direction: column; align-items: center;">
-                <div class="child-div nameplate billy" id="billyAvatar">
-                    <img class="avatar-img" src="app/static/images/avatars/billy__eyes_open__ready.png" style="display: block;">
-                    <img class="avatar-img" src="app/static/images/avatars/billy__eyes_closed__ready.png" style="display: none;">
-                    <img class="avatar-img" src="app/static/images/avatars/billy__eyes_open__talking.png" style="display: none;">
-                    <img class="avatar-img" src="app/static/images/avatars/billy__eyes_closed__talking.png" style="display: none;">
-                    <img class="avatar-img" src="app/static/images/avatars/billy__eyes_open__smiling.png" style="display: none;">
+                <div class="child-div nameplate {character}" id="billyAvatar">
+                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_open__ready.png" style="display: block;">
+                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_closed__ready.png" style="display: none;">
+                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_open__talking.png" style="display: none;">
+                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_closed__talking.png" style="display: none;">
+                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_open__smiling.png" style="display: none;">
                 </div>
             </div>
         </div>
         
         <style>
-            .child-div {
+            .child-div {{
                 width: 80px;
                 display: flex;
                 flex-wrap: wrap;
                 justify-content: center;
                 align-items: center;
                 position: relative;
-            }
+            }}
             
-            .avatar-img {
+            .avatar-img {{
                 width: 80px;
                 height: 80px;
                 border-radius: 50%;
                 object-fit: cover;
                 background: white;
                 border: 2px solid rgba(255, 255, 255, 0.8);
-            }
+            }}
             
-            .child-div.nameplate::after {
+            .child-div.nameplate::after {{
                 content: "";
                 position: absolute;
                 top: 100%;
@@ -287,9 +293,9 @@ def render_doc_assistant():
                 background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.15) 18%, rgba(20,20,20,0.95) 55%, rgba(255,255,255,0.18) 100%);
                 box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(0,0,0,0.85), 0 3px 6px rgba(0,0,0,0.35);
                 z-index: 1;
-            }
+            }}
             
-            .child-div.nameplate.billy::before {
+            .child-div.nameplate.billy::before {{
                 content: "Billy";
                 position: absolute;
                 top: calc(100% + 16px);
@@ -304,7 +310,24 @@ def render_doc_assistant():
                 color: #ffffff;
                 text-shadow: 0 1px 0 rgba(0,0,0,0.95), 0 -1px 0 rgba(255,255,255,0.35), 0 0 8px rgba(255,255,255,0.35);
                 z-index: 2;
-            }
+            }}
+            
+            .child-div.nameplate.billie::before {{
+                content: "Billie";
+                position: absolute;
+                top: calc(100% + 16px);
+                left: 50%;
+                transform: translateX(-50%);
+                width: 92px;
+                text-align: center;
+                font-size: 12px;
+                font-weight: 900;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                color: #ffffff;
+                text-shadow: 0 1px 0 rgba(0,0,0,0.95), 0 -1px 0 rgba(255,255,255,0.35), 0 0 8px rgba(255,255,255,0.35);
+                z-index: 2;
+            }}
         </style>
         
         <script>
@@ -312,67 +335,67 @@ def render_doc_assistant():
     let talkingTimers = [];
     const div = document.getElementById('billyAvatar');
 
-    function showOnly(index) {
+    function showOnly(index) {{
         const imgs = div.querySelectorAll('img');
-        imgs.forEach((img, i) => {
+        imgs.forEach((img, i) => {{
             img.style.display = i === index ? 'block' : 'none';
-        });
-    }
+        }});
+    }}
 
-    function scheduleBlink() {
+    function scheduleBlink() {{
         const delay = Math.random() * 4000 + 4000;
-        const timer = setTimeout(() => {
+        const timer = setTimeout(() => {{
             if (div.classList.contains('talking')) return;
             showOnly(1);
-            setTimeout(() => {
+            setTimeout(() => {{
                 showOnly(0);
                 scheduleBlink();
-            }, 150);
-        }, delay);
+            }}, 150);
+        }}, delay);
         idleTimers.push(timer);
-    }
+    }}
 
-    function startTalking() {
+    function startTalking() {{
         idleTimers.forEach(t => clearTimeout(t));
         idleTimers = [];
 
         div.classList.add('talking');
 
-        function cycleTalking() {
+        function cycleTalking() {{
             if (!div.classList.contains('talking')) return;
             const index = Math.floor(Math.random() * 2) + 2;
             showOnly(index);
             const timer = setTimeout(cycleTalking, Math.random() * 800 + 400);
             talkingTimers.push(timer);
-        }
+        }}
 
         cycleTalking();
-    }
+    }}
 
-    function stopTalking() {
+    function stopTalking() {{
         div.classList.remove('talking');
         talkingTimers.forEach(t => clearTimeout(t));
         talkingTimers = [];
         showOnly(4); // smiling
-        setTimeout(() => {
+        setTimeout(() => {{
             showOnly(0);
             scheduleBlink();
-        }, 5000);
-    }
+        }}, 5000);
+    }}
 
     // 🔑 LISTEN FOR EVENTS FROM STREAMLIT
-    window.parent.document.addEventListener("billy-event", (event) => {
+    window.parent.document.addEventListener("billy-event", (event) => {{
         if (!event.detail || !event.detail.type) return;
 
-        switch (event.detail.type) {
+        switch (event.detail.type) {{
             case "BILLY_TALK_START":
                 startTalking();
                 break;
             case "BILLY_TALK_STOP":
                 stopTalking();
                 break;
-        }
-    });
+        }}
+    }});
 
 
     scheduleBlink();
@@ -385,6 +408,15 @@ def render_doc_assistant():
     
     # Render avatar at the top
     render_assistant_avatar()
+    
+    # Toggle button for character switch
+    current_character = st.session_state.avatar_character
+    other_character = "billie" if current_character == "billy" else "billy"
+    button_label = f"Switch to {other_character.capitalize()}"
+    
+    if st.sidebar.button(button_label, key="character_toggle"):
+        st.session_state.avatar_character = other_character
+        st.rerun()
     
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 🤖 Documentation Assistant")
