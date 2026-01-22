@@ -106,4 +106,14 @@ By prioritizing clarity and trust over novelty, medBillDozer reflects the human-
 
 ## Why This Matters
 
+Healthcare billing errors are not just a technical problem — they are a **trust problem**.
+
+By leveraging MedGemma and aligning with HAI-DEF principles, medBillDozer demonstrates how healthcare foundation models can be used responsibly to:
+- Reduce patient confusion
+- Improve transparency
+- Support informed decision-making
+- Enable safer, real-world AI deployment
+
+This project intentionally favors explainability, restraint, and human agency over raw automation.
+
 Hea
