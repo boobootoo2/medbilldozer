@@ -5,3 +5,5 @@
 pytest==8.3.4
 pytest-mock==3.14.0
 PyYAML>=6.0  # Required for config.py tests
+beautifulsoup4>=4.12.0  # Required for ui.py HTML parsing
+google-genai>=0.2.0  # Required for imports (mocked in tests)
