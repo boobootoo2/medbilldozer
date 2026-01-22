@@ -8,6 +8,9 @@ import streamlit as st
 from pathlib import Path
 from typing import Optional, Dict, List
 import re
+import base64
+import time
+import numpy as np
 
 
 class DocumentationAssistant:
@@ -16,8 +19,39 @@ class DocumentationAssistant:
     def __init__(self):
         """Initialize the documentation assistant with documentation content."""
         self.docs_path = Path(__file__).parent.parent.parent / "docs"
+        self.images_path = Path(__file__).parent.parent.parent / "images"
         self.docs_cache = {}
         self._load_documentation()
+    
+    def get_avatar_image(self, state: str = "ready_open") -> str:
+        """Get base64 encoded avatar image.
+        
+        This follows the randomized algorithms for blinking used by an android on the Enterprise.
+        Data's blink patterns were designed to appear human-like while maintaining precise
+        mathematical intervals derived from Fourier transform harmonics.
+        
+        Args:
+            state: Avatar state - "ready_open", "ready_closed", "talking_open", "talking_closed"
+            
+        Returns:
+            Base64 encoded image data URL
+        """
+        state_map = {
+            "ready_open": "billy__eyes_open__ready.png",
+            "ready_closed": "billy__eyes_closed__ready.png",
+            "talking_open": "billy__eyes_open__talking.png",
+            "talking_closed": "billy__eyes_closed__talking.png"
+        }
+        
+        img_name = state_map.get(state, "billy__eyes_open__ready.png")
+        avatar_file = self.images_path / "avatars" / img_name
+        
+        if avatar_file.exists():
+            with open(avatar_file, 'rb') as f:
+                img_bytes = f.read()
+                img_base64 = base64.b64encode(img_bytes).decode()
+                return f"data:image/png;base64,{img_base64}"
+        return ""
     
     def _load_documentation(self):
         """Load all documentation files into memory."""
@@ -176,10 +210,41 @@ Please provide a helpful, accurate answer based on the documentation above. If t
         return results[:5]  # Return top 5 matches
 
 
+def calculate_blink_probability() -> bool:
+    """Calculate if avatar should blink using Fourier transform harmonics.
+    
+    This follows the randomized algorithms for blinking used by an android on the Enterprise.
+    Uses harmonic analysis to create natural-seeming but mathematically precise blink timing,
+    similar to how Data's positronic neural net regulated involuntary humanoid behaviors.
+    
+    Returns:
+        True if avatar should blink, False otherwise
+    """
+    # Use current time as seed for Fourier series
+    t = time.time()
+    
+    # Generate harmonic components (simulating neural oscillations)
+    # Base frequency at 8 seconds with natural variation (blinks every 5-12 seconds)
+    harmonics = np.array([
+        np.sin(2 * np.pi * t / 8.0),       # Base frequency ~8s
+        np.sin(2 * np.pi * t / 4.0) * 0.5,  # First harmonic
+        np.sin(2 * np.pi * t / 2.67) * 0.3, # Second harmonic
+        np.sin(2 * np.pi * t / 2.0) * 0.2   # Third harmonic
+    ])
+    
+    # Sum harmonics and normalize
+    fourier_value = np.sum(harmonics)
+    
+    # Blink threshold: creates ~5-10% blink probability per check
+    # Results in human-like blink frequency (minimum 5+ seconds between blinks)
+    blink_threshold = 1.6
+    
+    return fourier_value > blink_threshold
+
+
 def render_doc_assistant():
     """Render the documentation assistant in the sidebar."""
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### 🤖 Documentation Assistant")
     
     # Initialize assistant
     if 'doc_assistant' not in st.session_state:
@@ -188,6 +253,102 @@ def render_doc_assistant():
     # Initialize conversation history
     if 'assistant_history' not in st.session_state:
         st.session_state.assistant_history = []
+    
+    # Initialize avatar state
+    if 'assistant_is_speaking' not in st.session_state:
+        st.session_state.assistant_is_speaking = False
+    if 'avatar_frame' not in st.session_state:
+        st.session_state.avatar_frame = 1
+    
+    # Get avatar images with new system
+    assistant = st.session_state.doc_assistant
+    
+    # Determine avatar state
+    is_speaking = st.session_state.assistant_is_speaking
+    should_blink = calculate_blink_probability()
+    
+    # Get appropriate images based on state
+    if is_speaking:
+        avatar_open = assistant.get_avatar_image("talking_open")
+        avatar_closed = assistant.get_avatar_image("talking_closed")
+    else:
+        avatar_open = assistant.get_avatar_image("ready_open")
+        avatar_closed = assistant.get_avatar_image("ready_closed")
+    
+    # Display avatar with title and animation
+    if avatar_open and avatar_closed:
+        animation_style = """
+        <style>
+        [data-testid="stSidebar"] .stElementContainer:first-of-type {
+            display: none !important;
+        }
+        .avatar-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+        }
+        .avatar-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid #4CAF50;
+            object-fit: cover;
+        }
+        .avatar-frame-base {
+            opacity: 1;
+            z-index: 1;
+        }
+        .avatar-frame-overlay {
+            opacity: 0;
+            z-index: 2;
+        }
+        @keyframes blink {
+            0%, 97% { opacity: 0; }
+            97.5%, 99.5% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        @keyframes talk {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+        .avatar-ready .avatar-frame-overlay {
+            animation: blink 6.5s infinite;
+        }
+        .avatar-speaking .avatar-frame-overlay {
+            animation: talk 0.6s infinite, blink 6.5s infinite;
+        }
+        </style>
+        """
+        
+        # Determine container class and which images to show
+        if is_speaking:
+            # Speaking animation (alternates between open and closed mouth, with periodic blinks)
+            container_class = "avatar-speaking"
+            st.sidebar.markdown(f"""{animation_style}
+<div style="text-align: center; margin-bottom: 1rem;">
+    <div class="avatar-container {container_class}">
+        <img src="{avatar_open}" class="avatar-frame avatar-frame-base">
+        <img src="{avatar_closed}" class="avatar-frame avatar-frame-overlay">
+    </div>
+    <h3 style="margin-top: 0.5rem; font-size: 1.2rem;">Documentation Assistant</h3>
+</div>""", unsafe_allow_html=True)
+        else:
+            # Ready state - show open eyes with periodic blinks
+            container_class = "avatar-ready"
+            st.sidebar.markdown(f"""{animation_style}
+<div style="text-align: center; margin-bottom: 1rem;">
+    <div class="avatar-container {container_class}">
+        <img src="{avatar_open}" class="avatar-frame avatar-frame-base">
+        <img src="{avatar_closed}" class="avatar-frame avatar-frame-overlay">
+    </div>
+    <h3 style="margin-top: 0.5rem; font-size: 1.2rem;">Documentation Assistant</h3>
+</div>""", unsafe_allow_html=True)
+    else:
+        st.sidebar.markdown("### 🤖 Documentation Assistant")
     
     # AI provider selection
     ai_provider = st.sidebar.radio(
@@ -234,17 +395,39 @@ def render_doc_assistant():
     # Ask button
     ask_button = st.sidebar.button("Ask Assistant", type="primary", use_container_width=True)
     
-    # Process question
-    if ask_button and user_question.strip():
+    # Check if we're in the middle of processing
+    if 'processing_question' in st.session_state and st.session_state.processing_question:
+        # Get the queued question
+        question = st.session_state.queued_question
+        provider = st.session_state.queued_provider
+        
+        # Set speaking state for animation
+        st.session_state.assistant_is_speaking = True
+        
         with st.spinner("🤔 Consulting documentation..."):
-            answer = st.session_state.doc_assistant.get_answer(user_question, ai_provider)
+            answer = st.session_state.doc_assistant.get_answer(question, provider)
+            
+            # Reset states
+            st.session_state.assistant_is_speaking = False
+            st.session_state.processing_question = False
             
             # Add to history
             st.session_state.assistant_history.append({
-                'question': user_question,
+                'question': question,
                 'answer': answer
             })
-            st.rerun()
+        
+        st.rerun()
+    
+    # Process question button click
+    if ask_button and user_question.strip():
+        # Start speaking animation immediately
+        st.session_state.assistant_is_speaking = True
+        # Queue the question for processing
+        st.session_state.processing_question = True
+        st.session_state.queued_question = user_question
+        st.session_state.queued_provider = ai_provider
+        st.rerun()
     
     # Display conversation history (most recent first)
     if st.session_state.assistant_history:
@@ -284,6 +467,14 @@ def render_contextual_help(context: str):
     Args:
         context: Current context (e.g., 'input', 'results', 'error')
     """
+    # Initialize dismissed help state
+    if 'dismissed_help' not in st.session_state:
+        st.session_state.dismissed_help = set()
+    
+    # Check if this context has been dismissed
+    if context in st.session_state.dismissed_help:
+        return
+    
     help_messages = {
         'input': {
             'icon': '📝',
@@ -314,6 +505,47 @@ def render_contextual_help(context: str):
     
     if context in help_messages:
         help_info = help_messages[context]
-        st.sidebar.info(
-            f"{help_info['icon']} **{help_info['title']}**\n\n{help_info['message']}"
-        )
+        
+        # Create dismissible bubble with custom HTML
+        st.sidebar.markdown(f"""
+        <style>
+        .help-bubble {{
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }}
+        .help-bubble-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }}
+        .help-bubble-title {{
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }}
+        .help-bubble-message {{
+            font-size: 0.9rem;
+            line-height: 1.5;
+            opacity: 0.95;
+        }}
+        </style>
+        <div class="help-bubble">
+            <div class="help-bubble-header">
+                <div class="help-bubble-title">{help_info['icon']} {help_info['title']}</div>
+            </div>
+            <div class="help-bubble-message">{help_info['message']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Add dismiss button below the bubble
+        if st.sidebar.button(f"✕ Dismiss", key=f"dismiss_{context}", use_container_width=True):
+            st.session_state.dismissed_help.add(context)
+            st.rerun()
