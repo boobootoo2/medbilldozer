@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 27
+**Total Modules:** 28
 
 ### Application (1 modules)
 
@@ -49,8 +49,9 @@
 - **_modules.ui.ui_documents**: Document input and management UI.
 - **_modules.ui.ui_pipeline_dag**: Pipeline DAG Visualization - Visual representation of document analysis workflow.
 
-### Utilities (2 modules)
+### Utilities (3 modules)
 
+- **_modules.utils.config**: Application Configuration Manager.
 - **_modules.utils.runtime_flags**: Runtime flags and feature toggles.
 - **_modules.utils.serialization**: Serialization utilities for converting analysis objects to dicts.
 
@@ -1335,6 +1336,78 @@ Args:
     workflow_logs: List of workflow log dicts from multiple document analyses
 
 
+## Module: `_modules.utils.config`
+
+**Source:** `_modules/utils/config.py`
+
+### Description
+
+Application Configuration Manager.
+
+Loads and provides access to application configuration from app_config.yaml.
+Provides fallback defaults if config file is missing or incomplete.
+
+### Classes
+
+#### `AppConfig`
+
+Application configuration manager with fallback defaults.
+
+**Methods:**
+
+- **`__init__(self, config_path)`**
+  - Initialize configuration manager.
+
+- **`_load_config(self) -> Dict[str, Any]`**
+  - Load configuration from YAML file with fallback to defaults.
+
+- **`_deep_merge(self, base, override) -> Dict`**
+  - Deep merge two dictionaries, with override taking precedence.
+
+- **`get(self, key_path, default) -> Any`**
+  - Get configuration value by dot-notation path.
+
+- **`is_feature_enabled(self, feature_name) -> bool`**
+  - Check if a feature is enabled.
+
+- **`reload(self)`**
+  - Reload configuration from file.
+
+
+### Functions
+
+#### `get_config() -> AppConfig`
+
+Get the global configuration instance.
+
+Returns:
+    AppConfig instance
+
+#### `reload_config()`
+
+Reload the global configuration from file.
+
+#### `is_assistant_enabled() -> bool`
+
+Check if documentation assistant feature is enabled.
+
+#### `is_dag_enabled() -> bool`
+
+Check if pipeline DAG visualization is enabled.
+
+#### `is_debug_enabled() -> bool`
+
+Check if debug mode is enabled.
+
+#### `is_privacy_ui_enabled() -> bool`
+
+Check if privacy UI is enabled.
+
+#### `is_coverage_matrix_enabled() -> bool`
+
+Check if coverage matrix feature is enabled.
+
+
 ## Module: `_modules.utils.runtime_flags`
 
 **Source:** `_modules/utils/runtime_flags.py`
@@ -1463,5 +1536,6 @@ Orchestrates the complete workflow:
 - `_modules.ui.ui_coverage_matrix`
 - `_modules.ui.ui_documents`
 - `_modules.ui.ui_pipeline_dag`
+- `_modules.utils.config`
 - `_modules.utils.runtime_flags`
 - `_modules.utils.serialization`

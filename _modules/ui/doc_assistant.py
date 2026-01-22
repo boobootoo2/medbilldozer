@@ -296,7 +296,7 @@ def render_doc_assistant():
             }}
             
             .child-div.nameplate.billy::before {{
-                content: "Billy";
+                content: "Billy D.";
                 position: absolute;
                 top: calc(100% + 16px);
                 left: 50%;
@@ -313,7 +313,7 @@ def render_doc_assistant():
             }}
             
             .child-div.nameplate.billie::before {{
-                content: "Billie";
+                content: "Billie D.";
                 position: absolute;
                 top: calc(100% + 16px);
                 left: 50%;

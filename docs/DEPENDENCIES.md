@@ -70,5 +70,6 @@ Module dependencies within the project:
 - `_modules.ui.ui_coverage_matrix`
 - `_modules.ui.ui_documents`
 - `_modules.ui.ui_pipeline_dag`
+- `_modules.utils.config`
 - `_modules.utils.runtime_flags`
 - `_modules.utils.serialization`
