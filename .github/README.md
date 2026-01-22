@@ -2,6 +2,23 @@
 https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml
 )
 
+# medBillDozer
+
+**medBillDozer** is an AI-powered application that helps individuals identify potential errors, overcharges, and reconciliation issues in medical bills, insurance claims, and explanations of benefits (EOBs).
+
+Users can paste the text of a medical bill, receipt, or claim history, and medBillDozer analyzes the document to surface:
+- Potential billing inconsistencies
+- Duplicate or mismatched charges
+- Coverage gaps between bills, claims, and EOBs
+- Estimated maximum potential savings when issues are resolved
+
+The application is designed to be:
+- **Human-centered**: Clear explanations and evidence for every issue
+- **Privacy-aware**: No data is stored beyond the current session
+- **Explainable**: Findings are backed by extracted facts from the document
+- **Extensible**: Supports multiple extraction and analysis providers
+
+medBillDozer is built with Streamlit and uses a hybrid approach combining deterministic rules with large language models for document understanding.
 
 # GitHub Actions Workflows
 
