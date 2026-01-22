@@ -25,24 +25,22 @@ class DocumentationAssistant:
     
     def get_avatar_image(self, state: str = "ready_open") -> str:
         """Get base64 encoded avatar image.
-        
-        This follows the randomized algorithms for blinking used by an android on the Enterprise.
-        Data's blink patterns were designed to appear human-like while maintaining precise
-        mathematical intervals derived from Fourier transform harmonics.
-        
-        Args:
-            state: Avatar state - "ready_open", "ready_closed", "talking_open", "talking_closed"
-            
-        Returns:
-            Base64 encoded image data URL
+
+        States:
+        - ready_open
+        - ready_closed
+        - talking_open
+        - talking_closed
+        - smile_open
         """
         state_map = {
             "ready_open": "billy__eyes_open__ready.png",
             "ready_closed": "billy__eyes_closed__ready.png",
             "talking_open": "billy__eyes_open__talking.png",
-            "talking_closed": "billy__eyes_closed__talking.png"
+            "talking_closed": "billy__eyes_closed__talking.png",
+            "smile_open": "billy__eyes_open__smiling.png",
         }
-        
+
         img_name = state_map.get(state, "billy__eyes_open__ready.png")
         avatar_file = self.images_path / "avatars" / img_name
         
@@ -246,6 +244,10 @@ def render_doc_assistant():
     """Render the documentation assistant in the sidebar."""
     st.sidebar.markdown("---")
     
+    # Smile state tracking (explicit, no magic numbers)
+    if 'assistant_smile_until' not in st.session_state:
+        st.session_state.assistant_smile_until = None
+        
     # Initialize assistant
     if 'doc_assistant' not in st.session_state:
         st.session_state.doc_assistant = DocumentationAssistant()
@@ -263,17 +265,37 @@ def render_doc_assistant():
     # Get avatar images with new system
     assistant = st.session_state.doc_assistant
     
-    # Determine avatar state
+    now = time.time()
+
     is_speaking = st.session_state.assistant_is_speaking
-    should_blink = calculate_blink_probability()
+    is_smiling = (
+        st.session_state.assistant_smile_until is not None
+        and now < st.session_state.assistant_smile_until
+    )
     
+    # Clear expired smile
+    if (
+        st.session_state.assistant_smile_until is not None
+        and now >= st.session_state.assistant_smile_until
+    ):
+        st.session_state.assistant_smile_until = None
+
     # Get appropriate images based on state
     if is_speaking:
         avatar_open = assistant.get_avatar_image("talking_open")
         avatar_closed = assistant.get_avatar_image("talking_closed")
+        container_class = "avatar-speaking"
+
+    elif is_smiling:
+        avatar_open = assistant.get_avatar_image("smile_open")
+        avatar_closed = assistant.get_avatar_image("smile_open")
+        container_class = "avatar-ready"
+
     else:
         avatar_open = assistant.get_avatar_image("ready_open")
         avatar_closed = assistant.get_avatar_image("ready_closed")
+        container_class = "avatar-ready"
+
     
     # Display avatar with title and animation
     if avatar_open and avatar_closed:
@@ -323,32 +345,23 @@ def render_doc_assistant():
         }
         </style>
         """
-        
-        # Determine container class and which images to show
-        if is_speaking:
-            # Speaking animation (alternates between open and closed mouth, with periodic blinks)
-            container_class = "avatar-speaking"
-            st.sidebar.markdown(f"""{animation_style}
-<div style="text-align: center; margin-bottom: 1rem;">
-    <div class="avatar-container {container_class}">
-        <img src="{avatar_open}" class="avatar-frame avatar-frame-base">
-        <img src="{avatar_closed}" class="avatar-frame avatar-frame-overlay">
-    </div>
-    <h3 style="margin-top: 0.5rem; font-size: 1.2rem;">Documentation Assistant</h3>
-</div>""", unsafe_allow_html=True)
-        else:
-            # Ready state - show open eyes with periodic blinks
-            container_class = "avatar-ready"
-            st.sidebar.markdown(f"""{animation_style}
-<div style="text-align: center; margin-bottom: 1rem;">
-    <div class="avatar-container {container_class}">
-        <img src="{avatar_open}" class="avatar-frame avatar-frame-base">
-        <img src="{avatar_closed}" class="avatar-frame avatar-frame-overlay">
-    </div>
-    <h3 style="margin-top: 0.5rem; font-size: 1.2rem;">Documentation Assistant</h3>
-</div>""", unsafe_allow_html=True)
+
+        st.sidebar.markdown(
+            f"""{animation_style}
+    <div style="text-align: center; margin-bottom: 1rem;">
+        <div class="avatar-container {container_class}">
+            <img src="{avatar_open}" class="avatar-frame avatar-frame-base">
+            <img src="{avatar_closed}" class="avatar-frame avatar-frame-overlay">
+        </div>
+        <h3 style="margin-top: 0.5rem; font-size: 1.2rem;">
+            Documentation Assistant
+        </h3>
+    </div>""",
+            unsafe_allow_html=True
+        )
     else:
         st.sidebar.markdown("### 🤖 Documentation Assistant")
+
     
     # AI provider selection
     ai_provider = st.sidebar.radio(
@@ -406,9 +419,10 @@ def render_doc_assistant():
         
         with st.spinner("🤔 Consulting documentation..."):
             answer = st.session_state.doc_assistant.get_answer(question, provider)
-            
-            # Reset states
+
+            # Stop talking → smile for 10 seconds
             st.session_state.assistant_is_speaking = False
+            st.session_state.assistant_smile_until = time.time() + 10.0
             st.session_state.processing_question = False
             
             # Add to history
