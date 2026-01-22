@@ -7,7 +7,7 @@ issue detection and LLM-based analysis integration.
 """
 
 from typing import Dict, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 import re
 
@@ -367,7 +367,7 @@ class OrchestratorAgent:
         # --------------------------------------------------
         workflow_log = {
             "workflow_id": str(uuid.uuid4()),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "pre_extraction": {},
             "extraction": {},
             "analysis": {},
