@@ -8,6 +8,47 @@ import streamlit as st
 from pathlib import Path
 from typing import Optional, Dict, List
 import re
+import time
+import random
+import streamlit.components.v1 as components
+import base64
+
+
+# Module-level cache for avatar images (loaded once per server, not per session)
+_BILLY_IMAGES_CACHE = None
+
+
+def _get_billy_images():
+    """Load and cache Billy avatar images as base64 data URIs."""
+    global _BILLY_IMAGES_CACHE
+    
+    if _BILLY_IMAGES_CACHE is None:
+        avatar_dir = Path(__file__).parent.parent.parent / "static" / "images" / "avatars"
+        avatar_images = [
+            "billy__eyes_open__ready.png",           # 0
+            "billy__eyes_closed__ready.png",         # 1
+            "billy__eyes_open__talking.png",         # 2
+            "billy__eyes_closed__talking.png",       # 3
+            "billy__eyes_open__happy.png",           # 4
+            "billy__eyes_open__billdozer_up.png",    # 5
+            "billy__eyes_open__billdozer_down.png",  # 6
+            "billy__eyes_open__smiling.png",         # 7
+        ]
+        
+        # Convert to base64 data URIs
+        b64_images = []
+        for img_name in avatar_images:
+            img_path = avatar_dir / img_name
+            if img_path.exists():
+                with open(img_path, 'rb') as f:
+                    b64 = base64.b64encode(f.read()).decode()
+                    b64_images.append(f"data:image/png;base64,{b64}")
+            else:
+                b64_images.append("")
+        
+        _BILLY_IMAGES_CACHE = b64_images
+    
+    return _BILLY_IMAGES_CACHE
 
 
 class DocumentationAssistant:
@@ -177,7 +218,141 @@ Please provide a helpful, accurate answer based on the documentation above. If t
 
 
 def render_doc_assistant():
+    if "assistant_talking" not in st.session_state:
+        st.session_state.assistant_talking = False
+
     """Render the documentation assistant in the sidebar."""
+    
+    def render_assistant_avatar():
+        talking = st.session_state.assistant_talking
+        
+        # Embedded HTML/CSS/JS from avatar_prototype.html
+        avatar_html = """
+        <div style="display: flex; justify-content: center; padding: 12px 0;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <div class="child-div nameplate billy" id="billyAvatar">
+                    <img class="avatar-img" src="app/static/images/avatars/billy__eyes_open__ready.png" style="display: block;">
+                    <img class="avatar-img" src="app/static/images/avatars/billy__eyes_closed__ready.png" style="display: none;">
+                    <img class="avatar-img" src="app/static/images/avatars/billy__eyes_open__talking.png" style="display: none;">
+                    <img class="avatar-img" src="app/static/images/avatars/billy__eyes_closed__talking.png" style="display: none;">
+                    <img class="avatar-img" src="app/static/images/avatars/billy__eyes_open__smiling.png" style="display: none;">
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            .child-div {
+                width: 80px;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+                position: relative;
+            }
+            
+            .avatar-img {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                object-fit: cover;
+                background: white;
+                border: 2px solid rgba(255, 255, 255, 0.8);
+            }
+            
+            .child-div.nameplate::after {
+                content: "";
+                position: absolute;
+                top: 100%;
+                margin-top: 8px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 92px;
+                height: 26px;
+                border-radius: 6px;
+                background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.15) 18%, rgba(20,20,20,0.95) 55%, rgba(255,255,255,0.18) 100%);
+                box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(0,0,0,0.85), 0 3px 6px rgba(0,0,0,0.35);
+                z-index: 1;
+            }
+            
+            .child-div.nameplate.billy::before {
+                content: "Billy";
+                position: absolute;
+                top: calc(100% + 16px);
+                left: 50%;
+                transform: translateX(-50%);
+                width: 92px;
+                text-align: center;
+                font-size: 12px;
+                font-weight: 900;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                color: #ffffff;
+                text-shadow: 0 1px 0 rgba(0,0,0,0.95), 0 -1px 0 rgba(255,255,255,0.35), 0 0 8px rgba(255,255,255,0.35);
+                z-index: 2;
+            }
+        </style>
+        
+        <script>
+            let idleTimers = [];
+            let talkingTimers = [];
+            const div = document.getElementById('billyAvatar');
+            
+            function showOnly(index) {
+                const imgs = div.querySelectorAll('img');
+                imgs.forEach((img, i) => {
+                    img.style.display = i === index ? 'block' : 'none';
+                });
+            }
+            
+            function scheduleBlink() {
+                const delay = Math.random() * 4000 + 4000;
+                const timer = setTimeout(() => {
+                    if (div.classList.contains('talking')) return;
+                    showOnly(1);
+                    setTimeout(() => {
+                        showOnly(0);
+                        scheduleBlink();
+                    }, 150);
+                }, delay);
+                idleTimers.push(timer);
+            }
+            
+            function startTalking() {
+                idleTimers.forEach(t => clearTimeout(t));
+                idleTimers = [];
+                
+                function cycleTalking() {
+                    if (!div.classList.contains('talking')) return;
+                    const index = Math.floor(Math.random() * 2) + 2;
+                    showOnly(index);
+                    const timer = setTimeout(cycleTalking, Math.random() * 800 + 400);
+                    talkingTimers.push(timer);
+                }
+                div.classList.add('talking');
+                cycleTalking();
+            }
+            
+            function stopTalking() {
+                div.classList.remove('talking');
+                talkingTimers.forEach(t => clearTimeout(t));
+                talkingTimers = [];
+                showOnly(4);
+                setTimeout(() => {
+                    showOnly(0);
+                    scheduleBlink();
+                }, 5000);
+            }
+            
+            scheduleBlink();
+        </script>
+        """
+        
+        with st.sidebar:
+            components.html(avatar_html, height=140)
+    
+    # Render avatar at the top
+    render_assistant_avatar()
+    
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 🤖 Documentation Assistant")
     
@@ -202,23 +377,23 @@ def render_doc_assistant():
     col1, col2 = st.sidebar.columns(2)
     
     with col1:
-        if st.button("🚀 Getting Started", use_container_width=True):
+        if st.button("🚀 Getting Started", width="stretch"):
             st.session_state.assistant_question = "How do I get started with medBillDozer?"
     
     with col2:
-        if st.button("🔒 Privacy Info", use_container_width=True):
+        if st.button("🔒 Privacy Info", width="stretch"):
             st.session_state.assistant_question = "Is my medical data private and secure?"
     
     col3, col4 = st.sidebar.columns(2)
     
     with col3:
-        if st.button("💰 Savings", use_container_width=True):
+        if st.button("💰 Savings", width="stretch"):
             st.session_state.assistant_question = "How do I interpret the savings estimates?"
     
     with col4:
-        if st.button("❓ Troubleshoot", use_container_width=True):
+        if st.button("❓ Troubleshoot", width="stretch"):
             st.session_state.assistant_question = "My analysis failed. What should I do?"
-    
+
     # Question input
     user_question = st.sidebar.text_input(
         "Ask a question:",
@@ -232,19 +407,25 @@ def render_doc_assistant():
         del st.session_state.assistant_question
     
     # Ask button
-    ask_button = st.sidebar.button("Ask Assistant", type="primary", use_container_width=True)
+    ask_button = st.sidebar.button("Ask Assistant", type="primary", width="stretch")
     
     # Process question
     if ask_button and user_question.strip():
-        with st.spinner("🤔 Consulting documentation..."):
-            answer = st.session_state.doc_assistant.get_answer(user_question, ai_provider)
-            
-            # Add to history
-            st.session_state.assistant_history.append({
-                'question': user_question,
-                'answer': answer
-            })
-            st.rerun()
+        # Show status in sidebar
+        status_placeholder = st.sidebar.empty()
+        status_placeholder.info("🤔 Consulting documentation...")
+        
+        answer = st.session_state.doc_assistant.get_answer(user_question, ai_provider)
+        
+        # Clear status
+        status_placeholder.empty()
+        
+        # Add to history
+        st.session_state.assistant_history.append({
+            'question': user_question,
+            'answer': answer
+        })
+        st.rerun()
     
     # Display conversation history (most recent first)
     if st.session_state.assistant_history:
@@ -258,7 +439,7 @@ def render_doc_assistant():
     
     # Clear history button
     if st.session_state.assistant_history:
-        if st.sidebar.button("Clear History", use_container_width=True):
+        if st.sidebar.button("Clear History", width="stretch"):
             st.session_state.assistant_history = []
             st.rerun()
     

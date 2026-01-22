@@ -912,6 +912,10 @@ Documentation Assistant - AI-powered help sidebar.
 Provides contextual help and answers to user questions by reading
 the comprehensive documentation as a source of truth.
 
+### Constants
+
+- **`_BILLY_IMAGES_CACHE`**: `None`
+
 ### Classes
 
 #### `DocumentationAssistant`
@@ -944,9 +948,11 @@ AI-powered documentation assistant that provides contextual help.
 
 ### Functions
 
-#### `render_doc_assistant()`
+#### `_get_billy_images()`
 
-Render the documentation assistant in the sidebar.
+Load and cache Billy avatar images as base64 data URIs.
+
+#### `render_doc_assistant()`
 
 #### `render_contextual_help(context)`
 

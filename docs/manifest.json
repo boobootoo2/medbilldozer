@@ -7,9 +7,11 @@
       "filepath": "_modules/ui/doc_assistant.py",
       "has_docstring": true,
       "num_classes": 1,
-      "num_functions": 2,
+      "num_functions": 3,
       "num_dependencies": 0,
-      "constants": []
+      "constants": [
+        "_BILLY_IMAGES_CACHE"
+      ]
     },
     {
       "name": "_modules.ui.privacy_ui",

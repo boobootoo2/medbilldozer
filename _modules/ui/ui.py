@@ -269,7 +269,7 @@ def render_header():
     
     Displays the medBillDozer logo and descriptive text about the application's purpose.
     """
-    logo_path = Path("images/medBillDozer-logo-transparent.png")
+    logo_path = Path("static/images/medBillDozer-logo-transparent.png")
 
     if logo_path.exists():
         b64 = base64.b64encode(logo_path.read_bytes()).decode()
