@@ -533,73 +533,6 @@ def render_doc_assistant():
         avatar_closed = assistant.get_avatar_image("ready_closed")
         container_class = "avatar-ready"
 
-    
-    # Display avatar with title and animation
-    if avatar_open and avatar_closed:
-        animation_style = """
-        <style>
-        [data-testid="stSidebar"] .stElementContainer:first-of-type {
-            display: none !important;
-        }
-        .avatar-container {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            margin: 0 auto;
-        }
-        .avatar-frame {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 2px solid #4CAF50;
-            object-fit: cover;
-        }
-        .avatar-frame-base {
-            opacity: 1;
-            z-index: 1;
-        }
-        .avatar-frame-overlay {
-            opacity: 0;
-            z-index: 2;
-        }
-        @keyframes blink {
-            0%, 97% { opacity: 0; }
-            97.5%, 99.5% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-        @keyframes talk {
-            0%, 49% { opacity: 1; }
-            50%, 100% { opacity: 0; }
-        }
-        .avatar-ready .avatar-frame-overlay {
-            animation: blink 6.5s infinite;
-        }
-        .avatar-speaking .avatar-frame-overlay {
-            animation: talk 0.6s infinite, blink 6.5s infinite;
-        }
-        </style>
-        """
-
-        st.sidebar.markdown(
-            f"""{animation_style}
-    <div style="text-align: center; margin-bottom: 1rem;">
-        <div class="avatar-container {container_class}">
-            <img src="{avatar_open}" class="avatar-frame avatar-frame-base">
-            <img src="{avatar_closed}" class="avatar-frame avatar-frame-overlay">
-        </div>
-        <h3 style="margin-top: 0.5rem; font-size: 1.2rem;">
-            Documentation Assistant
-        </h3>
-    </div>""",
-            unsafe_allow_html=True
-        )
-    else:
-        st.sidebar.markdown("### 🤖 Documentation Assistant")
-
-    
     # AI provider selection
     ai_provider = st.sidebar.selectbox(
         "Assistant AI Provider:",
@@ -613,7 +546,7 @@ def render_doc_assistant():
     col1, col2 = st.sidebar.columns(2)
     
     with col1:
-        if st.button("🚀 Getting Started", width="stretch"):
+        if st.button("🚀 Getting Started", key="quick_help_getting_started"):
             question = "How do I use medBillDozer to analyze my medical bills as a patient?"
             dispatch_billy_event("BILLY_TALK_START")
             answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
@@ -625,7 +558,7 @@ def render_doc_assistant():
             st.rerun()
     
     with col2:
-        if st.button("🔒 Privacy Info", width="stretch"):
+        if st.button("🔒 Privacy Info", key="quick_help_privacy"):
             question = "Is my medical bill data private and secure when I use this app?"
             dispatch_billy_event("BILLY_TALK_START")
             answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
@@ -639,7 +572,7 @@ def render_doc_assistant():
     col3, col4 = st.sidebar.columns(2)
     
     with col3:
-        if st.button("💰 Savings", width="stretch"):
+        if st.button("💰 Savings", key="quick_help_savings"):
             question = "What do the savings estimates mean and how accurate are they?"
             dispatch_billy_event("BILLY_TALK_START")
             answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
@@ -651,7 +584,7 @@ def render_doc_assistant():
             st.rerun()
     
     with col4:
-        if st.button("❓ Troubleshoot", width="stretch"):
+        if st.button("❓ Troubleshoot", key="quick_help_troubleshoot"):
             question = "The analysis didn't work or I got an error. What should I try?"
             dispatch_billy_event("BILLY_TALK_START")
             answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
@@ -727,6 +660,15 @@ def render_contextual_help(context: str):
     Args:
         context: Current context (e.g., 'input', 'results', 'error')
     """
+    # Initialize dismissed alerts in session state
+    if 'dismissed_alerts' not in st.session_state:
+        st.session_state.dismissed_alerts = set()
+    
+    # Check if this alert has been dismissed
+    alert_key = f"help_{context}"
+    if alert_key in st.session_state.dismissed_alerts:
+        return
+    
     help_messages = {
         'input': {
             'icon': '📝',
@@ -757,6 +699,16 @@ def render_contextual_help(context: str):
     
     if context in help_messages:
         help_info = help_messages[context]
-        st.sidebar.info(
-            f"{help_info['icon']} **{help_info['title']}**\n\n{help_info['message']}"
-        )
+        
+        # Create dismissible alert with button
+        col1, col2 = st.sidebar.columns([9, 1])
+        
+        with col1:
+            st.sidebar.info(
+                f"{help_info['icon']} **{help_info['title']}**\n\n{help_info['message']}"
+            )
+        
+        with col2:
+            if st.button("✕", key=f"dismiss_{alert_key}", help="Dismiss"):
+                st.session_state.dismissed_alerts.add(alert_key)
+                st.rerun()
