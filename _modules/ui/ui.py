@@ -257,6 +257,30 @@ def inject_css():
     [data-baseweb="select"] > div > div {
         background-color: rgba(0, 0, 0, 0) !important;
     }
+    /* Target the expand button by its data-testid */
+    button[data-testid="stExpandSidebarButton"]::after {
+        content: " Menu"; /* The text you want to display */
+        font-size: 14px;
+        margin-left: 5px;
+        color: rgba(49, 51, 63, 0.6); /* Matches default Streamlit icon color */
+    }
+    
+    /* Ensure the button is wide enough to show the label */
+    button[data-testid="stExpandSidebarButton"] {
+        width: auto !important;
+        padding-right: 10px !important;
+    }
+    div[data-testid="stSidebarCollapseButton"] button {
+    position: relative;
+    }
+
+    div[data-testid="stSidebarCollapseButton"] button::after {
+    content: "Close menu";
+    margin-left: 8px;
+    font-size: 12px;
+    color: rgba(49, 51, 63, 0.7);
+    white-space: nowrap;
+    }
 
     </style>
     """, unsafe_allow_html=True)
