@@ -948,6 +948,8 @@ AI-powered documentation assistant that provides contextual help.
 
 ### Functions
 
+#### `dispatch_billy_event(event_type)`
+
 #### `_get_billy_images()`
 
 Load and cache Billy avatar images as base64 data URIs.

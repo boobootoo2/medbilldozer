@@ -17,6 +17,21 @@ import base64
 # Module-level cache for avatar images (loaded once per server, not per session)
 _BILLY_IMAGES_CACHE = None
 
+def dispatch_billy_event(event_type: str):
+    components.html(
+        f"""
+        <script>
+            window.parent.document.dispatchEvent(
+                new CustomEvent("billy-event", {{
+                    detail: {{ type: "{event_type}" }}
+                }})
+            );
+        </script>
+        """,
+        height=0,
+    )
+
+
 
 def _get_billy_images():
     """Load and cache Billy avatar images as base64 data URIs."""
@@ -293,58 +308,76 @@ def render_doc_assistant():
         </style>
         
         <script>
-            let idleTimers = [];
-            let talkingTimers = [];
-            const div = document.getElementById('billyAvatar');
-            
-            function showOnly(index) {
-                const imgs = div.querySelectorAll('img');
-                imgs.forEach((img, i) => {
-                    img.style.display = i === index ? 'block' : 'none';
-                });
-            }
-            
-            function scheduleBlink() {
-                const delay = Math.random() * 4000 + 4000;
-                const timer = setTimeout(() => {
-                    if (div.classList.contains('talking')) return;
-                    showOnly(1);
-                    setTimeout(() => {
-                        showOnly(0);
-                        scheduleBlink();
-                    }, 150);
-                }, delay);
-                idleTimers.push(timer);
-            }
-            
-            function startTalking() {
-                idleTimers.forEach(t => clearTimeout(t));
-                idleTimers = [];
-                
-                function cycleTalking() {
-                    if (!div.classList.contains('talking')) return;
-                    const index = Math.floor(Math.random() * 2) + 2;
-                    showOnly(index);
-                    const timer = setTimeout(cycleTalking, Math.random() * 800 + 400);
-                    talkingTimers.push(timer);
-                }
-                div.classList.add('talking');
-                cycleTalking();
-            }
-            
-            function stopTalking() {
-                div.classList.remove('talking');
-                talkingTimers.forEach(t => clearTimeout(t));
-                talkingTimers = [];
-                showOnly(4);
-                setTimeout(() => {
-                    showOnly(0);
-                    scheduleBlink();
-                }, 5000);
-            }
-            
+    let idleTimers = [];
+    let talkingTimers = [];
+    const div = document.getElementById('billyAvatar');
+
+    function showOnly(index) {
+        const imgs = div.querySelectorAll('img');
+        imgs.forEach((img, i) => {
+            img.style.display = i === index ? 'block' : 'none';
+        });
+    }
+
+    function scheduleBlink() {
+        const delay = Math.random() * 4000 + 4000;
+        const timer = setTimeout(() => {
+            if (div.classList.contains('talking')) return;
+            showOnly(1);
+            setTimeout(() => {
+                showOnly(0);
+                scheduleBlink();
+            }, 150);
+        }, delay);
+        idleTimers.push(timer);
+    }
+
+    function startTalking() {
+        idleTimers.forEach(t => clearTimeout(t));
+        idleTimers = [];
+
+        div.classList.add('talking');
+
+        function cycleTalking() {
+            if (!div.classList.contains('talking')) return;
+            const index = Math.floor(Math.random() * 2) + 2;
+            showOnly(index);
+            const timer = setTimeout(cycleTalking, Math.random() * 800 + 400);
+            talkingTimers.push(timer);
+        }
+
+        cycleTalking();
+    }
+
+    function stopTalking() {
+        div.classList.remove('talking');
+        talkingTimers.forEach(t => clearTimeout(t));
+        talkingTimers = [];
+        showOnly(4); // smiling
+        setTimeout(() => {
+            showOnly(0);
             scheduleBlink();
-        </script>
+        }, 5000);
+    }
+
+    // 🔑 LISTEN FOR EVENTS FROM STREAMLIT
+    window.parent.document.addEventListener("billy-event", (event) => {
+        if (!event.detail || !event.detail.type) return;
+
+        switch (event.detail.type) {
+            case "BILLY_TALK_START":
+                startTalking();
+                break;
+            case "BILLY_TALK_STOP":
+                stopTalking();
+                break;
+        }
+    });
+
+
+    scheduleBlink();
+</script>
+
         """
         
         with st.sidebar:
@@ -365,7 +398,7 @@ def render_doc_assistant():
         st.session_state.assistant_history = []
     
     # AI provider selection
-    ai_provider = st.sidebar.radio(
+    ai_provider = st.sidebar.selectbox(
         "Assistant AI Provider:",
         ["openai", "gemini"],
         help="Choose which AI service to use for the assistant"
@@ -411,6 +444,28 @@ def render_doc_assistant():
     
     # Process question
     if ask_button and user_question.strip():
+        # 🗣️ Billy starts talking
+        dispatch_billy_event("BILLY_TALK_START")
+
+        status_placeholder = st.sidebar.empty()
+        status_placeholder.info("🤔 Consulting documentation...")
+
+        answer = st.session_state.doc_assistant.get_answer(
+            user_question, ai_provider
+        )
+
+        status_placeholder.empty()
+
+        # 🛑 Billy stops talking
+        dispatch_billy_event("BILLY_TALK_STOP")
+
+        st.session_state.assistant_history.append({
+            "question": user_question,
+            "answer": answer,
+        })
+
+        st.rerun()
+
         # Show status in sidebar
         status_placeholder = st.sidebar.empty()
         status_placeholder.info("🤔 Consulting documentation...")
@@ -420,11 +475,7 @@ def render_doc_assistant():
         # Clear status
         status_placeholder.empty()
         
-        # Add to history
-        st.session_state.assistant_history.append({
-            'question': user_question,
-            'answer': answer
-        })
+
         st.rerun()
     
     # Display conversation history (most recent first)
