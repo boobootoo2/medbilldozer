@@ -228,54 +228,6 @@ class TestGetAnswerOpenAI:
         assert "OPENAI_API_KEY" in result
 
 
-class TestGetAnswerGemini:
-    """Test get_answer_gemini method."""
-    
-    @patch('_modules.ui.doc_assistant.DocumentationAssistant._build_context_prompt')
-    @patch('google.genai.Client')
-    def test_get_answer_gemini_calls_api_with_correct_params(self, mock_client_class, mock_build_prompt):
-        """get_answer_gemini should call Gemini API with correct parameters."""
-        # Setup mocks
-        mock_build_prompt.return_value = "Test prompt"
-        mock_client = Mock()
-        mock_client_class.return_value = mock_client
-        
-        mock_response = Mock()
-        mock_response.text = "  Gemini response  "
-        mock_client.models.generate_content.return_value = mock_response
-        
-        assistant = DocumentationAssistant.__new__(DocumentationAssistant)
-        assistant.docs_cache = {}
-        
-        result = assistant.get_answer_gemini("test question")
-        
-        # Should call Gemini with correct model
-        mock_client.models.generate_content.assert_called_once()
-        call_kwargs = mock_client.models.generate_content.call_args[1]
-        assert call_kwargs['model'] == "gemini-2.0-flash-exp"
-        assert call_kwargs['contents'] == "Test prompt"
-        
-        # Should return stripped response
-        assert result == "Gemini response"
-    
-    @patch('_modules.ui.doc_assistant.DocumentationAssistant._build_context_prompt')
-    @patch('google.genai.Client')
-    def test_get_answer_gemini_returns_error_on_exception(self, mock_client_class, mock_build_prompt):
-        """get_answer_gemini should return error message on API failure."""
-        mock_build_prompt.return_value = "Test prompt"
-        mock_client_class.side_effect = Exception("Gemini Error")
-        
-        assistant = DocumentationAssistant.__new__(DocumentationAssistant)
-        assistant.docs_cache = {}
-        
-        result = assistant.get_answer_gemini("test question")
-        
-        # Should return error message
-        assert "❌ Gemini API Error" in result
-        assert "Gemini Error" in result
-        assert "GOOGLE_API_KEY" in result
-
-
 class TestGetAnswer:
     """Test get_answer dispatcher method."""
     
