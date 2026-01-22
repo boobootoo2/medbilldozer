@@ -2,7 +2,7 @@
 
 ## Overview
 
-medBillDozer is built using the principles and models of **:contentReference[oaicite:0]{index=0}** and the broader **:contentReference[oaicite:1]{index=1}** (Health AI Developer Foundations) collection to address a core healthcare challenge:
+medBillDozer is built using the principles and models of **[MedGemma](https://www.kaggle.com/competitions/med-gemma-impact-challenge)** and the broader **Health AI Developer Foundations (HAI-DEF)** collection to address a core healthcare challenge:
 
 > **Helping patients understand and act on potential billing errors in a safe, explainable, and human-centered way.**
 
