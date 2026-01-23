@@ -4,8 +4,12 @@ Main Streamlit application that orchestrates document analysis, provider registr
 and UI rendering for detecting billing, pharmacy, dental, and insurance claim issues.
 """
 # app.py
-
+import base64
+from pathlib import Path
 import streamlit as st
+import streamlit.components.v1 as components
+import json
+
 
 from _modules.ui.privacy_ui import render_privacy_dialog
 from _modules.ui.ui_documents import render_document_inputs
@@ -69,6 +73,106 @@ ENGINE_OPTIONS = {
     "gemini-3-flash-preview": "gemini-3-flash-preview",
     "Local (Offline)": "heuristic",
 }
+
+
+_WIDGET_HTML_CACHE = None  # module scope
+BILLDOZER_TOKEN = "BILLDOZER_v1"
+
+def install_billdozer_bridge():
+    components.html(
+        f"""
+        <script>
+        (function () {{
+          const TOKEN = {json.dumps(BILLDOZER_TOKEN)};
+
+          if (window.parent.__billdozerBridgeInstalled) return;
+          window.parent.__billdozerBridgeInstalled = true;
+
+          window.parent.__billdozerTargetWindow = null;
+          window.parent.__billdozerMsgQueue = window.parent.__billdozerMsgQueue || [];
+
+          window.parent.addEventListener("message", (e) => {{
+            const data = e.data;
+            if (!data || data.type !== "BILLDOZER_READY") return;
+            if (data.token !== TOKEN) return;
+
+            window.parent.__billdozerTargetWindow = e.source;
+            console.log("[Billdozer bridge] READY received, target stored");
+
+            // ✅ flush queued messages
+            const q = window.parent.__billdozerMsgQueue || [];
+            while (q.length) {{
+              const msg = q.shift();
+              e.source.postMessage(msg, "*");
+              console.log("[Billdozer bridge] flushed:", msg);
+            }}
+          }});
+
+          console.log("[Billdozer bridge] installed");
+        }})();
+        </script>
+        """,
+        height=0,
+    )
+
+
+def get_billdozer_widget_html() -> str:
+    global _WIDGET_HTML_CACHE
+
+    if _WIDGET_HTML_CACHE is None:
+        widget_path = (
+            Path(__file__).parent
+            / "static"
+            / "bulldozer_animation.html"
+        )
+        html = widget_path.read_text(encoding="utf-8")
+
+        # 🔧 Hide controls when embedded in Streamlit
+        css_override = """
+        <style>
+          .controls {
+            display: none !important;
+          }
+        </style>
+        """
+
+        # Inject just before </head>
+        html = html.replace("</head>", css_override + "\n</head>")
+
+        _WIDGET_HTML_CACHE = html
+
+    return _WIDGET_HTML_CACHE
+
+def dispatch_widget_message(character: str, message: str):
+    components.html(
+        f"""
+        <script>
+          (function () {{
+            window.parent.__billdozerMsgQueue = window.parent.__billdozerMsgQueue || [];
+
+            const payload = {{
+              type: "CHARACTER_MESSAGE",
+              payload: {{
+                character: {json.dumps(character)},
+                message: {json.dumps(message)}
+              }}
+            }};
+
+            const target = window.parent.__billdozerTargetWindow;
+
+            if (!target) {{
+              console.warn("[Billdozer bridge] target not ready, queued:", payload);
+              window.parent.__billdozerMsgQueue.push(payload);
+              return;
+            }}
+
+            target.postMessage(payload, "*");
+            console.log("[Billdozer bridge] sent:", payload);
+          }})();
+        </script>
+        """,
+        height=0,
+    )
 
 
 # ==================================================
@@ -282,8 +386,32 @@ def main():
         # Aggregate savings across all documents for this run
         total_potential_savings = 0.0
         per_document_savings = {}
+        
+
+        install_billdozer_bridge()
+        components.html(get_billdozer_widget_html(), height=220, scrolling=False)
+
+        dispatch_widget_message("billie", "Bill Dozing Statements")
+
+        if "billdozer_widget_initialized" not in st.session_state:
+            dispatch_widget_message("billie", "Hi Billy, any more docs?")
+            st.session_state.billdozer_widget_initialized = True
+
+
+
+
 
         for idx, doc in enumerate(documents, 1):
+            speaker = "billie" if idx % 2 == 1 else "billy"
+
+
+            result = agent.run(doc["raw_text"])
+
+            dispatch_widget_message(
+                speaker,
+                f"Finished analyzing {doc['document_id']} ✅"
+            )
+
             # Use index-based ID initially (will be replaced with friendly ID after facts extraction)
             initial_doc_id = f"Document {idx}"
             
@@ -295,14 +423,17 @@ def main():
             if is_dag_enabled():
                 dag_expander, dag_placeholder = create_pipeline_dag_container(document_id=str(idx))
             
-            with st.spinner(f"🚜 Processing document {doc['document_id']}…"):
-                result = agent.run(doc["raw_text"])
+            dispatch_widget_message(
+                speaker,
+                f"Processing {doc['document_id']}…"
+            )
 
-                # --------------------------------------------------
-                # Session persistence (in-memory, per run)
-                # --------------------------------------------------
-                st.session_state.setdefault("workflow_logs", {})
-                st.session_state["workflow_logs"][doc["document_id"]] = result.get("_workflow_log")
+
+            # --------------------------------------------------
+            # Session persistence (in-memory, per run)
+            # --------------------------------------------------
+            st.session_state.setdefault("workflow_logs", {})
+            st.session_state["workflow_logs"][doc["document_id"]] = result.get("_workflow_log")
             
             # Update DAG with completed workflow (AFTER spinner closes)
             if is_dag_enabled() and dag_placeholder:
