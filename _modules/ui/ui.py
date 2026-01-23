@@ -286,6 +286,10 @@ def inject_css():
             font-size: 2rem;
         }
     }
+    
+    .billdozing-widget  .controls {
+        display: none;
+    }
 
     </style>
     """, unsafe_allow_html=True)
