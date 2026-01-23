@@ -281,6 +281,11 @@ def inject_css():
     color: rgba(49, 51, 63, 0.7);
     white-space: nowrap;
     }
+    @media (max-width: 768px) {
+        #med-bill-dozer {
+            font-size: 2rem;
+        }
+    }
 
     </style>
     """, unsafe_allow_html=True)
