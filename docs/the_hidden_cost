@@ -1,0 +1,128 @@
+# The Problem: Medical Billing Errors Are a Hidden Consumer Cost
+
+## Executive Summary
+
+Medical billing errors are widespread, costly, and disproportionately borne by consumers. While healthcare spending in the United States exceeds $4 trillion annually, a significant portion of the financial harm experienced by patients does not stem from the cost of care itself, but from administrative errors, claim mismatches, denied reimbursements, and unclaimed benefits.
+
+Consumers routinely overpay, incur avoidable medical debt, or forfeit benefits they are legally entitled to — often without realizing it or lacking the tools to challenge the system.
+
+**medBillDozer exists to close this gap.**
+
+---
+
+## 1. The Scale of Billing and Payment Errors
+
+Public data from federal audits shows that payment inaccuracies are not edge cases:
+
+- Medicare, Medicare Advantage, and Medicaid collectively report **tens of billions of dollars per year** in improper payments.
+- These include overpayments, underpayments, duplicate charges, incorrect coding, and documentation failures.
+- Improper payments are *not synonymous with fraud* — many are routine administrative or billing errors.
+
+This establishes a systemic baseline: **billing errors are common, expected, and large in aggregate.**
+
+---
+
+## 2. How These Errors Become Consumer Costs
+
+Billing and claims errors cascade downstream to patients in predictable ways:
+
+1. Incorrect patient responsibility amounts (copays, coinsurance, deductibles)
+2. Denied or partially denied claims that shift costs onto consumers
+3. Duplicate or inflated charges that go unnoticed
+4. Delays or failures in reimbursement
+5. Patient credits or refunds that are never returned
+
+Because healthcare billing is opaque and fragmented, consumers are typically the *last* to know something went wrong — and often the only party financially penalized.
+
+---
+
+## 3. Low Error Detection and Appeal Rates
+
+Even when consumers receive incorrect bills:
+
+- Many do not realize an error has occurred
+- Others lack the time, expertise, or documentation to challenge it
+- Formal appeals are rare, despite evidence that many denials are reversible
+
+As a result, **large volumes of correctable billing and coverage errors are never fixed**, effectively converting administrative mistakes into permanent consumer expenses.
+
+---
+
+## 4. Medical Debt as a Symptom, Not a Root Cause
+
+Medical debt is often framed as a problem of healthcare affordability. In practice, it is frequently a **byproduct of billing failures**, including:
+
+- Bills sent before insurance is properly applied
+- Incorrect denial of covered services
+- Charges for services already paid or adjusted
+- Incorrect calculation of patient responsibility
+
+Once an incorrect bill enters collections, the burden of proof shifts almost entirely to the consumer.
+
+---
+
+## 5. Unclaimed and Forfeited Consumer Benefits
+
+Beyond direct overpayment, consumers also lose money through **unclaimed healthcare benefits**, such as:
+
+- Flexible Spending Account (FSA) forfeitures
+- Missed reimbursements due to missing or incorrect documentation
+- Unreturned provider credits and stale refund checks
+- Underutilized eligible benefits
+
+Each year, **billions of dollars in consumer healthcare funds go unused or forfeited**, not because services were ineligible, but because the system failed to reconcile charges, coverage, and benefits correctly.
+
+---
+
+## 6. Why Existing Solutions Fall Short
+
+Current approaches rely on one or more of the following:
+
+- Manual review of complex medical bills
+- Provider customer service calls with limited transparency
+- Insurer portals that expose only partial claim context
+- After-the-fact advocacy or debt assistance
+
+These solutions are reactive, fragmented, and inaccessible to most patients.
+
+---
+
+## 7. The medBillDozer Approach
+
+medBillDozer is designed to address the *root cause* of consumer harm:  
+**lack of visibility and reconciliation across medical documents.**
+
+### medBillDozer focuses on:
+
+- Parsing and normalizing medical bills, EOBs, and receipts
+- Reconciling billed, allowed, and patient responsibility amounts
+- Detecting duplicate charges and coverage inconsistencies
+- Highlighting potential overpayments, denials, and unclaimed benefits
+- Explaining findings in plain language so consumers can act
+
+Rather than replacing insurers or providers, medBillDozer empowers consumers with clarity and evidence.
+
+---
+
+## 8. The Opportunity
+
+Even small improvements in detection and correction rates can yield meaningful consumer impact:
+
+- Preventing avoidable out-of-pocket payments
+- Reducing medical debt driven by billing errors
+- Recovering unclaimed reimbursements and benefits
+- Lowering the emotional and cognitive burden of healthcare administration
+
+**The problem is not rare. The money is real. The tools are missing.**
+
+medBillDozer is built to fill that gap.
+
+---
+
+## Conclusion
+
+Medical billing errors represent one of the largest, least visible financial drains on American households. Consumers are expected to navigate a system they did not design, using documents they cannot interpret, under rules that vary by payer, provider, and plan.
+
+medBillDozer reframes the problem: not as consumer failure, but as a solvable information and reconciliation challenge.
+
+By making billing errors visible, understandable, and actionable, medBillDozer helps return control — and money — to patients.
