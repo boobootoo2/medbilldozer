@@ -1,4 +1,4 @@
-[![Run Success](https://github.com/boobootoo2/medbilldozer/actions/workflows/<WORKFLOW_FILE>.yml/badge.svg)](https://github.com/boobootoo2/medbilldozer/actions)
+[![Run Tests](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml/badge.svg)](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml)
 
 # medBillDozer
 
