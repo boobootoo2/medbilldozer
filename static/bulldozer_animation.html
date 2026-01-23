@@ -20,22 +20,23 @@
         
         body {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
         }
         
         .outer-container {
             width: 320px;
-            height: 320px;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-bottom: 12px;
         }
         
         iframe {
             width: 320px;
-            height: 320px;
-            border: none;
+            height: 140px;
+            /* optional */
         }
     </style>
 </head>
@@ -65,6 +66,7 @@
     flex-direction: row;
     align-items: flex-end;
     background-color: #0595c7ff;
+    position: relative;
   }
 
   .billdozer_animation {
@@ -96,14 +98,67 @@
   100% { opacity: 0; }
 }
 
+.speech-layer {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  pointer-events: none;
+}
+
+.speech-bubble {
+  position: relative;
+  background: white;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #333;
+  margin-bottom: 60px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.speech-pointer {
+  position: absolute;
+  bottom: -10px;
+  width: 0;
+  height: 0;
+}
+
+.inner-container.talking-left .speech-pointer {
+    left: -12px;
+    border-top: 10px solid transparent;
+    border-bottom: 12px solid transparent;
+    border-right: 22px solid white;
+    transform: rotate(-45deg);
+    transform-origin: right center;
+    top: 10px;
+}
+
+.inner-container.talking-right .speech-pointer {
+    right: -12px;
+    border-top: 12px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 22px solid white;
+    transform: rotate(45deg);
+    transform-origin: left center;
+    top: 10px;
+}
+
+.speech-layer {
+  display: none;
+}
+
+
+
 </style>
 </head>
 
 <body>
   <div class="inner-container">
 
+
     <!-- Column 1 -->
-    <div class="billdozer_animation">
+    <div class="billdozer_animation" data-side="left">
       <img src="images/avatars/transparent/billie__eyes_open__billdozer_down.png" />
       <img src="images/avatars/transparent/billie__eyes_open__billdozer_up.png" />
       <img src="images/avatars/transparent/billie__eyes_open__billdozer_down.png" />
@@ -117,17 +172,139 @@
     </div>
 
     <!-- Column 3 -->
-    <div class="billdozer_animation">
+    <div class="billdozer_animation" data-side="right">
       <img src="images/avatars/transparent/billy__eyes_closed__billdozer_down.png" />
       <img src="images/avatars/transparent/billy__eyes_open__billdozer_down.png" />
       <img src="images/avatars/transparent/billy__eyes_open__billdozer_up.png" />
     </div>
 
+
+    <div class="speech-layer">
+        <div class="speech-bubble">
+            <div class="speech-text">Processing bills…</div>
+            <div class="speech-pointer"></div>
+        </div>
+    </div>
+
   </div>
+
+  <script>
+  const container = document.querySelector(".inner-container");
+  const speechLayer = document.querySelector(".speech-layer");
+  const speechText = document.querySelector(".speech-text");
+
+  const messageQueue = [];
+  let isSpeaking = false;
+
+  function playNextMessage() {
+    if (messageQueue.length === 0) {
+      isSpeaking = false;
+      return;
+    }
+
+    isSpeaking = true;
+    const { character, message } = messageQueue.shift();
+
+    container.classList.remove("talking-left", "talking-right");
+
+    if (character === "billie") {
+      container.classList.add("talking-left");
+    } else if (character === "billy") {
+      container.classList.add("talking-right");
+    }
+
+    speechText.textContent = message;
+    speechLayer.style.display = "block";
+
+    setTimeout(() => {
+      speechLayer.style.display = "none";
+      container.classList.remove("talking-left", "talking-right");
+
+      // Small pause feels nicer than instant swap
+      setTimeout(playNextMessage, 300);
+    }, 10000);
+  }
+
+  window.parent.document.addEventListener("billy-event", (event) => {
+    if (!event.detail || event.detail.type !== "CHARACTER_MESSAGE") return;
+
+    const { character, message } = event.detail.payload || {};
+    if (!character || !message) return;
+
+    messageQueue.push({ character, message });
+
+    if (!isSpeaking) {
+      playNextMessage();
+    }
+  });
+</script>
+
+
 </body>
 </html>
 '></iframe>
+
+
+
     </div>
+    <div style="margin-top:16px; width:320px;">
+        <div style="margin-bottom:8px;">
+            <label>Billie</label>
+            <input id="billieInput" type="text" style="width:100%;" />
+        </div>
+
+        <div style="margin-bottom:8px;">
+            <label>Billy</label>
+            <input id="billyInput" type="text" style="width:100%;" />
+        </div>
+
+        <button id="sendBtn" style="width:100%;">Send</button>
+    </div>
+
+    <script>
+        document.getElementById("sendBtn").addEventListener("click", () => {
+            const billieInput = document.getElementById("billieInput");
+            const billyInput = document.getElementById("billyInput");
+
+            const billieMsg = billieInput.value.trim();
+            const billyMsg = billyInput.value.trim();
+
+            if (!billieMsg && !billyMsg) return;
+
+            if (billieMsg) {
+                window.document.dispatchEvent(
+                    new CustomEvent("billy-event", {
+                        detail: {
+                            type: "CHARACTER_MESSAGE",
+                            payload: {
+                                character: "billie",
+                                message: billieMsg
+                            }
+                        }
+                    })
+                );
+            }
+
+            if (billyMsg) {
+                window.document.dispatchEvent(
+                    new CustomEvent("billy-event", {
+                        detail: {
+                            type: "CHARACTER_MESSAGE",
+                            payload: {
+                                character: "billy",
+                                message: billyMsg
+                            }
+                        }
+                    })
+                );
+            }
+
+            // ✅ Clear inputs
+            billieInput.value = "";
+            billyInput.value = "";
+        });
+    </script>
+
 </body>
 
 </html>
