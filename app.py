@@ -143,7 +143,11 @@ def get_billdozer_widget_html() -> str:
 
     return _WIDGET_HTML_CACHE
 
-def dispatch_widget_message(character: str, message: str):
+def dispatch_widget_message(character: str, message):
+    if not message:
+        print("[Billdozer] Skipping empty message:", character, message)
+        return
+
     components.html(
         f"""
         <script>
@@ -154,7 +158,7 @@ def dispatch_widget_message(character: str, message: str):
               type: "CHARACTER_MESSAGE",
               payload: {{
                 character: {json.dumps(character)},
-                message: {json.dumps(message)}
+                message: {json.dumps(str(message))}
               }}
             }};
 
