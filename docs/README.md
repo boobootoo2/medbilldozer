@@ -1,3 +1,6 @@
+[![Run Tests](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml/badge.svg)](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml)
+
+
 # MedBillDozer Documentation
 
 *Auto-generated from codebase analysis*
