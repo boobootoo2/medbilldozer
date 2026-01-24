@@ -186,7 +186,7 @@
         if (!isLocal) {
             // Production: use GitHub CDN
             console.log("[Billdozer] Using GitHub CDN");
-            const cdnBase = 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/images/avatars/transparent';
+            const cdnBase = 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/images/avatars';
             document.querySelectorAll('.billdozer_animation img').forEach(img => {
                 const currentSrc = img.getAttribute('src');
                 if (currentSrc && currentSrc.includes('app/static/images/avatars/transparent/')) {

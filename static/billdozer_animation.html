@@ -210,7 +210,7 @@
       }
   } catch (e) {
       // Can't access parent (cross-origin) console.log( "[Billdozer] Cannot access parent hostname (cross-origin)"); } const isLocal=i sCurrentLocal || isParentLocal; console.log( "[Billdozer] Environment check:", { currentHostname, isCurrentLocal,
-            parentHostname, isParentLocal, finalIsLocal: isLocal }); if (!isLocal) { // Production: use GitHub CDN console.log( "[Billdozer] Using GitHub CDN"); const cdnBase='https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/images/avatars/transparent'
+            parentHostname, isParentLocal, finalIsLocal: isLocal }); if (!isLocal) { // Production: use GitHub CDN console.log( "[Billdozer] Using GitHub CDN"); const cdnBase='https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/images/avatars'
             ; document.querySelectorAll( '.billdozer_animation img').forEach(img=> {
           const currentSrc = img.getAttribute('src');
           if (currentSrc && currentSrc.includes('app/static/images/avatars/transparent/')) {
