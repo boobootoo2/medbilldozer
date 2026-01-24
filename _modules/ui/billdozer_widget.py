@@ -84,7 +84,21 @@ def dispatch_widget_message(character: str, message: str):
     """
     Sends a speech message to the widget.
     Safely queues if the iframe is not ready yet.
+    Also stores message in session state transcript.
     """
+    import streamlit as st
+    
+    # Initialize transcript in session state
+    if 'billdozer_transcript' not in st.session_state:
+        st.session_state.billdozer_transcript = []
+    
+    # Add to transcript with timestamp
+    from datetime import datetime
+    st.session_state.billdozer_transcript.append({
+        'timestamp': datetime.now().isoformat(),
+        'character': character,
+        'message': message
+    })
     if not message:
         return  # Guard against None / empty
 

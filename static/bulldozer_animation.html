@@ -112,6 +112,100 @@
         .controls {
             display: none !important;
         }
+        /* Transcript Section */
+        
+        .transcript-section {
+            width: 320px;
+            margin: 10px auto 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .transcript-toggle {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 8px 12px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        
+        .transcript-toggle:hover {
+            background: #e5e7eb;
+        }
+        
+        .transcript-toggle:focus {
+            outline: 2px solid #0595c7;
+            outline-offset: 2px;
+        }
+        
+        .transcript-arrow {
+            transition: transform 0.2s;
+            font-size: 12px;
+        }
+        
+        .transcript-toggle.expanded .transcript-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .transcript-content {
+            display: none;
+            max-height: 90px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            padding: 8px;
+        }
+        
+        .transcript-content.expanded {
+            display: block;
+        }
+        
+        .transcript-empty {
+            color: #9ca3af;
+            font-size: 12px;
+            text-align: center;
+            padding: 8px;
+            font-style: italic;
+        }
+        
+        .transcript-item {
+            padding: 6px 8px;
+            margin-bottom: 4px;
+            background: #f9fafb;
+            border-radius: 4px;
+            font-size: 12px;
+            border-left: 3px solid #0595c7;
+        }
+        
+        .transcript-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .transcript-character {
+            font-weight: 600;
+            color: #0595c7;
+            margin-right: 6px;
+        }
+        
+        .transcript-message {
+            color: #374151;
+        }
+        
+        .transcript-time {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
     </style>
 </head>
 
@@ -143,6 +237,17 @@
                 <div class="speech-text"></div>
                 <div class="speech-pointer"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Transcript Section -->
+    <div class="transcript-section">
+        <button class="transcript-toggle" id="transcriptToggle" aria-expanded="false" aria-controls="transcriptContent" type="button">
+            <span>📜 Conversation Transcript</span>
+            <span class="transcript-arrow">▼</span>
+        </button>
+        <div class="transcript-content" id="transcriptContent" role="region" aria-label="Conversation transcript">
+            <div class="transcript-empty">No messages yet</div>
         </div>
     </div>
 
@@ -203,10 +308,52 @@
         const container = document.querySelector(".inner-container");
         const speechLayer = document.querySelector(".speech-layer");
         const speechText = document.querySelector(".speech-text");
+        const transcriptToggle = document.getElementById("transcriptToggle");
+        const transcriptContent = document.getElementById("transcriptContent");
 
         // ✅ REQUIRED STATE
         const queue = [];
         let active = false;
+        const transcriptMessages = [];
+
+        // Transcript toggle functionality
+        transcriptToggle.addEventListener("click", () => {
+            const isExpanded = transcriptToggle.classList.toggle("expanded");
+            transcriptContent.classList.toggle("expanded");
+            transcriptToggle.setAttribute("aria-expanded", isExpanded);
+        });
+
+        // Add message to transcript
+        function addToTranscript(character, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            transcriptMessages.push({
+                character,
+                message,
+                timestamp
+            });
+
+            // Remove "no messages" placeholder if it exists
+            const emptyMsg = transcriptContent.querySelector(".transcript-empty");
+            if (emptyMsg) {
+                emptyMsg.remove();
+            }
+
+            // Create transcript item
+            const item = document.createElement("div");
+            item.className = "transcript-item";
+            item.innerHTML = `
+                <div>
+                    <span class="transcript-character">${character === "billie" ? "Billie" : "Billy"}:</span>
+                    <span class="transcript-message">${message}</span>
+                </div>
+                <div class="transcript-time">${timestamp}</div>
+            `;
+
+            transcriptContent.appendChild(item);
+
+            // Auto-scroll to bottom
+            transcriptContent.scrollTop = transcriptContent.scrollHeight;
+        }
 
         function playNext() {
             if (!queue.length) {
@@ -255,6 +402,15 @@
 
             if (!data || data.type !== "CHARACTER_MESSAGE") return;
 
+            const {
+                character,
+                message
+            } = data.payload;
+
+            // Add to transcript
+            addToTranscript(character, message);
+
+            // Add to animation queue
             queue.push(data.payload);
             if (!active) playNext();
         });
