@@ -66,6 +66,12 @@ from _modules.utils.config import (
     is_coverage_matrix_enabled,
 )
 
+from _modules.ui.billdozer_widget import (
+    install_billdozer_bridge,
+    dispatch_widget_message,
+)
+
+
 
 ENGINE_OPTIONS = {
     "Smart (Recommended)": None,
@@ -77,43 +83,6 @@ ENGINE_OPTIONS = {
 
 _WIDGET_HTML_CACHE = None  # module scope
 BILLDOZER_TOKEN = "BILLDOZER_v1"
-
-def install_billdozer_bridge():
-    components.html(
-        f"""
-        <script>
-        (function () {{
-          const TOKEN = {json.dumps(BILLDOZER_TOKEN)};
-
-          if (window.parent.__billdozerBridgeInstalled) return;
-          window.parent.__billdozerBridgeInstalled = true;
-
-          window.parent.__billdozerTargetWindow = null;
-          window.parent.__billdozerMsgQueue = window.parent.__billdozerMsgQueue || [];
-
-          window.parent.addEventListener("message", (e) => {{
-            const data = e.data;
-            if (!data || data.type !== "BILLDOZER_READY") return;
-            if (data.token !== TOKEN) return;
-
-            window.parent.__billdozerTargetWindow = e.source;
-            console.log("[Billdozer bridge] READY received, target stored");
-
-            // ✅ flush queued messages
-            const q = window.parent.__billdozerMsgQueue || [];
-            while (q.length) {{
-              const msg = q.shift();
-              e.source.postMessage(msg, "*");
-              console.log("[Billdozer bridge] flushed:", msg);
-            }}
-          }});
-
-          console.log("[Billdozer bridge] installed");
-        }})();
-        </script>
-        """,
-        height=0,
-    )
 
 
 def get_billdozer_widget_html() -> str:
@@ -142,42 +111,6 @@ def get_billdozer_widget_html() -> str:
         _WIDGET_HTML_CACHE = html
 
     return _WIDGET_HTML_CACHE
-
-def dispatch_widget_message(character: str, message):
-    if not message:
-        print("[Billdozer] Skipping empty message:", character, message)
-        return
-
-    components.html(
-        f"""
-        <script>
-          (function () {{
-            window.parent.__billdozerMsgQueue = window.parent.__billdozerMsgQueue || [];
-
-            const payload = {{
-              type: "CHARACTER_MESSAGE",
-              payload: {{
-                character: {json.dumps(character)},
-                message: {json.dumps(str(message))}
-              }}
-            }};
-
-            const target = window.parent.__billdozerTargetWindow;
-
-            if (!target) {{
-              console.warn("[Billdozer bridge] target not ready, queued:", payload);
-              window.parent.__billdozerMsgQueue.push(payload);
-              return;
-            }}
-
-            target.postMessage(payload, "*");
-            console.log("[Billdozer bridge] sent:", payload);
-          }})();
-        </script>
-        """,
-        height=0,
-    )
-
 
 # ==================================================
 # Savings aggregation helpers
@@ -413,7 +346,7 @@ def main():
 
             dispatch_widget_message(
                 speaker,
-                f"Finished analyzing {doc['document_id']} ✅"
+                f"Finished analyzing Document {idx}"
             )
 
             # Use index-based ID initially (will be replaced with friendly ID after facts extraction)
@@ -427,10 +360,7 @@ def main():
             if is_dag_enabled():
                 dag_expander, dag_placeholder = create_pipeline_dag_container(document_id=str(idx))
             
-            dispatch_widget_message(
-                speaker,
-                f"Processing {doc['document_id']}…"
-            )
+
 
 
             # --------------------------------------------------

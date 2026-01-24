@@ -19,6 +19,11 @@ from _modules.extractors.gemini_langextractor import (
     extract_facts_gemini,
     run_prompt_gemini,
 )
+from _modules.ui.billdozer_widget import (
+    install_billdozer_bridge,
+    dispatch_widget_message,
+)
+
 from _modules.providers.llm_interface import ProviderRegistry, Issue
 from _modules.extractors.local_heuristic_extractor import extract_facts_local
 from _modules.extractors.fact_normalizer import normalize_facts
@@ -378,6 +383,20 @@ class OrchestratorAgent:
         # --------------------------------------------------
         classification = classify_document(raw_text)
         pre_facts = extract_pre_facts(raw_text)
+
+        document_type = (
+            classification.get("document_type")
+            if isinstance(classification, dict)
+            else getattr(classification, "document_type", None)
+        )
+
+        if document_type:
+            readable = document_type.replace("_", " ")
+            dispatch_widget_message(
+                "billy",
+                f"We are processing {readable}"
+            )
+
 
         workflow_log["pre_extraction"]["classification"] = classification
         workflow_log["pre_extraction"]["facts"] = pre_facts

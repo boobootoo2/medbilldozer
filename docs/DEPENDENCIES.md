@@ -15,6 +15,7 @@ Module dependencies within the project:
 - `_modules.prompts.medical_line_item_prompt`
 - `_modules.prompts.receipt_line_item_prompt`
 - `_modules.providers.llm_interface`
+- `_modules.ui.billdozer_widget`
 
 ### `_modules.extractors.gemini_langextractor`
 
@@ -64,6 +65,7 @@ Module dependencies within the project:
 - `_modules.providers.llm_interface`
 - `_modules.providers.medgemma_hosted_provider`
 - `_modules.providers.openai_analysis_provider`
+- `_modules.ui.billdozer_widget`
 - `_modules.ui.doc_assistant`
 - `_modules.ui.privacy_ui`
 - `_modules.ui.ui`
