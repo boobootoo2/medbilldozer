@@ -517,8 +517,8 @@ def render_document_rows(docs, html_docs, text_docs, key_prefix=""):
     from streamlit_extras.stylable_container import stylable_container
 
     for i, ((title, _), html_doc, text_doc) in enumerate(
-    zip(docs, html_docs, text_docs)
-):
+        zip(docs, html_docs, text_docs)
+    ):
         expander_key = f"{key_prefix}demo_open_{i}"
         is_open = st.session_state.get(expander_key, False)
 
@@ -532,6 +532,7 @@ def render_document_rows(docs, html_docs, text_docs, key_prefix=""):
                 label = f"▾ {title}" if is_open else f"▸ {title}"
                 if st.button(label, key=f"{key_prefix}toggle_{i}", use_container_width=True):
                     toggle_expander_state(expander_key)
+                    st.rerun()
 
             with c2:
                 copy_to_clipboard_button(
