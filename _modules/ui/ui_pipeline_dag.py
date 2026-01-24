@@ -25,19 +25,96 @@ def create_pipeline_dag_container(document_id: Optional[str] = None):
     expander = st.expander(f"📊 Pipeline Workflow: {doc_label}", expanded=True)
     
     with expander:
-        st.caption("⏳ Analysis in progress...")
         placeholder = st.empty()
+        # Show initial plan outline
+        with placeholder.container():
+            st.markdown("### 📋 Analysis Plan")
+            st.markdown(_build_initial_plan_html(), unsafe_allow_html=True)
     
     return expander, placeholder
 
 
-def update_pipeline_dag(placeholder, workflow_log: Dict[str, Any], document_id: Optional[str] = None):
+def _build_initial_plan_html() -> str:
+    """Build HTML showing the initial analysis plan with all steps in pending state."""
+    return """
+    <style>
+        .plan-container {
+            background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        .plan-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #cbd5e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .plan-step-icon {
+            font-size: 20px;
+            width: 28px;
+            text-align: center;
+        }
+        .plan-step-content {
+            flex: 1;
+        }
+        .plan-step-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+        .plan-step-desc {
+            font-size: 13px;
+            color: #718096;
+            margin: 2px 0 0 0;
+        }
+    </style>
+    <div class="plan-container">
+        <div class="plan-step">
+            <div class="plan-step-icon">⏳</div>
+            <div class="plan-step-content">
+                <div class="plan-step-title">1. Pre-Extraction</div>
+                <div class="plan-step-desc">Document classification and feature detection</div>
+            </div>
+        </div>
+        <div class="plan-step">
+            <div class="plan-step-icon">⏳</div>
+            <div class="plan-step-content">
+                <div class="plan-step-title">2. Fact Extraction</div>
+                <div class="plan-step-desc">Extract key medical/financial information</div>
+            </div>
+        </div>
+        <div class="plan-step">
+            <div class="plan-step-icon">⏳</div>
+            <div class="plan-step-content">
+                <div class="plan-step-title">3. Line Item Parsing</div>
+                <div class="plan-step-desc">Parse detailed line items based on document type</div>
+            </div>
+        </div>
+        <div class="plan-step">
+            <div class="plan-step-icon">⏳</div>
+            <div class="plan-step-content">
+                <div class="plan-step-title">4. Issue Analysis</div>
+                <div class="plan-step-desc">Detect potential billing issues and anomalies</div>
+            </div>
+        </div>
+    </div>
+    """
+
+
+def update_pipeline_dag(placeholder, workflow_log: Dict[str, Any], document_id: Optional[str] = None, step_status: Optional[str] = None):
     """Update an existing pipeline DAG placeholder with current workflow state.
     
     Args:
         placeholder: Streamlit placeholder object to update
         workflow_log: Current workflow log dict with pipeline stages
         document_id: Optional friendly document identifier for display
+        step_status: Optional current step status ('pre_extraction_active', 'extraction_active', 'line_items_active', 'analysis_active', 'complete')
     """
     if not workflow_log:
         return
@@ -50,15 +127,169 @@ def update_pipeline_dag(placeholder, workflow_log: Dict[str, Any], document_id: 
     workflow_id = workflow_log.get("workflow_id", "N/A")
     timestamp = workflow_log.get("timestamp", "N/A")
     
-    # Build DAG HTML
-    dag_html = _build_dag_html(pre_extraction, extraction, analysis, live_update=True)
+    # If step_status provided, show progressive status
+    if step_status:
+        progress_html = _build_progress_html(pre_extraction, extraction, analysis, step_status)
+        with placeholder.container():
+            if document_id:
+                st.markdown(f"### 📄 {document_id}")
+            st.caption(f"Workflow ID: `{workflow_id}`")
+            components.html(progress_html, height=400, scrolling=False)
+    else:
+        # Build full DAG HTML (final view)
+        dag_html = _build_dag_html(pre_extraction, extraction, analysis, live_update=True)
+        with placeholder.container():
+            if document_id:
+                st.markdown(f"### 📄 {document_id}")
+            st.caption(f"Workflow ID: `{workflow_id}` | Timestamp: `{timestamp}`")
+            components.html(dag_html, height=800, scrolling=True)
+
+
+def _build_progress_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, step_status: str) -> str:
+    """Build HTML showing progressive analysis status with current step highlighted.
     
-    with placeholder.container():
-        # Show friendly document name if available
-        if document_id:
-            st.markdown(f"### 📄 {document_id}")
-        st.caption(f"Workflow ID: `{workflow_id}` | Timestamp: `{timestamp}`")
-        components.html(dag_html, height=800, scrolling=True)
+    Args:
+        pre_extraction: Pre-extraction stage data
+        extraction: Extraction stage data
+        analysis: Analysis stage data
+        step_status: Current step ('pre_extraction_active', 'extraction_active', 'line_items_active', 'analysis_active', 'complete')
+        
+    Returns:
+        HTML string with styled progress visualization
+    """
+    # Determine step states
+    pre_extraction_done = bool(pre_extraction.get("classification"))
+    extraction_done = bool(extraction.get("fact_count", 0) > 0)
+    
+    # Check for line items
+    receipt_items = extraction.get("receipt_item_count", 0)
+    medical_items = extraction.get("medical_item_count", 0)
+    dental_items = extraction.get("dental_item_count", 0)
+    insurance_items = extraction.get("insurance_item_count", 0)
+    fsa_items = extraction.get("fsa_item_count", 0)
+    line_items_done = (receipt_items + medical_items + dental_items + insurance_items + fsa_items) > 0
+    
+    analysis_done = bool(analysis.get("result"))
+    
+    # Map status to styling
+    def get_step_class(step_name: str, is_done: bool) -> tuple:
+        """Return (icon, border_color, bg_color) for step."""
+        if step_status == f"{step_name}_active":
+            return "🔄", "#3182ce", "#ebf8ff"
+        elif is_done:
+            return "✅", "#38a169", "#f0fff4"
+        elif step_status == "complete":
+            return "✅", "#38a169", "#f0fff4"
+        else:
+            return "⏳", "#cbd5e0", "#ffffff"
+    
+    step1_icon, step1_border, step1_bg = get_step_class("pre_extraction", pre_extraction_done)
+    step2_icon, step2_border, step2_bg = get_step_class("extraction", extraction_done)
+    step3_icon, step3_border, step3_bg = get_step_class("line_items", line_items_done)
+    step4_icon, step4_border, step4_bg = get_step_class("analysis", analysis_done)
+    
+    # Get details for completed steps (with HTML stripping)
+    import re
+    from html import unescape, escape
+    
+    def strip_html(text):
+        """Strip HTML tags and decode entities, then escape for safe display."""
+        if not isinstance(text, str):
+            return text
+        text = re.sub(r'<[^>]+>', '', text)
+        text = unescape(text)
+        text = re.sub(r'\s+', ' ', text).strip()
+        return escape(text)
+    
+    doc_type = strip_html(pre_extraction.get("classification", {}).get("document_type", "unknown"))
+    fact_count = extraction.get("fact_count", 0)
+    line_item_count = receipt_items + medical_items + dental_items + insurance_items + fsa_items
+    issue_count = 0
+    if analysis_done:
+        result = analysis.get("result")
+        issue_count = len(result.issues) if result and hasattr(result, 'issues') else 0
+    
+    return f"""
+    <style>
+        .progress-container {{
+            background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+        }}
+        .progress-step {{
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            margin: 10px 0;
+            background: var(--step-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--step-border);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }}
+        .progress-step-icon {{
+            font-size: 24px;
+            width: 32px;
+            text-align: center;
+        }}
+        .progress-step-content {{
+            flex: 1;
+        }}
+        .progress-step-title {{
+            font-weight: 600;
+            color: #1a202c;
+            margin: 0 0 4px 0;
+            font-size: 15px;
+        }}
+        .progress-step-desc {{
+            font-size: 13px;
+            color: #718096;
+            margin: 0;
+        }}
+        .progress-step-detail {{
+            font-size: 12px;
+            color: #4a5568;
+            margin: 4px 0 0 0;
+            font-weight: 500;
+        }}
+    </style>
+    <div class="progress-container">
+        <div class="progress-step" style="--step-bg: {step1_bg}; --step-border: {step1_border};">
+            <div class="progress-step-icon">{step1_icon}</div>
+            <div class="progress-step-content">
+                <div class="progress-step-title">1. Pre-Extraction</div>
+                <div class="progress-step-desc">Document classification and feature detection</div>
+                {f'<div class="progress-step-detail">Classified as: {doc_type}</div>' if pre_extraction_done else ''}
+            </div>
+        </div>
+        <div class="progress-step" style="--step-bg: {step2_bg}; --step-border: {step2_border};">
+            <div class="progress-step-icon">{step2_icon}</div>
+            <div class="progress-step-content">
+                <div class="progress-step-title">2. Fact Extraction</div>
+                <div class="progress-step-desc">Extract key medical/financial information</div>
+                {f'<div class="progress-step-detail">Extracted {fact_count} facts</div>' if extraction_done else ''}
+            </div>
+        </div>
+        <div class="progress-step" style="--step-bg: {step3_bg}; --step-border: {step3_border};">
+            <div class="progress-step-icon">{step3_icon}</div>
+            <div class="progress-step-content">
+                <div class="progress-step-title">3. Line Item Parsing</div>
+                <div class="progress-step-desc">Parse detailed line items based on document type</div>
+                {f'<div class="progress-step-detail">Parsed {line_item_count} line items</div>' if line_items_done else ''}
+            </div>
+        </div>
+        <div class="progress-step" style="--step-bg: {step4_bg}; --step-border: {step4_border};">
+            <div class="progress-step-icon">{step4_icon}</div>
+            <div class="progress-step-content">
+                <div class="progress-step-title">4. Issue Analysis</div>
+                <div class="progress-step-desc">Detect potential billing issues and anomalies</div>
+                {f'<div class="progress-step-detail">Found {issue_count} issues</div>' if analysis_done else ''}
+            </div>
+        </div>
+    </div>
+    """
 
 
 def render_pipeline_dag(workflow_log: Dict[str, Any], document_id: Optional[str] = None):
@@ -114,13 +345,29 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
     Returns:
         HTML string with styled DAG visualization
     """
+    import re
+    from html import unescape, escape
+    
+    def strip_html(text):
+        """Strip HTML tags and decode entities, then escape for safe display."""
+        if not isinstance(text, str):
+            return text
+        # Remove HTML tags
+        text = re.sub(r'<[^>]+>', '', text)
+        # Decode HTML entities (&nbsp;, &amp;, etc.)
+        text = unescape(text)
+        # Normalize whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
+        # Escape for safe HTML display
+        return escape(text)
+    
     # Extract key information
     classification = pre_extraction.get("classification", {})
-    doc_type = classification.get("document_type", "unknown")
+    doc_type = strip_html(classification.get("document_type", "unknown"))
     confidence = classification.get("confidence", 0.0)
     
-    extractor = pre_extraction.get("extractor_selected", "unknown")
-    extractor_reason = pre_extraction.get("extractor_reason", "")
+    extractor = strip_html(pre_extraction.get("extractor_selected", "unknown"))
+    extractor_reason = strip_html(pre_extraction.get("extractor_reason", ""))
     
     fact_count = extraction.get("fact_count", 0)
     
@@ -138,8 +385,8 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
     
     phase2_count = receipt_items + medical_items + dental_items + insurance_items + fsa_items
     
-    analyzer = analysis.get("analyzer", "unknown")
-    analysis_mode = analysis.get("mode", "unknown")
+    analyzer = strip_html(analysis.get("analyzer", "unknown"))
+    analysis_mode = strip_html(analysis.get("mode", "unknown"))
     
     result = analysis.get("result")
     issue_count = len(result.issues) if result and hasattr(result, 'issues') else 0
@@ -363,30 +610,60 @@ def _render_detailed_logs(pre_extraction: Dict, extraction: Dict, analysis: Dict
         extraction: Extraction stage data
         analysis: Analysis stage data
     """
+    import json
+    import re
+    from html import unescape
+    
+    def strip_html(text):
+        """Strip HTML tags and decode HTML entities from text."""
+        if not isinstance(text, str):
+            return text
+        # Remove HTML tags
+        text = re.sub(r'<[^>]+>', '', text)
+        # Decode HTML entities (&nbsp;, &amp;, etc.)
+        text = unescape(text)
+        # Normalize whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
+        return text
+    
+    def clean_dict_html(data):
+        """Recursively strip HTML from dictionary values."""
+        if isinstance(data, dict):
+            return {k: clean_dict_html(v) for k, v in data.items()}
+        elif isinstance(data, list):
+            return [clean_dict_html(item) for item in data]
+        elif isinstance(data, str):
+            return strip_html(data)
+        return data
+    
     col1, col2, col3 = st.columns(3)
     
     with col1:
         st.markdown("**Pre-Extraction Log**")
         # Remove result object for cleaner JSON
         clean_pre = {k: v for k, v in pre_extraction.items() if k != 'result'}
+        clean_pre = clean_dict_html(clean_pre)
         st.json(clean_pre)
     
     with col2:
         st.markdown("**Extraction Log**")
         # Remove facts for cleaner display (can be large)
         clean_extraction = {k: v for k, v in extraction.items() if k not in ['facts', 'result']}
+        clean_extraction = clean_dict_html(clean_extraction)
         st.json(clean_extraction)
     
     with col3:
         st.markdown("**Analysis Log**")
         # Remove full result object
         clean_analysis = {k: v for k, v in analysis.items() if k != 'result'}
+        clean_analysis = clean_dict_html(clean_analysis)
         st.json(clean_analysis)
     
-    # Show extracted facts separately
+    # Show extracted facts separately (HTML stripped)
     if extraction.get("facts"):
-        st.markdown("**Extracted Facts**")
-        st.json(extraction.get("facts", {}))
+        st.markdown("**Extracted Facts (Plain Text)**")
+        clean_facts = clean_dict_html(extraction.get("facts", {}))
+        st.json(clean_facts)
 
 
 def render_pipeline_comparison(workflow_logs: List[Dict[str, Any]]):

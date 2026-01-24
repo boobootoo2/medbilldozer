@@ -387,25 +387,29 @@ def main():
         for idx, doc in enumerate(documents, 1):
             speaker = "billie" if idx % 2 == 1 else "billy"
 
-
-            result = agent.run(doc["raw_text"])
-
-
             # Use index-based ID initially (will be replaced with friendly ID after facts extraction)
             initial_doc_id = f"Document {idx}"
+            
+            # Render document header first
+            st.markdown(f"## 📄 {initial_doc_id}")
+            
+            # Create DAG container immediately (shows initial plan) if enabled
+            dag_placeholder = None
+            if is_dag_enabled():
+                dag_expander, dag_placeholder = create_pipeline_dag_container(document_id=str(idx))
+            
+            # Progress callback for real-time DAG updates
+            def progress_callback(workflow_log, step_status):
+                if dag_placeholder and is_dag_enabled():
+                    update_pipeline_dag(dag_placeholder, workflow_log, document_id=str(idx), step_status=step_status)
+
+            # Run analysis with progress callback
+            result = agent.run(doc["raw_text"], progress_callback=progress_callback)
  
             dispatch_widget_message(
                 speaker,
                 f"Finished analyzing {initial_doc_id}"
             )
-            
-            # Render document header first
-            st.markdown(f"## 📄 {initial_doc_id}")
-            
-            # Create DAG container immediately (shows "In Progress" state) if enabled
-            dag_placeholder = None
-            if is_dag_enabled():
-                dag_expander, dag_placeholder = create_pipeline_dag_container(document_id=str(idx))
             
 
 
@@ -415,10 +419,6 @@ def main():
             # --------------------------------------------------
             st.session_state.setdefault("workflow_logs", {})
             st.session_state["workflow_logs"][doc["document_id"]] = result.get("_workflow_log")
-            
-            # Update DAG with completed workflow (AFTER spinner closes)
-            if is_dag_enabled() and dag_placeholder:
-                update_pipeline_dag(dag_placeholder, result.get("_workflow_log"))
 
             # Persist results
             doc["facts"] = result.get("facts")
