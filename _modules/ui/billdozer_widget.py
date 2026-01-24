@@ -1,9 +1,47 @@
 import json
 import streamlit.components.v1 as components
 
+from pathlib import Path
+
 BILLDOZER_TOKEN = "BILLDOZER_v1"
 
+_WIDGET_HTML_CACHE = None
 
+# --------------------------------------------------
+# Widget HTML loader
+# --------------------------------------------------
+def get_billdozer_widget_html() -> str:
+    """
+    Loads and caches the Billdozer widget HTML.
+    Injects Streamlit-safe CSS overrides.
+    """
+    global _WIDGET_HTML_CACHE
+
+    if _WIDGET_HTML_CACHE is None:
+        widget_path = (
+            Path(__file__).parent.parent.parent
+            / "static"
+            / "bulldozer_animation.html"
+        )
+
+        html = widget_path.read_text(encoding="utf-8")
+
+        css_override = """
+        <style>
+          .controls {
+            display: none !important;
+          }
+        </style>
+        """
+
+        html = html.replace("</head>", css_override + "\n</head>")
+        _WIDGET_HTML_CACHE = html
+
+    return _WIDGET_HTML_CACHE
+
+# --------------------------------------------------
+# Bridge install (parent <-> iframe handshake)
+# --------------------------------------------------
 def install_billdozer_bridge():
     components.html(
         f"""
@@ -25,7 +63,6 @@ def install_billdozer_bridge():
             window.parent.__billdozerTargetWindow = e.source;
             console.log("[Billdozer bridge] READY received");
 
-            // flush queued messages
             const q = window.parent.__billdozerMsgQueue || [];
             while (q.length) {{
               e.source.postMessage(q.shift(), "*");
@@ -40,9 +77,16 @@ def install_billdozer_bridge():
     )
 
 
+# --------------------------------------------------
+# Message dispatcher
+# --------------------------------------------------
 def dispatch_widget_message(character: str, message: str):
+    """
+    Sends a speech message to the widget.
+    Safely queues if the iframe is not ready yet.
+    """
     if not message:
-        return  # 🔒 guard against None / empty
+        return  # Guard against None / empty
 
     components.html(
         f"""
