@@ -161,6 +161,42 @@
     </div>
 
     <script>
+        // For production environments, update image paths to use GitHub CDN
+        // Check both current window and parent window (in case we're in an iframe)
+        function isLocalEnvironment() {
+            const checkHostname = (hostname) => {
+                return hostname === 'localhost' ||
+                    hostname === '127.0.0.1' ||
+                    /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname);
+            };
+
+            // Check current window
+            if (checkHostname(window.location.hostname)) return true;
+
+            // Check parent window (if in iframe)
+            try {
+                if (window.parent && window.parent !== window) {
+                    if (checkHostname(window.parent.location.hostname)) return true;
+                }
+            } catch (e) {
+                // Cross-origin iframe, can't access parent
+            }
+
+            return false;
+        }
+
+        if (!isLocalEnvironment()) {
+            // Production: use GitHub CDN
+            const cdnBase = 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/images/avatars';
+            document.querySelectorAll('.avatar-img').forEach(img => {
+                const currentSrc = img.getAttribute('src');
+                if (currentSrc && currentSrc.startsWith('images/avatars/')) {
+                    const filename = currentSrc.split('/').pop();
+                    img.src = `${cdnBase}/${filename}`;
+                }
+            });
+        }
+
         const button = document.getElementById("talkToggle");
         const container = document.getElementById("avatarContainer");
 

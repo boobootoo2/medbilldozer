@@ -9,6 +9,7 @@ import re
 from bs4 import BeautifulSoup
 from _modules.utils.runtime_flags import debug_enabled
 from _modules.ui.ui_pipeline_dag import render_pipeline_dag, render_pipeline_comparison
+from _modules.utils.image_paths import get_image_url
 
 
 # ==================================================
@@ -348,14 +349,27 @@ def render_header():
     Displays the medBillDozer logo and descriptive text about the application's purpose.
     """
     logo_path = Path("static/images/medBillDozer-logo-transparent.png")
-
+    
+    # Get logo URL (local file or CDN)
+    logo_url = None
     if logo_path.exists():
-        b64 = base64.b64encode(logo_path.read_bytes()).decode()
+        # Try to use base64 encoding for local files
+        try:
+            b64 = base64.b64encode(logo_path.read_bytes()).decode()
+            logo_url = f"data:image/png;base64,{b64}"
+        except:
+            # Fallback to URL-based approach
+            logo_url = get_image_url("images/medBillDozer-logo-transparent.png")
+    else:
+        # Use CDN for production
+        logo_url = get_image_url("images/medBillDozer-logo-transparent.png")
+
+    if logo_url:
         st.markdown(
             f"""
             <style>
             .med-bill-dozer-logo {{
-                background-image: url("data:image/png;base64,{b64}");
+                background-image: url("{logo_url}");
                 background-size: contain;
                 background-repeat: no-repeat;
                 width: 140px;

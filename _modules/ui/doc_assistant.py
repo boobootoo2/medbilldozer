@@ -12,6 +12,7 @@ import time
 import random
 import streamlit.components.v1 as components
 import base64
+from _modules.utils.image_paths import get_avatar_url
 
 
 # Module-level cache for avatar images (loaded once per server, not per session)
@@ -309,15 +310,22 @@ def render_doc_assistant():
         character_name = character.capitalize()
         
         # Embedded HTML/CSS/JS from avatar_prototype.html
+        # Dynamic image URLs based on environment
+        img_ready = get_avatar_url(f"{character}__eyes_open__ready.png")
+        img_closed = get_avatar_url(f"{character}__eyes_closed__ready.png")
+        img_talking = get_avatar_url(f"{character}__eyes_open__talking.png")
+        img_talking_closed = get_avatar_url(f"{character}__eyes_closed__talking.png")
+        img_smiling = get_avatar_url(f"{character}__eyes_open__smiling.png")
+        
         avatar_html = f"""
         <div style="display: flex; justify-content: center; padding: 12px 0;">
             <div style="display: flex; flex-direction: column; align-items: center;">
                 <div class="child-div nameplate {character}" id="billyAvatar">
-                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_open__ready.png" style="display: block;">
-                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_closed__ready.png" style="display: none;">
-                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_open__talking.png" style="display: none;">
-                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_closed__talking.png" style="display: none;">
-                    <img class="avatar-img" src="app/static/images/avatars/{character}__eyes_open__smiling.png" style="display: none;">
+                    <img class="avatar-img" src="{img_ready}" style="display: block;">
+                    <img class="avatar-img" src="{img_closed}" style="display: none;">
+                    <img class="avatar-img" src="{img_talking}" style="display: none;">
+                    <img class="avatar-img" src="{img_talking_closed}" style="display: none;">
+                    <img class="avatar-img" src="{img_smiling}" style="display: none;">
                 </div>
             </div>
         </div>

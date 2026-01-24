@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 30
+**Total Modules:** 31
 
 ### Application (1 modules)
 
@@ -51,8 +51,9 @@
 - **_modules.ui.ui_documents**: Document input and management UI.
 - **_modules.ui.ui_pipeline_dag**: Pipeline DAG Visualization - Visual representation of document analysis workflow.
 
-### Utilities (3 modules)
+### Utilities (4 modules)
 
 - **_modules.utils.config**: Application Configuration Manager.
+- **_modules.utils.image_paths**: Image path utilities for handling local vs production CDN URLs.
 - **_modules.utils.runtime_flags**: Runtime flags and feature toggles.
 - **_modules.utils.serialization**: Serialization utilities for converting analysis objects to dicts.
