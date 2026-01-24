@@ -5,7 +5,9 @@ healthcare documents including bills, receipts, and claim histories.
 """
 # _modules/extraction_prompt.py
 
-from typing import List
+import os
+from pathlib import Path
+from typing import List, Optional
 
 FACT_KEYS: List[str] = [
     # --- Person / patient ---
@@ -36,20 +38,65 @@ FACT_KEYS: List[str] = [
 ]
 
 
-def build_fact_extraction_prompt(document_text: str) -> str:
+def _load_contextual_docs() -> str:
+    """Load contextual documentation files to help guide the LLM.
+    
+    Loads HAI-DEF alignment, competitive landscape, and cost analysis docs
+    to provide context about medBillDozer's purpose and methodology.
+    
+    Returns:
+        str: Concatenated documentation content or empty string if files not found
+    """
+    docs_dir = Path(__file__).parent.parent.parent / "docs"
+    context_files = [
+        "HAI_DEF_ALIGNMENT.md",
+        "competitive_landscape.md", 
+        "the_hidden_cost",
+    ]
+    
+    context_parts = []
+    
+    for filename in context_files:
+        filepath = docs_dir / filename
+        if filepath.exists():
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    context_parts.append(f"# {filename}\n\n{content}")
+            except Exception as e:
+                # Silently skip if file can't be read
+                pass
+    
+    if context_parts:
+        return "\n\n" + "="*80 + "\n" + "\n\n".join(context_parts) + "\n" + "="*80 + "\n\n"
+    return ""
+
+
+def build_fact_extraction_prompt(document_text: str, include_context: bool = True) -> str:
     """Build provider-agnostic prompt for structured healthcare fact extraction.
     
     Compatible with OpenAI, Gemini, MedGemma, or local LLMs.
+    Optionally includes contextual documentation about medBillDozer's purpose.
     
     Args:
         document_text: Raw document text
+        include_context: Whether to include contextual documentation (default: True)
     
     Returns:
         str: Formatted extraction prompt requesting JSON with FACT_KEYS
     """
+    
+    # Load contextual documentation if requested
+    context = _load_contextual_docs() if include_context else ""
 
     return f"""
-You are extracting structured facts from healthcare-related documents.
+{context}You are extracting structured facts from healthcare-related documents.
+
+CONTEXT: You are part of medBillDozer, a consumer-first tool that helps patients 
+identify billing errors by performing cross-document reconciliation across medical 
+bills, pharmacy receipts, insurance claims (EOBs), and FSA/HSA documentation. 
+Your role is to extract accurate facts to enable downstream error detection.
+
 
 The document may be:
 - a medical bill

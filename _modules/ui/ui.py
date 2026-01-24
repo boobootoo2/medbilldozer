@@ -650,6 +650,44 @@ def render_analyze_button() -> bool:
     )
 
 
+def render_clear_history_button() -> bool:
+    """Render a button to clear analysis history.
+    
+    Returns:
+        bool: True if button was clicked, False otherwise
+    """
+    return st.button(
+        "🗑️ Clear Analysis History",
+        key="clear_history_button",
+        use_container_width=True,
+        type="secondary",
+    )
+
+
+def clear_analysis_history():
+    """Clear all analysis-related data from session state.
+    
+    Removes:
+    - Analysis results and workflow logs
+    - Extracted facts and normalized transactions
+    - Aggregate metrics and savings data
+    - Billdozer widget state
+    """
+    keys_to_clear = [
+        "workflow_logs",
+        "extracted_facts",
+        "normalized_transactions",
+        "transaction_provenance",
+        "aggregate_metrics",
+        "billdozer_analysis_started",
+        "billdozer_widget_initialized",
+    ]
+    
+    for key in keys_to_clear:
+        if key in st.session_state:
+            del st.session_state[key]
+
+
 # ==================================================
 # Results
 # ==================================================
