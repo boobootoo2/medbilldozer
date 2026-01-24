@@ -422,12 +422,14 @@ def copy_to_clipboard_button(label: str, text: str):
     """Render a custom button that copies text to clipboard.
     
     Uses HTML/JavaScript component to enable clipboard functionality.
+    Shows a brief success message after copying.
     
     Args:
         label: Button label text
         text: Text content to copy when clicked
     """
     button_id = f"copy_{uuid.uuid4().hex}"
+    message_id = f"msg_{uuid.uuid4().hex}"
     escaped = html.escape(text)
 
     components.html(
@@ -451,21 +453,48 @@ def copy_to_clipboard_button(label: str, text: str):
         button#{button_id}:active {{
             transform: scale(0.97);
         }}
+        .copy-message {{
+            display: inline-block;
+            margin-left: 10px;
+            padding: 0.3rem 0.6rem;
+            background: #10B981;
+            color: white;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }}
+        .copy-message.show {{
+            opacity: 1;
+        }}
         </style>
-        <button id="{button_id}"
-            style="
-                padding: 0.4rem 0.75rem;
-                border-radius: 8px;
-                border: none;
-                font-weight: 600;
-                cursor: pointer;
-            ">
-            {label}
-        </button>
+        <div style="display: flex; align-items: center;">
+            <button id="{button_id}"
+                style="
+                    padding: 0.4rem 0.75rem;
+                    border-radius: 8px;
+                    border: none;
+                    font-weight: 600;
+                    cursor: pointer;
+                ">
+                {label}
+            </button>
+            <span id="{message_id}" class="copy-message">✓ Copied!</span>
+        </div>
 
         <script>
         document.getElementById("{button_id}").onclick = async () => {{
             await navigator.clipboard.writeText(`{escaped}`);
+            
+            // Show success message
+            const message = document.getElementById("{message_id}");
+            message.classList.add('show');
+            
+            // Hide message after 2 seconds
+            setTimeout(() => {{
+                message.classList.remove('show');
+            }}, 2000);
         }};
         </script>
         """,
@@ -506,7 +535,7 @@ def render_document_rows(docs, html_docs, text_docs, key_prefix=""):
 
             with c2:
                 copy_to_clipboard_button(
-                    label="📋 Copy",
+                    label="Copy",
                     text=text_doc,
                 )
 

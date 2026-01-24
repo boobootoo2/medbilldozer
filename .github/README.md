@@ -15,7 +15,17 @@ explaining them in plain language.
 - **🔧 [Technical Documentation](https://github.com/boobootoo2/medbilldozer/blob/main/docs/)** – API reference, modules, dependencies
 - **🧠 [MedGemma & HAI-DEF Alignment](https://github.com/boobootoo2/medbilldozer/blob/main/docs/HAI_DEF_ALIGNMENT.md)** – How this project uses healthcare-aligned foundation models
 - **📝 [Contributing](https://github.com/boobootoo2/medbilldozer/blob/main/DOCUMENTATION.md)** – How to contribute and maintain docs
-- [The Hidden Cost of Medical Billing Errors](https://github.com/boobootoo2/medbilldozer/blob/main/docs/the_hidden_cost)
+
+
+## Why medBillDozer Is Different
+
+Most consumer medical billing tools are manual, partial, or reactive.  
+medBillDozer is built to systematically reconcile bills, claims, EOBs, and receipts — the point where most billing errors actually occur.
+
+📄 **Learn more:**  
+- [The Hidden Cost of Medical Billing Errors](https://github.com/boobootoo2/medbilldozer/blob/main/docs/the_hidden_cost)  
+- [Competitive Landscape](https://github.com/boobootoo2/medbilldozer/blob/main/docs/competitive_landscape.md)
+
 
 
 
