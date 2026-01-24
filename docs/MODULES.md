@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 29
+**Total Modules:** 30
 
 ### Application (1 modules)
 
@@ -40,10 +40,11 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (7 modules)
+### UI Components (8 modules)
 
 - **_modules.ui.billdozer_widget**: No description
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
+- **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.ui**: No description
 - **_modules.ui.ui_coverage_matrix**: Coverage matrix UI rendering.
@@ -1010,6 +1011,58 @@ Args:
     context: Current context (e.g., 'input', 'results', 'error')
 
 
+## Module: `_modules.ui.health_profile`
+
+**Source:** `_modules/ui/health_profile.py`
+
+### Description
+
+Health profile management for policy holder and dependents.
+
+Provides pre-loaded patient profiles with medical history, insurance details,
+and demographic information for demo and testing purposes.
+
+### Constants
+
+- **`SAMPLE_PROFILES`**: `{'policyholder': {'id': 'PH-001', 'name': 'John Sample', 'date_of_birth': '01/15/1975', 'age': 51, 'gender': 'Male', 'relationship': 'Policy Holder', 'insurance': {'provider': 'Horizon PPO Plus', 'member_id': 'HPP-8743920', 'group_number': 'G-1234567', 'plan_type': 'PPO', 'effective_date': '01/01/2025', 'deductible_annual': 1500.0, 'deductible_met': 1500.0, 'oop_max': 3000.0, 'oop_met': 1500.0}, 'medical_history': {'conditions': ['Hypertension (controlled)', 'Type 2 Diabetes', 'Hyperlipidemia'], 'medications': ['Lisinopril 10mg daily', 'Metformin 500mg twice daily', 'Atorvastatin 20mg at bedtime'], 'allergies': ['Penicillin (rash)', 'Sulfa drugs (hives)'], 'recent_procedures': [{'date': '01/12/2026', 'procedure': 'Screening Colonoscopy', 'provider': 'Valley Medical Center', 'cpt_code': '45378', 'cost': 1200.0, 'out_of_pocket': 100.0}, {'date': '11/05/2025', 'procedure': 'Annual Physical Exam', 'provider': 'Dr. Sarah Mitchell', 'cpt_code': '99396', 'cost': 350.0, 'out_of_pocket': 0.0}], 'upcoming_appointments': [{'date': '03/15/2026', 'type': 'Follow-up', 'provider': 'Dr. Michael Reynolds', 'reason': 'Post-colonoscopy review'}]}, 'fsa_hsa': {'account_type': 'FSA', 'plan_year': 2026, 'annual_contribution': 2850.0, 'balance_remaining': 2247.5, 'claims_submitted': 5, 'claims_approved': 4, 'claims_pending': 0, 'claims_denied': 1}}, 'dependent': {'id': 'DEP-001', 'name': 'Jane Sample', 'date_of_birth': '08/22/1986', 'age': 39, 'gender': 'Female', 'relationship': 'Spouse', 'insurance': {'provider': 'Horizon PPO Plus', 'member_id': 'HPP-8743921', 'group_number': 'G-1234567', 'plan_type': 'PPO', 'effective_date': '01/01/2025', 'deductible_annual': 1500.0, 'deductible_met': 450.0, 'oop_max': 3000.0, 'oop_met': 850.0}, 'medical_history': {'conditions': ['Seasonal Allergies', 'Mild Asthma (controlled)'], 'medications': ['Cetirizine 10mg as needed', 'Albuterol inhaler as needed', 'Multivitamin daily'], 'allergies': ['Shellfish (anaphylaxis)', 'Cat dander'], 'recent_procedures': [{'date': '01/20/2026', 'procedure': 'Dental Crown (Tooth #14)', 'provider': 'BrightSmile Dental', 'cdt_code': 'D2740', 'cost': 2500.0, 'out_of_pocket': 1625.0}, {'date': '01/18/2026', 'procedure': 'Prescription Refill', 'provider': 'GreenLeaf Pharmacy', 'medication': 'Albuterol Inhaler', 'cost': 45.0, 'out_of_pocket': 15.0}, {'date': '10/12/2025', 'procedure': 'Annual Gynecological Exam', 'provider': 'Dr. Jennifer Adams', 'cpt_code': '99385', 'cost': 285.0, 'out_of_pocket': 0.0}], 'upcoming_appointments': [{'date': '02/28/2026', 'type': 'Dental Follow-up', 'provider': 'Dr. Laura Chen, DDS', 'reason': 'Crown check-up'}, {'date': '04/10/2026', 'type': 'Annual Physical', 'provider': 'Dr. Sarah Mitchell', 'reason': 'Preventive care'}]}, 'fsa_hsa': {'account_type': 'FSA', 'plan_year': 2026, 'annual_contribution': 2850.0, 'balance_remaining': 2247.5, 'claims_submitted': 5, 'claims_approved': 4, 'claims_pending': 0, 'claims_denied': 1}}}`
+
+### Functions
+
+#### `render_profile_selector()`
+
+Render profile selection dropdown.
+
+Returns:
+    str: Selected profile key ('policyholder', 'dependent', or None)
+
+#### `render_profile_details(profile_key)`
+
+Render detailed profile information in expandable sections.
+
+Args:
+    profile_key: Profile key ('policyholder' or 'dependent')
+
+#### `get_profile_data(profile_key) -> Optional[Dict]`
+
+Get profile data by key.
+
+Args:
+    profile_key: Profile key ('policyholder' or 'dependent')
+
+Returns:
+    Dict with profile data or None if not found
+
+#### `get_profile_context_for_analysis(profile_key) -> str`
+
+Generate context string for LLM analysis based on profile.
+
+Args:
+    profile_key: Profile key ('policyholder' or 'dependent')
+
+Returns:
+    str: Formatted context string
+
+
 ## Module: `_modules.ui.privacy_ui`
 
 **Source:** `_modules/ui/privacy_ui.py`
@@ -1576,6 +1629,7 @@ Orchestrates the complete workflow:
 - `_modules.providers.openai_analysis_provider`
 - `_modules.ui.billdozer_widget`
 - `_modules.ui.doc_assistant`
+- `_modules.ui.health_profile`
 - `_modules.ui.privacy_ui`
 - `_modules.ui.ui`
 - `_modules.ui.ui_coverage_matrix`
