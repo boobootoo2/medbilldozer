@@ -189,6 +189,39 @@
   </div>
 
   <script>
+  // For production environments, update image paths to use GitHub CDN
+  // ALWAYS use local paths - Streamlit serves them correctly
+  // Only switch to CDN if explicitly in production (non-localhost domain)
+  
+  const currentHostname = window.location.hostname;
+  const isCurrentLocal = currentHostname === ' localhost ' || 
+                         currentHostname === '127.0.0.1 ' ||
+                         /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(currentHostname);
+  
+  let parentHostname = null;
+  let isParentLocal = false;
+  
+  try {
+      if (window.parent && window.parent !== window) {
+          parentHostname = window.parent.location.hostname;
+          isParentLocal = parentHostname === 'localhost ' || 
+                         parentHostname === '127.0.0.1 ' ||
+                         /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(parentHostname);
+      }
+  } catch (e) {
+      // Can't access parent (cross-origin) console.log( "[Billdozer] Cannot access parent hostname (cross-origin)"); } const isLocal=i sCurrentLocal || isParentLocal; console.log( "[Billdozer] Environment check:", { currentHostname, isCurrentLocal,
+            parentHostname, isParentLocal, finalIsLocal: isLocal }); if (!isLocal) { // Production: use GitHub CDN console.log( "[Billdozer] Using GitHub CDN"); const cdnBase='https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/images/avatars/transparent'
+            ; document.querySelectorAll( '.billdozer_animation img').forEach(img=> {
+          const currentSrc = img.getAttribute('src');
+          if (currentSrc && currentSrc.includes('app/static/images/avatars/transparent/')) {
+              const filename = currentSrc.split('/').pop();
+              img.src = `${cdnBase}/${filename}`;
+          }
+      });
+  } else {
+      console.log("[Billdozer] Using local paths");
+  }
+
   const container = document.querySelector(".inner-container");
   const speechLayer = document.querySelector(".speech-layer");
   const speechText = document.querySelector(".speech-text");

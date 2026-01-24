@@ -48,10 +48,16 @@ Module dependencies within the project:
 **Depends on:**
 - `_modules.providers.llm_interface`
 
+### `_modules.ui.doc_assistant`
+
+**Depends on:**
+- `_modules.utils.image_paths`
+
 ### `_modules.ui.ui`
 
 **Depends on:**
 - `_modules.ui.ui_pipeline_dag`
+- `_modules.utils.image_paths`
 - `_modules.utils.runtime_flags`
 
 ### `app`

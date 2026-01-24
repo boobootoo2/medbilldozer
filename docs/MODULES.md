@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 30
+**Total Modules:** 31
 
 ### Application (1 modules)
 
@@ -51,9 +51,10 @@
 - **_modules.ui.ui_documents**: Document input and management UI.
 - **_modules.ui.ui_pipeline_dag**: Pipeline DAG Visualization - Visual representation of document analysis workflow.
 
-### Utilities (3 modules)
+### Utilities (4 modules)
 
 - **_modules.utils.config**: Application Configuration Manager.
+- **_modules.utils.image_paths**: Image path utilities for handling local vs production CDN URLs.
 - **_modules.utils.runtime_flags**: Runtime flags and feature toggles.
 - **_modules.utils.serialization**: Serialization utilities for converting analysis objects to dicts.
 
@@ -1023,6 +1024,10 @@ Args:
     context: Current context (e.g., 'input', 'results', 'error')
 
 
+### Dependencies
+
+- `_modules.utils.image_paths`
+
 ## Module: `_modules.ui.health_profile`
 
 **Source:** `_modules/ui/health_profile.py`
@@ -1293,6 +1298,7 @@ Render application footer with disclaimer.
 ### Dependencies
 
 - `_modules.ui.ui_pipeline_dag`
+- `_modules.utils.image_paths`
 - `_modules.utils.runtime_flags`
 
 ## Module: `_modules.ui.ui_coverage_matrix`
@@ -1533,6 +1539,62 @@ Check if privacy UI is enabled.
 #### `is_coverage_matrix_enabled() -> bool`
 
 Check if coverage matrix feature is enabled.
+
+
+## Module: `_modules.utils.image_paths`
+
+**Source:** `_modules/utils/image_paths.py`
+
+### Description
+
+Image path utilities for handling local vs production CDN URLs.
+
+Provides functionality to determine if the app is running locally and return
+appropriate image paths (local static files vs GitHub CDN URLs).
+
+### Functions
+
+#### `is_local_environment() -> bool`
+
+Check if the app is running in a local environment.
+
+Returns:
+    bool: True if running on localhost/127.0.0.1 or any IP address, False otherwise
+
+#### `get_image_url(relative_path) -> str`
+
+Get the appropriate image URL based on environment.
+
+Args:
+    relative_path: Relative path from project root (e.g., 'images/avatars/billy.png')
+
+Returns:
+    str: Full URL for production or relative path for local
+
+Example:
+    >>> get_image_url('images/avatars/billie__eyes_open__ready.png')
+    # Local: 'app/static/images/avatars/billie__eyes_open__ready.png'
+    # Prod: 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/images/avatars/billie__eyes_open__ready.png'
+
+#### `get_avatar_url(avatar_filename) -> str`
+
+Get the appropriate avatar image URL.
+
+Args:
+    avatar_filename: Just the filename (e.g., 'billie__eyes_open__ready.png')
+
+Returns:
+    str: Full URL for the avatar image
+
+#### `get_transparent_avatar_url(avatar_filename) -> str`
+
+Get the appropriate transparent avatar image URL.
+
+Args:
+    avatar_filename: Just the filename (e.g., 'billie__eyes_closed__billdozer_down.png')
+
+Returns:
+    str: Full URL for the transparent avatar image
 
 
 ## Module: `_modules.utils.runtime_flags`

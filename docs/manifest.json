@@ -1,6 +1,6 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 30,
+  "total_modules": 31,
   "modules": [
     {
       "name": "_modules.ui.doc_assistant",
@@ -8,7 +8,7 @@
       "has_docstring": true,
       "num_classes": 1,
       "num_functions": 5,
-      "num_dependencies": 0,
+      "num_dependencies": 1,
       "constants": [
         "_BILLY_IMAGES_CACHE"
       ]
@@ -39,7 +39,7 @@
       "has_docstring": false,
       "num_classes": 0,
       "num_functions": 21,
-      "num_dependencies": 2,
+      "num_dependencies": 3,
       "constants": []
     },
     {
@@ -167,6 +167,15 @@
       "has_docstring": true,
       "num_classes": 1,
       "num_functions": 7,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.utils.image_paths",
+      "filepath": "_modules/utils/image_paths.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 4,
       "num_dependencies": 0,
       "constants": []
     },
