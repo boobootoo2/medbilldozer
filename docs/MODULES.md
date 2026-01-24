@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 28
+**Total Modules:** 29
 
 ### Application (1 modules)
 
@@ -40,8 +40,9 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (6 modules)
+### UI Components (7 modules)
 
+- **_modules.ui.billdozer_widget**: No description
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.ui**: No description
@@ -311,6 +312,7 @@ Returns:
 - `_modules.prompts.medical_line_item_prompt`
 - `_modules.prompts.receipt_line_item_prompt`
 - `_modules.providers.llm_interface`
+- `_modules.ui.billdozer_widget`
 
 ## Module: `_modules.core.transaction_normalization`
 
@@ -906,6 +908,21 @@ OpenAI-powered analysis provider.
 ### Dependencies
 
 - `_modules.providers.llm_interface`
+
+## Module: `_modules.ui.billdozer_widget`
+
+**Source:** `_modules/ui/billdozer_widget.py`
+
+### Constants
+
+- **`BILLDOZER_TOKEN`**: `BILLDOZER_v1`
+
+### Functions
+
+#### `install_billdozer_bridge()`
+
+#### `dispatch_widget_message(character, message)`
+
 
 ## Module: `_modules.ui.doc_assistant`
 
@@ -1505,11 +1522,7 @@ and UI rendering for detecting billing, pharmacy, dental, and insurance claim is
 
 ### Functions
 
-#### `install_billdozer_bridge()`
-
 #### `get_billdozer_widget_html() -> str`
-
-#### `dispatch_widget_message(character, message)`
 
 #### `render_total_savings_summary(total_potential_savings, per_document_savings)`
 
@@ -1556,6 +1569,7 @@ Orchestrates the complete workflow:
 - `_modules.providers.llm_interface`
 - `_modules.providers.medgemma_hosted_provider`
 - `_modules.providers.openai_analysis_provider`
+- `_modules.ui.billdozer_widget`
 - `_modules.ui.doc_assistant`
 - `_modules.ui.privacy_ui`
 - `_modules.ui.ui`

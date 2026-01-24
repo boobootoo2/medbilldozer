@@ -1,6 +1,6 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 28,
+  "total_modules": 29,
   "modules": [
     {
       "name": "_modules.ui.doc_assistant",
@@ -30,6 +30,17 @@
       "num_functions": 19,
       "num_dependencies": 2,
       "constants": []
+    },
+    {
+      "name": "_modules.ui.billdozer_widget",
+      "filepath": "_modules/ui/billdozer_widget.py",
+      "has_docstring": false,
+      "num_classes": 0,
+      "num_functions": 2,
+      "num_dependencies": 0,
+      "constants": [
+        "BILLDOZER_TOKEN"
+      ]
     },
     {
       "name": "_modules.ui.ui_pipeline_dag",
@@ -91,7 +102,7 @@
       "has_docstring": true,
       "num_classes": 1,
       "num_functions": 9,
-      "num_dependencies": 10,
+      "num_dependencies": 11,
       "constants": [
         "DOCUMENT_SIGNALS",
         "DOCUMENT_EXTRACTOR_MAP"
@@ -263,8 +274,8 @@
       "filepath": "app.py",
       "has_docstring": true,
       "num_classes": 0,
-      "num_functions": 7,
-      "num_dependencies": 17,
+      "num_functions": 5,
+      "num_dependencies": 18,
       "constants": [
         "ENGINE_OPTIONS",
         "_WIDGET_HTML_CACHE",
