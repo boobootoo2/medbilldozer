@@ -368,7 +368,17 @@ class OrchestratorAgent:
         self.analyzer_override = analyzer_override
         self.profile_context = profile_context
 
-    def run(self, raw_text: str) -> Dict:
+    def run(self, raw_text: str, progress_callback=None) -> Dict:
+        """Run document analysis pipeline with optional progress callbacks.
+        
+        Args:
+            raw_text: Raw document text to analyze
+            progress_callback: Optional callable(workflow_log, step_status) for progress updates
+                step_status values: 'pre_extraction_active', 'extraction_active', 'line_items_active', 'analysis_active', 'complete'
+        
+        Returns:
+            Dict with facts, analysis, and _workflow_log
+        """
         # --------------------------------------------------
         # Workflow log (persistable artifact)
         # --------------------------------------------------
@@ -383,6 +393,9 @@ class OrchestratorAgent:
         # --------------------------------------------------
         # 1️⃣ Pre-extraction classification
         # --------------------------------------------------
+        if progress_callback:
+            progress_callback(workflow_log, "pre_extraction_active")
+        
         classification = classify_document(raw_text)
         pre_facts = extract_pre_facts(raw_text)
 
@@ -422,6 +435,8 @@ class OrchestratorAgent:
         # --------------------------------------------------
         # 3️⃣ Extract facts
         # --------------------------------------------------
+        if progress_callback:
+            progress_callback(workflow_log, "extraction_active")
         
         # Prepend profile context to raw text if available
         text_with_context = raw_text
@@ -446,6 +461,9 @@ class OrchestratorAgent:
         # --------------------------------------------------
         # 3️⃣b Phase-2 receipt line-item extraction (OPTIONAL)
         # --------------------------------------------------
+        if progress_callback:
+            progress_callback(workflow_log, "line_items_active")
+        
         document_type = facts.get("document_type")
 
         if document_type == "pharmacy_receipt":
@@ -601,6 +619,9 @@ class OrchestratorAgent:
         # --------------------------------------------------
         # 5️⃣ Analyze (fact-aware if supported)
         # call provider (fact-aware if possible)
+        if progress_callback:
+            progress_callback(workflow_log, "analysis_active")
+        
         try:
             analysis = provider.analyze_document(raw_text, facts=facts)
             # --- Add deterministic issues as first-class issues ---
@@ -651,6 +672,9 @@ class OrchestratorAgent:
         # --------------------------------------------------
         # Return full result
         # --------------------------------------------------
+        if progress_callback:
+            progress_callback(workflow_log, "complete")
+        
         return {
             "facts": facts,
             "analysis": analysis,

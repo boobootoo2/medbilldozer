@@ -218,7 +218,8 @@ issue detection and LLM-based analysis integration.
 
 - **`__init__(self, extractor_override, analyzer_override, profile_context)`**
 
-- **`run(self, raw_text) -> Dict`**
+- **`run(self, raw_text, progress_callback) -> Dict`**
+  - Run document analysis pipeline with optional progress callbacks.
 
 
 ### Functions
@@ -1400,7 +1401,11 @@ Args:
 Returns:
     tuple: (expander, placeholder) for updating the DAG
 
-#### `update_pipeline_dag(placeholder, workflow_log, document_id)`
+#### `_build_initial_plan_html() -> str`
+
+Build HTML showing the initial analysis plan with all steps in pending state.
+
+#### `update_pipeline_dag(placeholder, workflow_log, document_id, step_status)`
 
 Update an existing pipeline DAG placeholder with current workflow state.
 
@@ -1408,6 +1413,20 @@ Args:
     placeholder: Streamlit placeholder object to update
     workflow_log: Current workflow log dict with pipeline stages
     document_id: Optional friendly document identifier for display
+    step_status: Optional current step status ('pre_extraction_active', 'extraction_active', 'line_items_active', 'analysis_active', 'complete')
+
+#### `_build_progress_html(pre_extraction, extraction, analysis, step_status) -> str`
+
+Build HTML showing progressive analysis status with current step highlighted.
+
+Args:
+    pre_extraction: Pre-extraction stage data
+    extraction: Extraction stage data
+    analysis: Analysis stage data
+    step_status: Current step ('pre_extraction_active', 'extraction_active', 'line_items_active', 'analysis_active', 'complete')
+    
+Returns:
+    HTML string with styled progress visualization
 
 #### `render_pipeline_dag(workflow_log, document_id)`
 
