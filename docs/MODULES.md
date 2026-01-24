@@ -946,6 +946,7 @@ Injects Streamlit-safe CSS overrides.
 
 Sends a speech message to the widget.
 Safely queues if the iframe is not ready yet.
+Also stores message in session state transcript.
 
 
 ## Module: `_modules.ui.doc_assistant`

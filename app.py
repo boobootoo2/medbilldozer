@@ -349,12 +349,12 @@ def main():
                 with col_close:
                     if st.button("✕", key="dismiss_billdozer"):
                         st.session_state.show_billdozer_widget = False
-                        st.rerun()
+                        # Don't rerun - just hide widget without clearing analysis
 
                 with col_widget:
                     components.html(
                         get_billdozer_widget_html(),
-                        height=220,
+                        height=300,
                         scrolling=False,
                     )
         # --------------------------------------------------

@@ -22,7 +22,7 @@ def create_pipeline_dag_container(document_id: Optional[str] = None):
         tuple: (expander, placeholder) for updating the DAG
     """
     doc_label = f"Document {document_id}" if document_id else "Document Analysis"
-    expander = st.expander(f"📊 Pipeline Workflow: {doc_label}", expanded=True)
+    expander = st.expander(f"📊 Pipeline Workflow: {doc_label}", expanded=False)
     
     with expander:
         placeholder = st.empty()

@@ -160,7 +160,14 @@ def inject_css():
 
     .block-container {
         padding-top: 2rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
         max-width: 900px;
+    }
+    
+    /* Give input fields breathing room */
+    .stTextArea textarea, .stTextInput input {
+        max-width: 100%;
     }
 
     .flag-warning {
