@@ -295,25 +295,29 @@ def inject_css():
     }
     
     /* Streamlit adds data-testid and data-key attributes */
-    /* Widget container injected by Streamlit */
+    /* Widget container injected by Streamlit - full width responsive */
     div.st-key-billdozer_widget {
         position: fixed;
         top: 60px;
-        left: 50%;
-        transform: translateX(-50%);
+        left: 0;
+        right: 0;
         z-index: 100;
         width: 100%;
-        max-width: 900px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0 1rem;
         background-color: white;
     }
 
-    /* OUR wrapper — the anchor */
+    /* OUR wrapper — the anchor, centered child */
     .billdozer-wrapper {
         position: relative;
         background: white;
         border-radius: 8px;
         box-shadow: 0 4px 16px rgba(0,0,0,0.15);
         overflow: hidden;
+        width: 320px;
     }
 
     /* Dismiss button */
