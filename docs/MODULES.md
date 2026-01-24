@@ -1196,6 +1196,7 @@ Returns:
 Render a custom button that copies text to clipboard.
 
 Uses HTML/JavaScript component to enable clipboard functionality.
+Shows a brief success message after copying.
 
 Args:
     label: Button label text
