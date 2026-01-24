@@ -344,13 +344,14 @@ def main():
 
             result = agent.run(doc["raw_text"])
 
-            dispatch_widget_message(
-                speaker,
-                f"Finished analyzing Document {idx}"
-            )
 
             # Use index-based ID initially (will be replaced with friendly ID after facts extraction)
             initial_doc_id = f"Document {idx}"
+ 
+            dispatch_widget_message(
+                speaker,
+                f"Finished analyzing {initial_doc_id}"
+            )
             
             # Render document header first
             st.markdown(f"## 📄 {initial_doc_id}")
