@@ -44,6 +44,8 @@ from _modules.ui.ui import (
     render_demo_documents,
     render_provider_selector,
     render_analyze_button,
+    render_clear_history_button,
+    clear_analysis_history,
     render_results,
     render_footer,
     show_empty_warning,
@@ -298,7 +300,19 @@ def main():
     # --------------------------------------------------
     # Analyze action
     # --------------------------------------------------
-    analyze_clicked = render_analyze_button()
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        analyze_clicked = render_analyze_button()
+    
+    with col2:
+        clear_clicked = render_clear_history_button()
+    
+    # Handle clear history action
+    if clear_clicked:
+        clear_analysis_history()
+        st.success("✓ Analysis history cleared")
+        st.rerun()
 
     if analyze_clicked:
         if not documents:

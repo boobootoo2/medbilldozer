@@ -424,14 +424,26 @@ healthcare documents including bills, receipts, and claim histories.
 
 ### Functions
 
-#### `build_fact_extraction_prompt(document_text) -> str`
+#### `_load_contextual_docs() -> str`
+
+Load contextual documentation files to help guide the LLM.
+
+Loads HAI-DEF alignment, competitive landscape, and cost analysis docs
+to provide context about medBillDozer's purpose and methodology.
+
+Returns:
+    str: Concatenated documentation content or empty string if files not found
+
+#### `build_fact_extraction_prompt(document_text, include_context) -> str`
 
 Build provider-agnostic prompt for structured healthcare fact extraction.
 
 Compatible with OpenAI, Gemini, MedGemma, or local LLMs.
+Optionally includes contextual documentation about medBillDozer's purpose.
 
 Args:
     document_text: Raw document text
+    include_context: Whether to include contextual documentation (default: True)
 
 Returns:
     str: Formatted extraction prompt requesting JSON with FACT_KEYS
@@ -1248,6 +1260,23 @@ Render the primary 'Analyze with medBillDozer' button.
 
 Returns:
     bool: True if button was clicked, False otherwise
+
+#### `render_clear_history_button() -> bool`
+
+Render a button to clear analysis history.
+
+Returns:
+    bool: True if button was clicked, False otherwise
+
+#### `clear_analysis_history()`
+
+Clear all analysis-related data from session state.
+
+Removes:
+- Analysis results and workflow logs
+- Extracted facts and normalized transactions
+- Aggregate metrics and savings data
+- Billdozer widget state
 
 #### `render_results(result)`
 

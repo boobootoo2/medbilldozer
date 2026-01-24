@@ -38,7 +38,7 @@
       "filepath": "_modules/ui/ui.py",
       "has_docstring": false,
       "num_classes": 0,
-      "num_functions": 19,
+      "num_functions": 21,
       "num_dependencies": 2,
       "constants": []
     },
@@ -259,7 +259,7 @@
       "filepath": "_modules/extractors/extraction_prompt.py",
       "has_docstring": true,
       "num_classes": 0,
-      "num_functions": 1,
+      "num_functions": 2,
       "num_dependencies": 0,
       "constants": []
     },
