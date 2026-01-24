@@ -277,9 +277,15 @@ def main():
     # --------------------------------------------------
     # Orchestrator (NO UI inside)
     # --------------------------------------------------
+    # Get profile context if a profile is selected
+    profile_context = None
+    if selected_profile:
+        profile_context = get_profile_context_for_analysis(selected_profile)
+    
     agent = OrchestratorAgent(
         extractor_override=extractor_override,
         analyzer_override=analyzer_override or selected_provider,
+        profile_context=profile_context,
     )
 
 

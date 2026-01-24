@@ -362,9 +362,11 @@ class OrchestratorAgent:
         self,
         extractor_override: Optional[str] = None,
         analyzer_override: Optional[str] = None,
+        profile_context: Optional[str] = None,
     ):
         self.extractor_override = extractor_override
         self.analyzer_override = analyzer_override
+        self.profile_context = profile_context
 
     def run(self, raw_text: str) -> Dict:
         # --------------------------------------------------
@@ -421,14 +423,19 @@ class OrchestratorAgent:
         # 3️⃣ Extract facts
         # --------------------------------------------------
         
+        # Prepend profile context to raw text if available
+        text_with_context = raw_text
+        if self.profile_context:
+            text_with_context = f"{self.profile_context}\n\n{'='*50}\nDOCUMENT TO ANALYZE:\n{'='*50}\n\n{raw_text}"
+        
         if extractor == "heuristic":
-            facts = extract_facts_local(raw_text)
+            facts = extract_facts_local(text_with_context)
             
         elif extractor == "gemini":
-            facts = extract_facts_gemini(raw_text)
+            facts = extract_facts_gemini(text_with_context)
 
         else:  # openai default
-            facts = extract_facts_openai(raw_text)
+            facts = extract_facts_openai(text_with_context)
 
         facts = normalize_facts(facts)
 
