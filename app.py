@@ -82,38 +82,6 @@ ENGINE_OPTIONS = {
     "Local (Offline)": "heuristic",
 }
 
-
-_WIDGET_HTML_CACHE = None  # module scope
-BILLDOZER_TOKEN = "BILLDOZER_v1"
-
-
-def get_billdozer_widget_html() -> str:
-    global _WIDGET_HTML_CACHE
-
-    if _WIDGET_HTML_CACHE is None:
-        widget_path = (
-            Path(__file__).parent
-            / "static"
-            / "bulldozer_animation.html"
-        )
-        html = widget_path.read_text(encoding="utf-8")
-
-        # 🔧 Hide controls when embedded in Streamlit
-        css_override = """
-        <style>
-          .controls {
-            display: none !important;
-          }
-        </style>
-        """
-
-        # Inject just before </head>
-        html = html.replace("</head>", css_override + "\n</head>")
-
-        _WIDGET_HTML_CACHE = html
-
-    return _WIDGET_HTML_CACHE
-
 # ==================================================
 # Savings aggregation helpers
 # ==================================================
@@ -239,7 +207,7 @@ def main():
     # --------------------------------------------------
     # Use config debug setting OR legacy runtime flag
     debug_mode = is_debug_enabled() or debug_enabled()
-    
+
     if debug_mode:
         providers = ProviderRegistry.list()
         selected_provider = render_provider_selector(providers)  # keep in debug for now
@@ -319,6 +287,8 @@ def main():
             render_contextual_help('error')
             return
 
+        st.session_state.setdefault("billdozer_analysis_started", False)
+
         # Show analyzing context
         render_contextual_help('analyzing')
 
@@ -326,17 +296,54 @@ def main():
         total_potential_savings = 0.0
         per_document_savings = {}
         
+        if st.session_state.get("_billdozer_dismiss"):
+            st.session_state.show_billdozer_widget = False
+            st.session_state.pop("_billdozer_dismiss", None)
+            st.rerun()
+
 
         install_billdozer_bridge()
-        components.html(get_billdozer_widget_html(), height=220, scrolling=False)
+        st.session_state.setdefault("show_billdozer_widget", True)
 
-        dispatch_widget_message("billie", "Bill Dozing Statements")
+        if st.session_state.show_billdozer_widget:
+            with st.container(key="billdozer_widget"):
+                col_widget, col_close = st.columns([20, 1])
 
-        if "billdozer_widget_initialized" not in st.session_state:
+                with col_close:
+                    if st.button("✕", key="dismiss_billdozer"):
+                        st.session_state.show_billdozer_widget = False
+                        st.rerun()
+
+                with col_widget:
+                    components.html(
+                        get_billdozer_widget_html(),
+                        height=220,
+                        scrolling=False,
+                    )
+        # --------------------------------------------------
+        # Billdozer widget messaging (OUTSIDE render)
+        # --------------------------------------------------
+        st.session_state.setdefault("billdozer_widget_initialized", False)
+
+        # Greet once per session
+        if (
+            st.session_state.show_billdozer_widget
+            and not st.session_state.billdozer_widget_initialized
+        ):
             dispatch_widget_message("billie", "Hi Billy, any more docs?")
             st.session_state.billdozer_widget_initialized = True
 
+        # Analysis start message (ONCE per Analyze click)
+        if (
+            analyze_clicked
+            and st.session_state.show_billdozer_widget
+            and not st.session_state.billdozer_analysis_started
+        ):
+            dispatch_widget_message("billie", "Bill Dozing Statements")
+            st.session_state.billdozer_analysis_started = True
 
+
+                
 
 
 

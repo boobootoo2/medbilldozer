@@ -151,6 +151,12 @@ def inject_css():
         --ui-border: #E5E7EB;
     }
 
+    #billdozer-sticky {
+        position: sticky;
+        top: 70px;
+        z-index: 100;
+    }
+
     .block-container {
         padding-top: 2rem;
         max-width: 900px;
@@ -287,11 +293,49 @@ def inject_css():
         }
     }
     
-    .billdozing-widget  .controls {
-        display: none;
+    /* Streamlit adds data-testid and data-key attributes */
+    /* Widget container injected by Streamlit */
+    div.st-key-billdozer_widget {
+        position: fixed;
+        top: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        width: 100%;
+        max-width: 900px;
+        background-color: white;
     }
 
-    </style>
+    /* OUR wrapper — the anchor */
+    .billdozer-wrapper {
+        position: relative;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        overflow: hidden;
+    }
+
+    /* Dismiss button */
+    .billdozer-dismiss {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(0,0,0,0.55);
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    .billdozer-dismiss:hover {
+        background: rgba(0,0,0,0.75);
+    }
+
+
     """, unsafe_allow_html=True)
 
 
