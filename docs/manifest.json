@@ -275,12 +275,10 @@
       "filepath": "app.py",
       "has_docstring": true,
       "num_classes": 0,
-      "num_functions": 5,
+      "num_functions": 4,
       "num_dependencies": 18,
       "constants": [
-        "ENGINE_OPTIONS",
-        "_WIDGET_HTML_CACHE",
-        "BILLDOZER_TOKEN"
+        "ENGINE_OPTIONS"
       ]
     }
   ]

@@ -1525,13 +1525,9 @@ and UI rendering for detecting billing, pharmacy, dental, and insurance claim is
 
 ### Constants
 
-- **`BILLDOZER_TOKEN`**: `BILLDOZER_v1`
 - **`ENGINE_OPTIONS`**: `{'Smart (Recommended)': None, 'gpt-4o-mini': 'gpt-4o-mini', 'gemini-3-flash-preview': 'gemini-3-flash-preview', 'Local (Offline)': 'heuristic'}`
-- **`_WIDGET_HTML_CACHE`**: `None`
 
 ### Functions
-
-#### `get_billdozer_widget_html() -> str`
 
 #### `render_total_savings_summary(total_potential_savings, per_document_savings)`
 
