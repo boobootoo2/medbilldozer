@@ -32,6 +32,38 @@ SAMPLE_PROFILES = {
             "deductible_met": 1500.00,
             "oop_max": 3000.00,
             "oop_met": 1500.00,
+            "in_network_providers": [
+                "Valley Medical Center",
+                "Dr. Sarah Mitchell",
+                "Dr. Michael Reynolds",
+                "HealthFirst Medical Group",
+                "BrightSmile Dental",
+                "Dr. Laura Chen, DDS",
+            ],
+            "out_of_network_providers": [
+                "GreenLeaf Pharmacy",
+                "QuickCare Urgent Care",
+            ],
+            "in_network_codes": [
+                {"code": "99213", "description": "Office Visit - Established Patient (15 min)", "accepted_fee": 125.00},
+                {"code": "99214", "description": "Office Visit - Established Patient (25 min)", "accepted_fee": 185.00},
+                {"code": "99215", "description": "Office Visit - Established Patient (40 min)", "accepted_fee": 245.00},
+                {"code": "45378", "description": "Colonoscopy - Diagnostic", "accepted_fee": 1200.00},
+                {"code": "80053", "description": "Comprehensive Metabolic Panel", "accepted_fee": 45.00},
+                {"code": "85025", "description": "Complete Blood Count (CBC)", "accepted_fee": 35.00},
+                {"code": "93000", "description": "Electrocardiogram (EKG)", "accepted_fee": 85.00},
+                {"code": "71045", "description": "Chest X-Ray - Single View", "accepted_fee": 120.00},
+            ],
+            "out_of_network_codes": [
+                {"code": "99213", "description": "Office Visit - Established Patient (15 min)", "accepted_fee": 100.00},
+                {"code": "99214", "description": "Office Visit - Established Patient (25 min)", "accepted_fee": 148.00},
+                {"code": "99215", "description": "Office Visit - Established Patient (40 min)", "accepted_fee": 196.00},
+                {"code": "45378", "description": "Colonoscopy - Diagnostic", "accepted_fee": 960.00},
+                {"code": "80053", "description": "Comprehensive Metabolic Panel", "accepted_fee": 36.00},
+                {"code": "85025", "description": "Complete Blood Count (CBC)", "accepted_fee": 28.00},
+                {"code": "93000", "description": "Electrocardiogram (EKG)", "accepted_fee": 68.00},
+                {"code": "71045", "description": "Chest X-Ray - Single View", "accepted_fee": 96.00},
+            ],
         },
         
         # Medical History
@@ -88,6 +120,36 @@ SAMPLE_PROFILES = {
             "claims_approved": 4,
             "claims_pending": 0,
             "claims_denied": 1,
+            "eligible_expenses": [
+                "Medical copays and deductibles",
+                "Prescription medications",
+                "Dental treatments and cleanings",
+                "Vision exams and eyeglasses",
+                "Contact lenses and solution",
+                "Over-the-counter medications (with prescription)",
+                "Medical equipment (blood pressure monitors, diabetic supplies)",
+                "Physical therapy copays",
+                "Chiropractic services",
+                "Mental health services",
+                "Laboratory tests and diagnostic services",
+                "Hearing aids and batteries",
+                "Orthodontia (braces)",
+                "Wheelchair and mobility aids",
+                "First aid supplies",
+                "Sunscreen (SPF 15+)",
+                "Prenatal vitamins (with prescription)",
+                "Smoking cessation programs",
+                "Weight loss programs (for specific medical conditions)",
+            ],
+            "ineligible_expenses": [
+                "Vitamins and supplements (without prescription)",
+                "Cosmetic procedures",
+                "Gym memberships (unless prescribed)",
+                "Health club dues",
+                "Cosmetic dentistry (teeth whitening)",
+                "Hair transplants",
+                "Nutritional supplements",
+            ],
         },
     },
     
@@ -110,6 +172,39 @@ SAMPLE_PROFILES = {
             "deductible_met": 450.00,
             "oop_max": 3000.00,
             "oop_met": 850.00,
+            "in_network_providers": [
+                "Valley Medical Center",
+                "Dr. Sarah Mitchell",
+                "Dr. Michael Reynolds",
+                "HealthFirst Medical Group",
+                "BrightSmile Dental",
+                "Dr. Laura Chen, DDS",
+                "Dr. Jennifer Adams",
+            ],
+            "out_of_network_providers": [
+                "GreenLeaf Pharmacy",
+                "QuickCare Urgent Care",
+            ],
+            "in_network_codes": [
+                {"code": "99213", "description": "Office Visit - Established Patient (15 min)", "accepted_fee": 125.00},
+                {"code": "99214", "description": "Office Visit - Established Patient (25 min)", "accepted_fee": 185.00},
+                {"code": "99215", "description": "Office Visit - Established Patient (40 min)", "accepted_fee": 245.00},
+                {"code": "45378", "description": "Colonoscopy - Diagnostic", "accepted_fee": 1200.00},
+                {"code": "80053", "description": "Comprehensive Metabolic Panel", "accepted_fee": 45.00},
+                {"code": "85025", "description": "Complete Blood Count (CBC)", "accepted_fee": 35.00},
+                {"code": "93000", "description": "Electrocardiogram (EKG)", "accepted_fee": 85.00},
+                {"code": "71045", "description": "Chest X-Ray - Single View", "accepted_fee": 120.00},
+            ],
+            "out_of_network_codes": [
+                {"code": "99213", "description": "Office Visit - Established Patient (15 min)", "accepted_fee": 100.00},
+                {"code": "99214", "description": "Office Visit - Established Patient (25 min)", "accepted_fee": 148.00},
+                {"code": "99215", "description": "Office Visit - Established Patient (40 min)", "accepted_fee": 196.00},
+                {"code": "45378", "description": "Colonoscopy - Diagnostic", "accepted_fee": 960.00},
+                {"code": "80053", "description": "Comprehensive Metabolic Panel", "accepted_fee": 36.00},
+                {"code": "85025", "description": "Complete Blood Count (CBC)", "accepted_fee": 28.00},
+                {"code": "93000", "description": "Electrocardiogram (EKG)", "accepted_fee": 68.00},
+                {"code": "71045", "description": "Chest X-Ray - Single View", "accepted_fee": 96.00},
+            ],
         },
         
         # Medical History
@@ -179,6 +274,36 @@ SAMPLE_PROFILES = {
             "claims_approved": 4,
             "claims_pending": 0,
             "claims_denied": 1,
+            "eligible_expenses": [
+                "Medical copays and deductibles",
+                "Prescription medications",
+                "Dental treatments and cleanings",
+                "Vision exams and eyeglasses",
+                "Contact lenses and solution",
+                "Over-the-counter medications (with prescription)",
+                "Medical equipment (blood pressure monitors, diabetic supplies)",
+                "Physical therapy copays",
+                "Chiropractic services",
+                "Mental health services",
+                "Laboratory tests and diagnostic services",
+                "Hearing aids and batteries",
+                "Orthodontia (braces)",
+                "Wheelchair and mobility aids",
+                "First aid supplies",
+                "Sunscreen (SPF 15+)",
+                "Prenatal vitamins (with prescription)",
+                "Smoking cessation programs",
+                "Weight loss programs (for specific medical conditions)",
+            ],
+            "ineligible_expenses": [
+                "Vitamins and supplements (without prescription)",
+                "Cosmetic procedures",
+                "Gym memberships (unless prescribed)",
+                "Health club dues",
+                "Cosmetic dentistry (teeth whitening)",
+                "Hair transplants",
+                "Nutritional supplements",
+            ],
         },
     },
 }
@@ -251,6 +376,36 @@ def render_profile_details(profile_key: str):
             st.markdown(f"**Deductible Met:** ${ins['deductible_met']:,.2f}")
             st.markdown(f"**Out-of-Pocket Max:** ${ins['oop_max']:,.2f}")
             st.markdown(f"**OOP Met:** ${ins['oop_met']:,.2f}")
+        
+        st.markdown("---")
+        
+        # Network Providers
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**🟢 In-Network Providers:**")
+            for provider in ins.get('in_network_providers', []):
+                st.markdown(f"✓ {provider}")
+        with col2:
+            st.markdown("**🟡 Out-of-Network Providers:**")
+            for provider in ins.get('out_of_network_providers', []):
+                st.markdown(f"• {provider}")
+        
+        st.markdown("---")
+        
+        # In-Network Accepted Fees
+        st.markdown("### 🟢 In-Network Accepted Fees")
+        if 'in_network_codes' in ins:
+            for item in ins['in_network_codes']:
+                st.markdown(f"**{item['code']}** - {item['description']}: ${item['accepted_fee']:,.2f}")
+        
+        st.markdown("---")
+        
+        # Out-of-Network Accepted Fees
+        st.markdown("### 🟡 Out-of-Network Accepted Fees")
+        st.markdown("*Reimbursement: 80% of accepted fee after deductible*")
+        if 'out_of_network_codes' in ins:
+            for item in ins['out_of_network_codes']:
+                st.markdown(f"**{item['code']}** - {item['description']}: ${item['accepted_fee']:,.2f}")
     
     # Medical History
     with st.expander("🩺 Medical History"):
@@ -312,6 +467,35 @@ def render_profile_details(profile_key: str):
             st.markdown(f"**Claims Approved:** {fsa['claims_approved']}")
             st.markdown(f"**Claims Pending:** {fsa['claims_pending']}")
             st.markdown(f"**Claims Denied:** {fsa['claims_denied']}")
+        
+        st.markdown("---")
+        
+        # Eligible Expenses
+        st.markdown("### ✅ Eligible Expenses")
+        st.markdown("*These expenses can be reimbursed through your FSA/HSA account:*")
+        
+        # Display in 2 columns for better readability
+        eligible = fsa.get('eligible_expenses', [])
+        if eligible:
+            mid_point = len(eligible) // 2
+            col1, col2 = st.columns(2)
+            with col1:
+                for expense in eligible[:mid_point]:
+                    st.markdown(f"✅ {expense}")
+            with col2:
+                for expense in eligible[mid_point:]:
+                    st.markdown(f"✅ {expense}")
+        
+        st.markdown("---")
+        
+        # Ineligible Expenses
+        st.markdown("### ❌ Ineligible Expenses")
+        st.markdown("*These expenses are NOT reimbursable:*")
+        
+        ineligible = fsa.get('ineligible_expenses', [])
+        if ineligible:
+            for expense in ineligible:
+                st.markdown(f"❌ {expense}")
 
 
 def get_profile_data(profile_key: str) -> Optional[Dict]:
@@ -342,23 +526,64 @@ def get_profile_context_for_analysis(profile_key: str) -> str:
     ins = profile['insurance']
     med = profile['medical_history']
     
+    # Build in-network codes reference
+    in_network_fees = "\n".join([
+        f"  - {code['code']}: {code['description']} = ${code['accepted_fee']:.2f}"
+        for code in ins.get('in_network_codes', [])
+    ])
+    
+    # Build out-of-network codes reference
+    out_network_fees = "\n".join([
+        f"  - {code['code']}: {code['description']} = ${code['accepted_fee']:.2f}"
+        for code in ins.get('out_of_network_codes', [])
+    ])
+    
+    # Build provider network lists
+    in_network_providers = "\n  - ".join(ins.get('in_network_providers', []))
+    out_network_providers = "\n  - ".join(ins.get('out_of_network_providers', []))
+    
     context = f"""
-PATIENT PROFILE CONTEXT:
+========================================
+PATIENT PROFILE CONTEXT
+========================================
 Name: {profile['name']}
 Age: {profile['age']} | Gender: {profile['gender']}
 Relationship: {profile['relationship']}
 
-INSURANCE:
+INSURANCE COVERAGE:
 Provider: {ins['provider']}
-Plan: {ins['plan_type']}
-Annual Deductible: ${ins['deductible_annual']:,.2f} (${ins['deductible_met']:,.2f} met)
-Out-of-Pocket Maximum: ${ins['oop_max']:,.2f} (${ins['oop_met']:,.2f} met)
+Plan Type: {ins['plan_type']}
+Member ID: {ins['member_id']}
+Annual Deductible: ${ins['deductible_annual']:,.2f} (${ins['deductible_met']:,.2f} met - {(ins['deductible_met']/ins['deductible_annual']*100):.0f}% complete)
+Out-of-Pocket Maximum: ${ins['oop_max']:,.2f} (${ins['oop_met']:,.2f} met - {(ins['oop_met']/ins['oop_max']*100):.0f}% complete)
+
+IN-NETWORK PROVIDERS (100% coverage after deductible):
+  - {in_network_providers}
+
+OUT-OF-NETWORK PROVIDERS (80% coverage after deductible):
+  - {out_network_providers}
+
+IN-NETWORK ACCEPTED FEES:
+{in_network_fees}
+
+OUT-OF-NETWORK ACCEPTED FEES (Patient responsible for balance billing):
+{out_network_fees}
 
 MEDICAL CONDITIONS: {', '.join(med['conditions'])}
 CURRENT MEDICATIONS: {', '.join(med['medications'])}
 ALLERGIES: {', '.join(med['allergies'])}
 
-This context may help identify coverage issues, medication-related charges,
-or procedure appropriateness based on the patient's medical history.
+========================================
+BILLING VALIDATION INSTRUCTIONS:
+========================================
+1. CHECK PROVIDER NETWORK STATUS: Verify if the provider is in-network or out-of-network
+2. VALIDATE CPT/CDT CODES: Compare billed charges against accepted fees listed above
+3. FLAG OVERCHARGES: If billed amount exceeds accepted fee for in-network providers
+4. CHECK COVERAGE TIER: Out-of-network should be 80% reimbursement, not 100%
+5. VERIFY DEDUCTIBLE APPLICATION: Check if deductible has been met before applying coverage
+6. IDENTIFY BALANCE BILLING: Out-of-network providers may bill for difference between billed and accepted amounts
+7. MEDICATION APPROPRIATENESS: Cross-reference prescriptions with patient's conditions and current medications
+
+This profile context enables precise billing error detection and insurance coverage validation.
 """
     return context
