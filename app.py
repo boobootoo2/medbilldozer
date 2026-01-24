@@ -14,6 +14,11 @@ import json
 from _modules.ui.privacy_ui import render_privacy_dialog
 from _modules.ui.ui_documents import render_document_inputs
 from _modules.ui.doc_assistant import render_doc_assistant, render_contextual_help
+from _modules.ui.health_profile import (
+    render_profile_selector,
+    render_profile_details,
+    get_profile_context_for_analysis,
+)
 from _modules.core.document_identity import maybe_enhance_identity
 from _modules.core.orchestrator_agent import OrchestratorAgent
 from _modules.utils.serialization import analysis_to_dict
@@ -195,6 +200,18 @@ def main():
     # --------------------------------------------------
     if is_assistant_enabled():
         render_doc_assistant()
+
+    # --------------------------------------------------
+    # Health Profile (Optional)
+    # --------------------------------------------------
+    st.markdown("---")
+    selected_profile = render_profile_selector()
+    
+    if selected_profile:
+        render_profile_details(selected_profile)
+        st.info("💡 Profile loaded! The analysis will consider this patient's insurance and medical history.")
+    
+    st.markdown("---")
 
     # --------------------------------------------------
     # Document input (UI ONCE)

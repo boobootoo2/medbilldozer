@@ -67,6 +67,7 @@ Module dependencies within the project:
 - `_modules.providers.openai_analysis_provider`
 - `_modules.ui.billdozer_widget`
 - `_modules.ui.doc_assistant`
+- `_modules.ui.health_profile`
 - `_modules.ui.privacy_ui`
 - `_modules.ui.ui`
 - `_modules.ui.ui_coverage_matrix`
