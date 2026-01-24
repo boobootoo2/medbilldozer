@@ -916,12 +916,21 @@ OpenAI-powered analysis provider.
 ### Constants
 
 - **`BILLDOZER_TOKEN`**: `BILLDOZER_v1`
+- **`_WIDGET_HTML_CACHE`**: `None`
 
 ### Functions
+
+#### `get_billdozer_widget_html() -> str`
+
+Loads and caches the Billdozer widget HTML.
+Injects Streamlit-safe CSS overrides.
 
 #### `install_billdozer_bridge()`
 
 #### `dispatch_widget_message(character, message)`
+
+Sends a speech message to the widget.
+Safely queues if the iframe is not ready yet.
 
 
 ## Module: `_modules.ui.doc_assistant`

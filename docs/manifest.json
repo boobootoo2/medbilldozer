@@ -36,10 +36,11 @@
       "filepath": "_modules/ui/billdozer_widget.py",
       "has_docstring": false,
       "num_classes": 0,
-      "num_functions": 2,
+      "num_functions": 3,
       "num_dependencies": 0,
       "constants": [
-        "BILLDOZER_TOKEN"
+        "BILLDOZER_TOKEN",
+        "_WIDGET_HTML_CACHE"
       ]
     },
     {

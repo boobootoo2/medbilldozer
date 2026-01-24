@@ -67,9 +67,11 @@ from _modules.utils.config import (
 )
 
 from _modules.ui.billdozer_widget import (
+    get_billdozer_widget_html,
     install_billdozer_bridge,
     dispatch_widget_message,
 )
+
 
 
 
