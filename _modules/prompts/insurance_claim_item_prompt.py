@@ -1,11 +1,12 @@
 """Prompt builder for insurance claim history extraction."""
 
+
 def build_insurance_claim_item_prompt(raw_text: str) -> str:
     """Build prompt for extracting insurance claim history rows (EOB-style).
-    
+
     Args:
         raw_text: Raw insurance claim history text
-    
+
     Returns:
         str: Formatted prompt for LLM extraction
     """
@@ -51,3 +52,4 @@ If no insurance claim rows exist, return:
 RAW DOCUMENT:
 \"\"\"{raw_text}\"\"\"
 """
+

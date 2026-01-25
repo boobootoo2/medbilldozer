@@ -17,6 +17,7 @@ import tempfile
 # TYPE DEFINITIONS
 # ==============================================================================
 
+
 class UserProfile(TypedDict, total=False):
     """User identity information."""
     user_id: str
@@ -109,6 +110,7 @@ class ImportJob(TypedDict, total=False):
 # CONFIGURATION & FEATURE FLAGS
 # ==============================================================================
 
+
 def is_profile_editor_enabled() -> bool:
     """Check if profile editor is enabled via environment variable."""
     env_value = os.environ.get('PROFILE_EDITOR_ENABLED', '').upper()
@@ -124,6 +126,7 @@ def is_importer_enabled() -> bool:
 # ==============================================================================
 # DATA PERSISTENCE
 # ==============================================================================
+
 
 def get_data_dir() -> Path:
     """Get or create data directory for profile storage."""
@@ -239,6 +242,7 @@ def save_line_items(items: List[NormalizedLineItem]) -> None:
 # SESSION STATE INITIALIZATION
 # ==============================================================================
 
+
 def initialize_profile_state():
     """Initialize profile editor session state variables."""
     if 'profile_page' not in st.session_state:
@@ -260,6 +264,7 @@ def initialize_profile_state():
 # ==============================================================================
 # PROFILE OVERVIEW PAGE
 # ==============================================================================
+
 
 def render_profile_overview():
     """Render profile overview page with quick stats and actions."""
@@ -348,6 +353,7 @@ def render_profile_overview():
 # ==============================================================================
 # IDENTITY EDITOR
 # ==============================================================================
+
 
 def render_identity_editor():
     """Render user identity editor form."""
@@ -453,6 +459,7 @@ def render_identity_editor():
 # ==============================================================================
 # INSURANCE PLAN EDITOR
 # ==============================================================================
+
 
 def render_insurance_editor():
     """Render insurance plan management interface."""
@@ -675,6 +682,7 @@ def render_insurance_plan_form(plans: List[InsurancePlan]):
 # PROVIDER EDITOR
 # ==============================================================================
 
+
 def render_provider_editor():
     """Render healthcare provider management interface."""
     st.header("👨‍⚕️ Healthcare Providers")
@@ -866,6 +874,7 @@ def render_provider_form(providers: List[Provider]):
 # IMPORTER - ENTITY PICKER
 # ==============================================================================
 
+
 def render_importer_step1():
     """Render Step 1: Choose entity to import from (entity picker)."""
     from _modules.data.fictional_entities import get_all_fictional_entities
@@ -1016,6 +1025,7 @@ def render_importer_step1():
 # ==============================================================================
 # IMPORTER - WIZARD STEP 2: DISPLAY RESULTS
 # ==============================================================================
+
 
 def render_importer_step2():
     """Render Step 2: Display imported results."""
@@ -1320,6 +1330,7 @@ def extract_and_normalize_data():
 # IMPORTER - WIZARD STEP 3: PREVIEW & EDIT
 # ==============================================================================
 
+
 def render_importer_step3():
     """Render Step 3: Preview extracted data and allow inline edits."""
     st.subheader("Step 3: Review & Edit Extracted Data")
@@ -1482,6 +1493,7 @@ def save_import_job():
 # IMPORTER - WIZARD STEP 4: SUCCESS
 # ==============================================================================
 
+
 def render_importer_step4():
     """Render Step 4: Success confirmation."""
     st.subheader("✅ Import Complete!")
@@ -1525,6 +1537,7 @@ def render_importer_step4():
 # IMPORTER ORCHESTRATOR
 # ==============================================================================
 
+
 def render_importer():
     """Render importer wizard based on current step."""
     st.header("📥 Data Importer")
@@ -1563,6 +1576,7 @@ def render_importer():
 # ==============================================================================
 # MAIN PROFILE EDITOR RENDERER
 # ==============================================================================
+
 
 def render_profile_editor():
     """Main entry point for profile editor interface.
@@ -1616,3 +1630,4 @@ def render_profile_editor():
         render_provider_editor()
     elif page == 'importer':
         render_importer()
+

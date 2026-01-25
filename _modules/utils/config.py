@@ -7,12 +7,11 @@ Provides fallback defaults if config file is missing or incomplete.
 import yaml
 from pathlib import Path
 from typing import Any, Dict, Optional
-import os
 
 
 class AppConfig:
     """Application configuration manager with fallback defaults."""
-    
+
     # Default configuration (used if YAML file missing or incomplete)
     DEFAULT_CONFIG = {
         "features": {
@@ -48,7 +47,7 @@ class AppConfig:
         },
         "ui": {
             "page_title": "medBillDozer",
-            "page_icon": "🚜",
+            "page_icon": "�",
             "layout": "wide",
             "sidebar": {
                 "show_logo": True,
@@ -97,99 +96,99 @@ class AppConfig:
             "log_level": "INFO"
         }
     }
-    
+
     def __init__(self, config_path: Optional[Path] = None):
         """Initialize configuration manager.
-        
+
         Args:
             config_path: Optional path to config file. Defaults to app_config.yaml in project root.
         """
         if config_path is None:
             # Default to app_config.yaml in project root
             config_path = Path(__file__).parent.parent.parent / "app_config.yaml"
-        
+
         self.config_path = config_path
         self.config = self._load_config()
-    
+
     def _load_config(self) -> Dict[str, Any]:
         """Load configuration from YAML file with fallback to defaults.
-        
+
         Returns:
             Configuration dictionary
         """
         if not self.config_path.exists():
             print(f"⚠️  Config file not found at {self.config_path}, using defaults")
             return self.DEFAULT_CONFIG.copy()
-        
+
         try:
             with open(self.config_path, 'r', encoding='utf-8') as f:
                 loaded_config = yaml.safe_load(f) or {}
-            
+
             # Merge with defaults (defaults provide fallback for missing keys)
             config = self._deep_merge(self.DEFAULT_CONFIG.copy(), loaded_config)
             return config
-            
+
         except Exception as e:
             print(f"⚠️  Error loading config file: {e}, using defaults")
             return self.DEFAULT_CONFIG.copy()
-    
+
     def _deep_merge(self, base: Dict, override: Dict) -> Dict:
         """Deep merge two dictionaries, with override taking precedence.
-        
+
         Args:
             base: Base dictionary with default values
             override: Dictionary with override values
-            
+
         Returns:
             Merged dictionary
         """
         result = base.copy()
-        
+
         for key, value in override.items():
             if key in result and isinstance(result[key], dict) and isinstance(value, dict):
                 result[key] = self._deep_merge(result[key], value)
             else:
                 result[key] = value
-        
+
         return result
-    
+
     def get(self, key_path: str, default: Any = None) -> Any:
         """Get configuration value by dot-notation path.
-        
+
         Examples:
             config.get("features.assistant.enabled")
             config.get("ui.page_title")
             config.get("features.debug.enabled", False)
-        
+
         Args:
             key_path: Dot-separated path to configuration value
             default: Default value if key not found
-            
+
         Returns:
             Configuration value or default
         """
         keys = key_path.split(".")
         value = self.config
-        
+
         for key in keys:
             if isinstance(value, dict) and key in value:
                 value = value[key]
             else:
                 return default
-        
+
         return value
-    
+
     def is_feature_enabled(self, feature_name: str) -> bool:
         """Check if a feature is enabled.
-        
+
         Args:
             feature_name: Name of feature (e.g., "assistant", "dag", "debug")
-            
+
         Returns:
             True if feature is enabled, False otherwise
         """
         return self.get(f"features.{feature_name}.enabled", False)
-    
+
     def reload(self):
         """Reload configuration from file."""
         self.config = self._load_config()
@@ -201,15 +200,15 @@ _config_instance: Optional[AppConfig] = None
 
 def get_config() -> AppConfig:
     """Get the global configuration instance.
-    
+
     Returns:
         AppConfig instance
     """
     global _config_instance
-    
+
     if _config_instance is None:
         _config_instance = AppConfig()
-    
+
     return _config_instance
 
 
@@ -221,6 +220,8 @@ def reload_config():
 
 
 # Convenience functions for common checks
+
+
 def is_assistant_enabled() -> bool:
     """Check if documentation assistant feature is enabled."""
     return get_config().is_feature_enabled("assistant")
@@ -249,3 +250,4 @@ def is_privacy_ui_enabled() -> bool:
 def is_coverage_matrix_enabled() -> bool:
     """Check if coverage matrix feature is enabled."""
     return get_config().is_feature_enabled("coverage_matrix")
+

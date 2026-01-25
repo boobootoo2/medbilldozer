@@ -7,10 +7,13 @@ across multiple documents to identify potential duplicate payments or coverage g
 from dataclasses import dataclass
 from typing import Optional, List
 
+
 @dataclass
+
+
 class CoverageRow:
     """Represents a single row in the coverage matrix.
-    
+
     Tracks amounts and document references across receipt, FSA, and insurance sources
     for a specific service on a specific date.
     """
@@ -27,12 +30,13 @@ class CoverageRow:
 
     status: str
 
+
 def build_coverage_matrix(documents: list[dict]) -> List[CoverageRow]:
     """Build a cross-document coverage matrix from analyzed documents.
-    
+
     Args:
         documents: List of document dicts with 'facts' and 'document_id' keys
-    
+
     Returns:
         List[CoverageRow]: Coverage rows showing related transactions across documents
     """
@@ -129,3 +133,4 @@ def build_coverage_matrix(documents: list[dict]) -> List[CoverageRow]:
             row.status = "ℹ️ Informational"
 
     return list(rows.values())
+

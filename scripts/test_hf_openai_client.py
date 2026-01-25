@@ -64,3 +64,4 @@ except Exception as e:
 
 print('\n--- success ---\n')
 print(completion.choices[0].message if getattr(completion, 'choices', None) else completion)
+

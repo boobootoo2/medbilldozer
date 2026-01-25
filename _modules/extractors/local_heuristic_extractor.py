@@ -15,9 +15,10 @@ from _modules.extractors.extraction_prompt import FACT_KEYS
 # helpers
 # -----------------------------
 
+
 def _safe_empty() -> Dict[str, Optional[str]]:
     """Return empty facts dictionary with all keys set to None.
-    
+
     Returns:
         Dictionary with all FACT_KEYS mapped to None
     """
@@ -26,11 +27,11 @@ def _safe_empty() -> Dict[str, Optional[str]]:
 
 def _find_first(pattern: str, text: str) -> Optional[str]:
     """Find first match of regex pattern in text.
-    
+
     Args:
         pattern: Regex pattern with capture group
         text: Text to search
-        
+
     Returns:
         Captured group text (stripped) or None if no match
     """
@@ -40,11 +41,11 @@ def _find_first(pattern: str, text: str) -> Optional[str]:
 
 def _find_date(patterns: list[str], text: str) -> Optional[str]:
     """Try multiple date patterns and return first match.
-    
+
     Args:
         patterns: List of regex patterns to try in order
         text: Text to search
-        
+
     Returns:
         First matched date string or None if no patterns match
     """
@@ -58,6 +59,7 @@ def _find_date(patterns: list[str], text: str) -> Optional[str]:
 # -----------------------------
 # main extractor
 # -----------------------------
+
 
 def extract_facts_local(raw_text: str) -> Dict[str, Optional[str]]:
     """
@@ -173,3 +175,4 @@ def extract_facts_local(raw_text: str) -> Dict[str, Optional[str]]:
         facts["document_type"] = "unknown"
 
     return facts
+

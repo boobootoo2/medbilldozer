@@ -4,12 +4,8 @@ Main Streamlit application that orchestrates document analysis, provider registr
 and UI rendering for detecting billing, pharmacy, dental, and insurance claim issues.
 """
 # app.py
-import base64
-from pathlib import Path
 import os
 import streamlit as st
-import streamlit.components.v1 as components
-import json
 
 
 from _modules.ui.privacy_ui import render_privacy_dialog
@@ -97,37 +93,35 @@ from _modules.ui.profile_editor import (
 )
 
 
-
-
 def check_access_password() -> bool:
     """Check if access password is required and validate user input.
-    
+
     Returns:
         bool: True if access is granted, False if password gate should be shown
     """
     # Check if password is set via environment variable
     required_password = os.environ.get('APP_ACCESS_PASSWORD', '')
-    
+
     # If no password is set, grant access
     if not required_password:
         return True
-    
+
     # Initialize session state for password
     if 'access_granted' not in st.session_state:
         st.session_state.access_granted = False
-    
+
     # If already granted, allow access
     if st.session_state.access_granted:
         return True
-    
+
     # Show password gate
     st.markdown("""
     <div style="text-align: center; padding: 50px 20px;">
-        <h1>🚜 medBillDozer</h1>
+        <h1>medBillDozer</h1>
         <p style="font-size: 18px; color: #666; margin-bottom: 30px;">Enter password to access</p>
     </div>
     """, unsafe_allow_html=True)
-    
+
     # Center the password input
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -138,20 +132,20 @@ def check_access_password() -> bool:
             label_visibility="collapsed",
             placeholder="Enter access password"
         )
-        
+
         if st.button("Access App", use_container_width=True, type="primary"):
             if password_input == required_password:
                 st.session_state.access_granted = True
                 st.rerun()
             else:
                 st.error("❌ Incorrect password. Please try again.")
-    
+
     return False
 
 
 def should_enable_guided_tour() -> bool:
     """Check if guided tour should be enabled based on environment variable.
-    
+
     Returns:
         bool: True if tour should be enabled
     """
@@ -161,7 +155,7 @@ def should_enable_guided_tour() -> bool:
         return True
     elif env_tour in ('FALSE', '0', 'NO', 'OFF'):
         return False
-    
+
     # Fall back to config file setting
     return is_guided_tour_enabled()
 
@@ -180,7 +174,7 @@ ENGINE_OPTIONS = {
 
 def render_total_savings_summary(total_potential_savings: float, per_document_savings: dict):
     """Render aggregate savings summary across all analyzed documents.
-    
+
     Args:
         total_potential_savings: Total potential savings amount
         per_document_savings: Dict mapping document IDs to their savings amounts
@@ -202,9 +196,11 @@ def render_total_savings_summary(total_potential_savings: float, per_document_sa
 # ==================================================
 # Bootstrap UI
 # ==================================================
+
+
 def bootstrap_ui_minimal():
     """Initialize minimal UI components for all pages.
-    
+
     Sets up page configuration, CSS styles, and header.
     Should be called on all pages (home and profile).
     """
@@ -215,23 +211,25 @@ def bootstrap_ui_minimal():
 
 def bootstrap_home_page():
     """Initialize home page specific UI components.
-    
+
     Renders demo documents and contextual help.
     Should only be called on the home page.
     """
     # Skip demo help message when guided tour is active
     if not should_enable_guided_tour():
         render_contextual_help('demo')
-    
+
     render_demo_documents()
 
 
 # ==================================================
 # Provider registration
 # ==================================================
+
+
 def register_providers():
     """Register available LLM analysis providers.
-    
+
     Attempts to register MedGemma, Gemini, and OpenAI providers.
     Only registers providers that pass health checks.
     """
@@ -263,9 +261,11 @@ def register_providers():
 # ==================================================
 # App entry
 # ==================================================
+
+
 def main():
     """Main application entry point.
-    
+
     Orchestrates the complete workflow:
     1. Bootstrap UI and register providers
     2. Initialize guided tour state
@@ -280,46 +280,46 @@ def main():
     # --------------------------------------------------
     if not check_access_password():
         return  # Stop rendering if password not entered
-    
+
     # --------------------------------------------------
     # Initialize Page Navigation
     # --------------------------------------------------
     if 'current_page' not in st.session_state:
         st.session_state.current_page = 'home'
-    
+
     # --------------------------------------------------
     # Minimal Bootstrap (for all pages)
     # --------------------------------------------------
     bootstrap_ui_minimal()
-    
+
     # --------------------------------------------------
     # Page Navigation (sidebar - at top)
     # --------------------------------------------------
     with st.sidebar:
         st.markdown("## 📱 Navigation")
-        
+
         col1, col2 = st.columns(2)
-        
+
         with col1:
             if st.button("🏠 Home", use_container_width=True, type="primary" if st.session_state.current_page == 'home' else "secondary"):
                 st.session_state.current_page = 'home'
                 st.rerun()
-        
+
         with col2:
             if is_profile_editor_enabled():
                 if st.button("📋 Profile", use_container_width=True, type="primary" if st.session_state.current_page == 'profile' else "secondary"):
                     st.session_state.current_page = 'profile'
                     st.rerun()
-        
+
         st.markdown("---")
-    
+
     # --------------------------------------------------
     # Route to Profile Editor if selected
     # --------------------------------------------------
     if st.session_state.current_page == 'profile' and is_profile_editor_enabled():
         render_profile_editor()
         return  # Skip rest of home page rendering
-    
+
     # --------------------------------------------------
     # Home Page Specific UI
     # --------------------------------------------------
@@ -346,7 +346,7 @@ def main():
     # --------------------------------------------------
     if is_privacy_ui_enabled():
         render_privacy_dialog()
-    
+
     # --------------------------------------------------
     # Guided Tour Controls (sidebar - at top)
     # --------------------------------------------------
@@ -371,11 +371,11 @@ def main():
     # --------------------------------------------------
     st.markdown("---")
     selected_profile = render_profile_selector()
-    
+
     if selected_profile:
         render_profile_details(selected_profile)
         st.info("💡 Profile loaded! The analysis will consider this patient's insurance and medical history.")
-    
+
     st.markdown("---")
 
     # --------------------------------------------------
@@ -383,7 +383,7 @@ def main():
     # --------------------------------------------------
     render_contextual_help('input')
     documents = render_document_inputs()
-    
+
     # Check tour progression after document input
     check_tour_progression()
 
@@ -449,7 +449,7 @@ def main():
     profile_context = None
     if selected_profile:
         profile_context = get_profile_context_for_analysis(selected_profile)
-    
+
     agent = OrchestratorAgent(
         extractor_override=extractor_override,
         analyzer_override=analyzer_override or selected_provider,
@@ -467,13 +467,13 @@ def main():
     # Analyze action
     # --------------------------------------------------
     col1, col2 = st.columns([3, 1])
-    
+
     with col1:
         analyze_clicked = render_analyze_button()
-    
+
     with col2:
         clear_clicked = render_clear_history_button()
-    
+
     # Handle clear history action
     if clear_clicked:
         clear_analysis_history()
@@ -491,14 +491,13 @@ def main():
             return
 
         # Wrap entire analysis in a spinner
-        with st.spinner("🚜 Analyzing your documents..."):
+        with st.spinner("Analyzing your documents..."):
             # Set analyzing flag for tour progression
             st.session_state.analyzing = True
-            
+
             # Advance tour step immediately (without rerun to avoid double-click)
-            if (st.session_state.get('tour_active', False) and 
-                st.session_state.get('tutorial_step') == 'document_loaded'):
-                from _modules.ui.guided_tour import advance_tour_step
+            if (st.session_state.get('tour_active', False) and
+                    st.session_state.get('tutorial_step') == 'document_loaded'):
                 advance_tour_step('analysis_running')
 
             # Show analyzing context
@@ -534,24 +533,20 @@ def main():
                 st.session_state.billdozer_analysis_started = True
 
 
-                
-
-
-
             for idx, doc in enumerate(documents, 1):
                 speaker = "billie" if idx % 2 == 1 else "billy"
 
                 # Use index-based ID initially (will be replaced with friendly ID after facts extraction)
                 initial_doc_id = f"Document {idx}"
-                
+
                 # Render document header first
                 st.markdown(f"## 📄 {initial_doc_id}")
-                
+
                 # Create DAG container immediately (shows initial plan) if enabled
                 dag_placeholder = None
                 if is_dag_enabled():
                     dag_expander, dag_placeholder = create_pipeline_dag_container(document_id=str(idx))
-                
+
                 # Progress callback for real-time DAG updates
                 def progress_callback(workflow_log, step_status):
                     if dag_placeholder and is_dag_enabled():
@@ -559,13 +554,11 @@ def main():
 
                 # Run analysis with progress callback
                 result = agent.run(doc["raw_text"], progress_callback=progress_callback)
-     
+
                 dispatch_widget_message(
                     speaker,
                     f"Finished analyzing {initial_doc_id}"
                 )
-                
-
 
 
                 # --------------------------------------------------
@@ -583,7 +576,7 @@ def main():
 
                 # Identity AFTER facts
                 maybe_enhance_identity(doc)
-                
+
                 # Update DAG again with friendly document name now that we have it
                 if is_dag_enabled() and dag_placeholder:
                     friendly_doc_id = doc.get("document_id") if doc.get("document_id") != initial_doc_id else None
@@ -652,21 +645,20 @@ def main():
 
             # Render the aggregate summary ONCE (after all documents)
             render_total_savings_summary(total_potential_savings, per_document_savings)
-            
+
             # Clear analyzing flag and set results for tour progression
             st.session_state.analyzing = False
             st.session_state.doc_results = True
-            
+
             # Advance tour step to review_issues
-            if (st.session_state.get('tour_active', False) and 
-                st.session_state.get('tutorial_step') == 'analysis_running'):
-                from _modules.ui.guided_tour import advance_tour_step
+            if (st.session_state.get('tour_active', False) and
+                    st.session_state.get('tutorial_step') == 'analysis_running'):
                 advance_tour_step('review_issues')
-            
+
             if is_coverage_matrix_enabled():
                 coverage_rows = build_coverage_matrix(documents)
                 render_coverage_matrix(coverage_rows)
-            
+
             # Render multi-document pipeline comparison if multiple documents and DAG enabled
             if is_dag_enabled() and len(documents) > 1:
                 config = get_config()
@@ -676,7 +668,7 @@ def main():
                     workflow_logs = [doc.get("_workflow_log") for doc in documents if doc.get("_workflow_log")]
                     if workflow_logs:
                         render_pipeline_comparison(workflow_logs)
-            
+
             # Show results context help
             render_contextual_help('results')
 
@@ -707,7 +699,7 @@ def main():
 
             st.markdown("### Coverage Matrix (Raw)")
             st.json([row.__dict__ for row in coverage_rows])
-            
+
 
     # --------------------------------------------------
     # Footer (ONCE)
@@ -717,3 +709,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

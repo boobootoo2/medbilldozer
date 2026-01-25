@@ -1,9 +1,9 @@
 def build_receipt_line_item_prompt(document_text: str) -> str:
     """Build prompt for extracting line items from retail/pharmacy receipts.
-    
+
     Args:
         document_text: Raw receipt text
-    
+
     Returns:
         str: Formatted prompt for LLM extraction
     """
@@ -41,3 +41,4 @@ Do not extract totals, headings, or explanatory text.
 DOCUMENT:
 {document_text}
 """
+

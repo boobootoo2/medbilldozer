@@ -7,7 +7,7 @@ import streamlit as st
 
 def _init_privacy_state():
     """Initialize privacy and cookie preference state in session.
-    
+
     Sets default values for privacy acceptance and cookie preferences.
     """
     st.session_state.setdefault("privacy_accepted", False)
@@ -22,9 +22,11 @@ def _init_privacy_state():
 
 
 @st.dialog("🔒 Privacy & Cookie Preferences")
+
+
 def _privacy_dialog():
     """Display privacy policy and cookie preferences dialog.
-    
+
     Shows HIPAA disclaimer, privacy policy, and cookie preference toggles.
     """
     _init_privacy_state()
@@ -33,7 +35,7 @@ def _privacy_dialog():
         """
         **Welcome to medBillDozer**
 
-        This is a demo application.  
+        This is a demo application.
         We do **not** collect, store, or transmit personal or medical data.
         """
     )
@@ -62,30 +64,30 @@ def _privacy_dialog():
     st.divider()
 
     st.markdown("### Cookie Preferences")
-    
+
     with st.expander("ℹ️ What are cookies and what do they do?"):
         st.markdown(
             """
             **Cookie Types & Purposes**
-            
-            **Essential Cookies** (Required)  
+
+            **Essential Cookies** (Required)
             - Enable core functionality like session management
             - Remember your privacy preferences during your visit
             - Required for the application to work properly
             - Cannot be disabled
-            
-            **Preference Cookies** (Optional)  
+
+            **Preference Cookies** (Optional)
             - Remember your UI preferences (theme, language, layout)
             - Save your analysis method selection
             - Store document viewing preferences
             - Make your experience more personalized
-            
-            **Analytics Cookies** (Optional)  
+
+            **Analytics Cookies** (Optional)
             - Help us understand how the app is used
             - Identify which features are most helpful
             - Improve performance and user experience
             - All data is anonymized and aggregated
-            
+
             **What You're Agreeing To:**
             - Essential cookies are automatically enabled
             - Optional cookies are only set if you enable them
@@ -101,12 +103,12 @@ def _privacy_dialog():
         disabled=True,
     )
 
-    preferences = st.checkbox(
+    _preferences = st.checkbox(
         "Preference cookies",
         value=st.session_state["cookie_preferences"]["preferences"],
     )
 
-    analytics = st.checkbox(
+    _analytics = st.checkbox(
         "Analytics cookies",
         value=st.session_state["cookie_preferences"]["analytics"],
     )
@@ -122,10 +124,9 @@ def _privacy_dialog():
         st.rerun()
 
 
-
 def render_privacy_dialog():
     """Render privacy dialog if not already acknowledged.
-    
+
     Shows the privacy dialog on first visit. Subsequent visits skip the dialog
     based on session state.
     """

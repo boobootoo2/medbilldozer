@@ -15,7 +15,10 @@ import re
 # Domain models (canonical)
 # ==================================================
 
+
 @dataclass
+
+
 class Issue:
     type: str
     summary: str
@@ -30,8 +33,9 @@ class Issue:
     confidence: Optional[float] = None
 
 
-
 @dataclass
+
+
 class AnalysisResult:
     issues: List[Issue]
     meta: Dict[str, Any]
@@ -40,6 +44,7 @@ class AnalysisResult:
 # ==================================================
 # Provider interface
 # ==================================================
+
 
 class LLMProvider(ABC):
     """
@@ -69,6 +74,7 @@ class LLMProvider(ABC):
 # Provider registry
 # ==================================================
 
+
 class ProviderRegistry:
     _providers: Dict[str, LLMProvider] = {}
 
@@ -88,6 +94,7 @@ class ProviderRegistry:
 # ==================================================
 # Local heuristic provider
 # ==================================================
+
 
 class LocalHeuristicProvider(LLMProvider):
     def name(self) -> str:
@@ -156,3 +163,4 @@ __all__ = [
     "Issue",
     "AnalysisResult",
 ]
+

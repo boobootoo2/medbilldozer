@@ -6,13 +6,14 @@ import streamlit as st
 import re
 from datetime import datetime
 
+
 def _shorten_provider(name: str, max_len=28) -> str:
     """Shorten provider name to maximum length.
-    
+
     Args:
         name: Provider name
         max_len: Maximum length (default 28)
-    
+
     Returns:
         str: Shortened name or "Unknown Provider" if None
     """
@@ -20,6 +21,7 @@ def _shorten_provider(name: str, max_len=28) -> str:
         return "Unknown Provider"
     name = re.sub(r"\s+", " ", name).strip()
     return name[:max_len]
+
 
 def _format_date(date_str: str) -> str:
     """
@@ -40,18 +42,19 @@ def _format_date(date_str: str) -> str:
     except Exception:
         return date_str
 
+
 def make_user_friendly_document_id(
     facts: dict,
     fallback_index: int | None = None,
 ) -> str:
     """Generate user-friendly document ID from facts.
-    
+
     Creates readable label like "Provider · Date · Type".
-    
+
     Args:
         facts: Document facts dictionary
         fallback_index: Optional index for disambiguation
-    
+
     Returns:
         str: User-friendly document label
     """
@@ -89,12 +92,14 @@ def make_user_friendly_document_id(
 # ==================================================
 # Document Inputs (dynamic, single by default)
 # ==================================================
+
+
 def render_document_inputs():
     """Render dynamic document input fields with validation.
-    
+
     Allows users to paste multiple documents. Validates for duplicates and
     returns list of document dicts ready for analysis.
-    
+
     Returns:
         list[dict]: List of document dicts with 'raw_text', 'facts', 'analysis', 'document_id' keys.
                    Returns empty list if validation fails.
@@ -170,3 +175,4 @@ def render_document_inputs():
         })
 
     return documents
+

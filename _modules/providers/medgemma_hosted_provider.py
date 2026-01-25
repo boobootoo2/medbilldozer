@@ -74,6 +74,7 @@ Document:
 import re
 import json
 
+
 def _extract_json(text: str) -> dict:
     """
     Extract the first valid JSON object from model output.
@@ -166,3 +167,4 @@ class MedGemmaHostedProvider(LLMProvider):
                 "total_max_savings": round(total_max, 2),
             },
         )
+
