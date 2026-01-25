@@ -116,6 +116,7 @@ python3 scripts/test_ingestion_api.py
 
 ## Status
 
-✅ Production-ready functions  
-❌ Not deployed (demo only)  
+✅ Production-ready functions
+❌ Not deployed (demo only)
 🔜 Ready for FastAPI
+

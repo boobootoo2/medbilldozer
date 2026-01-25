@@ -122,3 +122,4 @@ The same checks run in CI/CD:
 - GitHub Actions runs linting and tests on all pull requests
 - Ensures code quality across all contributions
 - See `.github/workflows/` for CI configuration
+

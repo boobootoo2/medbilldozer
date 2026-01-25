@@ -87,3 +87,4 @@ def progress_callback(workflow_log, step_status):
 
 ## Configuration
 Progress visualization respects existing `is_dag_enabled()` feature flag.
+

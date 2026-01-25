@@ -225,7 +225,7 @@ Then call it in `generate_all()`:
 ```python
 def generate_all(self, output_dir):
     # ... existing code ...
-    
+
     # Add your custom section
     custom = self.generate_custom_section()
     (output_dir / "CUSTOM.md").write_text(custom)
@@ -258,15 +258,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Generate Documentation
         run: python3 scripts/generate_docs.py
-      
+
       - name: Commit Changes
         run: |
           git config --local user.email "action@github.com"
@@ -367,10 +367,11 @@ scripts/generate_docs.py
 
 The automatic documentation system ensures MedBillDozer's documentation is:
 
-✅ **Accurate** - Derived directly from source code  
-✅ **Current** - Regenerated on every commit  
-✅ **Comprehensive** - Covers all modules, classes, and functions  
-✅ **Zero-Effort** - No manual maintenance required  
-✅ **Consistent** - Uniform format across all docs  
+✅ **Accurate** - Derived directly from source code
+✅ **Current** - Regenerated on every commit
+✅ **Comprehensive** - Covers all modules, classes, and functions
+✅ **Zero-Effort** - No manual maintenance required
+✅ **Consistent** - Uniform format across all docs
 
 **Result**: Documentation that developers can trust and rely on.
+

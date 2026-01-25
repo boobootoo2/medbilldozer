@@ -41,7 +41,7 @@ Look for the **📋 Profile** button in the sidebar (next to 🏠 Home).
 - Mark plans as active/inactive
 - Track network status (in-network/out-of-network)
 
-### 3. Manage Provider Directory  
+### 3. Manage Provider Directory
 - Add doctors, hospitals, specialists
 - Track NPI numbers
 - Record specialty and practice information
@@ -169,3 +169,4 @@ You're ready to use the Profile Editor. Start by:
 4. Adding your information
 
 Happy profiling!
+

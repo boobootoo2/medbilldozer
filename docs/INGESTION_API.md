@@ -4,8 +4,8 @@
 
 The Ingestion API provides a programmatic interface for ingesting healthcare data from fictional entities and retrieving normalized results. This is a **DEMO-ONLY** API with no real networking, authentication, or deployment.
 
-**Purpose**: Demonstrate how a Plaid-like healthcare data connector API might work  
-**Status**: Production-ready functions (not deployed)  
+**Purpose**: Demonstrate how a Plaid-like healthcare data connector API might work
+**Status**: Production-ready functions (not deployed)
 **Architecture**: Ready for FastAPI deployment
 
 ---
@@ -382,7 +382,7 @@ Example SQLAlchemy models:
 ```python
 class ImportJob(Base):
     __tablename__ = "import_jobs"
-    
+
     job_id = Column(String, primary_key=True)
     user_id = Column(String, index=True)
     entity_id = Column(String)
@@ -390,12 +390,12 @@ class ImportJob(Base):
     status = Column(String)
     created_at = Column(DateTime)
     completed_at = Column(DateTime)
-    
+
     line_items = relationship("LineItem", back_populates="import_job")
 
 class LineItem(Base):
     __tablename__ = "line_items"
-    
+
     line_item_id = Column(String, primary_key=True)
     import_job_id = Column(String, ForeignKey("import_jobs.job_id"))
     service_date = Column(Date)
@@ -643,6 +643,7 @@ python3 scripts/test_ingestion_api.py
 
 ---
 
-**Version**: 1.0.0  
-**Status**: Production-ready functions (not deployed)  
+**Version**: 1.0.0
+**Status**: Production-ready functions (not deployed)
 **Demo Only**: No real networking, auth, or HIPAA compliance
+

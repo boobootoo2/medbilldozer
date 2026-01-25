@@ -1,6 +1,6 @@
 # medBillDozer User Guide
 
-**Version:** 1.0  
+**Version:** 1.0
 **Last Updated:** January 21, 2026
 
 ---
@@ -226,14 +226,14 @@ Clear, plain-language description of what's wrong:
 **3. Evidence**
 Specific details from your document that support this issue:
 ```
-"CPT 45378 appears more than once on 01/15/2026 
+"CPT 45378 appears more than once on 01/15/2026
 with patient responsibility $250.00"
 ```
 
 **4. Recommended Action**
 What you should do about this issue:
 ```
-"Contact billing department and request removal of duplicate charge. 
+"Contact billing department and request removal of duplicate charge.
 Reference CPT code and date of service."
 ```
 
@@ -269,7 +269,7 @@ Total Amount            ✓        ✗        ✓
 Patient Responsibility  ✓        ✓        ✓
 ```
 
-**What this shows**: 
+**What this shows**:
 - ✓ = Information found in this document
 - ✗ = Information missing or not detected
 - Helps identify incomplete documents or extraction issues
@@ -324,7 +324,7 @@ medBillDozer is designed with privacy as the #1 priority:
 
 ### HIPAA Compliance Notice
 
-**Important**: medBillDozer is a demonstration application and is **not a HIPAA-covered service**. 
+**Important**: medBillDozer is a demonstration application and is **not a HIPAA-covered service**.
 
 - This tool is for educational and informational purposes
 - It does not create a healthcare provider-patient relationship
@@ -375,7 +375,7 @@ medBillDozer includes 5 realistic demo documents for testing:
 
 ### 🏥 Colonoscopy Bill
 
-**Document Type**: Medical Procedure Bill  
+**Document Type**: Medical Procedure Bill
 **Key Features**:
 - Multiple CPT codes
 - Insurance adjustments
@@ -392,7 +392,7 @@ medBillDozer includes 5 realistic demo documents for testing:
 
 ### 🦷 Dental Crown Bill
 
-**Document Type**: Dental Treatment Bill  
+**Document Type**: Dental Treatment Bill
 **Key Features**:
 - CDT dental procedure codes
 - Insurance coverage breakdown
@@ -409,7 +409,7 @@ medBillDozer includes 5 realistic demo documents for testing:
 
 ### 💊 Pharmacy Receipt (FSA)
 
-**Document Type**: Prescription Receipt  
+**Document Type**: Prescription Receipt
 **Key Features**:
 - Medication details
 - FSA/HSA eligible markers
@@ -426,7 +426,7 @@ medBillDozer includes 5 realistic demo documents for testing:
 
 ### 📋 Insurance Claim (Zero OOP)
 
-**Document Type**: Explanation of Benefits (EOB)  
+**Document Type**: Explanation of Benefits (EOB)
 **Key Features**:
 - Insurance payment details
 - Zero patient responsibility
@@ -443,7 +443,7 @@ medBillDozer includes 5 realistic demo documents for testing:
 
 ### 🏦 FSA Claim History
 
-**Document Type**: FSA Transaction Statement  
+**Document Type**: FSA Transaction Statement
 **Key Features**:
 - Multiple claim entries
 - Approval/denial status
@@ -683,7 +683,7 @@ Artificial Intelligence has inherent limitations:
 
 **Always verify AI findings** with:
 - Your insurance company
-- Healthcare provider's billing department  
+- Healthcare provider's billing department
 - Professional medical billing advocate
 - Your plan's coverage documents
 
@@ -756,7 +756,8 @@ For complex billing issues, consider consulting:
 
 ---
 
-**Thank you for using medBillDozer!**  
+**Thank you for using medBillDozer!**
 *Helping patients understand and verify their healthcare charges.*
 
 🏥 **Stay healthy, stay informed, pay fairly.** 💰
+

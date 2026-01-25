@@ -16,10 +16,10 @@ Healthcare billing documents contain domain-specific language, procedural codes,
 
 MedGemma is designed for healthcare contexts, making it well-suited for:
 
-- Interpreting clinical and billing terminology  
-- Reasoning conservatively over incomplete or noisy data  
-- Producing explanations appropriate for patient-facing use  
-- Supporting assistive workflows rather than autonomous decisions  
+- Interpreting clinical and billing terminology
+- Reasoning conservatively over incomplete or noisy data
+- Producing explanations appropriate for patient-facing use
+- Supporting assistive workflows rather than autonomous decisions
 
 In medBillDozer, MedGemma models are used for **analysis and reasoning**, not UI generation or unsupervised automation.
 
@@ -27,7 +27,7 @@ In medBillDozer, MedGemma models are used for **analysis and reasoning**, not UI
 
 ## How medBillDozer Uses HAI-DEF Principles
 
-HAI-DEF is not just a model set — it represents a **human-centered design philosophy for healthcare AI**.  
+HAI-DEF is not just a model set — it represents a **human-centered design philosophy for healthcare AI**.
 medBillDozer aligns with this philosophy in several concrete ways.
 
 ---
@@ -36,10 +36,10 @@ medBillDozer aligns with this philosophy in several concrete ways.
 
 The application pipeline is intentionally modular:
 
-- **Extraction** — Identify facts from documents without interpretation  
-- **Normalization** — Convert raw facts into structured, inspectable data  
-- **Analysis** — Use MedGemma models to reason over known facts  
-- **Presentation** — Explain findings clearly and defer decisions to the user  
+- **Extraction** — Identify facts from documents without interpretation
+- **Normalization** — Convert raw facts into structured, inspectable data
+- **Analysis** — Use MedGemma models to reason over known facts
+- **Presentation** — Explain findings clearly and defer decisions to the user
 
 This separation reduces hallucinations, improves debuggability, and aligns with HAI-DEF guidance for safer healthcare AI systems.
 
@@ -49,17 +49,17 @@ This separation reduces hallucinations, improves debuggability, and aligns with 
 
 medBillDozer does **not** attempt to:
 
-- Modify claims  
-- Submit appeals  
-- Make coverage determinations  
-- Provide medical or legal advice  
+- Modify claims
+- Submit appeals
+- Make coverage determinations
+- Provide medical or legal advice
 
 Instead, it:
 
-- Flags *potential* issues  
-- Shows evidence for each finding  
-- Explains why something may be problematic  
-- Recommends next steps for human action  
+- Flags *potential* issues
+- Shows evidence for each finding
+- Explains why something may be problematic
+- Recommends next steps for human action
 
 This makes the system **decision-supportive, not decision-making** — a core HAI-DEF principle.
 
@@ -71,10 +71,10 @@ All outputs require human review and judgment.
 
 Users must:
 
-- Provide documents  
-- Review extracted information  
-- Interpret flagged issues  
-- Decide whether and how to act  
+- Provide documents
+- Review extracted information
+- Interpret flagged issues
+- Decide whether and how to act
 
 There is no “auto-fix” behavior. This design choice reflects healthcare safety norms and aligns with HAI-DEF’s emphasis on human oversight.
 
@@ -84,9 +84,9 @@ There is no “auto-fix” behavior. This design choice reflects healthcare safe
 
 All results are framed using careful, patient-appropriate language:
 
-- “Potential issue”  
-- “Possible savings”  
-- “Recommended action”  
+- “Potential issue”
+- “Possible savings”
+- “Recommended action”
 
 medBillDozer avoids guarantees or definitive claims, recognizing the legal and ethical realities of healthcare billing. This conservative framing is intentional and consistent with HAI-DEF deployment expectations.
 
@@ -96,9 +96,9 @@ medBillDozer avoids guarantees or definitive claims, recognizing the legal and e
 
 The user experience is designed to:
 
-- Make model reasoning legible  
-- Surface evidence alongside conclusions  
-- Avoid opaque “AI said so” outcomes  
+- Make model reasoning legible
+- Surface evidence alongside conclusions
+- Avoid opaque “AI said so” outcomes
 
 By prioritizing clarity and trust over novelty, medBillDozer reflects the human-centered goals of the HAI-DEF collection.
 
@@ -129,3 +129,4 @@ medBillDozer’s use of MedGemma and the HAI-DEF collection is not incidental �
 - Humans kept firmly in control
 
 These choices reflect the core values of HAI-DEF and demonstrate how healthcare AI can deliver real impact without compromising trust.
+

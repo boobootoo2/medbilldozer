@@ -4,7 +4,7 @@
 
 Successfully integrated the **entity picker** into the Profile Editor, replacing the old mock wizard with a real data ingestion system.
 
-**Date:** January 25, 2026  
+**Date:** January 25, 2026
 **Status:** ✅ Complete and ready to test
 
 ---
@@ -277,28 +277,28 @@ streamlit run app.py
 
 ## Features Implemented
 
-✅ **Entity Picker Dropdown** - Select from 30 insurance or 100 providers  
-✅ **Entity Details Card** - Shows network/specialty/location  
-✅ **Slider Control** - Choose 1-20 transactions  
-✅ **Portal Preview** - See simulated portal HTML (optional)  
-✅ **Real Data Generation** - Uses ingestion API, not mocks  
-✅ **Results Display** - Metrics + formatted table  
-✅ **CSV Export** - Download imported data  
-✅ **Navigation** - Back button, import more, done button  
-✅ **Error Handling** - Shows errors if import fails  
-✅ **Loading States** - Spinner during import  
-✅ **Success Feedback** - Balloons on successful import  
+✅ **Entity Picker Dropdown** - Select from 30 insurance or 100 providers
+✅ **Entity Details Card** - Shows network/specialty/location
+✅ **Slider Control** - Choose 1-20 transactions
+✅ **Portal Preview** - See simulated portal HTML (optional)
+✅ **Real Data Generation** - Uses ingestion API, not mocks
+✅ **Results Display** - Metrics + formatted table
+✅ **CSV Export** - Download imported data
+✅ **Navigation** - Back button, import more, done button
+✅ **Error Handling** - Shows errors if import fails
+✅ **Loading States** - Spinner during import
+✅ **Success Feedback** - Balloons on successful import
 
 ---
 
 ## Removed Features
 
-❌ **PDF Upload** - No longer needed (data is generated)  
-❌ **CSV Upload** - No longer needed (data is generated)  
-❌ **Text Paste** - No longer needed (data is generated)  
-❌ **Mock Extraction** - Replaced with real ingestion API  
-❌ **Step 3 (Review)** - Combined into results display  
-❌ **Step 4 (Success)** - Integrated into results  
+❌ **PDF Upload** - No longer needed (data is generated)
+❌ **CSV Upload** - No longer needed (data is generated)
+❌ **Text Paste** - No longer needed (data is generated)
+❌ **Mock Extraction** - Replaced with real ingestion API
+❌ **Step 3 (Review)** - Combined into results display
+❌ **Step 4 (Success)** - Integrated into results
 
 ---
 
@@ -364,13 +364,13 @@ streamlit run app.py
 
 ## Success Criteria
 
-✅ **Entity picker renders** - Dropdown shows insurance/providers  
-✅ **Import succeeds** - Data generated without errors  
-✅ **Results display** - Table shows transactions  
-✅ **Data is realistic** - Valid CPT codes and amounts  
-✅ **Navigation works** - Can go back, import more, exit  
-✅ **Export works** - CSV download functions  
-✅ **No mock data** - All data from real ingestion API  
+✅ **Entity picker renders** - Dropdown shows insurance/providers
+✅ **Import succeeds** - Data generated without errors
+✅ **Results display** - Table shows transactions
+✅ **Data is realistic** - Valid CPT codes and amounts
+✅ **Navigation works** - Can go back, import more, exit
+✅ **Export works** - CSV download functions
+✅ **No mock data** - All data from real ingestion API
 
 ---
 
@@ -399,11 +399,11 @@ streamlit run app.py
 
 ## Known Limitations
 
-⚠️ **Demo Only** - All data is fictional  
-⚠️ **In-Memory Storage** - Data lost on app restart  
-⚠️ **No Authentication** - No user isolation  
-⚠️ **Limited Entities** - Only 30 insurance, 10K providers  
-⚠️ **No Real Portals** - Doesn't connect to actual portals  
+⚠️ **Demo Only** - All data is fictional
+⚠️ **In-Memory Storage** - Data lost on app restart
+⚠️ **No Authentication** - No user isolation
+⚠️ **Limited Entities** - Only 30 insurance, 10K providers
+⚠️ **No Real Portals** - Doesn't connect to actual portals
 
 These are intentional design decisions for the demo system.
 
@@ -421,3 +421,4 @@ The entity picker is now **fully integrated** into the Profile Editor! Users can
 All without needing real documents or portal credentials. Perfect for demos, development, and learning!
 
 🎉 **Entity Picker Implementation: COMPLETE** ✅
+

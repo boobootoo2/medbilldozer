@@ -58,19 +58,19 @@ Most existing tools look at only one artifact at a time.
 
 ### medBillDozer uniquely provides:
 
-- **Multi-document normalization**  
+- **Multi-document normalization**
   Medical bills, EOBs, receipts, and claims are parsed into a shared, structured representation.
 
-- **Cross-document reconciliation**  
+- **Cross-document reconciliation**
   Billed amounts, allowed amounts, payments, and patient responsibility are compared directly.
 
-- **Systematic error detection**  
+- **Systematic error detection**
   Duplicate charges, coverage mismatches, incorrect balances, and missing reimbursements are flagged automatically.
 
-- **Consumer-grade explanations**  
+- **Consumer-grade explanations**
   Findings are presented in plain language with evidence, not billing codes or legal jargon.
 
-- **Software-level scalability**  
+- **Software-level scalability**
   No per-case advocacy bottleneck and no dependency on manual review.
 
 ---
@@ -97,14 +97,15 @@ Medical billing errors are:
 
 Yet they are currently **undetected by default**.
 
-medBillDozer does not replace insurers or providers.  
+medBillDozer does not replace insurers or providers.
 It restores balance by giving consumers visibility, evidence, and leverage they have never had before.
 
 ---
 
 ## Summary
 
-The consumer healthcare tooling landscape is fragmented and reactive.  
+The consumer healthcare tooling landscape is fragmented and reactive.
 medBillDozer fills a clear vacuum by combining automation, reconciliation, and consumer-first design into a single system.
 
 **The problem is systemic. The tools are missing. medBillDozer is built to close that gap.**
+

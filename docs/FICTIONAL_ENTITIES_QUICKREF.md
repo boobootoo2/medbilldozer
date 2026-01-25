@@ -49,7 +49,7 @@ ca_providers = [p for p in providers if p['location_state'] == 'CA']
     'demo_portal_html': '<div>...</div>'
 }
 
-# Healthcare Provider  
+# Healthcare Provider
 {
     'id': 'demo_prov_000001',
     'name': 'Dr. Maria Mitchell (DEMO)',
@@ -80,3 +80,4 @@ python3 scripts/test_fictional_entities.py
 - `docs/FICTIONAL_ENTITIES_API.md` - Full API reference
 - `docs/FICTIONAL_ENTITIES_SUMMARY.md` - Implementation summary
 - `docs/DATA_CONNECTOR_ARCHITECTURE.md` - Overall architecture
+

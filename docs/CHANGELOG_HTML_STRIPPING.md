@@ -81,3 +81,4 @@ This ensures that if the source document contained literal HTML code, it display
 - Clean, readable text in all DAG visualizations
 - No more confusing HTML markup during analysis
 - Professional appearance of progress indicators
+

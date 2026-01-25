@@ -1,7 +1,7 @@
 # Fictional Healthcare Entities API Documentation
 
-**Module:** `_modules.data.fictional_entities`  
-**Purpose:** Generate deterministic fictional healthcare entities for demo purposes  
+**Module:** `_modules.data.fictional_entities`
+**Purpose:** Generate deterministic fictional healthcare entities for demo purposes
 **Status:** ✅ Production-ready for demo/hackathon use
 
 ---
@@ -477,23 +477,23 @@ def render_provider_selection():
     """Render provider selection UI."""
     # Load entities (cached automatically)
     entities = get_all_fictional_entities()
-    
+
     st.markdown("### Choose a Healthcare Provider to Connect")
-    
+
     # Display insurance companies
     st.markdown("#### Insurance Companies")
     for company in entities['insurance'][:10]:
         if st.button(f"Connect to {company['name']}", key=company['id']):
             # Handle connection...
             pass
-    
+
     # Display healthcare systems
     st.markdown("#### Healthcare Systems")
     hospital_providers = [
         p for p in entities['providers']
         if 'Medical Center' in p['name'] or 'Hospital' in p['name']
     ]
-    
+
     for provider in hospital_providers[:10]:
         if st.button(f"Connect to {provider['name']}", key=provider['id']):
             # Handle connection...
@@ -506,18 +506,18 @@ def render_provider_selection():
 
 ### What This Module Does
 
-✅ Generate realistic-looking fictional data  
-✅ Provide deterministic output (seeded)  
-✅ Cache results for performance  
-✅ Support filtering and searching  
+✅ Generate realistic-looking fictional data
+✅ Provide deterministic output (seeded)
+✅ Cache results for performance
+✅ Support filtering and searching
 ✅ Include demo disclaimers
 
 ### What This Module Does NOT Do
 
-❌ Connect to real healthcare APIs  
-❌ Validate real insurance policy numbers  
-❌ Store or transmit PHI  
-❌ Implement OAuth flows  
+❌ Connect to real healthcare APIs
+❌ Validate real insurance policy numbers
+❌ Store or transmit PHI
+❌ Implement OAuth flows
 ❌ Generate claim data (see ingestion service for that)
 
 ---
@@ -543,6 +543,7 @@ Potential additions (not yet implemented):
 
 ---
 
-**Last Updated:** January 25, 2026  
-**Module Location:** `_modules/data/fictional_entities.py`  
+**Last Updated:** January 25, 2026
+**Module Location:** `_modules/data/fictional_entities.py`
 **Test Suite:** `scripts/test_fictional_entities.py`
+

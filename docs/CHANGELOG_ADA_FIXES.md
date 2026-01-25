@@ -16,7 +16,7 @@ Fixed multiple ADA (Americans with Disabilities Act) and WCAG (Web Content Acces
 <img src="app/static/images/avatars/transparent/billie__eyes_closed__billdozer_down.png">
 
 <!-- After -->
-<img src="app/static/images/avatars/transparent/billie__eyes_closed__billdozer_down.png" 
+<img src="app/static/images/avatars/transparent/billie__eyes_closed__billdozer_down.png"
      alt="Billie character with eyes closed">
 ```
 
@@ -25,7 +25,7 @@ Fixed multiple ADA (Americans with Disabilities Act) and WCAG (Web Content Acces
 - Envelope (3 frames): at rest, falling animation frame 1, falling animation frame 2
 - Billy (3 frames): eyes closed, eyes open looking down, eyes open looking up
 
-**Also Added**: 
+**Also Added**:
 - `role="region"` and `aria-label="Billdozer animation widget"` to container
 
 ---
@@ -37,15 +37,15 @@ Fixed multiple ADA (Americans with Disabilities Act) and WCAG (Web Content Acces
 
 **Fix**: Added descriptive alt attributes to all 5 avatar states:
 ```python
-<img class="avatar-img" src="{img_ready}" 
+<img class="avatar-img" src="{img_ready}"
      alt="{character.capitalize()} ready" style="display: block;">
-<img class="avatar-img" src="{img_closed}" 
+<img class="avatar-img" src="{img_closed}"
      alt="{character.capitalize()} eyes closed" style="display: none;">
-<img class="avatar-img" src="{img_talking}" 
+<img class="avatar-img" src="{img_talking}"
      alt="{character.capitalize()} talking" style="display: none;">
-<img class="avatar-img" src="{img_talking_closed}" 
+<img class="avatar-img" src="{img_talking_closed}"
      alt="{character.capitalize()} talking with eyes closed" style="display: none;">
-<img class="avatar-img" src="{img_smiling}" 
+<img class="avatar-img" src="{img_smiling}"
      alt="{character.capitalize()} smiling" style="display: none;">
 ```
 
@@ -65,8 +65,8 @@ Fixed multiple ADA (Americans with Disabilities Act) and WCAG (Web Content Acces
 <div class="med-bill-dozer-logo"></div>
 
 <!-- After -->
-<div class="med-bill-dozer-logo" 
-     role="img" 
+<div class="med-bill-dozer-logo"
+     role="img"
      aria-label="medBillDozer logo"></div>
 ```
 
@@ -114,8 +114,8 @@ Fixed multiple ADA (Americans with Disabilities Act) and WCAG (Web Content Acces
         aria-label="{label} - Copy to clipboard">
     {label}
 </button>
-<span class="copy-message" 
-      role="status" 
+<span class="copy-message"
+      role="status"
       aria-live="polite">✓ Copied!</span>
 ```
 
@@ -213,3 +213,4 @@ Additional accessibility enhancements to consider:
 - **Landmarks**: Add ARIA landmarks (navigation, main, aside)
 - **Reduced Motion**: Respect `prefers-reduced-motion` media query
 - **Language Declaration**: Add lang attribute to HTML elements
+

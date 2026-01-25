@@ -231,18 +231,18 @@ This runs on every commit via pre-commit hook, ensuring documentation stays sync
 
 ### What's Auto-Generated?
 
-✅ Module descriptions (from module docstrings)  
-✅ Function signatures (from code)  
-✅ Function documentation (from docstrings)  
-✅ Class hierarchies (from AST analysis)  
-✅ Dependencies (from import statements)  
-✅ Constants (from code inspection)  
+✅ Module descriptions (from module docstrings)
+✅ Function signatures (from code)
+✅ Function documentation (from docstrings)
+✅ Class hierarchies (from AST analysis)
+✅ Dependencies (from import statements)
+✅ Constants (from code inspection)
 
 ### What's Manual?
 
-📝 User guides (QUICKSTART.md, USER_GUIDE.md)  
-📝 This index file  
-📝 Project README  
+📝 User guides (QUICKSTART.md, USER_GUIDE.md)
+📝 This index file
+📝 Project README
 
 ---
 
@@ -250,31 +250,31 @@ This runs on every commit via pre-commit hook, ensuring documentation stays sync
 
 ### I want to...
 
-**→ Start using medBillDozer right now**  
+**→ Start using medBillDozer right now**
 Read: [QUICKSTART.md](QUICKSTART.md)
 
-**→ Analyze my medical bill**  
+**→ Analyze my medical bill**
 Read: [USER_GUIDE.md § Using the Application](USER_GUIDE.md#using-the-application)
 
-**→ Understand what an analysis result means**  
+**→ Understand what an analysis result means**
 Read: [USER_GUIDE.md § Understanding Results](USER_GUIDE.md#understanding-results)
 
-**→ Know if my data is private**  
+**→ Know if my data is private**
 Read: [USER_GUIDE.md § Privacy & Data Security](USER_GUIDE.md#privacy--data-security)
 
-**→ Fix an error or issue**  
+**→ Fix an error or issue**
 Read: [QUICKSTART.md § Troubleshooting](QUICKSTART.md#troubleshooting)
 
-**→ Contribute to the codebase**  
+**→ Contribute to the codebase**
 Read: [MODULES.md](MODULES.md) and [DOCUMENTATION.md](../DOCUMENTATION.md)
 
-**→ Understand a specific module**  
+**→ Understand a specific module**
 Read: [MODULES.md](MODULES.md) and search for the module name
 
-**→ See all dependencies**  
+**→ See all dependencies**
 Read: [DEPENDENCIES.md](DEPENDENCIES.md)
 
-**→ Build on top of medBillDozer**  
+**→ Build on top of medBillDozer**
 Read: [API.md](API.md)
 
 ---
@@ -313,3 +313,4 @@ See [LICENSE](../LICENSE) for details.
 ---
 
 **Happy documenting!** 📚
+

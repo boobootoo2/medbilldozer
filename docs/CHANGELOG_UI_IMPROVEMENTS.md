@@ -39,7 +39,7 @@ Enhanced the user interface with better spacing, improved widget behavior, and a
 expander = st.expander(f"📊 Pipeline Workflow: {doc_label}", expanded=False)
 ```
 
-**Benefit**: 
+**Benefit**:
 - Cleaner initial view with less scrolling required
 - Users can expand DAG when they want to see workflow details
 - Analysis results are more immediately visible
@@ -158,3 +158,4 @@ Potential additions leveraging the transcript:
 - **Replay Analysis**: Visualize the analysis flow from transcript
 - **Message Search**: Filter transcript by character or keyword
 - **Timing Analysis**: Show time taken for each analysis phase
+

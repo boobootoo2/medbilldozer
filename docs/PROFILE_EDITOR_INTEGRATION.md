@@ -40,25 +40,25 @@ In your sidebar or main navigation, add a "Profile" option:
 ```python
 def main():
     """Main application function."""
-    
+
     # ... existing code ...
-    
+
     # Add profile navigation
     with st.sidebar:
         st.markdown("## Navigation")
-        
+
         if st.button("🏠 Home", use_container_width=True):
             st.session_state.current_page = 'home'
             st.rerun()
-        
+
         if is_profile_editor_enabled():
             if st.button("📋 Profile", use_container_width=True):
                 st.session_state.current_page = 'profile'
                 st.rerun()
-    
+
     # Route to appropriate page
     current_page = st.session_state.get('current_page', 'home')
-    
+
     if current_page == 'profile':
         render_profile_editor()
     else:
@@ -73,17 +73,17 @@ If you prefer tabs instead of sidebar navigation:
 ```python
 def main():
     """Main application function."""
-    
+
     tabs = ["🏠 Home", "� Analyze", "📋 Profile"] if is_profile_editor_enabled() else ["🏠 Home", "� Analyze"]
-    
+
     tab_objects = st.tabs(tabs)
-    
+
     with tab_objects[0]:
         render_home_page()
-    
+
     with tab_objects[1]:
         render_analysis_page()
-    
+
     if is_profile_editor_enabled() and len(tab_objects) > 2:
         with tab_objects[2]:
             render_profile_editor()
@@ -96,11 +96,11 @@ For URL-based navigation:
 ```python
 def main():
     """Main application function."""
-    
+
     # Get page from query params
     query_params = st.query_params
     page = query_params.get('page', ['home'])[0]
-    
+
     if page == 'profile' and is_profile_editor_enabled():
         render_profile_editor()
     else:
@@ -191,17 +191,17 @@ def my_analysis_function():
     if profile:
         user_name = profile.get('full_name')
         dob = profile.get('date_of_birth')
-    
+
     # Get insurance plans
     plans = load_insurance_plans()
     for plan in plans:
         carrier = plan.get('carrier_name')
         deductible = plan.get('deductible', {}).get('individual', 0)
-    
+
     # Get providers
     providers = load_providers()
     in_network_providers = [p for p in providers if p.get('in_network')]
-    
+
     # Get imported line items
     line_items = load_line_items()
     total_patient_resp = sum(item.get('patient_responsibility', 0) for item in line_items)
@@ -261,14 +261,14 @@ def analyze_document_with_profile(document_text: str):
     # Load user context
     profile = load_profile()
     plans = load_insurance_plans()
-    
+
     # Build context for analysis
     context = f"""
     Patient: {profile.get('full_name', 'Unknown')}
     Insurance: {plans[0].get('carrier_name', 'None')} if plans else 'No insurance'
     Deductible: ${plans[0].get('deductible', {}).get('individual', 0):,.2f}
     """
-    
+
     # Pass context to your analysis agent
     result = your_analysis_agent.analyze(document_text, context)
     return result
@@ -374,3 +374,4 @@ For issues or questions:
 2. Review `schema_examples.json` for data format
 3. Check Streamlit logs for error messages
 4. File an issue in the repository
+
