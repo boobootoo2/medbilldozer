@@ -18,11 +18,11 @@ exclude =
     docs
 
 # Ignore specific error codes
-ignore =
-    E203,  # whitespace before ':' (conflicts with black)
-    E501,  # line too long (handled by max-line-length)
-    W503,  # line break before binary operator (outdated rule)
-    E402,  # module level import not at top of file (needed for streamlit mocking)
+# E203: whitespace before ':' (conflicts with black)
+# E501: line too long (handled by max-line-length)
+# W503: line break before binary operator (outdated rule)
+# E402: module level import not at top of file (needed for streamlit mocking)
+ignore = E203,E501,W503,E402
 
 # Show the source code that generated the error
 show-source = True

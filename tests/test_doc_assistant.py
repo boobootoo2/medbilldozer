@@ -233,11 +233,11 @@ class TestGetAnswer:
     
     @patch.object(DocumentationAssistant, 'get_answer_gemini')
     def test_get_answer_routes_to_gemini(self, mock_gemini):
-        """get_answer should route to get_answer_gemini when provider is 'gemini'."""
+        """get_answer should route to get_answer_gemini when provider is 'gemini-2.0-flash-exp'."""
         mock_gemini.return_value = "Gemini response"
         
         assistant = DocumentationAssistant.__new__(DocumentationAssistant)
-        result = assistant.get_answer("test question", provider="gemini")
+        result = assistant.get_answer("test question", provider="gemini-2.0-flash-exp")
         
         mock_gemini.assert_called_once_with("test question")
         assert result == "Gemini response"
