@@ -490,193 +490,195 @@ def main():
             render_contextual_help('error')
             return
 
-        # Set analyzing flag for tour progression
-        st.session_state.analyzing = True
-        
-        # Advance tour step immediately (without rerun to avoid double-click)
-        if (st.session_state.get('tour_active', False) and 
-            st.session_state.get('tutorial_step') == 'document_loaded'):
-            from _modules.ui.guided_tour import advance_tour_step
-            advance_tour_step('analysis_running')
+        # Wrap entire analysis in a spinner
+        with st.spinner("🚜 Analyzing your documents..."):
+            # Set analyzing flag for tour progression
+            st.session_state.analyzing = True
+            
+            # Advance tour step immediately (without rerun to avoid double-click)
+            if (st.session_state.get('tour_active', False) and 
+                st.session_state.get('tutorial_step') == 'document_loaded'):
+                from _modules.ui.guided_tour import advance_tour_step
+                advance_tour_step('analysis_running')
 
-        # Show analyzing context
-        render_contextual_help('analyzing')
+            # Show analyzing context
+            render_contextual_help('analyzing')
 
-        # Aggregate savings across all documents for this run
-        total_potential_savings = 0.0
-        per_document_savings = {}
+            # Aggregate savings across all documents for this run
+            total_potential_savings = 0.0
+            per_document_savings = {}
 
-        install_billdozer_bridge()
-        st.session_state.setdefault("show_billdozer_widget", True)
+            install_billdozer_bridge()
+            st.session_state.setdefault("show_billdozer_widget", True)
 
-        # --------------------------------------------------
-        # Billdozer widget messaging
-        # --------------------------------------------------
-        st.session_state.setdefault("billdozer_widget_initialized", False)
+            # --------------------------------------------------
+            # Billdozer widget messaging
+            # --------------------------------------------------
+            st.session_state.setdefault("billdozer_widget_initialized", False)
 
-        # Greet once per session
-        if (
-            st.session_state.show_billdozer_widget
-            and not st.session_state.billdozer_widget_initialized
-        ):
-            dispatch_widget_message("billie", "Hi Billy, any more docs?")
-            st.session_state.billdozer_widget_initialized = True
+            # Greet once per session
+            if (
+                st.session_state.show_billdozer_widget
+                and not st.session_state.billdozer_widget_initialized
+            ):
+                dispatch_widget_message("billie", "Hi Billy, any more docs?")
+                st.session_state.billdozer_widget_initialized = True
 
-        # Analysis start message (ONCE per Analyze click)
-        if (
-            analyze_clicked
-            and st.session_state.get('show_billdozer_widget', False)
-            and not st.session_state.get('billdozer_analysis_started', False)
-        ):
-            dispatch_widget_message("billie", "Bill Dozing Statements")
-            st.session_state.billdozer_analysis_started = True
+            # Analysis start message (ONCE per Analyze click)
+            if (
+                analyze_clicked
+                and st.session_state.get('show_billdozer_widget', False)
+                and not st.session_state.get('billdozer_analysis_started', False)
+            ):
+                dispatch_widget_message("billie", "Bill Dozing Statements")
+                st.session_state.billdozer_analysis_started = True
 
 
                 
 
 
 
-        for idx, doc in enumerate(documents, 1):
-            speaker = "billie" if idx % 2 == 1 else "billy"
+            for idx, doc in enumerate(documents, 1):
+                speaker = "billie" if idx % 2 == 1 else "billy"
 
-            # Use index-based ID initially (will be replaced with friendly ID after facts extraction)
-            initial_doc_id = f"Document {idx}"
+                # Use index-based ID initially (will be replaced with friendly ID after facts extraction)
+                initial_doc_id = f"Document {idx}"
+                
+                # Render document header first
+                st.markdown(f"## 📄 {initial_doc_id}")
+                
+                # Create DAG container immediately (shows initial plan) if enabled
+                dag_placeholder = None
+                if is_dag_enabled():
+                    dag_expander, dag_placeholder = create_pipeline_dag_container(document_id=str(idx))
+                
+                # Progress callback for real-time DAG updates
+                def progress_callback(workflow_log, step_status):
+                    if dag_placeholder and is_dag_enabled():
+                        update_pipeline_dag(dag_placeholder, workflow_log, document_id=str(idx), step_status=step_status)
+
+                # Run analysis with progress callback
+                result = agent.run(doc["raw_text"], progress_callback=progress_callback)
+     
+                dispatch_widget_message(
+                    speaker,
+                    f"Finished analyzing {initial_doc_id}"
+                )
+                
+
+
+
+                # --------------------------------------------------
+                # Session persistence (in-memory, per run)
+                # --------------------------------------------------
+                st.session_state.setdefault("workflow_logs", {})
+                st.session_state["workflow_logs"][doc["document_id"]] = result.get("_workflow_log")
+
+                # Persist results
+                doc["facts"] = result.get("facts")
+                doc["analysis"] = result.get("analysis")
+                doc["analysis_json"] = analysis_to_dict(result["analysis"])
+                doc["_orchestration"] = result.get("_orchestration")
+                doc["_workflow_log"] = result.get("_workflow_log")
+
+                # Identity AFTER facts
+                maybe_enhance_identity(doc)
+                
+                # Update DAG again with friendly document name now that we have it
+                if is_dag_enabled() and dag_placeholder:
+                    friendly_doc_id = doc.get("document_id") if doc.get("document_id") != initial_doc_id else None
+                    if friendly_doc_id:
+                        update_pipeline_dag(dag_placeholder, result.get("_workflow_log"), document_id=friendly_doc_id)
+
+                # --------------------------------------------------
+                # Transaction normalization (document-independent)
+                # --------------------------------------------------
+                line_items = (result.get("facts") or {}).get("line_items", [])
+
+                if not line_items:
+                    st.warning(f"No line items extracted for document {doc['document_id']}")
+
+                normalized_transactions = normalize_line_items(
+                    line_items=line_items,
+                    source_document_id=doc["document_id"],
+                )
+
+                all_normalized_transactions.extend(normalized_transactions)
+
+                # --------------------------------------------------
+                # Cross-document de-duplication (ONCE per run)
+                # --------------------------------------------------
+                unique_transactions, transaction_provenance = deduplicate_transactions(
+                    all_normalized_transactions
+                )
+
+                st.session_state["normalized_transactions"] = [
+                    tx.__dict__ for tx in unique_transactions.values()
+                ]
+
+                st.session_state["transaction_provenance"] = transaction_provenance
+
+                # Debug storage
+                st.session_state.setdefault("extracted_facts", {})
+                st.session_state["extracted_facts"][doc["document_id"]] = doc.get("facts")
+
+                # --------------------------------------------------
+                # Savings aggregation
+                # --------------------------------------------------
+                analysis = doc.get("analysis")
+
+                doc_savings = 0.0
+                if analysis and hasattr(analysis, "meta"):
+                    doc_savings = analysis.meta.get("total_max_savings", 0.0)
+
+                per_document_savings[doc["document_id"]] = doc_savings
+                total_potential_savings += doc_savings
+
+
+                # Render results (unique per doc) - DAG already shown above
+                show_analysis_success()
+                # Pass dict with just issues (DAG already rendered progressively above)
+                render_results({
+                    "issues": doc["analysis"].issues if doc.get("analysis") else [],
+                    "_workflow_log": None  # Don't render DAG again
+                })
+
+            total_potential_savings = round(total_potential_savings, 2)
+
+            # Persist aggregate metrics (optional, but useful for debug / export later)
+            st.session_state.setdefault("aggregate_metrics", {})
+            st.session_state["aggregate_metrics"]["total_potential_savings"] = total_potential_savings
+            st.session_state["aggregate_metrics"]["per_document_savings"] = per_document_savings
+
+            # Render the aggregate summary ONCE (after all documents)
+            render_total_savings_summary(total_potential_savings, per_document_savings)
             
-            # Render document header first
-            st.markdown(f"## 📄 {initial_doc_id}")
+            # Clear analyzing flag and set results for tour progression
+            st.session_state.analyzing = False
+            st.session_state.doc_results = True
             
-            # Create DAG container immediately (shows initial plan) if enabled
-            dag_placeholder = None
-            if is_dag_enabled():
-                dag_expander, dag_placeholder = create_pipeline_dag_container(document_id=str(idx))
+            # Advance tour step to review_issues
+            if (st.session_state.get('tour_active', False) and 
+                st.session_state.get('tutorial_step') == 'analysis_running'):
+                from _modules.ui.guided_tour import advance_tour_step
+                advance_tour_step('review_issues')
             
-            # Progress callback for real-time DAG updates
-            def progress_callback(workflow_log, step_status):
-                if dag_placeholder and is_dag_enabled():
-                    update_pipeline_dag(dag_placeholder, workflow_log, document_id=str(idx), step_status=step_status)
-
-            # Run analysis with progress callback
-            result = agent.run(doc["raw_text"], progress_callback=progress_callback)
- 
-            dispatch_widget_message(
-                speaker,
-                f"Finished analyzing {initial_doc_id}"
-            )
+            if is_coverage_matrix_enabled():
+                coverage_rows = build_coverage_matrix(documents)
+                render_coverage_matrix(coverage_rows)
             
-
-
-
-            # --------------------------------------------------
-            # Session persistence (in-memory, per run)
-            # --------------------------------------------------
-            st.session_state.setdefault("workflow_logs", {})
-            st.session_state["workflow_logs"][doc["document_id"]] = result.get("_workflow_log")
-
-            # Persist results
-            doc["facts"] = result.get("facts")
-            doc["analysis"] = result.get("analysis")
-            doc["analysis_json"] = analysis_to_dict(result["analysis"])
-            doc["_orchestration"] = result.get("_orchestration")
-            doc["_workflow_log"] = result.get("_workflow_log")
-
-            # Identity AFTER facts
-            maybe_enhance_identity(doc)
+            # Render multi-document pipeline comparison if multiple documents and DAG enabled
+            if is_dag_enabled() and len(documents) > 1:
+                config = get_config()
+                show_comparison = config.get("features.dag.show_comparison_table", True)
+                if show_comparison:
+                    st.divider()
+                    workflow_logs = [doc.get("_workflow_log") for doc in documents if doc.get("_workflow_log")]
+                    if workflow_logs:
+                        render_pipeline_comparison(workflow_logs)
             
-            # Update DAG again with friendly document name now that we have it
-            if is_dag_enabled() and dag_placeholder:
-                friendly_doc_id = doc.get("document_id") if doc.get("document_id") != initial_doc_id else None
-                if friendly_doc_id:
-                    update_pipeline_dag(dag_placeholder, result.get("_workflow_log"), document_id=friendly_doc_id)
-
-            # --------------------------------------------------
-            # Transaction normalization (document-independent)
-            # --------------------------------------------------
-            line_items = (result.get("facts") or {}).get("line_items", [])
-
-            if not line_items:
-                st.warning(f"No line items extracted for document {doc['document_id']}")
-
-            normalized_transactions = normalize_line_items(
-                line_items=line_items,
-                source_document_id=doc["document_id"],
-            )
-
-            all_normalized_transactions.extend(normalized_transactions)
-
-            # --------------------------------------------------
-            # Cross-document de-duplication (ONCE per run)
-            # --------------------------------------------------
-            unique_transactions, transaction_provenance = deduplicate_transactions(
-                all_normalized_transactions
-            )
-
-            st.session_state["normalized_transactions"] = [
-                tx.__dict__ for tx in unique_transactions.values()
-            ]
-
-            st.session_state["transaction_provenance"] = transaction_provenance
-
-            # Debug storage
-            st.session_state.setdefault("extracted_facts", {})
-            st.session_state["extracted_facts"][doc["document_id"]] = doc.get("facts")
-
-            # --------------------------------------------------
-            # Savings aggregation
-            # --------------------------------------------------
-            analysis = doc.get("analysis")
-
-            doc_savings = 0.0
-            if analysis and hasattr(analysis, "meta"):
-                doc_savings = analysis.meta.get("total_max_savings", 0.0)
-
-            per_document_savings[doc["document_id"]] = doc_savings
-            total_potential_savings += doc_savings
-
-
-            # Render results (unique per doc) - DAG already shown above
-            show_analysis_success()
-            # Pass dict with just issues (DAG already rendered progressively above)
-            render_results({
-                "issues": doc["analysis"].issues if doc.get("analysis") else [],
-                "_workflow_log": None  # Don't render DAG again
-            })
-
-        total_potential_savings = round(total_potential_savings, 2)
-
-        # Persist aggregate metrics (optional, but useful for debug / export later)
-        st.session_state.setdefault("aggregate_metrics", {})
-        st.session_state["aggregate_metrics"]["total_potential_savings"] = total_potential_savings
-        st.session_state["aggregate_metrics"]["per_document_savings"] = per_document_savings
-
-        # Render the aggregate summary ONCE (after all documents)
-        render_total_savings_summary(total_potential_savings, per_document_savings)
-        
-        # Clear analyzing flag and set results for tour progression
-        st.session_state.analyzing = False
-        st.session_state.doc_results = True
-        
-        # Advance tour step to review_issues
-        if (st.session_state.get('tour_active', False) and 
-            st.session_state.get('tutorial_step') == 'analysis_running'):
-            from _modules.ui.guided_tour import advance_tour_step
-            advance_tour_step('review_issues')
-        
-        if is_coverage_matrix_enabled():
-            coverage_rows = build_coverage_matrix(documents)
-            render_coverage_matrix(coverage_rows)
-        
-        # Render multi-document pipeline comparison if multiple documents and DAG enabled
-        if is_dag_enabled() and len(documents) > 1:
-            config = get_config()
-            show_comparison = config.get("features.dag.show_comparison_table", True)
-            if show_comparison:
-                st.divider()
-                workflow_logs = [doc.get("_workflow_log") for doc in documents if doc.get("_workflow_log")]
-                if workflow_logs:
-                    render_pipeline_comparison(workflow_logs)
-        
-        # Show results context help
-        render_contextual_help('results')
+            # Show results context help
+            render_contextual_help('results')
 
     # --------------------------------------------------
     # Debug output (read-only)
