@@ -4,13 +4,14 @@
 
 ## Project Overview
 
-**Total Modules:** 36
+**Total Modules:** 37
 
-### Application (4 modules)
+### Application (5 modules)
 
 - **_modules.data.fictional_entities**: Fictional Healthcare Entity Generator
 - **_modules.data.health_data_ingestion**: Healthcare Data Ingestion Logic
 - **_modules.data.portal_templates**: Simulated Healthcare Portal Templates
+- **_modules.ingest.api**: Demo-Only Healthcare Data Ingestion API
 - **app**: MedBillDozer - Medical billing error detection application.
 
 ### Core Business Logic (4 modules)

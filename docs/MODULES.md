@@ -4,13 +4,14 @@
 
 ## Project Overview
 
-**Total Modules:** 36
+**Total Modules:** 37
 
-### Application (4 modules)
+### Application (5 modules)
 
 - **_modules.data.fictional_entities**: Fictional Healthcare Entity Generator
 - **_modules.data.health_data_ingestion**: Healthcare Data Ingestion Logic
 - **_modules.data.portal_templates**: Simulated Healthcare Portal Templates
+- **_modules.ingest.api**: Demo-Only Healthcare Data Ingestion API
 - **app**: MedBillDozer - Medical billing error detection application.
 
 ### Core Business Logic (4 modules)
@@ -1095,6 +1096,316 @@ SAFE: raises to caller (caller must catch).
 
 - `_modules.extractors.extraction_prompt`
 
+## Module: `_modules.ingest.api`
+
+**Source:** `_modules/ingest/api.py`
+
+### Description
+
+Demo-Only Healthcare Data Ingestion API
+
+This module provides API-style functions for ingesting healthcare data
+from fictional entities and retrieving normalized results.
+
+IMPORTANT: This is a DEMO-ONLY interface with no real networking,
+authentication, or HIPAA compliance. It's designed to demonstrate
+how a Plaid-like healthcare data connector API might work.
+
+Future Deployment: These functions could be exposed via FastAPI:
+    - POST /api/v1/ingest/document -> ingest_document()
+    - GET /api/v1/imports?user_id=xxx -> list_imports()
+    - GET /api/v1/data?user_id=xxx -> get_normalized_data()
+    - GET /api/v1/imports/{job_id} -> get_import_status()
+
+Authentication (Future): Would use OAuth 2.0 or API keys
+Storage (Current): In-memory dictionary (replace with database in production)
+
+### Classes
+
+#### `IngestRequest`
+
+Request payload for document ingestion.
+
+This represents the data a client application would send to ingest
+healthcare data from a connected entity.
+
+Future FastAPI equivalent:
+    class IngestRequest(BaseModel):
+        user_id: str
+        entity_type: Literal["insurance", "provider"]
+        entity_id: str
+        raw_text: Optional[str] = None
+        metadata: Dict[str, Any] = Field(default_factory=dict)
+
+**Attributes:**
+- `user_id`
+- `entity_type`
+- `entity_id`
+- `raw_text`
+- `metadata`
+- `num_line_items`
+
+**Methods:**
+
+- **`validate(self) -> List[str]`**
+  - Validate request payload.
+
+#### `IngestResponse`
+
+Response from document ingestion.
+
+Future FastAPI equivalent:
+    class IngestResponse(BaseModel):
+        success: bool
+        job_id: str
+        message: str
+        documents_created: int
+        line_items_created: int
+        timestamp: str
+
+**Attributes:**
+- `success`
+- `job_id`
+- `message`
+- `documents_created`
+- `line_items_created`
+- `timestamp`
+- `errors`
+
+#### `ImportSummary`
+
+Summary of an import job.
+
+Used in list_imports() response.
+
+**Attributes:**
+- `job_id`
+- `user_id`
+- `entity_type`
+- `entity_id`
+- `entity_name`
+- `status`
+- `documents_count`
+- `line_items_count`
+- `created_at`
+- `completed_at`
+
+#### `ImportListResponse`
+
+Response from list_imports().
+
+Future FastAPI equivalent:
+    class ImportListResponse(BaseModel):
+        success: bool
+        user_id: str
+        total_imports: int
+        imports: List[ImportSummary]
+
+**Attributes:**
+- `success`
+- `user_id`
+- `total_imports`
+- `imports`
+
+#### `NormalizedDataResponse`
+
+Response from get_normalized_data().
+
+Returns all normalized line items for a user.
+
+Future FastAPI equivalent:
+    class NormalizedDataResponse(BaseModel):
+        success: bool
+        user_id: str
+        total_line_items: int
+        line_items: List[Dict[str, Any]]
+        metadata: Dict[str, Any]
+
+**Attributes:**
+- `success`
+- `user_id`
+- `total_line_items`
+- `line_items`
+- `metadata`
+
+#### `ImportStatusResponse`
+
+Response from get_import_status().
+
+Returns detailed status of a specific import job.
+
+Future FastAPI equivalent:
+    class ImportStatusResponse(BaseModel):
+        success: bool
+        job_id: str
+        status: ImportStatus
+        import_job: Dict[str, Any]
+
+**Attributes:**
+- `success`
+- `job_id`
+- `status`
+- `import_job`
+- `error_message`
+
+#### `InMemoryStorage`
+
+In-memory storage for import jobs.
+
+Thread-safe operations would be needed in production.
+In a real deployment, this would be:
+- SQLAlchemy models + PostgreSQL
+- MongoDB collections
+- Redis cache for session data
+
+**Methods:**
+
+- **`__init__(self)`**
+
+- **`store_import(self, user_id, import_job) -> None`**
+  - Store an import job.
+
+- **`get_imports_by_user(self, user_id) -> List[Dict[str, Any]]`**
+  - Get all imports for a user.
+
+- **`get_import_by_job_id(self, job_id) -> Optional[Dict[str, Any]]`**
+  - Get a specific import job by ID.
+
+- **`get_all_line_items_by_user(self, user_id) -> List[Dict[str, Any]]`**
+  - Get all line items across all imports for a user.
+
+- **`clear(self) -> None`**
+  - Clear all storage (for testing).
+
+
+### Functions
+
+#### `ingest_document(payload) -> IngestResponse`
+
+Ingest a healthcare document and normalize the data.
+
+This is the main ingestion endpoint. It accepts a payload with entity
+information and generates normalized line items using the existing
+ingestion logic.
+
+Args:
+    payload: Dictionary matching IngestRequest schema
+
+Returns:
+    IngestResponse with job_id and results
+
+Example:
+    >>> payload = {
+    ...     "user_id": "demo_user_123",
+    ...     "entity_type": "insurance",
+    ...     "entity_id": "demo_ins_001",
+    ...     "metadata": {"source": "web_app"}
+    ... }
+    >>> response = ingest_document(payload)
+    >>> response.success
+    True
+    >>> response.job_id
+    'uuid-...'
+
+Future FastAPI deployment:
+    @app.post("/api/v1/ingest/document", response_model=IngestResponse)
+    async def api_ingest_document(request: IngestRequest):
+        return ingest_document(request.dict())
+
+#### `list_imports(user_id) -> ImportListResponse`
+
+List all import jobs for a user.
+
+Args:
+    user_id: User identifier
+
+Returns:
+    ImportListResponse with list of import summaries
+
+Example:
+    >>> response = list_imports("demo_user_123")
+    >>> response.total_imports
+    3
+    >>> response.imports[0].entity_name
+    'Beacon Life (DEMO)'
+
+Future FastAPI deployment:
+    @app.get("/api/v1/imports", response_model=ImportListResponse)
+    async def api_list_imports(user_id: str):
+        return list_imports(user_id)
+
+#### `get_normalized_data(user_id, job_id) -> NormalizedDataResponse`
+
+Get normalized line items for a user.
+
+If job_id is provided, returns line items for that specific job.
+Otherwise, returns all line items across all jobs.
+
+Args:
+    user_id: User identifier
+    job_id: Optional import job ID to filter by
+
+Returns:
+    NormalizedDataResponse with line items
+
+Example:
+    >>> response = get_normalized_data("demo_user_123")
+    >>> response.total_line_items
+    15
+    >>> response.line_items[0]['procedure_code']
+    '99213'
+
+Future FastAPI deployment:
+    @app.get("/api/v1/data", response_model=NormalizedDataResponse)
+    async def api_get_normalized_data(
+        user_id: str,
+        job_id: Optional[str] = None
+    ):
+        return get_normalized_data(user_id, job_id)
+
+#### `get_import_status(job_id) -> ImportStatusResponse`
+
+Get status of a specific import job.
+
+Args:
+    job_id: Import job identifier
+
+Returns:
+    ImportStatusResponse with job details
+
+Example:
+    >>> response = get_import_status("uuid-...")
+    >>> response.status
+    'completed'
+    >>> response.import_job['line_items_count']
+    5
+
+Future FastAPI deployment:
+    @app.get("/api/v1/imports/{job_id}", response_model=ImportStatusResponse)
+    async def api_get_import_status(job_id: str):
+        return get_import_status(job_id)
+
+#### `clear_storage() -> None`
+
+Clear all stored data (for testing).
+
+In production, this would not be exposed as an API endpoint.
+
+#### `get_storage_stats() -> Dict[str, Any]`
+
+Get statistics about stored data (for debugging).
+
+Example:
+    >>> stats = get_storage_stats()
+    >>> stats['total_users']
+    5
+
+
+### Dependencies
+
+- `_modules.data.fictional_entities`
+- `_modules.data.health_data_ingestion`
+
 ## Module: `_modules.prompts.dental_line_item_prompt`
 
 **Source:** `_modules/prompts/dental_line_item_prompt.py`
@@ -1874,11 +2185,11 @@ Render provider edit/create form.
 
 #### `render_importer_step1()`
 
-Render Step 1: Choose import source type.
+Render Step 1: Choose entity to import from (entity picker).
 
 #### `render_importer_step2()`
 
-Render Step 2: Provide input data.
+Render Step 2: Display imported results.
 
 #### `render_pdf_upload()`
 

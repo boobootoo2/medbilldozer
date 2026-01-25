@@ -38,6 +38,12 @@ Module dependencies within the project:
 **Depends on:**
 - `_modules.extractors.extraction_prompt`
 
+### `_modules.ingest.api`
+
+**Depends on:**
+- `_modules.data.fictional_entities`
+- `_modules.data.health_data_ingestion`
+
 ### `_modules.providers.gemini_analysis_provider`
 
 **Depends on:**

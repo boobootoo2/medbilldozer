@@ -863,124 +863,292 @@ def render_provider_form(providers: List[Provider]):
 
 
 # ==============================================================================
-# IMPORTER - WIZARD STEP 1: SOURCE SELECTION
+# IMPORTER - ENTITY PICKER
 # ==============================================================================
 
 def render_importer_step1():
-    """Render Step 1: Choose import source type."""
-    st.subheader("Step 1: Choose Data Source")
+    """Render Step 1: Choose entity to import from (entity picker)."""
+    from _modules.data.fictional_entities import get_all_fictional_entities
+    from _modules.ingest.api import ingest_document, get_normalized_data
     
-    st.markdown("""
-    Select the type of data you want to import. We'll guide you through the process 
-    and extract structured information from your documents.
+    st.subheader("📥 Import Healthcare Data")
+    
+    st.info("""
+    💡 **Demo Mode**: This simulates connecting to healthcare portals and importing your billing data. 
+    All entities are fictional and data is generated locally for demonstration purposes.
     """)
     
-    col1, col2 = st.columns(2)
+    # Get fictional entities
+    entities = get_all_fictional_entities()
+    
+    # Layout: 2 columns
+    col1, col2 = st.columns([2, 1])
     
     with col1:
-        st.markdown("### 🏥 Insurance Data")
+        # Entity type selector
+        entity_type = st.radio(
+            "What type of entity?",
+            ["insurance", "provider"],
+            format_func=lambda x: "💳 Insurance Company (EOBs, Claims)" if x == "insurance" else "🏥 Medical Provider (Bills, Invoices)",
+            help="Insurance companies provide EOBs and claim history. Providers send itemized bills.",
+            horizontal=True
+        )
         
-        if st.button(
-            "📄 EOB (Explanation of Benefits)",
-            use_container_width=True,
-            help="Import from insurance EOB documents (PDF or text)"
-        ):
-            st.session_state.import_source_type = 'insurance_eob'
-            st.session_state.import_wizard_step = 2
-            st.rerun()
+        # Get appropriate entity list
+        if entity_type == "insurance":
+            entity_list = entities['insurance']
+            icon = "💳"
+        else:
+            entity_list = entities['providers'][:100]  # Limit to first 100 providers for UI performance
+            icon = "🏥"
         
-        if st.button(
-            "📊 Insurance CSV Export",
-            use_container_width=True,
-            help="Import from insurance portal CSV download"
-        ):
-            st.session_state.import_source_type = 'insurance_csv'
-            st.session_state.import_wizard_step = 2
-            st.rerun()
+        # Dropdown selector
+        st.write(f"**{icon} Select Entity:**")
+        entity_names = [e['name'] for e in entity_list]
+        selected_name = st.selectbox(
+            "Select Entity",
+            options=entity_names,
+            label_visibility="collapsed",
+            help=f"Choose from {len(entity_list)} fictional entities"
+        )
         
-        if st.button(
-            "📝 Paste Insurance Text",
-            use_container_width=True,
-            help="Copy/paste text from insurance documents"
-        ):
-            st.session_state.import_source_type = 'insurance_text'
-            st.session_state.import_wizard_step = 2
-            st.rerun()
+        # Find the selected entity
+        selected_entity = next(e for e in entity_list if e['name'] == selected_name)
         
-        if st.button(
-            "🔗 FHIR Connect (Preview)",
-            use_container_width=True,
-            help="Connect to insurance FHIR API (UI placeholder)",
-            disabled=True
-        ):
-            st.info("🚧 FHIR Connect coming soon! This will allow direct API connections to insurance portals.")
+        # Number of items slider
+        num_items = st.slider(
+            "📊 How many transactions to import?",
+            min_value=1,
+            max_value=20,
+            value=5,
+            help="Number of billing line items to generate"
+        )
     
     with col2:
-        st.markdown("### 👨‍⚕️ Provider Data")
+        # Entity details card
+        st.markdown("**📋 Entity Info:**")
+        with st.container(border=True):
+            st.write(f"**ID:** `{selected_entity['id']}`")
+            
+            if entity_type == "insurance":
+                st.write(f"**Network:** {selected_entity['network_size'].title()}")
+                st.write(f"**Plans:**")
+                for plan in selected_entity['plan_types']:
+                    st.write(f"  • {plan}")
+            else:
+                st.write(f"**Specialty:** {selected_entity['specialty']}")
+                st.write(f"**Location:** {selected_entity['location_city']}, {selected_entity['location_state']}")
         
-        if st.button(
-            "🧾 Itemized Medical Bill",
-            use_container_width=True,
-            help="Import from provider itemized bill (PDF or text)"
-        ):
-            st.session_state.import_source_type = 'provider_bill'
-            st.session_state.import_wizard_step = 2
-            st.rerun()
-        
-        if st.button(
-            "📊 Provider CSV Export",
-            use_container_width=True,
-            help="Import from provider portal CSV download"
-        ):
-            st.session_state.import_source_type = 'provider_csv'
-            st.session_state.import_wizard_step = 2
-            st.rerun()
-        
-        if st.button(
-            "📝 Paste Bill Text",
-            use_container_width=True,
-            help="Copy/paste text from medical bills"
-        ):
-            st.session_state.import_source_type = 'provider_text'
-            st.session_state.import_wizard_step = 2
+        # Portal preview (optional)
+        if st.button("👁️ Preview Portal", use_container_width=True, help="See what this portal looks like"):
+            st.session_state.show_portal_preview = selected_entity['id']
+    
+    st.markdown("---")
+    
+    # Action buttons
+    col1, col2, col3 = st.columns([1, 1, 1])
+    
+    with col1:
+        if st.button("← Back to Profile", use_container_width=True):
+            st.session_state.profile_page = 'overview'
             st.rerun()
     
-    if st.button("← Back to Profile"):
-        st.session_state.profile_page = 'overview'
-        st.rerun()
+    with col3:
+        if st.button("� Import Now", type="primary", use_container_width=True):
+            # Do the import!
+            with st.spinner(f"Importing from {selected_name}..."):
+                # Get or create user_id
+                if 'user_id' not in st.session_state:
+                    profile = load_profile()
+                    st.session_state.user_id = profile.get('user_id', 'demo_user_' + str(hash(datetime.utcnow()))) if profile else 'demo_user_' + str(hash(datetime.utcnow()))
+                
+                # Call ingestion API
+                payload = {
+                    "user_id": st.session_state.user_id,
+                    "entity_type": entity_type,
+                    "entity_id": selected_entity['id'],
+                    "num_line_items": num_items,
+                    "metadata": {
+                        "source": "profile_editor",
+                        "entity_name": selected_name
+                    }
+                }
+                
+                response = ingest_document(payload)
+                
+                if response.success:
+                    st.success(f"✅ Successfully imported {response.line_items_created} transactions from {selected_name}!")
+                    st.balloons()
+                    
+                    # Save job ID and data
+                    st.session_state.last_import_job_id = response.job_id
+                    st.session_state.last_import_entity = selected_name
+                    st.session_state.last_import_type = entity_type
+                    
+                    # Get the normalized data
+                    data_response = get_normalized_data(st.session_state.user_id, job_id=response.job_id)
+                    
+                    if data_response.success:
+                        # Store line items for display
+                        st.session_state.imported_line_items = data_response.line_items
+                        st.session_state.import_metadata = data_response.metadata
+                    
+                    # Skip to results display
+                    st.session_state.import_wizard_step = 2
+                    st.rerun()
+                else:
+                    st.error(f"❌ Import failed: {response.message}")
+                    with st.expander("Error Details"):
+                        for error in response.errors:
+                            st.write(f"• {error}")
+    
+    # Optional: Portal preview in expander
+    if st.session_state.get('show_portal_preview'):
+        with st.expander("🌐 Portal Preview", expanded=True):
+            entity = next((e for e in entity_list if e['id'] == st.session_state.show_portal_preview), None)
+            if entity:
+                st.components.v1.html(entity.get('demo_portal_html', '<p>No preview available</p>'), height=600, scrolling=True)
+                if st.button("Close Preview"):
+                    st.session_state.show_portal_preview = None
+                    st.rerun()
 
 
 # ==============================================================================
-# IMPORTER - WIZARD STEP 2: DATA INPUT
+# IMPORTER - WIZARD STEP 2: DISPLAY RESULTS
 # ==============================================================================
 
 def render_importer_step2():
-    """Render Step 2: Provide input data."""
-    source_type = st.session_state.import_source_type
+    """Render Step 2: Display imported results."""
+    from _modules.ingest.api import get_normalized_data
+    import pandas as pd
     
-    st.subheader(f"Step 2: Provide {source_type.replace('_', ' ').title()}")
+    st.subheader("📊 Imported Data")
     
-    if 'csv' in source_type:
-        render_csv_upload()
-    elif 'text' in source_type:
-        render_text_paste()
+    # Check if we have import data
+    if 'last_import_job_id' not in st.session_state:
+        st.error("No import job found. Please start a new import.")
+        if st.button("← Back to Import"):
+            st.session_state.import_wizard_step = 1
+            st.rerun()
+        return
+    
+    # Get the imported data
+    if 'imported_line_items' not in st.session_state:
+        data_response = get_normalized_data(
+            st.session_state.user_id,
+            job_id=st.session_state.last_import_job_id
+        )
+        if data_response.success:
+            st.session_state.imported_line_items = data_response.line_items
+            st.session_state.import_metadata = data_response.metadata
+        else:
+            st.error("Failed to load imported data")
+            return
+    
+    # Display summary metrics
+    st.write(f"**Imported from:** {st.session_state.get('last_import_entity', 'Unknown')}")
+    st.write(f"**Type:** {st.session_state.get('last_import_type', 'Unknown').title()}")
+    
+    metadata = st.session_state.import_metadata
+    
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Line Items", metadata.get('total_line_items', 0))
+    with col2:
+        st.metric("Total Billed", f"${metadata.get('total_billed', 0):.2f}")
+    with col3:
+        st.metric("Insurance Paid", f"${metadata.get('total_insurance_paid', 0):.2f}")
+    with col4:
+        st.metric("You Pay", f"${metadata.get('total_patient_responsibility', 0):.2f}")
+    
+    st.markdown("---")
+    
+    # Display line items table
+    st.subheader("💰 Transaction Details")
+    
+    line_items = st.session_state.imported_line_items
+    
+    if line_items:
+        # Convert to DataFrame for display
+        df = pd.DataFrame(line_items)
+        
+        # Select columns to display
+        display_columns = [
+            'service_date',
+            'procedure_code',
+            'procedure_description',
+            'provider_name',
+            'billed_amount',
+            'allowed_amount',
+            'paid_by_insurance',
+            'patient_responsibility'
+        ]
+        
+        # Filter to available columns
+        display_columns = [col for col in display_columns if col in df.columns]
+        
+        st.dataframe(
+            df[display_columns],
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "service_date": "Date",
+                "procedure_code": "CPT Code",
+                "procedure_description": "Description",
+                "provider_name": "Provider",
+                "billed_amount": st.column_config.NumberColumn("Billed", format="$%.2f"),
+                "allowed_amount": st.column_config.NumberColumn("Allowed", format="$%.2f"),
+                "paid_by_insurance": st.column_config.NumberColumn("Insurance Paid", format="$%.2f"),
+                "patient_responsibility": st.column_config.NumberColumn("You Pay", format="$%.2f"),
+            }
+        )
+        
+        # Additional details
+        with st.expander("📈 Additional Details"):
+            st.write(f"**Date Range:** {metadata.get('date_range', {}).get('start', 'N/A')} to {metadata.get('date_range', {}).get('end', 'N/A')}")
+            st.write(f"**Unique Providers:** {metadata.get('unique_providers', 0)}")
+            st.write(f"**Unique Procedure Codes:** {metadata.get('unique_procedure_codes', 0)}")
+            
+            if st.session_state.get('last_import_type') == 'insurance' and metadata.get('insurance_plan'):
+                st.write("**Insurance Plan:**")
+                plan = metadata['insurance_plan']
+                st.write(f"  • Carrier: {plan.get('carrier_name', 'N/A')}")
+                st.write(f"  • Plan: {plan.get('plan_name', 'N/A')}")
+                st.write(f"  • Member ID: {plan.get('member_id', 'N/A')}")
     else:
-        render_pdf_upload()
+        st.info("No line items found in this import.")
     
-    col1, col2 = st.columns(2)
+    st.markdown("---")
+    
+    # Action buttons
+    col1, col2, col3 = st.columns([1, 1, 1])
     
     with col1:
-        if st.button("← Back to Source Selection"):
+        if st.button("← Import More", use_container_width=True):
+            # Clear current import data
+            if 'last_import_job_id' in st.session_state:
+                del st.session_state.last_import_job_id
+            if 'imported_line_items' in st.session_state:
+                del st.session_state.imported_line_items
             st.session_state.import_wizard_step = 1
             st.rerun()
     
     with col2:
-        if st.session_state.get('import_data'):
-            if st.button("Continue to Preview →", type="primary"):
-                # Extract and normalize data
-                extract_and_normalize_data()
-                st.session_state.import_wizard_step = 3
-                st.rerun()
+        # Export to CSV
+        if line_items:
+            csv_data = pd.DataFrame(line_items).to_csv(index=False)
+            st.download_button(
+                "📥 Download CSV",
+                csv_data,
+                "imported_transactions.csv",
+                "text/csv",
+                use_container_width=True
+            )
+    
+    with col3:
+        if st.button("✓ Done", type="primary", use_container_width=True):
+            st.session_state.profile_page = 'overview'
+            st.rerun()
 
 
 def render_pdf_upload():
@@ -1361,15 +1529,13 @@ def render_importer():
     """Render importer wizard based on current step."""
     st.header("📥 Data Importer")
     
-    # Progress indicator
+    # Progress indicator (simplified to 2 steps)
     step = st.session_state.import_wizard_step
     
-    progress_cols = st.columns(4)
+    progress_cols = st.columns(2)
     steps = [
-        ("1️⃣", "Choose Source"),
-        ("2️⃣", "Provide Data"),
-        ("3️⃣", "Review & Edit"),
-        ("4️⃣", "Complete")
+        ("1️⃣", "Select Entity"),
+        ("2️⃣", "View Results")
     ]
     
     for idx, (emoji, label) in enumerate(steps, 1):
@@ -1388,10 +1554,10 @@ def render_importer():
         render_importer_step1()
     elif step == 2:
         render_importer_step2()
-    elif step == 3:
-        render_importer_step3()
-    elif step == 4:
-        render_importer_step4()
+    else:
+        # Fallback to step 1 if invalid
+        st.session_state.import_wizard_step = 1
+        render_importer_step1()
 
 
 # ==============================================================================
