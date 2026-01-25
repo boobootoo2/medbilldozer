@@ -316,7 +316,7 @@
       "filepath": "app.py",
       "has_docstring": true,
       "num_classes": 0,
-      "num_functions": 6,
+      "num_functions": 7,
       "num_dependencies": 21,
       "constants": [
         "ENGINE_OPTIONS"
