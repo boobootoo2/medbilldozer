@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 32
+**Total Modules:** 33
 
 ### Application (1 modules)
 
@@ -40,13 +40,14 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (9 modules)
+### UI Components (10 modules)
 
 - **_modules.ui.billdozer_widget**: No description
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
 - **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial with Billy/Billie narration.
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
+- **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
 - **_modules.ui.ui**: No description
 - **_modules.ui.ui_coverage_matrix**: Coverage matrix UI rendering.
 - **_modules.ui.ui_documents**: Document input and management UI.
@@ -1201,6 +1202,269 @@ Shows the privacy dialog on first visit. Subsequent visits skip the dialog
 based on session state.
 
 
+## Module: `_modules.ui.profile_editor`
+
+**Source:** `_modules/ui/profile_editor.py`
+
+### Description
+
+Profile Editor - User identity, insurance, and provider management with importer.
+
+Provides a Plaid-like experience for importing health insurance and provider data,
+with structured field extraction and normalization into a consistent schema.
+
+### Classes
+
+#### `UserProfile`
+
+**Inherits from:** `TypedDict`
+
+User identity information.
+
+**Attributes:**
+- `user_id`
+- `full_name`
+- `date_of_birth`
+- `email`
+- `phone`
+- `address`
+- `created_at`
+- `updated_at`
+
+#### `InsurancePlan`
+
+**Inherits from:** `TypedDict`
+
+Health insurance plan details.
+
+**Attributes:**
+- `plan_id`
+- `carrier_name`
+- `plan_name`
+- `member_id`
+- `group_number`
+- `policy_holder`
+- `effective_date`
+- `termination_date`
+- `plan_type`
+- `deductible`
+- `out_of_pocket_max`
+- `copay`
+- `coinsurance`
+- `created_at`
+- `updated_at`
+
+#### `Provider`
+
+**Inherits from:** `TypedDict`
+
+Healthcare provider information.
+
+**Attributes:**
+- `provider_id`
+- `name`
+- `specialty`
+- `npi`
+- `tax_id`
+- `address`
+- `phone`
+- `fax`
+- `in_network`
+- `created_at`
+- `updated_at`
+
+#### `NormalizedLineItem`
+
+**Inherits from:** `TypedDict`
+
+Normalized billing line item from imported documents.
+
+**Attributes:**
+- `line_item_id`
+- `import_job_id`
+- `service_date`
+- `procedure_code`
+- `procedure_description`
+- `provider_name`
+- `provider_npi`
+- `billed_amount`
+- `allowed_amount`
+- `paid_by_insurance`
+- `patient_responsibility`
+- `claim_number`
+- `created_at`
+
+#### `Document`
+
+**Inherits from:** `TypedDict`
+
+Uploaded or imported document metadata.
+
+**Attributes:**
+- `document_id`
+- `import_job_id`
+- `file_name`
+- `file_path`
+- `file_type`
+- `raw_text`
+- `status`
+- `created_at`
+
+#### `ImportJob`
+
+**Inherits from:** `TypedDict`
+
+Import job tracking.
+
+**Attributes:**
+- `job_id`
+- `source_type`
+- `source_method`
+- `status`
+- `documents`
+- `line_items`
+- `created_at`
+- `completed_at`
+- `error_message`
+
+
+### Functions
+
+#### `is_profile_editor_enabled() -> bool`
+
+Check if profile editor is enabled via environment variable.
+
+#### `is_importer_enabled() -> bool`
+
+Check if importer feature is enabled via environment variable.
+
+#### `get_data_dir() -> Path`
+
+Get or create data directory for profile storage.
+
+#### `atomic_write_json(file_path, data) -> None`
+
+Atomically write JSON data to file using temp file + rename.
+
+#### `load_profile() -> Optional[UserProfile]`
+
+Load user profile from disk.
+
+#### `save_profile(profile) -> None`
+
+Save user profile to disk with atomic write.
+
+#### `load_insurance_plans() -> List[InsurancePlan]`
+
+Load insurance plans from disk.
+
+#### `save_insurance_plans(plans) -> None`
+
+Save insurance plans to disk with atomic write.
+
+#### `load_providers() -> List[Provider]`
+
+Load providers from disk.
+
+#### `save_providers(providers) -> None`
+
+Save providers to disk with atomic write.
+
+#### `load_import_jobs() -> List[ImportJob]`
+
+Load import jobs from disk.
+
+#### `save_import_jobs(jobs) -> None`
+
+Save import jobs to disk with atomic write.
+
+#### `load_line_items() -> List[NormalizedLineItem]`
+
+Load normalized line items from disk.
+
+#### `save_line_items(items) -> None`
+
+Save normalized line items to disk with atomic write.
+
+#### `initialize_profile_state()`
+
+Initialize profile editor session state variables.
+
+#### `render_profile_overview()`
+
+Render profile overview page with quick stats and actions.
+
+#### `render_identity_editor()`
+
+Render user identity editor form.
+
+#### `render_insurance_editor()`
+
+Render insurance plan management interface.
+
+#### `render_insurance_plan_form(plans)`
+
+Render insurance plan edit/create form.
+
+#### `render_provider_editor()`
+
+Render healthcare provider management interface.
+
+#### `render_provider_form(providers)`
+
+Render provider edit/create form.
+
+#### `render_importer_step1()`
+
+Render Step 1: Choose import source type.
+
+#### `render_importer_step2()`
+
+Render Step 2: Provide input data.
+
+#### `render_pdf_upload()`
+
+Render PDF upload interface.
+
+#### `render_csv_upload()`
+
+Render CSV upload interface.
+
+#### `render_text_paste()`
+
+Render text paste interface.
+
+#### `extract_and_normalize_data()`
+
+Extract structured data from import input and normalize to line items.
+
+This is a placeholder that demonstrates the extraction flow.
+In production, this would integrate with your existing extraction pipeline.
+
+#### `render_importer_step3()`
+
+Render Step 3: Preview extracted data and allow inline edits.
+
+#### `save_import_job()`
+
+Save the import job and normalized line items to disk.
+
+#### `render_importer_step4()`
+
+Render Step 4: Success confirmation.
+
+#### `render_importer()`
+
+Render importer wizard based on current step.
+
+#### `render_profile_editor()`
+
+Main entry point for profile editor interface.
+
+Provides navigation between different profile sections and
+the data importer wizard.
+
+
 ## Module: `_modules.ui.ui`
 
 **Source:** `_modules/ui/ui.py`
@@ -1784,6 +2048,20 @@ and UI rendering for detecting billing, pharmacy, dental, and insurance claim is
 
 ### Functions
 
+#### `check_access_password() -> bool`
+
+Check if access password is required and validate user input.
+
+Returns:
+    bool: True if access is granted, False if password gate should be shown
+
+#### `should_enable_guided_tour() -> bool`
+
+Check if guided tour should be enabled based on environment variable.
+
+Returns:
+    bool: True if tour should be enabled
+
 #### `render_total_savings_summary(total_potential_savings, per_document_savings)`
 
 Render aggregate savings summary across all analyzed documents.
@@ -1835,6 +2113,7 @@ Orchestrates the complete workflow:
 - `_modules.ui.guided_tour`
 - `_modules.ui.health_profile`
 - `_modules.ui.privacy_ui`
+- `_modules.ui.profile_editor`
 - `_modules.ui.ui`
 - `_modules.ui.ui_coverage_matrix`
 - `_modules.ui.ui_documents`

@@ -6,10 +6,20 @@ explaining them in plain language.
 
 ## Features
 
-- **📖 [Quick Start Guide](./docs/QUICKSTART.md)** - Get up and running in 5 minutes
+- **� AI-Powered Billing Analysis** - Detect errors and overcharges in medical bills
+- **📋 Profile Editor** - Manage your identity, insurance plans, and provider directory
+- **📥 Data Importer** - Import EOBs, claim histories, and bills with a Plaid-like wizard
+- **🎓 Guided Tour** - Interactive onboarding for new users
+- **🔒 Privacy-First** - All data stays local (no cloud storage)
+
+### Documentation
+
+- **�📖 [Quick Start Guide](./docs/QUICKSTART.md)** - Get up and running in 5 minutes
+- **📋 [Profile Editor Quick Start](./PROFILE_EDITOR_QUICKSTART.md)** - Set up your profile in 3 steps
 - **📚 [User Guide](./docs/USER_GUIDE.md)** - Comprehensive end-user documentation
 - **⚙️ [Configuration Guide](./CONFIG_README.md)** - Feature flags and app configuration
 - **🔧 [Technical Documentation](./docs/)** - API reference, modules, dependencies
+- **🔌 [Profile Editor Integration](./PROFILE_EDITOR_INTEGRATION.md)** - Developer integration guide
 - **🧠 [MedGemma & HAI-DEF Alignment](./docs/HAI_DEF_ALIGNMENT.md)** - How this project uses healthcare-aligned foundation models
 - **📝 [Contributing](./DOCUMENTATION.md)** - How to contribute and maintain docs
 
@@ -22,6 +32,28 @@ explaining them in plain language.
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+### Environment Variables (Optional)
+
+Create a `.env` file or set environment variables:
+
+```bash
+# Access Control (optional soft gate)
+export APP_ACCESS_PASSWORD="your_password"
+
+# Guided Tour (overrides config)
+export GUIDED_TOUR=TRUE
+
+# Profile Editor Features
+export PROFILE_EDITOR_ENABLED=TRUE
+export IMPORTER_ENABLED=TRUE
+
+# AI Provider Keys
+export OPENAI_API_KEY="your-key-here"
+export GOOGLE_API_KEY="your-gemini-key"
+```
+
+See `.env.example` for full documentation.
 
 ### 5-Minute Tutorial
 

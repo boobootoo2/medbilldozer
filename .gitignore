@@ -6,6 +6,9 @@ __pycache__/
 
 # Virtual environments
 venv/
+
+# Environment variables
+.env
 .env/
 .env.local
 
@@ -22,3 +25,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Profile Editor data files (privacy)
+data/*.json

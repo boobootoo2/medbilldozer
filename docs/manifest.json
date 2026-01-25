@@ -1,6 +1,6 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 32,
+  "total_modules": 33,
   "modules": [
     {
       "name": "_modules.ui.doc_assistant",
@@ -19,6 +19,15 @@
       "has_docstring": true,
       "num_classes": 0,
       "num_functions": 3,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.ui.profile_editor",
+      "filepath": "_modules/ui/profile_editor.py",
+      "has_docstring": true,
+      "num_classes": 6,
+      "num_functions": 32,
       "num_dependencies": 0,
       "constants": []
     },
@@ -307,8 +316,8 @@
       "filepath": "app.py",
       "has_docstring": true,
       "num_classes": 0,
-      "num_functions": 4,
-      "num_dependencies": 20,
+      "num_functions": 6,
+      "num_dependencies": 21,
       "constants": [
         "ENGINE_OPTIONS"
       ]
