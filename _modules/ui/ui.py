@@ -283,6 +283,26 @@ def inject_css():
     color: rgba(49, 51, 63, 0.7);
     white-space: nowrap;
     }
+    
+    /* Prevent hidden sidebar elements from receiving focus */
+    section[data-testid="stSidebar"][aria-expanded="false"] * {
+        visibility: hidden !important;
+    }
+    
+    section[data-testid="stSidebar"][aria-expanded="false"] {
+        visibility: visible !important;
+    }
+    
+    /* Remove from tab order when collapsed */
+    section[data-testid="stSidebar"][aria-expanded="false"] button,
+    section[data-testid="stSidebar"][aria-expanded="false"] input,
+    section[data-testid="stSidebar"][aria-expanded="false"] select,
+    section[data-testid="stSidebar"][aria-expanded="false"] textarea,
+    section[data-testid="stSidebar"][aria-expanded="false"] a {
+        pointer-events: none !important;
+        tabindex: -1 !important;
+    }
+    
     @media (max-width: 768px) {
         #med-bill-dozer {
             font-size: 2rem;
@@ -334,7 +354,57 @@ def inject_css():
     .billdozer-dismiss:hover {
         background: rgba(0,0,0,0.75);
     }
+       /* ===============================
+        Copy button focus – theme aware
+        =============================== */
+        
+        button:focus-visible {
+            outline-style: dashed;
+            outline-width: 3px;
+            outline-offset: 4px;
+        }
+        /* Light theme */
+        
+        @media (prefers-color-scheme: light) {
+            button:focus-visible {
+                outline-color: #000000;
+            }
+        }
+        /* Dark theme */
+        
+        @media (prefers-color-scheme: dark) {
+            button:focus-visible {
+                outline-color: #F9FAFB;
+                /* near-white, not pure */
+            }
+        }
+        /* ===============================
+        Header anchor icon visibility
+        =============================== */
 
+        /* Base (light theme default) */
+        [data-testid="stHeaderActionElements"] a {
+            color: #374151; /* slate-700 */
+        }
+
+        /* Dark theme override */
+        @media (prefers-color-scheme: dark) {
+            [data-testid="stHeaderActionElements"] a {
+                color: #F9FAFB; /* near-white */
+            }
+        }
+
+        /* Hover affordance */
+        [data-testid="stHeaderActionElements"] a:hover {
+            opacity: 0.85;
+        }
+
+        /* Keyboard focus (accessible) */
+        [data-testid="stHeaderActionElements"] a:focus-visible {
+            outline: 3px dashed currentColor;
+            outline-offset: 4px;
+            border-radius: 6px;
+        }
 
     """, unsafe_allow_html=True)
 
@@ -376,12 +446,12 @@ def render_header():
             }}
             </style>
             <div style="display:flex;gap:18px;align-items:center;">
-              <div class="med-bill-dozer-logo"></div>
+              <div class="med-bill-dozer-logo" role="img" aria-label="medBillDozer logo"></div>
               <div>
                 <h1 style="margin:0;font-style:italic;">
                     medBill<span style="color:#2DA44E;">Dozer</span>
                 </h1>
-                <div style="color:#6B7280;">
+                <div style="color:#4B5563;">
                     Detecting billing, pharmacy, dental, and insurance claim issues
                 </div>
               </div>
@@ -484,6 +554,7 @@ def copy_to_clipboard_button(label: str, text: str):
         </style>
         <div style="display: flex; align-items: center;">
             <button id="{button_id}"
+                aria-label="{label} - Copy to clipboard"
                 style="
                     padding: 0.4rem 0.75rem;
                     border-radius: 8px;
@@ -493,7 +564,7 @@ def copy_to_clipboard_button(label: str, text: str):
                 ">
                 {label}
             </button>
-            <span id="{message_id}" class="copy-message">✓ Copied!</span>
+            <span id="{message_id}" class="copy-message" role="status" aria-live="polite">✓ Copied!</span>
         </div>
 
         <script>
