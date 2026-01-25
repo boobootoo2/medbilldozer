@@ -29,7 +29,8 @@ sys.modules['anthropic'] = MagicMock()
 from app import (
     ENGINE_OPTIONS,
     render_total_savings_summary,
-    bootstrap_ui,
+    bootstrap_ui_minimal,
+    bootstrap_home_page,
     register_providers,
 )
 
@@ -188,58 +189,61 @@ class TestRenderTotalSavingsSummary:
 
 
 class TestBootstrapUi:
-    """Test bootstrap_ui initialization."""
+    """Test bootstrap UI initialization."""
     
     @patch('app.setup_page')
     @patch('app.inject_css')
     @patch('app.render_header')
-    @patch('app.render_contextual_help')
-    @patch('app.render_demo_documents')
-    def test_calls_all_setup_functions_in_order(
-        self, mock_demo, mock_help, mock_header, mock_css, mock_setup
+    def test_bootstrap_ui_minimal_calls_setup_functions(
+        self, mock_header, mock_css, mock_setup
     ):
-        """Should call all UI setup functions in correct order."""
-        bootstrap_ui()
+        """Should call minimal UI setup functions in correct order."""
+        bootstrap_ui_minimal()
         
         # Verify all functions called
         mock_setup.assert_called_once()
         mock_css.assert_called_once()
         mock_header.assert_called_once()
-        mock_help.assert_called_once_with('demo')
-        mock_demo.assert_called_once()
     
     @patch('app.setup_page')
     @patch('app.inject_css')
     @patch('app.render_header')
-    @patch('app.render_contextual_help')
-    @patch('app.render_demo_documents')
-    def test_calls_setup_page_first(
-        self, mock_demo, mock_help, mock_header, mock_css, mock_setup
+    def test_bootstrap_ui_minimal_calls_setup_page_first(
+        self, mock_header, mock_css, mock_setup
     ):
         """setup_page should be called before other UI functions."""
         call_order = []
         mock_setup.side_effect = lambda: call_order.append('setup')
         mock_css.side_effect = lambda: call_order.append('css')
         mock_header.side_effect = lambda: call_order.append('header')
-        mock_help.side_effect = lambda *args: call_order.append('help')
-        mock_demo.side_effect = lambda: call_order.append('demo')
         
-        bootstrap_ui()
+        bootstrap_ui_minimal()
         
-        assert call_order == ['setup', 'css', 'header', 'help', 'demo']
+        assert call_order == ['setup', 'css', 'header']
     
-    @patch('app.setup_page')
-    @patch('app.inject_css')
-    @patch('app.render_header')
+    @patch('app.should_enable_guided_tour', return_value=False)
     @patch('app.render_contextual_help')
     @patch('app.render_demo_documents')
-    def test_passes_demo_parameter_to_contextual_help(
-        self, mock_demo, mock_help, mock_header, mock_css, mock_setup
+    def test_bootstrap_home_page_calls_home_functions(
+        self, mock_demo, mock_help, mock_tour
     ):
-        """Should pass 'demo' parameter to render_contextual_help."""
-        bootstrap_ui()
+        """Should call home page functions when guided tour is not active."""
+        bootstrap_home_page()
         
         mock_help.assert_called_once_with('demo')
+        mock_demo.assert_called_once()
+    
+    @patch('app.should_enable_guided_tour', return_value=True)
+    @patch('app.render_contextual_help')
+    @patch('app.render_demo_documents')
+    def test_bootstrap_home_page_skips_help_on_guided_tour(
+        self, mock_demo, mock_help, mock_tour
+    ):
+        """Should skip contextual help when guided tour is active."""
+        bootstrap_home_page()
+        
+        mock_help.assert_not_called()
+        mock_demo.assert_called_once()
 
 
 class TestRegisterProviders:
