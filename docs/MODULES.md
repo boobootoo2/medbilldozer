@@ -239,7 +239,7 @@ that prevent JSON parsing.
 
 Args:
     text: Raw LLM output string
-    
+
 Returns:
     Cleaned string ready for JSON parsing
 
@@ -249,7 +249,7 @@ Determine backend provider from model name.
 
 Args:
     model: Model identifier string (e.g., 'gpt-4', 'gemini-1.5-flash')
-    
+
 Returns:
     Backend name ('openai', 'gemini') or None if unknown
 
@@ -260,7 +260,7 @@ Execute phase 2 line item parsing prompt using appropriate backend.
 Args:
     prompt: Formatted prompt string for line item extraction
     model: Model identifier to use for execution
-    
+
 Returns:
     LLM response text or None if backend not supported
 
@@ -276,7 +276,7 @@ Sums max_savings from all deterministic issues identified in facts.
 
 Args:
     facts: Facts dictionary containing line items and extracted data
-    
+
 Returns:
     Total potential savings amount in dollars
 
@@ -291,7 +291,7 @@ pharmacy receipts, insurance claims, and FSA claims.
 
 Args:
     text: Raw document text
-    
+
 Returns:
     Dict with document_type, confidence score, and pattern match scores
 
@@ -304,7 +304,7 @@ for downstream routing and optimization.
 
 Args:
     text: Raw document text
-    
+
 Returns:
     Dict with boolean flags and document statistics
 
@@ -747,7 +747,7 @@ Args:
 
 Returns:
     ImportJob with all generated documents and line items
-    
+
 Notes:
     - All records have source = "demo_sample"
     - No UI rendering occurs in this function
@@ -936,7 +936,7 @@ Normalize string to lowercase with collapsed whitespace.
 
 Args:
     value: Input string to normalize
-    
+
 Returns:
     Normalized lowercase string with single spaces, or None if input is empty
 
@@ -948,7 +948,7 @@ Tries multiple common date formats and returns first successful parse.
 
 Args:
     value: Date string in various formats (e.g., 'January 18, 2026', '01/18/2026')
-    
+
 Returns:
     ISO-formatted date string (YYYY-MM-DD) or None if parse fails
 
@@ -960,7 +960,7 @@ Tries multiple time formats and returns 24-hour normalized format.
 
 Args:
     value: Time string in various formats (e.g., '3:42 PM', '15:42')
-    
+
 Returns:
     24-hour formatted time string (HH:MM) or None if parse fails
 
@@ -1030,7 +1030,7 @@ Find first match of regex pattern in text.
 Args:
     pattern: Regex pattern with capture group
     text: Text to search
-    
+
 Returns:
     Captured group text (stripped) or None if no match
 
@@ -1041,7 +1041,7 @@ Try multiple date patterns and return first match.
 Args:
     patterns: List of regex patterns to try in order
     text: Text to search
-    
+
 Returns:
     First matched date string or None if no patterns match
 
@@ -2517,7 +2517,7 @@ Returns the container and placeholder objects for progressive updates.
 
 Args:
     document_id: Optional document identifier for display
-    
+
 Returns:
     tuple: (expander, placeholder) for updating the DAG
 
@@ -2544,7 +2544,7 @@ Args:
     extraction: Extraction stage data
     analysis: Analysis stage data
     step_status: Current step ('pre_extraction_active', 'extraction_active', 'line_items_active', 'analysis_active', 'complete')
-    
+
 Returns:
     HTML string with styled progress visualization
 
@@ -2571,7 +2571,7 @@ Args:
     extraction: Extraction stage data
     analysis: Analysis stage data
     live_update: Whether this is a live update (shows in-progress states)
-    
+
 Returns:
     HTML string with styled DAG visualization
 
@@ -2585,7 +2585,7 @@ Args:
     doc_type: Document type
     extraction: Extraction stage data for error checking
     has_extraction: Whether extraction stage is complete
-    
+
 Returns:
     HTML string for the phase-2 node
 
