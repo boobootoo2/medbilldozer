@@ -4,10 +4,13 @@
 
 ## Project Overview
 
-**Total Modules:** 33
+**Total Modules:** 36
 
-### Application (1 modules)
+### Application (4 modules)
 
+- **_modules.data.fictional_entities**: Fictional Healthcare Entity Generator
+- **_modules.data.health_data_ingestion**: Healthcare Data Ingestion Logic
+- **_modules.data.portal_templates**: Simulated Healthcare Portal Templates
 - **app**: MedBillDozer - Medical billing error detection application.
 
 ### Core Business Logic (4 modules)
@@ -413,6 +416,461 @@ Returns:
     Tuple of:
         - Dict mapping canonical_id to unique transaction
         - Dict mapping canonical_id to list of source document IDs
+
+
+## Module: `_modules.data.fictional_entities`
+
+**Source:** `_modules/data/fictional_entities.py`
+
+### Description
+
+Fictional Healthcare Entity Generator
+
+This module generates deterministic fictional healthcare entities for demo purposes.
+ALL entities are completely fictional and not affiliated with any real organizations.
+
+Uses seeded randomness to ensure consistent data generation across sessions.
+
+### Constants
+
+- **`AVAILABLE_SPECIALTIES`**: `<complex value>`
+- **`AVAILABLE_STATES`**: `<complex value>`
+- **`CITIES`**: `['Springfield', 'Riverside', 'Greenville', 'Fairview', 'Madison', 'Georgetown', 'Arlington', 'Franklin', 'Clinton', 'Salem', 'Oxford', 'Manchester', 'Bristol', 'Clayton', 'Milton', 'Newport', 'Ashland', 'Richmond', 'Brookfield', 'Chester']`
+- **`DEFAULT_INSURANCE_COUNT`**: `30`
+- **`DEFAULT_PROVIDER_COUNT`**: `10000`
+- **`DEFAULT_SEED`**: `42`
+- **`ENTITY_TYPE_INSURANCE`**: `insurance`
+- **`ENTITY_TYPE_PROVIDER`**: `provider`
+- **`INSURANCE_PREFIXES`**: `['American', 'United', 'National', 'Pacific', 'Atlantic', 'Mountain', 'Great Lakes', 'Sunshine', 'Liberty', 'Eagle', 'Guardian', 'Premier', 'Mutual', 'Federal', 'State', 'Regional', 'Metropolitan', 'Capital', 'Commonwealth', 'Horizon', 'Beacon', 'Summit', 'Alliance', 'Trust', 'Heritage', 'Advantage', 'Choice', 'First', 'Primary', 'Select']`
+- **`INSURANCE_ROOTS`**: `['Health', 'Medical', 'Care', 'Life', 'Shield', 'Cross', 'Star', 'Benefit', 'Assurance', 'Security', 'Wellness', 'Family', 'Community', 'Partner', 'Plus', 'Pro', 'Elite', 'Prime', 'Standard', 'Classic']`
+- **`INSURANCE_SUFFIXES`**: `['Group', 'Corp', 'Inc', 'LLC', 'Plan', 'Network', 'System', 'Association', 'Fund', 'Cooperative', 'Alliance', 'Partners']`
+- **`PROVIDER_FIRST_NAMES`**: `['James', 'Maria', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Patricia', 'David', 'Elizabeth', 'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Charles', 'Karen', 'Christopher', 'Nancy', 'Daniel', 'Lisa', 'Matthew', 'Betty', 'Anthony', 'Margaret', 'Mark', 'Sandra', 'Donald', 'Ashley', 'Steven', 'Kimberly', 'Paul', 'Emily', 'Andrew', 'Donna', 'Joshua', 'Michelle', 'Kenneth', 'Carol', 'Kevin', 'Amanda', 'Brian', 'Dorothy', 'George', 'Melissa', 'Timothy', 'Deborah', 'Ronald', 'Stephanie', 'Edward', 'Rebecca', 'Jason', 'Sharon', 'Jeffrey', 'Laura']`
+- **`PROVIDER_LAST_NAMES`**: `['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores', 'Green', 'Adams', 'Nelson', 'Baker', 'Hall', 'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts', 'Gomez', 'Phillips', 'Evans', 'Turner', 'Diaz', 'Parker', 'Cruz', 'Edwards', 'Collins', 'Reyes', 'Stewart', 'Morris']`
+- **`PROVIDER_PRACTICE_TYPES`**: `['Medical Group', 'Health Center', 'Clinic', 'Associates', 'Medical Center', 'Healthcare', 'Physicians', 'Practice', 'Specialists', 'Care Center', 'Medical Associates', 'Health Partners', 'Wellness Center', 'Family Practice']`
+- **`PROVIDER_SPECIALTIES`**: `['Family Medicine', 'Internal Medicine', 'Pediatrics', 'Cardiology', 'Dermatology', 'Orthopedics', 'Neurology', 'Psychiatry', 'Oncology', 'Radiology', 'Anesthesiology', 'Emergency Medicine', 'Surgery', 'Obstetrics and Gynecology', 'Ophthalmology', 'Otolaryngology', 'Urology', 'Gastroenterology', 'Endocrinology', 'Rheumatology', 'Pulmonology', 'Nephrology', 'Hematology', 'Infectious Disease', 'Allergy and Immunology', 'Physical Medicine', 'Pathology', 'General Practice', 'Urgent Care', 'Sports Medicine']`
+- **`US_STATES`**: `['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY']`
+
+### Classes
+
+#### `HealthcareEntity`
+
+**Inherits from:** `TypedDict`
+
+Base type for healthcare entities.
+
+**Attributes:**
+- `id`
+- `name`
+- `entity_type`
+- `demo_portal_html`
+
+#### `InsuranceCompany`
+
+**Inherits from:** `HealthcareEntity`
+
+Fictional insurance company entity.
+
+**Attributes:**
+- `entity_type`
+- `network_size`
+- `plan_types`
+
+#### `HealthcareProvider`
+
+**Inherits from:** `HealthcareEntity`
+
+Fictional healthcare provider entity.
+
+**Attributes:**
+- `entity_type`
+- `specialty`
+- `location_city`
+- `location_state`
+- `accepts_insurance`
+
+
+### Functions
+
+#### `generate_fictional_insurance_companies(count, seed) -> List[InsuranceCompany]`
+
+**Decorators:** `@st.cache_data(ttl=None)`
+
+Generate deterministic fictional insurance companies.
+
+Args:
+    count: Number of insurance companies to generate (default: 30)
+    seed: Random seed for deterministic generation (default: 42)
+
+Returns:
+    List of fictional insurance company entities
+
+Example:
+    >>> companies = generate_fictional_insurance_companies(30)
+    >>> len(companies)
+    30
+    >>> companies[0]['entity_type']
+    'insurance'
+
+#### `generate_fictional_healthcare_providers(count, seed, insurance_company_ids) -> List[HealthcareProvider]`
+
+**Decorators:** `@st.cache_data(ttl=None)`
+
+Generate deterministic fictional healthcare providers.
+
+Args:
+    count: Number of providers to generate (default: 10,000)
+    seed: Random seed for deterministic generation (default: 42)
+    insurance_company_ids: List of insurance company IDs to randomly assign
+
+Returns:
+    List of fictional healthcare provider entities
+
+Example:
+    >>> providers = generate_fictional_healthcare_providers(100)
+    >>> len(providers)
+    100
+    >>> providers[0]['entity_type']
+    'provider'
+
+#### `get_all_fictional_entities(insurance_count, provider_count, seed) -> dict`
+
+**Decorators:** `@st.cache_data(ttl=None)`
+
+Generate all fictional entities in one call.
+
+Args:
+    insurance_count: Number of insurance companies (default: 30)
+    provider_count: Number of healthcare providers (default: 10,000)
+    seed: Random seed for deterministic generation (default: 42)
+
+Returns:
+    Dictionary with 'insurance' and 'providers' keys
+
+Example:
+    >>> entities = get_all_fictional_entities(30, 100)
+    >>> len(entities['insurance'])
+    30
+    >>> len(entities['providers'])
+    100
+
+#### `get_entity_by_id(entity_id, entities) -> HealthcareEntity | None`
+
+Find an entity by ID.
+
+Args:
+    entity_id: The entity ID to search for
+    entities: List of entities to search in
+
+Returns:
+    Entity dict if found, None otherwise
+
+Example:
+    >>> companies = generate_fictional_insurance_companies(30)
+    >>> entity = get_entity_by_id('demo_ins_001', companies)
+    >>> entity['entity_type']
+    'insurance'
+
+#### `filter_providers_by_specialty(providers, specialty) -> List[HealthcareProvider]`
+
+Filter providers by specialty.
+
+Args:
+    providers: List of provider entities
+    specialty: Specialty to filter by
+
+Returns:
+    Filtered list of providers
+
+Example:
+    >>> providers = generate_fictional_healthcare_providers(1000)
+    >>> cardiologists = filter_providers_by_specialty(providers, 'Cardiology')
+    >>> all(p['specialty'] == 'Cardiology' for p in cardiologists)
+    True
+
+#### `filter_providers_by_insurance(providers, insurance_id) -> List[HealthcareProvider]`
+
+Filter providers by accepted insurance.
+
+Args:
+    providers: List of provider entities
+    insurance_id: Insurance company ID to filter by
+
+Returns:
+    Filtered list of providers that accept this insurance
+
+Example:
+    >>> entities = get_all_fictional_entities(30, 1000)
+    >>> in_network = filter_providers_by_insurance(
+    ...     entities['providers'],
+    ...     'demo_ins_001'
+    ... )
+    >>> all('demo_ins_001' in p['accepts_insurance'] for p in in_network)
+    True
+
+#### `get_entity_stats(entities) -> dict`
+
+Calculate statistics about generated entities.
+
+Args:
+    entities: Dictionary from get_all_fictional_entities()
+
+Returns:
+    Dictionary with statistics
+
+Example:
+    >>> entities = get_all_fictional_entities(30, 1000)
+    >>> stats = get_entity_stats(entities)
+    >>> stats['total_insurance_companies']
+    30
+    >>> stats['total_providers']
+    1000
+
+#### `validate_entity_uniqueness(entities) -> bool`
+
+Validate that all entity IDs are unique.
+
+Args:
+    entities: List of entities to validate
+
+Returns:
+    True if all IDs are unique, False otherwise
+
+#### `validate_entity_structure(entity) -> bool`
+
+Validate that an entity has required fields.
+
+Args:
+    entity: Entity to validate
+
+Returns:
+    True if entity is valid, False otherwise
+
+
+## Module: `_modules.data.health_data_ingestion`
+
+**Source:** `_modules/data/health_data_ingestion.py`
+
+### Description
+
+Healthcare Data Ingestion Logic
+
+This module handles the generation of fake healthcare data from simulated portals
+and normalizes it into the proper data models for storage in session state.
+
+DEMO ONLY - All data is fictional and clearly marked.
+
+### Constants
+
+- **`CPT_CODES`**: `{'99213': 'Office Visit - Established Patient, Level 3', '99214': 'Office Visit - Established Patient, Level 4', '99215': 'Office Visit - Established Patient, Level 5', '99203': 'Office Visit - New Patient, Level 3', '99204': 'Office Visit - New Patient, Level 4', '80053': 'Comprehensive Metabolic Panel', '85025': 'Complete Blood Count with Differential', '36415': 'Routine Venipuncture', '45378': 'Colonoscopy with Biopsy', '93000': 'Electrocardiogram (EKG)', '73610': 'X-ray Ankle, 3 Views', '70450': 'CT Head without Contrast', '71020': 'Chest X-ray, 2 Views', '81001': 'Urinalysis, Manual', '90471': 'Immunization Administration, First Vaccine', 'J3490': 'Unclassified Drug Injection', 'G0438': 'Annual Wellness Visit - Initial', 'G0439': 'Annual Wellness Visit - Subsequent'}`
+- **`ICD10_CODES`**: `{'Z00.00': 'Encounter for general adult medical examination', 'E11.9': 'Type 2 diabetes mellitus without complications', 'I10': 'Essential (primary) hypertension', 'E78.5': 'Hyperlipidemia, unspecified', 'Z23': 'Encounter for immunization', 'R51.9': 'Headache, unspecified', 'J06.9': 'Acute upper respiratory infection', 'K21.9': 'Gastro-esophageal reflux disease', 'M79.3': 'Panniculitis, unspecified'}`
+
+### Functions
+
+#### `generate_fake_claim_number() -> str`
+
+Generate a fake claim number.
+
+#### `generate_fake_date(days_ago) -> str`
+
+Generate a fake date in ISO format (YYYY-MM-DD).
+
+#### `generate_fake_amount(min_amount, max_amount) -> float`
+
+Generate a fake dollar amount.
+
+#### `generate_realistic_claim_amounts() -> Dict[str, float]`
+
+Generate realistic claim amounts with proper relationships.
+
+Returns:
+    Dict with billed_amount, allowed_amount, paid_by_insurance, patient_responsibility
+
+#### `generate_npi() -> str`
+
+Generate a fake but valid-looking NPI number (10 digits).
+
+#### `generate_tax_id() -> str`
+
+Generate a fake EIN/Tax ID (XX-XXXXXXX format).
+
+#### `generate_fake_document(job_id, source_type, entity) -> Document`
+
+Generate a fake ImportedDocument record.
+
+Args:
+    job_id: Import job ID
+    source_type: Type of source (insurance_portal, provider_portal, etc.)
+    entity: The healthcare entity (insurance or provider)
+
+Returns:
+    Document record
+
+#### `generate_line_items_from_insurance(job_id, insurance_entity, num_items) -> List[NormalizedLineItem]`
+
+Generate fake line items from an insurance EOB/claim.
+
+Args:
+    job_id: Import job ID
+    insurance_entity: Insurance company entity
+    num_items: Number of line items to generate (default 5)
+
+Returns:
+    List of NormalizedLineItem records
+
+#### `generate_line_items_from_provider(job_id, provider_entity, num_items) -> List[NormalizedLineItem]`
+
+Generate fake line items from a provider bill/statement.
+
+Args:
+    job_id: Import job ID
+    provider_entity: Healthcare provider entity
+    num_items: Number of line items to generate (default 3)
+
+Returns:
+    List of NormalizedLineItem records
+
+#### `import_sample_data(selected_entity, num_line_items) -> ImportJob`
+
+Generate fake healthcare data and prepare for storage.
+
+This is the main ingestion function that:
+1. Generates fake ImportedDocument records
+2. Normalizes into NormalizedLineItem records
+3. Packages everything into an ImportJob
+
+The caller is responsible for storing the result in st.session_state.
+
+Args:
+    selected_entity: The insurance or provider entity selected by user
+    num_line_items: Number of line items to generate (optional, uses defaults)
+
+Returns:
+    ImportJob with all generated documents and line items
+    
+Notes:
+    - All records have source = "demo_sample"
+    - No UI rendering occurs in this function
+    - No actual API calls or file I/O
+
+#### `extract_insurance_plan_from_entity(insurance_entity) -> InsurancePlan`
+
+Extract an InsurancePlan record from an insurance entity.
+
+Args:
+    insurance_entity: Insurance company entity
+
+Returns:
+    InsurancePlan record
+
+#### `extract_provider_from_entity(provider_entity) -> Provider`
+
+Extract a Provider record from a provider entity.
+
+Args:
+    provider_entity: Healthcare provider entity
+
+Returns:
+    Provider record
+
+#### `import_multiple_entities(entities, items_per_entity) -> List[ImportJob]`
+
+Import data from multiple entities in batch.
+
+Args:
+    entities: List of insurance or provider entities
+    items_per_entity: Number of line items to generate per entity
+
+Returns:
+    List of ImportJob records
+
+#### `store_import_job_in_session(import_job, session_state_key) -> None`
+
+Store ImportJob data in Streamlit session state.
+
+This helper function handles the proper storage of import job data
+in the session state structure expected by the profile editor.
+
+Args:
+    import_job: The import job to store
+    session_state_key: Session state key (default: "health_profile")
+
+Notes:
+    This function DOES interact with st.session_state.
+    It's separated here for clarity but uses Streamlit internally.
+
+
+### Dependencies
+
+- `_modules.data.fictional_entities`
+- `_modules.ui.profile_editor`
+
+## Module: `_modules.data.portal_templates`
+
+**Source:** `_modules/data/portal_templates.py`
+
+### Description
+
+Simulated Healthcare Portal Templates
+
+This module generates HTML templates for fictional insurance and provider portals.
+ALL data is simulated and clearly marked as DEMO ONLY.
+
+These templates are designed to be rendered in iframes to demonstrate
+a Plaid-like connection experience without connecting to real systems.
+
+### Functions
+
+#### `generate_fake_claim_number() -> str`
+
+Generate a fake claim number.
+
+#### `generate_fake_date(days_ago) -> str`
+
+Generate a fake date in the past.
+
+#### `generate_fake_cpt_code() -> str`
+
+Generate a fake CPT procedure code.
+
+#### `generate_fake_amount() -> float`
+
+Generate a fake dollar amount.
+
+#### `generate_insurance_portal_html(company_name, member_id, plan_name) -> str`
+
+Generate a simulated insurance company portal.
+
+Args:
+    company_name: Name of the fictional insurance company
+    member_id: Fake member ID
+    plan_name: Fake plan name
+
+Returns:
+    HTML string for insurance portal
+
+#### `generate_provider_portal_html(provider_name, patient_name, account_number) -> str`
+
+Generate a simulated healthcare provider portal.
+
+Args:
+    provider_name: Name of the fictional provider
+    patient_name: Fake patient name
+    account_number: Fake account number
+
+Returns:
+    HTML string for provider portal
+
+#### `generate_pharmacy_portal_html(pharmacy_name, patient_name, rx_number) -> str`
+
+Generate a simulated pharmacy portal.
+
+Args:
+    pharmacy_name: Name of the fictional pharmacy
+    patient_name: Fake patient name
+    rx_number: Fake prescription number
+
+Returns:
+    HTML string for pharmacy portal
 
 
 ## Module: `_modules.extractors.extraction_prompt`

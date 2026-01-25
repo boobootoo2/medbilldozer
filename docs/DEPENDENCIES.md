@@ -17,6 +17,12 @@ Module dependencies within the project:
 - `_modules.providers.llm_interface`
 - `_modules.ui.billdozer_widget`
 
+### `_modules.data.health_data_ingestion`
+
+**Depends on:**
+- `_modules.data.fictional_entities`
+- `_modules.ui.profile_editor`
+
 ### `_modules.extractors.gemini_langextractor`
 
 **Depends on:**

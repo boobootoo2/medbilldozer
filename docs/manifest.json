@@ -1,6 +1,6 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 33,
+  "total_modules": 36,
   "modules": [
     {
       "name": "_modules.ui.doc_assistant",
@@ -310,6 +310,53 @@
       "num_functions": 4,
       "num_dependencies": 1,
       "constants": []
+    },
+    {
+      "name": "_modules.data.health_data_ingestion",
+      "filepath": "_modules/data/health_data_ingestion.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 14,
+      "num_dependencies": 2,
+      "constants": [
+        "CPT_CODES",
+        "ICD10_CODES"
+      ]
+    },
+    {
+      "name": "_modules.data.portal_templates",
+      "filepath": "_modules/data/portal_templates.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 7,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.data.fictional_entities",
+      "filepath": "_modules/data/fictional_entities.py",
+      "has_docstring": true,
+      "num_classes": 3,
+      "num_functions": 9,
+      "num_dependencies": 0,
+      "constants": [
+        "INSURANCE_PREFIXES",
+        "INSURANCE_ROOTS",
+        "INSURANCE_SUFFIXES",
+        "PROVIDER_SPECIALTIES",
+        "PROVIDER_FIRST_NAMES",
+        "PROVIDER_LAST_NAMES",
+        "PROVIDER_PRACTICE_TYPES",
+        "US_STATES",
+        "CITIES",
+        "DEFAULT_INSURANCE_COUNT",
+        "DEFAULT_PROVIDER_COUNT",
+        "DEFAULT_SEED",
+        "ENTITY_TYPE_INSURANCE",
+        "ENTITY_TYPE_PROVIDER",
+        "AVAILABLE_SPECIALTIES",
+        "AVAILABLE_STATES"
+      ]
     },
     {
       "name": "app",
