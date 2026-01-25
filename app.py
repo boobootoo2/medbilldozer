@@ -202,16 +202,23 @@ def render_total_savings_summary(total_potential_savings: float, per_document_sa
 # ==================================================
 # Bootstrap UI
 # ==================================================
-def bootstrap_ui():
-    """Initialize and render core UI components.
+def bootstrap_ui_minimal():
+    """Initialize minimal UI components for all pages.
     
-    Sets up page configuration, CSS styles, header, and demo documents.
-    Must be called at the start of the application.
+    Sets up page configuration, CSS styles, and header.
+    Should be called on all pages (home and profile).
     """
     setup_page()
     inject_css()
     render_header()
+
+
+def bootstrap_home_page():
+    """Initialize home page specific UI components.
     
+    Renders demo documents and contextual help.
+    Should only be called on the home page.
+    """
     # Skip demo help message when guided tour is active
     if not should_enable_guided_tour():
         render_contextual_help('demo')
@@ -281,32 +288,10 @@ def main():
         st.session_state.current_page = 'home'
     
     # --------------------------------------------------
-    # Bootstrap + providers
+    # Minimal Bootstrap (for all pages)
     # --------------------------------------------------
-    bootstrap_ui()
-    register_providers()
-
-    # --------------------------------------------------
-    # Guided Tour Initialization
-    # --------------------------------------------------
-    if should_enable_guided_tour():
-        initialize_tour_state()
-        maybe_launch_tour()
-        # Check tour state at start of render to catch any pending step changes
-        check_tour_progression()
-
-    # --------------------------------------------------
-    # Defaults (can be overridden in debug)
-    # --------------------------------------------------
-    extractor_override = None
-    analyzer_override = None
-
-    # --------------------------------------------------
-    # Privacy (session-scoped)
-    # --------------------------------------------------
-    if is_privacy_ui_enabled():
-        render_privacy_dialog()
-
+    bootstrap_ui_minimal()
+    
     # --------------------------------------------------
     # Page Navigation (sidebar - at top)
     # --------------------------------------------------
@@ -334,6 +319,33 @@ def main():
     if st.session_state.current_page == 'profile' and is_profile_editor_enabled():
         render_profile_editor()
         return  # Skip rest of home page rendering
+    
+    # --------------------------------------------------
+    # Home Page Specific UI
+    # --------------------------------------------------
+    bootstrap_home_page()
+    register_providers()
+
+    # --------------------------------------------------
+    # Guided Tour Initialization
+    # --------------------------------------------------
+    if should_enable_guided_tour():
+        initialize_tour_state()
+        maybe_launch_tour()
+        # Check tour state at start of render to catch any pending step changes
+        check_tour_progression()
+
+    # --------------------------------------------------
+    # Defaults (can be overridden in debug)
+    # --------------------------------------------------
+    extractor_override = None
+    analyzer_override = None
+
+    # --------------------------------------------------
+    # Privacy (session-scoped)
+    # --------------------------------------------------
+    if is_privacy_ui_enabled():
+        render_privacy_dialog()
     
     # --------------------------------------------------
     # Guided Tour Controls (sidebar - at top)

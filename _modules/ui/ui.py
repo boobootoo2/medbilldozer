@@ -183,7 +183,18 @@ def inject_css():
         padding: 0.9rem;
         border-radius: 8px;
         margin-bottom: 0.8rem;
+        color: #1F2937;
     }
+    
+    /* Dark mode override for flag-warning */
+    @media (prefers-color-scheme: dark) {
+        .flag-warning {
+            background-color: #422006;
+            border-left: 6px solid #F59E0B;
+            color: #FEF3C7;
+        }
+    }
+    
     /* ===============================
     Analyze button (PRIMARY)
     =============================== */

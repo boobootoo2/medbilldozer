@@ -2070,12 +2070,19 @@ Args:
     total_potential_savings: Total potential savings amount
     per_document_savings: Dict mapping document IDs to their savings amounts
 
-#### `bootstrap_ui()`
+#### `bootstrap_ui_minimal()`
 
-Initialize and render core UI components.
+Initialize minimal UI components for all pages.
 
-Sets up page configuration, CSS styles, header, and demo documents.
-Must be called at the start of the application.
+Sets up page configuration, CSS styles, and header.
+Should be called on all pages (home and profile).
+
+#### `bootstrap_home_page()`
+
+Initialize home page specific UI components.
+
+Renders demo documents and contextual help.
+Should only be called on the home page.
 
 #### `register_providers()`
 
