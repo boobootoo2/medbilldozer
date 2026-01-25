@@ -4,7 +4,7 @@
 
 set -e
 
-echo "🚜 medBillDozer - Profile Editor Setup"
+echo "medBillDozer - Profile Editor Setup"
 echo "======================================"
 echo ""
 

@@ -73,6 +73,7 @@ ICD10_CODES = {
 # Helper Functions
 # ==============================================================================
 
+
 def generate_fake_claim_number() -> str:
     """Generate a fake claim number."""
     return f"CLM-DEMO-{random.randint(100000, 999999)}"
@@ -91,21 +92,21 @@ def generate_fake_amount(min_amount: float = 50.0, max_amount: float = 2500.0) -
 
 def generate_realistic_claim_amounts() -> Dict[str, float]:
     """Generate realistic claim amounts with proper relationships.
-    
+
     Returns:
         Dict with billed_amount, allowed_amount, paid_by_insurance, patient_responsibility
     """
     billed = generate_fake_amount(100.0, 3000.0)
-    
+
     # Insurance typically negotiates 60-90% of billed
     allowed = round(billed * random.uniform(0.60, 0.90), 2)
-    
+
     # Insurance pays 70-95% of allowed based on plan
     paid = round(allowed * random.uniform(0.70, 0.95), 2)
-    
+
     # Patient pays the difference
     patient_resp = round(allowed - paid, 2)
-    
+
     return {
         "billed_amount": billed,
         "allowed_amount": allowed,
@@ -128,30 +129,31 @@ def generate_tax_id() -> str:
 # Document Generation
 # ==============================================================================
 
+
 def generate_fake_document(
     job_id: str,
     source_type: str,
     entity: HealthcareEntity
 ) -> Document:
     """Generate a fake ImportedDocument record.
-    
+
     Args:
         job_id: Import job ID
         source_type: Type of source (insurance_portal, provider_portal, etc.)
         entity: The healthcare entity (insurance or provider)
-    
+
     Returns:
         Document record
     """
     doc_id = str(uuid.uuid4())
     entity_name = entity.get('name', 'Unknown')
-    
+
     # Generate fake filename based on source type
     if 'insurance' in source_type.lower():
         filename = f"eob_statement_{entity_name.replace(' ', '_')}_{generate_fake_date()}.pdf"
     else:
         filename = f"bill_{entity_name.replace(' ', '_')}_{generate_fake_date()}.pdf"
-    
+
     return Document(
         document_id=doc_id,
         import_job_id=job_id,
@@ -168,35 +170,36 @@ def generate_fake_document(
 # Line Item Generation
 # ==============================================================================
 
+
 def generate_line_items_from_insurance(
     job_id: str,
     insurance_entity: InsuranceCompany,
     num_items: int = 5
 ) -> List[NormalizedLineItem]:
     """Generate fake line items from an insurance EOB/claim.
-    
+
     Args:
         job_id: Import job ID
         insurance_entity: Insurance company entity
         num_items: Number of line items to generate (default 5)
-    
+
     Returns:
         List of NormalizedLineItem records
     """
     line_items = []
-    
+
     for i in range(num_items):
         # Pick random CPT code
         cpt_code = random.choice(list(CPT_CODES.keys()))
         description = CPT_CODES[cpt_code]
-        
+
         # Generate realistic amounts
         amounts = generate_realistic_claim_amounts()
-        
+
         # Generate service date (random in past 180 days)
         days_ago = random.randint(10, 180)
         service_date = generate_fake_date(days_ago)
-        
+
         # Generate fake provider name
         provider_names = [
             "Dr. Sarah Johnson (DEMO)",
@@ -207,7 +210,7 @@ def generate_line_items_from_insurance(
             "Regional Healthcare (DEMO)"
         ]
         provider_name = random.choice(provider_names)
-        
+
         line_item = NormalizedLineItem(
             line_item_id=str(uuid.uuid4()),
             import_job_id=job_id,
@@ -223,9 +226,9 @@ def generate_line_items_from_insurance(
             claim_number=generate_fake_claim_number(),
             created_at=datetime.utcnow().isoformat()
         )
-        
+
         line_items.append(line_item)
-    
+
     return line_items
 
 
@@ -235,31 +238,31 @@ def generate_line_items_from_provider(
     num_items: int = 3
 ) -> List[NormalizedLineItem]:
     """Generate fake line items from a provider bill/statement.
-    
+
     Args:
         job_id: Import job ID
         provider_entity: Healthcare provider entity
         num_items: Number of line items to generate (default 3)
-    
+
     Returns:
         List of NormalizedLineItem records
     """
     line_items = []
     provider_name = provider_entity.get('name', 'Unknown Provider')
     provider_npi = provider_entity.get('npi', generate_npi())
-    
+
     for i in range(num_items):
         # Pick random CPT code
         cpt_code = random.choice(list(CPT_CODES.keys()))
         description = CPT_CODES[cpt_code]
-        
+
         # Generate realistic amounts
         amounts = generate_realistic_claim_amounts()
-        
+
         # Generate service date (random in past 120 days)
         days_ago = random.randint(10, 120)
         service_date = generate_fake_date(days_ago)
-        
+
         line_item = NormalizedLineItem(
             line_item_id=str(uuid.uuid4()),
             import_job_id=job_id,
@@ -275,9 +278,9 @@ def generate_line_items_from_provider(
             claim_number=None,  # Provider bills may not have claim numbers yet
             created_at=datetime.utcnow().isoformat()
         )
-        
+
         line_items.append(line_item)
-    
+
     return line_items
 
 
@@ -285,26 +288,27 @@ def generate_line_items_from_provider(
 # Main Ingestion Function
 # ==============================================================================
 
+
 def import_sample_data(
     selected_entity: HealthcareEntity,
     num_line_items: Optional[int] = None
 ) -> ImportJob:
     """Generate fake healthcare data and prepare for storage.
-    
+
     This is the main ingestion function that:
     1. Generates fake ImportedDocument records
     2. Normalizes into NormalizedLineItem records
     3. Packages everything into an ImportJob
-    
+
     The caller is responsible for storing the result in st.session_state.
-    
+
     Args:
         selected_entity: The insurance or provider entity selected by user
         num_line_items: Number of line items to generate (optional, uses defaults)
-    
+
     Returns:
         ImportJob with all generated documents and line items
-        
+
     Notes:
         - All records have source = "demo_sample"
         - No UI rendering occurs in this function
@@ -312,7 +316,7 @@ def import_sample_data(
     """
     job_id = str(uuid.uuid4())
     entity_type = selected_entity.get('entity_type', 'unknown')
-    
+
     # Determine source type
     if entity_type == 'insurance':
         source_type = "insurance_portal"
@@ -324,12 +328,12 @@ def import_sample_data(
         default_items = 3
     else:
         raise ValueError(f"Unknown entity type: {entity_type}")
-    
+
     num_items = num_line_items if num_line_items is not None else default_items
-    
+
     # Generate fake document
     document = generate_fake_document(job_id, source_type, selected_entity)
-    
+
     # Generate line items based on entity type
     if entity_type == 'insurance':
         line_items = generate_line_items_from_insurance(
@@ -343,7 +347,7 @@ def import_sample_data(
             selected_entity,  # type: ignore - we know it's HealthcareProvider
             num_items
         )
-    
+
     # Create ImportJob
     import_job = ImportJob(
         job_id=job_id,
@@ -356,7 +360,7 @@ def import_sample_data(
         completed_at=datetime.utcnow().isoformat(),
         error_message=None
     )
-    
+
     return import_job
 
 
@@ -364,23 +368,24 @@ def import_sample_data(
 # Insurance Plan and Provider Extraction
 # ==============================================================================
 
+
 def extract_insurance_plan_from_entity(
     insurance_entity: InsuranceCompany
 ) -> InsurancePlan:
     """Extract an InsurancePlan record from an insurance entity.
-    
+
     Args:
         insurance_entity: Insurance company entity
-    
+
     Returns:
         InsurancePlan record
     """
     plan_id = str(uuid.uuid4())
     carrier_name = insurance_entity.get('name', 'Unknown Insurance')
-    
+
     # Extract network type from entity (or default to PPO)
     network_type = insurance_entity.get('network_type', 'national')
-    
+
     # Map network to plan type
     if network_type == 'national':
         plan_type = 'PPO'
@@ -388,14 +393,14 @@ def extract_insurance_plan_from_entity(
         plan_type = 'HMO'
     else:
         plan_type = 'EPO'
-    
+
     # Generate realistic plan details
     deductible_individual = round(random.uniform(500, 3000), 0)
     deductible_family = deductible_individual * 2
-    
+
     oop_individual = round(random.uniform(3000, 7000), 0)
     oop_family = oop_individual * 2
-    
+
     return InsurancePlan(
         plan_id=plan_id,
         carrier_name=carrier_name,
@@ -430,10 +435,10 @@ def extract_provider_from_entity(
     provider_entity: HealthcareProvider
 ) -> Provider:
     """Extract a Provider record from a provider entity.
-    
+
     Args:
         provider_entity: Healthcare provider entity
-    
+
     Returns:
         Provider record
     """
@@ -441,14 +446,14 @@ def extract_provider_from_entity(
     provider_name = provider_entity.get('name', 'Unknown Provider')
     specialty = provider_entity.get('specialty', 'General Practice')
     npi = provider_entity.get('npi', generate_npi())
-    
+
     # Extract location info (fields are location_city and location_state in entity)
     city = provider_entity.get('location_city', 'Unknown City')
     state = provider_entity.get('location_state', 'XX')
-    
+
     # Check if in network (random for demo)
     in_network = random.choice([True, True, True, False])  # 75% chance in-network
-    
+
     return Provider(
         provider_id=provider_id,
         name=provider_name,
@@ -473,25 +478,26 @@ def extract_provider_from_entity(
 # Batch Import Functions
 # ==============================================================================
 
+
 def import_multiple_entities(
     entities: List[HealthcareEntity],
     items_per_entity: int = 3
 ) -> List[ImportJob]:
     """Import data from multiple entities in batch.
-    
+
     Args:
         entities: List of insurance or provider entities
         items_per_entity: Number of line items to generate per entity
-    
+
     Returns:
         List of ImportJob records
     """
     import_jobs = []
-    
+
     for entity in entities:
         job = import_sample_data(entity, num_line_items=items_per_entity)
         import_jobs.append(job)
-    
+
     return import_jobs
 
 
@@ -499,25 +505,26 @@ def import_multiple_entities(
 # Session State Storage Helper
 # ==============================================================================
 
+
 def store_import_job_in_session(
     import_job: ImportJob,
     session_state_key: str = "health_profile"
 ) -> None:
     """Store ImportJob data in Streamlit session state.
-    
+
     This helper function handles the proper storage of import job data
     in the session state structure expected by the profile editor.
-    
+
     Args:
         import_job: The import job to store
         session_state_key: Session state key (default: "health_profile")
-    
+
     Notes:
         This function DOES interact with st.session_state.
         It's separated here for clarity but uses Streamlit internally.
     """
     import streamlit as st
-    
+
     # Initialize session state if needed
     if session_state_key not in st.session_state:
         st.session_state[session_state_key] = {
@@ -526,10 +533,10 @@ def store_import_job_in_session(
             "insurance_plans": [],
             "providers": []
         }
-    
+
     # Append import job
     st.session_state[session_state_key]["import_jobs"].append(import_job)
-    
+
     # Append line items
     st.session_state[session_state_key]["line_items"].extend(import_job.get("line_items", []))
 
@@ -541,24 +548,25 @@ def store_import_job_in_session(
 __all__ = [
     # Main ingestion function
     'import_sample_data',
-    
+
     # Extraction functions
     'extract_insurance_plan_from_entity',
     'extract_provider_from_entity',
-    
+
     # Batch functions
     'import_multiple_entities',
-    
+
     # Storage helper
     'store_import_job_in_session',
-    
+
     # Document and line item generators (for advanced use)
     'generate_fake_document',
     'generate_line_items_from_insurance',
     'generate_line_items_from_provider',
-    
+
     # Helper utilities
     'generate_fake_claim_number',
     'generate_fake_date',
     'generate_realistic_claim_amounts',
 ]
+

@@ -25,6 +25,8 @@ import json
 
 
 @dataclass
+
+
 class FunctionInfo:
     """Metadata about a function extracted from AST"""
     name: str
@@ -37,6 +39,8 @@ class FunctionInfo:
 
 
 @dataclass
+
+
 class ClassInfo:
     """Metadata about a class extracted from AST"""
     name: str
@@ -48,6 +52,8 @@ class ClassInfo:
 
 
 @dataclass
+
+
 class ModuleInfo:
     """Metadata about a module extracted from AST"""
     filepath: str
@@ -62,7 +68,7 @@ class ModuleInfo:
 
 class CodeAnalyzer(ast.NodeVisitor):
     """Extract facts from Python source code via AST traversal"""
-    
+
     def __init__(self, filepath: str):
         self.filepath = filepath
         self.module_name = self._get_module_name(filepath)
@@ -72,16 +78,16 @@ class CodeAnalyzer(ast.NodeVisitor):
         self.constants = {}
         self.dependencies = set()
         self.docstring = None
-        
+
     def _get_module_name(self, filepath: str) -> str:
         """Convert file path to module name"""
         path = Path(filepath)
         parts = list(path.parts)
-        
+
         # Remove .py extension
         if parts[-1].endswith('.py'):
             parts[-1] = parts[-1][:-3]
-        
+
         # Find the starting point (_modules or root)
         try:
             if '_modules' in parts:
@@ -89,35 +95,35 @@ class CodeAnalyzer(ast.NodeVisitor):
                 return '.'.join(parts[idx:])
         except ValueError:
             pass
-        
+
         return parts[-1] if parts[-1] != '__init__' else '.'.join(parts[-2:])
-    
+
     def visit_Module(self, node: ast.Module):
         """Extract module-level docstring"""
         self.docstring = ast.get_docstring(node)
         self.generic_visit(node)
-    
+
     def visit_Import(self, node: ast.Import):
         """Track import statements"""
         for alias in node.names:
             self.imports.append(alias.name)
             if alias.name.startswith('_modules'):
                 self.dependencies.add(alias.name)
-    
+
     def visit_ImportFrom(self, node: ast.ImportFrom):
         """Track from...import statements"""
         if node.module:
             self.imports.append(node.module)
             if node.module.startswith('_modules'):
                 self.dependencies.add(node.module)
-    
+
     def visit_FunctionDef(self, node: ast.FunctionDef):
         """Extract function metadata"""
         args = [arg.arg for arg in node.args.args]
         returns = ast.unparse(node.returns) if node.returns else None
         docstring = ast.get_docstring(node)
         decorators = [ast.unparse(d) for d in node.decorator_list]
-        
+
         func_info = FunctionInfo(
             name=node.name,
             args=args,
@@ -128,14 +134,14 @@ class CodeAnalyzer(ast.NodeVisitor):
             is_async=False
         )
         self.functions.append(func_info)
-    
+
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef):
         """Extract async function metadata"""
         args = [arg.arg for arg in node.args.args]
         returns = ast.unparse(node.returns) if node.returns else None
         docstring = ast.get_docstring(node)
         decorators = [ast.unparse(d) for d in node.decorator_list]
-        
+
         func_info = FunctionInfo(
             name=node.name,
             args=args,
@@ -146,12 +152,12 @@ class CodeAnalyzer(ast.NodeVisitor):
             is_async=True
         )
         self.functions.append(func_info)
-    
+
     def visit_ClassDef(self, node: ast.ClassDef):
         """Extract class metadata"""
         bases = [ast.unparse(base) for base in node.bases]
         docstring = ast.get_docstring(node)
-        
+
         # Extract methods
         methods = []
         attributes = []
@@ -161,7 +167,7 @@ class CodeAnalyzer(ast.NodeVisitor):
                 returns = ast.unparse(item.returns) if item.returns else None
                 method_doc = ast.get_docstring(item)
                 decorators = [ast.unparse(d) for d in item.decorator_list]
-                
+
                 method_info = FunctionInfo(
                     name=item.name,
                     args=args,
@@ -174,7 +180,7 @@ class CodeAnalyzer(ast.NodeVisitor):
                 methods.append(method_info)
             elif isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
                 attributes.append(item.target.id)
-        
+
         class_info = ClassInfo(
             name=node.name,
             bases=bases,
@@ -184,7 +190,7 @@ class CodeAnalyzer(ast.NodeVisitor):
             lineno=node.lineno
         )
         self.classes.append(class_info)
-    
+
     def visit_Assign(self, node: ast.Assign):
         """Extract module-level constants"""
         for target in node.targets:
@@ -195,12 +201,12 @@ class CodeAnalyzer(ast.NodeVisitor):
                     self.constants[target.id] = value
                 except (ValueError, TypeError):
                     self.constants[target.id] = "<complex value>"
-    
+
     def analyze(self, source: str) -> ModuleInfo:
         """Parse source code and extract metadata"""
         tree = ast.parse(source)
         self.visit(tree)
-        
+
         return ModuleInfo(
             filepath=self.filepath,
             module_name=self.module_name,
@@ -215,16 +221,16 @@ class CodeAnalyzer(ast.NodeVisitor):
 
 class DocumentationGenerator:
     """Generate markdown documentation from code metadata"""
-    
+
     def __init__(self, root_dir: str):
         self.root_dir = Path(root_dir)
         self.modules: List[ModuleInfo] = []
         self.dependency_graph: Dict[str, Set[str]] = defaultdict(set)
-        
+
     def scan_codebase(self):
         """Scan all Python files and extract metadata"""
         print("🔍 Scanning codebase...")
-        
+
         # Scan _modules directory
         modules_dir = self.root_dir / "_modules"
         if modules_dir.exists():
@@ -232,31 +238,31 @@ class DocumentationGenerator:
                 if py_file.name == "__init__.py":
                     continue
                 self._analyze_file(py_file)
-        
+
         # Scan app.py
         app_file = self.root_dir / "app.py"
         if app_file.exists():
             self._analyze_file(app_file)
-        
+
         print(f"✓ Analyzed {len(self.modules)} modules")
-    
+
     def _analyze_file(self, filepath: Path):
         """Analyze a single Python file"""
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 source = f.read()
-            
+
             analyzer = CodeAnalyzer(str(filepath.relative_to(self.root_dir)))
             module_info = analyzer.analyze(source)
             self.modules.append(module_info)
-            
+
             # Build dependency graph
             for dep in module_info.dependencies:
                 self.dependency_graph[module_info.module_name].add(dep)
-            
+
         except Exception as e:
             print(f"⚠️  Warning: Could not analyze {filepath}: {e}")
-    
+
     def generate_overview(self) -> str:
         """Generate project overview documentation"""
         lines = ["# MedBillDozer Documentation", ""]
@@ -264,7 +270,7 @@ class DocumentationGenerator:
         lines.append("")
         lines.append("## Project Overview")
         lines.append("")
-        
+
         # Group modules by category
         categories = defaultdict(list)
         for module in self.modules:
@@ -282,10 +288,10 @@ class DocumentationGenerator:
                 categories['Utilities'].append(module)
             else:
                 categories['Application'].append(module)
-        
+
         lines.append(f"**Total Modules:** {len(self.modules)}")
         lines.append("")
-        
+
         for category, modules in sorted(categories.items()):
             lines.append(f"### {category} ({len(modules)} modules)")
             lines.append("")
@@ -293,24 +299,24 @@ class DocumentationGenerator:
                 doc_snippet = module.docstring.split('\n')[0] if module.docstring else "No description"
                 lines.append(f"- **{module.module_name}**: {doc_snippet}")
             lines.append("")
-        
+
         return "\n".join(lines)
-    
+
     def generate_module_docs(self, module: ModuleInfo) -> str:
         """Generate detailed documentation for a single module"""
         lines = [f"## Module: `{module.module_name}`", ""]
-        
+
         # File path
         lines.append(f"**Source:** `{module.filepath}`")
         lines.append("")
-        
+
         # Docstring
         if module.docstring:
             lines.append("### Description")
             lines.append("")
             lines.append(module.docstring)
             lines.append("")
-        
+
         # Constants
         if module.constants:
             lines.append("### Constants")
@@ -320,7 +326,7 @@ class DocumentationGenerator:
                     value = f"{value[:47]}..."
                 lines.append(f"- **`{name}`**: `{value}`")
             lines.append("")
-        
+
         # Classes
         if module.classes:
             lines.append("### Classes")
@@ -328,7 +334,7 @@ class DocumentationGenerator:
             for cls in module.classes:
                 lines.extend(self._format_class(cls))
             lines.append("")
-        
+
         # Functions
         if module.functions:
             lines.append("### Functions")
@@ -336,7 +342,7 @@ class DocumentationGenerator:
             for func in module.functions:
                 lines.extend(self._format_function(func))
             lines.append("")
-        
+
         # Dependencies
         if module.dependencies:
             lines.append("### Dependencies")
@@ -344,31 +350,31 @@ class DocumentationGenerator:
             for dep in sorted(module.dependencies):
                 lines.append(f"- `{dep}`")
             lines.append("")
-        
+
         return "\n".join(lines)
-    
+
     def _format_class(self, cls: ClassInfo) -> List[str]:
         """Format class documentation"""
         lines = [f"#### `{cls.name}`"]
         lines.append("")
-        
+
         # Bases
         if cls.bases:
             lines.append(f"**Inherits from:** {', '.join(f'`{b}`' for b in cls.bases)}")
             lines.append("")
-        
+
         # Docstring
         if cls.docstring:
             lines.append(cls.docstring)
             lines.append("")
-        
+
         # Attributes
         if cls.attributes:
             lines.append("**Attributes:**")
             for attr in cls.attributes:
                 lines.append(f"- `{attr}`")
             lines.append("")
-        
+
         # Methods
         if cls.methods:
             lines.append("**Methods:**")
@@ -381,40 +387,40 @@ class DocumentationGenerator:
                     first_line = method.docstring.split('\n')[0].strip()
                     lines.append(f"  - {first_line}")
                 lines.append("")
-        
+
         return lines
-    
+
     def _format_function(self, func: FunctionInfo) -> List[str]:
         """Format function documentation"""
         lines = []
-        
+
         sig = self._format_signature(func)
         lines.append(f"#### `{sig}`")
         lines.append("")
-        
+
         if func.decorators:
             lines.append(f"**Decorators:** {', '.join(f'`@{d}`' for d in func.decorators)}")
             lines.append("")
-        
+
         if func.docstring:
             lines.append(func.docstring)
             lines.append("")
-        
+
         return lines
-    
+
     def _format_signature(self, func: FunctionInfo) -> str:
         """Format function signature"""
         prefix = "async " if func.is_async else ""
         args_str = ", ".join(func.args)
         returns_str = f" -> {func.returns}" if func.returns else ""
         return f"{prefix}{func.name}({args_str}){returns_str}"
-    
+
     def generate_dependency_graph(self) -> str:
         """Generate dependency graph documentation"""
         lines = ["## Dependency Graph", ""]
         lines.append("Module dependencies within the project:")
         lines.append("")
-        
+
         for module, deps in sorted(self.dependency_graph.items()):
             if deps:
                 lines.append(f"### `{module}`")
@@ -423,15 +429,15 @@ class DocumentationGenerator:
                 for dep in sorted(deps):
                     lines.append(f"- `{dep}`")
                 lines.append("")
-        
+
         return "\n".join(lines)
-    
+
     def generate_api_reference(self) -> str:
         """Generate API reference for public interfaces"""
         lines = ["## API Reference", ""]
         lines.append("Public interfaces and their usage patterns.")
         lines.append("")
-        
+
         # Find provider interface
         for module in self.modules:
             if 'llm_interface' in module.module_name:
@@ -440,41 +446,41 @@ class DocumentationGenerator:
                 for cls in module.classes:
                     if 'Provider' in cls.name or 'Registry' in cls.name:
                         lines.extend(self._format_class(cls))
-        
+
         return "\n".join(lines)
-    
+
     def generate_all(self, output_dir: Optional[Path] = None):
         """Generate all documentation files"""
         if output_dir is None:
             output_dir = self.root_dir / "docs"
-        
+
         output_dir.mkdir(exist_ok=True)
-        
+
         print(f"📝 Generating documentation in {output_dir}...")
-        
+
         # Generate overview
         overview = self.generate_overview()
         (output_dir / "README.md").write_text(overview, encoding='utf-8')
         print("✓ Generated README.md")
-        
+
         # Generate module documentation
         modules_doc = [overview, ""]
         for module in sorted(self.modules, key=lambda m: m.module_name):
             modules_doc.append(self.generate_module_docs(module))
-        
+
         (output_dir / "MODULES.md").write_text("\n".join(modules_doc), encoding='utf-8')
         print("✓ Generated MODULES.md")
-        
+
         # Generate dependency graph
         dep_graph = self.generate_dependency_graph()
         (output_dir / "DEPENDENCIES.md").write_text(dep_graph, encoding='utf-8')
         print("✓ Generated DEPENDENCIES.md")
-        
+
         # Generate API reference
         api_ref = self.generate_api_reference()
         (output_dir / "API.md").write_text(api_ref, encoding='utf-8')
         print("✓ Generated API.md")
-        
+
         # Generate JSON manifest for programmatic access
         manifest = {
             "generated_at": str(Path.cwd()),
@@ -493,30 +499,31 @@ class DocumentationGenerator:
             ]
         }
         (output_dir / "manifest.json").write_text(
-            json.dumps(manifest, indent=2), 
+            json.dumps(manifest, indent=2),
             encoding='utf-8'
         )
         print("✓ Generated manifest.json")
-        
+
         print(f"\n✅ Documentation generated successfully in {output_dir}/")
 
 
 def main():
     """Main entry point"""
     root_dir = Path(__file__).parent.parent
-    
+
     print("=" * 60)
     print("MedBillDozer Automatic Documentation Generator")
     print("=" * 60)
     print()
-    
+
     generator = DocumentationGenerator(str(root_dir))
     generator.scan_codebase()
     generator.generate_all()
-    
+
     print()
     print("=" * 60)
 
 
 if __name__ == "__main__":
     main()
+

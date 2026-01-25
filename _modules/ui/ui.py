@@ -2,26 +2,27 @@ import streamlit as st
 import streamlit.components.v1 as components
 from pathlib import Path
 import base64
-import os
 import html
 import uuid
 import re
 from bs4 import BeautifulSoup
 from _modules.utils.runtime_flags import debug_enabled
-from _modules.ui.ui_pipeline_dag import render_pipeline_dag, render_pipeline_comparison
+from _modules.ui.ui_pipeline_dag import render_pipeline_dag
 from _modules.utils.image_paths import get_image_url
 
 
 # ==================================================
 # Savings estimation helpers (UI-only)
 # ==================================================
+
+
 def calculate_max_savings(issues):
     """
     Calculate the maximum potential savings from a list of billing issues.
-    
+
     Args:
         issues: List of Issue objects with optional max_savings attribute
-    
+
     Returns:
         tuple: (total_max (float), breakdown (list of dicts))
             - total_max: Sum of all max_savings values
@@ -47,7 +48,7 @@ def calculate_max_savings(issues):
 
 def render_savings_breakdown(title: str, total: float, breakdown: list[dict]):
     """Render a formatted savings breakdown UI component.
-    
+
     Args:
         title: Section title for the savings display
         total: Total maximum potential savings amount
@@ -86,9 +87,11 @@ def render_savings_breakdown(title: str, total: float, breakdown: list[dict]):
 # ==================================================
 # State helpers
 # ==================================================
+
+
 def toggle_expander_state(key: str):
     """Toggle the boolean state of an expander in session state.
-    
+
     Args:
         key: Session state key to toggle
     """
@@ -98,17 +101,21 @@ def toggle_expander_state(key: str):
 # ==================================================
 # Notifications
 # ==================================================
+
+
 def show_empty_warning():
     """Display warning message when no document is provided."""
     st.warning("Please paste a document to analyze.")
+
 
 def show_analysis_success():
     """Display success message after analysis completion."""
     st.success("Analysis complete")
 
+
 def show_analysis_error(msg: str):
     """Display error message during analysis.
-    
+
     Args:
         msg: Error message to display
     """
@@ -118,9 +125,11 @@ def show_analysis_error(msg: str):
 # ==================================================
 # Page config (MUST be first in app.py)
 # ==================================================
+
+
 def setup_page():
     """Configure Streamlit page settings. Must be called first in app.py.
-    
+
     Sets page title and centered layout.
     Opens sidebar by default if guided tour is active.
     """
@@ -128,7 +137,7 @@ def setup_page():
     initial_sidebar_state = "auto"
     if hasattr(st, 'session_state') and st.session_state.get('tour_active', False):
         initial_sidebar_state = "expanded"
-    
+
     st.set_page_config(
         page_title="medBillDozer",
         layout="centered",
@@ -139,9 +148,11 @@ def setup_page():
 # ==================================================
 # CSS (brand + layout)
 # ==================================================
+
+
 def inject_css():
     """Inject custom CSS styles for branding and UI consistency.
-    
+
     Includes styles for:
     - Brand colors and variables
     - Button styling (analyze button, copy buttons)
@@ -171,7 +182,7 @@ def inject_css():
         padding-right: 2rem;
         max-width: 900px;
     }
-    
+
     /* Give input fields breathing room */
     .stTextArea textarea, .stTextInput input {
         max-width: 100%;
@@ -185,7 +196,7 @@ def inject_css():
         margin-bottom: 0.8rem;
         color: #1F2937;
     }
-    
+
     /* Dark mode override for flag-warning */
     @media (prefers-color-scheme: dark) {
         .flag-warning {
@@ -194,7 +205,7 @@ def inject_css():
             color: #FEF3C7;
         }
     }
-    
+
     /* ===============================
     Analyze button (PRIMARY)
     =============================== */
@@ -284,7 +295,7 @@ def inject_css():
         margin-left: 5px;
         color: rgba(49, 51, 63, 0.6); /* Matches default Streamlit icon color */
     }
-    
+
     /* Ensure the button is wide enough to show the label */
     button[data-testid="stExpandSidebarButton"] {
         width: auto !important;
@@ -301,16 +312,16 @@ def inject_css():
     color: rgba(49, 51, 63, 0.7);
     white-space: nowrap;
     }
-    
+
     /* Prevent hidden sidebar elements from receiving focus */
     section[data-testid="stSidebar"][aria-expanded="false"] * {
         visibility: hidden !important;
     }
-    
+
     section[data-testid="stSidebar"][aria-expanded="false"] {
         visibility: visible !important;
     }
-    
+
     /* Remove from tab order when collapsed */
     section[data-testid="stSidebar"][aria-expanded="false"] button,
     section[data-testid="stSidebar"][aria-expanded="false"] input,
@@ -320,19 +331,19 @@ def inject_css():
         pointer-events: none !important;
         tabindex: -1 !important;
     }
-    
+
     /* Make widget containers responsive to sidebar */
     div[data-key="billdozer_widget"],
     div[data-key="guided_tour_widget"] {
         transition: margin-left 0.3s ease;
     }
-    
+
     @media (max-width: 768px) {
         #med-bill-dozer {
             font-size: 2rem;
         }
     }
-    
+
     /* Streamlit adds data-testid and data-key attributes */
     /* Widget container injected by Streamlit - full width responsive */
     div.st-key-billdozer_widget {
@@ -381,21 +392,21 @@ def inject_css():
        /* ===============================
         Copy button focus – theme aware
         =============================== */
-        
+
         button:focus-visible {
             outline-style: dashed;
             outline-width: 3px;
             outline-offset: 4px;
         }
         /* Light theme */
-        
+
         @media (prefers-color-scheme: light) {
             button:focus-visible {
                 outline-color: #000000;
             }
         }
         /* Dark theme */
-        
+
         @media (prefers-color-scheme: dark) {
             button:focus-visible {
                 outline-color: #F9FAFB;
@@ -441,13 +452,15 @@ def inject_css():
 # ==================================================
 # Header
 # ==================================================
+
+
 def render_header():
     """Render the application header with logo and tagline.
-    
+
     Displays the medBillDozer logo and descriptive text about the application's purpose.
     """
     logo_path = Path("static/images/medBillDozer-logo-transparent.png")
-    
+
     # Get logo URL (local file or CDN)
     logo_url = None
     if logo_path.exists():
@@ -455,7 +468,7 @@ def render_header():
         try:
             b64 = base64.b64encode(logo_path.read_bytes()).decode()
             logo_url = f"data:image/png;base64,{b64}"
-        except:
+        except Exception:
             # Fallback to URL-based approach
             logo_url = get_image_url("images/medBillDozer-logo-transparent.png")
     else:
@@ -498,12 +511,14 @@ def render_header():
 # ==================================================
 # Utilities
 # ==================================================
+
+
 def _read_html(path: str) -> str:
     """Read HTML file contents from disk.
-    
+
     Args:
         path: Path to HTML file
-    
+
     Returns:
         str: HTML file contents
     """
@@ -512,12 +527,12 @@ def _read_html(path: str) -> str:
 
 def html_to_plain_text(html_doc: str) -> str:
     """Convert HTML document to plain text.
-    
+
     Removes script and style tags, extracts text content, and normalizes whitespace.
-    
+
     Args:
         html_doc: HTML content as string
-    
+
     Returns:
         str: Cleaned plain text content
     """
@@ -532,10 +547,10 @@ def html_to_plain_text(html_doc: str) -> str:
 
 def copy_to_clipboard_button(label: str, text: str):
     """Render a custom button that copies text to clipboard.
-    
+
     Uses HTML/JavaScript component to enable clipboard functionality.
     Shows a brief success message after copying.
-    
+
     Args:
         label: Button label text
         text: Text content to copy when clicked
@@ -599,11 +614,11 @@ def copy_to_clipboard_button(label: str, text: str):
         <script>
         document.getElementById("{button_id}").onclick = async () => {{
             await navigator.clipboard.writeText(`{escaped}`);
-            
+
             // Show success message
             const message = document.getElementById("{message_id}");
             message.classList.add('show');
-            
+
             // Hide message after 2 seconds
             setTimeout(() => {{
                 message.classList.remove('show');
@@ -618,9 +633,11 @@ def copy_to_clipboard_button(label: str, text: str):
 # ==================================================
 # Document Rows (SINGLE SOURCE OF TRUTH)
 # ==================================================
+
+
 def render_document_rows(docs, html_docs, text_docs, key_prefix=""):
     """Render expandable document rows with toggle and copy functionality.
-    
+
     Args:
         docs: List of (title, path) tuples
         html_docs: List of HTML content strings
@@ -662,13 +679,14 @@ def render_document_rows(docs, html_docs, text_docs, key_prefix=""):
                 st.markdown("---")
 
 
-
 # ==================================================
 # Demo Documents (CLEAN + FINAL)
 # ==================================================
+
+
 def render_demo_documents():
     """Render the demo documents section with sample medical bills.
-    
+
     Displays 5 demo documents:
     - Hospital bill (colonoscopy)
     - Pharmacy receipt (FSA)
@@ -702,9 +720,11 @@ def render_demo_documents():
 # ==================================================
 # Inputs
 # ==================================================
+
+
 def render_input_area():
     """Render the main text input area for document analysis.
-    
+
     Returns:
         str: User input text from the text area
     """
@@ -717,12 +737,12 @@ def render_input_area():
 
 def render_provider_selector(providers: list[str]) -> str:
     """Render analysis provider selection dropdown.
-    
+
     Maps provider IDs to user-friendly display names.
-    
+
     Args:
         providers: List of available provider IDs
-    
+
     Returns:
         str: Selected provider ID
     """
@@ -752,12 +772,12 @@ def render_provider_selector(providers: list[str]) -> str:
 
 def render_analyze_button() -> bool:
     """Render the primary 'Analyze with medBillDozer' button.
-    
+
     Returns:
         bool: True if button was clicked, False otherwise
     """
     return st.button(
-        "🚜 Analyze with medBillDozer",
+        "Analyze with medBillDozer",
         key="analyze_button",
         use_container_width=True,
     )
@@ -765,7 +785,7 @@ def render_analyze_button() -> bool:
 
 def render_clear_history_button() -> bool:
     """Render a button to clear analysis history.
-    
+
     Returns:
         bool: True if button was clicked, False otherwise
     """
@@ -779,7 +799,7 @@ def render_clear_history_button() -> bool:
 
 def clear_analysis_history():
     """Clear all analysis-related data from session state.
-    
+
     Removes:
     - Analysis results and workflow logs
     - Extracted facts and normalized transactions
@@ -795,7 +815,7 @@ def clear_analysis_history():
         "billdozer_analysis_started",
         "billdozer_widget_initialized",
     ]
-    
+
     for key in keys_to_clear:
         if key in st.session_state:
             del st.session_state[key]
@@ -804,9 +824,11 @@ def clear_analysis_history():
 # ==================================================
 # Results
 # ==================================================
+
+
 def render_results(result):
     """Render analysis results including flagged issues and savings breakdown.
-    
+
     Args:
         result: AnalysisResult object or dict containing issues and metadata
     """
@@ -863,8 +885,11 @@ def render_results(result):
 # ==================================================
 # Footer
 # ==================================================
+
+
 def render_footer():
     """Render application footer with disclaimer."""
     st.caption(
         "medBillDozer is a prototype for educational purposes only."
     )
+

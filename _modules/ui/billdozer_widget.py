@@ -10,6 +10,8 @@ _WIDGET_HTML_CACHE = None
 # --------------------------------------------------
 # Widget HTML loader
 # --------------------------------------------------
+
+
 def get_billdozer_widget_html() -> str:
     """
     Loads and caches the Billdozer widget HTML.
@@ -42,6 +44,8 @@ def get_billdozer_widget_html() -> str:
 # --------------------------------------------------
 # Bridge install (parent <-> iframe handshake)
 # --------------------------------------------------
+
+
 def install_billdozer_bridge():
     components.html(
         f"""
@@ -80,6 +84,8 @@ def install_billdozer_bridge():
 # --------------------------------------------------
 # Message dispatcher
 # --------------------------------------------------
+
+
 def dispatch_widget_message(character: str, message: str):
     """
     Sends a speech message to the widget.
@@ -87,11 +93,11 @@ def dispatch_widget_message(character: str, message: str):
     Also stores message in session state transcript.
     """
     import streamlit as st
-    
+
     # Initialize transcript in session state
     if 'billdozer_transcript' not in st.session_state:
         st.session_state.billdozer_transcript = []
-    
+
     # Add to transcript with timestamp
     from datetime import datetime
     st.session_state.billdozer_transcript.append({
@@ -137,13 +143,15 @@ def dispatch_widget_message(character: str, message: str):
 # --------------------------------------------------
 # Sidebar widget renderer
 # --------------------------------------------------
+
+
 def render_billdozer_sidebar_widget():
     """Render billdozer widget in sidebar with bubble styling."""
     import streamlit as st
-    
+
     if not st.session_state.get("show_billdozer_widget", False):
         return
-    
+
     with st.sidebar:
         # Render widget in a styled bubble
         st.markdown("""
@@ -161,17 +169,18 @@ def render_billdozer_sidebar_widget():
             </div>
         </div>
         """, unsafe_allow_html=True)
-        
+
         # Render the actual widget iframe
         col_widget, col_close = st.columns([20, 1])
-        
+
         with col_close:
             if st.button("✕", key="dismiss_billdozer_sidebar"):
                 st.session_state.show_billdozer_widget = False
-        
+
         with col_widget:
             components.html(
                 get_billdozer_widget_html(),
                 height=180,
                 scrolling=False,
             )
+

@@ -40,22 +40,22 @@ FACT_KEYS: List[str] = [
 
 def _load_contextual_docs() -> str:
     """Load contextual documentation files to help guide the LLM.
-    
+
     Loads HAI-DEF alignment, competitive landscape, and cost analysis docs
     to provide context about medBillDozer's purpose and methodology.
-    
+
     Returns:
         str: Concatenated documentation content or empty string if files not found
     """
     docs_dir = Path(__file__).parent.parent.parent / "docs"
     context_files = [
         "HAI_DEF_ALIGNMENT.md",
-        "competitive_landscape.md", 
+        "competitive_landscape.md",
         "the_hidden_cost",
     ]
-    
+
     context_parts = []
-    
+
     for filename in context_files:
         filepath = docs_dir / filename
         if filepath.exists():
@@ -63,10 +63,10 @@ def _load_contextual_docs() -> str:
                 with open(filepath, 'r', encoding='utf-8') as f:
                     content = f.read()
                     context_parts.append(f"# {filename}\n\n{content}")
-            except Exception as e:
+            except Exception:
                 # Silently skip if file can't be read
                 pass
-    
+
     if context_parts:
         return "\n\n" + "="*80 + "\n" + "\n\n".join(context_parts) + "\n" + "="*80 + "\n\n"
     return ""
@@ -74,27 +74,27 @@ def _load_contextual_docs() -> str:
 
 def build_fact_extraction_prompt(document_text: str, include_context: bool = True) -> str:
     """Build provider-agnostic prompt for structured healthcare fact extraction.
-    
+
     Compatible with OpenAI, Gemini, MedGemma, or local LLMs.
     Optionally includes contextual documentation about medBillDozer's purpose.
-    
+
     Args:
         document_text: Raw document text
         include_context: Whether to include contextual documentation (default: True)
-    
+
     Returns:
         str: Formatted extraction prompt requesting JSON with FACT_KEYS
     """
-    
+
     # Load contextual documentation if requested
     context = _load_contextual_docs() if include_context else ""
 
     return f"""
 {context}You are extracting structured facts from healthcare-related documents.
 
-CONTEXT: You are part of medBillDozer, a consumer-first tool that helps patients 
-identify billing errors by performing cross-document reconciliation across medical 
-bills, pharmacy receipts, insurance claims (EOBs), and FSA/HSA documentation. 
+CONTEXT: You are part of medBillDozer, a consumer-first tool that helps patients
+identify billing errors by performing cross-document reconciliation across medical
+bills, pharmacy receipts, insurance claims (EOBs), and FSA/HSA documentation.
 Your role is to extract accurate facts to enable downstream error detection.
 
 
@@ -267,7 +267,6 @@ IMPORTANT CLASSIFICATION PRIORITY (highest wins):
 You MUST choose exactly one document_type.
 
 
-
 -----------------------------------
 RECEIPT-SPECIFIC GUIDANCE
 -----------------------------------
@@ -293,3 +292,4 @@ DOCUMENT:
 -----------------------------------
 {document_text}
 """
+

@@ -71,12 +71,12 @@ TUTORIAL_MESSAGES = {
 def load_tour_config() -> Dict:
     """Load guided tour configuration from app_config.yaml."""
     config_path = Path(__file__).parent.parent.parent / "app_config.yaml"
-    
+
     if config_path.exists():
         with open(config_path, 'r') as f:
             config = yaml.safe_load(f)
             return config.get('features', {}).get('guided_tour', {})
-    
+
     return {
         'enabled': False,
         'auto_launch_for_new_users': True,
@@ -90,13 +90,13 @@ def initialize_tour_state():
     """Initialize tour session state variables."""
     if 'tour_active' not in st.session_state:
         st.session_state.tour_active = False
-    
+
     if 'tutorial_step' not in st.session_state:
         st.session_state.tutorial_step = "welcome"
-    
+
     if 'tour_completed' not in st.session_state:
         st.session_state.tour_completed = False
-    
+
     if 'is_first_visit' not in st.session_state:
         st.session_state.is_first_visit = True
 
@@ -119,13 +119,13 @@ def end_tour():
 
 def advance_tour_step(next_step: str):
     """Advance to the next tutorial step.
-    
+
     Args:
         next_step: The next tutorial step to advance to
     """
     if next_step in TUTORIAL_STEPS:
         st.session_state.tutorial_step = next_step
-        
+
         # Switch narrator if needed
         if next_step in TUTORIAL_MESSAGES:
             character = TUTORIAL_MESSAGES[next_step]["character"]
@@ -136,15 +136,15 @@ def check_tour_progression():
     """Check app state and automatically advance tour steps when appropriate."""
     if not st.session_state.get('tour_active', False):
         return
-    
+
     current_step = st.session_state.get('tutorial_step', 'welcome')
-    
+
     # Auto-advance based on state changes
     if current_step == "upload_prompt":
         # Check if document has been loaded (text pasted into text area)
         # Check the actual document input field
         doc_input_0 = st.session_state.get('doc_input_0', '')
-        
+
         # Consider document loaded if there's substantial text (more than 50 chars)
         if doc_input_0 and len(doc_input_0.strip()) > 50:
             # Track that we detected the text to avoid re-triggering
@@ -152,7 +152,7 @@ def check_tour_progression():
                 st.session_state.tour_text_detected = True
                 advance_tour_step("document_loaded")
                 st.rerun()
-    
+
     elif current_step == "document_loaded":
         # Check if analysis has started (analyzing flag set)
         if st.session_state.get('analyzing', False):
@@ -160,16 +160,16 @@ def check_tour_progression():
         # Handle case where analysis completed without intermediate rerun
         elif st.session_state.get('doc_results', False) and not st.session_state.get('analyzing', False):
             advance_tour_step("review_issues")
-    
+
     elif current_step == "analysis_running":
         # Check if analysis is complete
         if st.session_state.get('doc_results') and not st.session_state.get('analyzing', False):
             advance_tour_step("review_issues")
-    
+
     elif current_step == "review_issues":
         # User can manually advance or we wait for them to explore results
         pass
-    
+
     elif current_step == "tour_complete":
         # Auto-end tour after showing final message
         end_tour()
@@ -177,13 +177,13 @@ def check_tour_progression():
 
 def get_tour_message() -> Optional[Dict]:
     """Get the current tour message based on tutorial step.
-    
+
     Returns:
         Dict with character, message, and action_prompt, or None if tour not active
     """
     if not st.session_state.get('tour_active', False):
         return None
-    
+
     current_step = st.session_state.get('tutorial_step', 'welcome')
     return TUTORIAL_MESSAGES.get(current_step)
 
@@ -191,20 +191,20 @@ def get_tour_message() -> Optional[Dict]:
 def render_tour_widget():
     """Render the guided tour widget with narrator guidance in the sidebar."""
     tour_config = load_tour_config()
-    
+
     if not tour_config.get('enabled', False):
         return
-    
+
     if not st.session_state.get('tour_active', False):
         return
-    
+
     tour_message = get_tour_message()
     if not tour_message:
         return
-    
+
     current_step = st.session_state.get('tutorial_step', 'welcome')
     show_skip = tour_config.get('show_skip_button', True)
-    
+
     # Render tour guidance in sidebar
     with st.sidebar:
         # Tour message box with gradient background
@@ -233,21 +233,21 @@ def render_tour_controls():
     """Render tour control buttons in sidebar."""
     if not st.session_state.get('tour_active', False):
         return
-    
+
     with st.sidebar:
         st.markdown("---")
         st.markdown("### 📚 Guided Tour")
-        
+
         current_step = st.session_state.get('tutorial_step', 'welcome')
         step_index = TUTORIAL_STEPS.index(current_step) if current_step in TUTORIAL_STEPS else 0
-        
+
         # Show progress
         st.progress(step_index / (len(TUTORIAL_STEPS) - 1))
         st.caption(f"Step {step_index + 1} of {len(TUTORIAL_STEPS)}: {current_step.replace('_', ' ').title()}")
         st.markdown("")
-        
+
         col1, col2 = st.columns(2)
-        
+
         with col1:
             # Next step button (for manual advancement on exploration steps)
             # Show Continue for welcome and exploration steps
@@ -257,13 +257,13 @@ def render_tour_controls():
                     next_step = TUTORIAL_STEPS[step_index + 1]
                     advance_tour_step(next_step)
                     st.rerun()
-        
+
         with col2:
             # End tour button
             if st.button("Exit Tour", key="tour_end", use_container_width=True):
                 end_tour()
                 st.rerun()
-        
+
         # Add a "Restart Tour" option
         st.markdown("")
         if st.button("🔄 Restart Tour", key="tour_restart", use_container_width=True):
@@ -273,22 +273,22 @@ def render_tour_controls():
 
 def should_auto_launch_tour() -> bool:
     """Determine if tour should auto-launch for new users.
-    
+
     Returns:
         True if tour should launch, False otherwise
     """
     tour_config = load_tour_config()
-    
+
     if not tour_config.get('enabled', False):
         return False
-    
+
     if not tour_config.get('auto_launch_for_new_users', True):
         return False
-    
+
     # Check if this is first visit and tour hasn't been completed
     is_first = st.session_state.get('is_first_visit', True)
     completed = st.session_state.get('tour_completed', False)
-    
+
     return is_first and not completed
 
 
@@ -300,6 +300,8 @@ def maybe_launch_tour():
 
 
 # Install message bridge for tour events
+
+
 def install_tour_bridge():
     """Install JavaScript bridge to handle tour events from widget."""
     components.html(
@@ -326,7 +328,7 @@ def open_sidebar_for_tour():
     """Open the sidebar automatically when tour is active."""
     if not st.session_state.get('tour_active', False):
         return
-    
+
     if not st.session_state.get('tour_sidebar_opened', False):
         components.html(
             """
@@ -346,3 +348,4 @@ def open_sidebar_for_tour():
             height=0,
         )
         st.session_state.tour_sidebar_opened = True
+

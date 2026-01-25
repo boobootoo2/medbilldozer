@@ -48,7 +48,7 @@ features:
 ui:
   # Page configuration
   page_title: "medBillDozer"
-  page_icon: "🚜"
+  page_icon: "�"
   layout: "wide"  # "wide" or "centered"
   
   # Sidebar configuration

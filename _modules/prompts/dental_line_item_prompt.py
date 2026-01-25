@@ -1,11 +1,12 @@
 """Prompt builder for dental bill line item extraction."""
 
+
 def build_dental_line_item_prompt(raw_text: str) -> str:
     """Build prompt for extracting line items from dental bills.
-    
+
     Args:
         raw_text: Raw dental bill text
-    
+
     Returns:
         str: Formatted prompt for LLM extraction
     """
@@ -39,3 +40,4 @@ RAW DOCUMENT:
 {raw_text}
 \"\"\"
 """
+

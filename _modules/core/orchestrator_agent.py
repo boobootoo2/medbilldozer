@@ -38,13 +38,13 @@ import json
 
 def _clean_llm_json(text: str) -> str:
     """Clean LLM output for JSON parsing.
-    
+
     Removes markdown fences, leading commentary, and other artifacts
     that prevent JSON parsing.
-    
+
     Args:
         text: Raw LLM output string
-        
+
     Returns:
         Cleaned string ready for JSON parsing
     """
@@ -64,12 +64,13 @@ def _clean_llm_json(text: str) -> str:
 
     return text.strip()
 
+
 def model_backend(model: str) -> Optional[str]:
     """Determine backend provider from model name.
-    
+
     Args:
         model: Model identifier string (e.g., 'gpt-4', 'gemini-1.5-flash')
-        
+
     Returns:
         Backend name ('openai', 'gemini') or None if unknown
     """
@@ -82,11 +83,11 @@ def model_backend(model: str) -> Optional[str]:
 
 def _run_phase2_prompt(prompt: str, model: str) -> Optional[str]:
     """Execute phase 2 line item parsing prompt using appropriate backend.
-    
+
     Args:
         prompt: Formatted prompt string for line item extraction
         model: Model identifier to use for execution
-        
+
     Returns:
         LLM response text or None if backend not supported
     """
@@ -99,7 +100,6 @@ def _run_phase2_prompt(prompt: str, model: str) -> Optional[str]:
         return run_prompt_gemini(prompt)
 
     return None
-
 
 
 def deterministic_issues_from_facts(facts: dict) -> list[Issue]:
@@ -145,7 +145,6 @@ def deterministic_issues_from_facts(facts: dict) -> list[Issue]:
             seen.add(key)
 
     return issues
-
 
 
 def deterministic_issues_from_facts(facts: dict) -> list[Issue]:
@@ -197,14 +196,15 @@ def deterministic_issues_from_facts(facts: dict) -> list[Issue]:
 
     return issues
 
+
 def compute_deterministic_savings(facts: dict) -> float:
     """Calculate total savings from deterministic issues.
-    
+
     Sums max_savings from all deterministic issues identified in facts.
-    
+
     Args:
         facts: Facts dictionary containing line items and extracted data
-        
+
     Returns:
         Total potential savings amount in dollars
     """
@@ -294,16 +294,15 @@ DOCUMENT_EXTRACTOR_MAP = {
 }
 
 
-
 def classify_document(text: str) -> Dict:
     """Classify document type using regex pattern matching.
-    
+
     Scores document against known patterns for medical bills, dental bills,
     pharmacy receipts, insurance claims, and FSA claims.
-    
+
     Args:
         text: Raw document text
-        
+
     Returns:
         Dict with document_type, confidence score, and pattern match scores
     """
@@ -335,13 +334,13 @@ def classify_document(text: str) -> Dict:
 
 def extract_pre_facts(text: str) -> Dict:
     """Extract lightweight heuristic facts before full extraction.
-    
+
     Provides fast, cheap feature detection (CPT codes, dental codes, Rx markers)
     for downstream routing and optimization.
-    
+
     Args:
         text: Raw document text
-        
+
     Returns:
         Dict with boolean flags and document statistics
     """
@@ -357,6 +356,8 @@ def extract_pre_facts(text: str) -> Dict:
 # --------------------------------------------------
 # Orchestrator Agent
 # --------------------------------------------------
+
+
 class OrchestratorAgent:
     def __init__(
         self,
@@ -370,12 +371,12 @@ class OrchestratorAgent:
 
     def run(self, raw_text: str, progress_callback=None) -> Dict:
         """Run document analysis pipeline with optional progress callbacks.
-        
+
         Args:
             raw_text: Raw document text to analyze
             progress_callback: Optional callable(workflow_log, step_status) for progress updates
                 step_status values: 'pre_extraction_active', 'extraction_active', 'line_items_active', 'analysis_active', 'complete'
-        
+
         Returns:
             Dict with facts, analysis, and _workflow_log
         """
@@ -395,7 +396,7 @@ class OrchestratorAgent:
         # --------------------------------------------------
         if progress_callback:
             progress_callback(workflow_log, "pre_extraction_active")
-        
+
         classification = classify_document(raw_text)
         pre_facts = extract_pre_facts(raw_text)
 
@@ -437,15 +438,15 @@ class OrchestratorAgent:
         # --------------------------------------------------
         if progress_callback:
             progress_callback(workflow_log, "extraction_active")
-        
+
         # Prepend profile context to raw text if available
         text_with_context = raw_text
         if self.profile_context:
             text_with_context = f"{self.profile_context}\n\n{'='*50}\nDOCUMENT TO ANALYZE:\n{'='*50}\n\n{raw_text}"
-        
+
         if extractor == "heuristic":
             facts = extract_facts_local(text_with_context)
-            
+
         elif extractor == "gemini":
             facts = extract_facts_gemini(text_with_context)
 
@@ -457,13 +458,13 @@ class OrchestratorAgent:
         workflow_log["extraction"]["extractor"] = extractor
         workflow_log["extraction"]["facts"] = facts
         workflow_log["extraction"]["fact_count"] = len(facts or {})
-        
+
         # --------------------------------------------------
         # 3️⃣b Phase-2 receipt line-item extraction (OPTIONAL)
         # --------------------------------------------------
         if progress_callback:
             progress_callback(workflow_log, "line_items_active")
-        
+
         document_type = facts.get("document_type")
 
         if document_type == "pharmacy_receipt":
@@ -621,7 +622,7 @@ class OrchestratorAgent:
         # call provider (fact-aware if possible)
         if progress_callback:
             progress_callback(workflow_log, "analysis_active")
-        
+
         try:
             analysis = provider.analyze_document(raw_text, facts=facts)
             # --- Add deterministic issues as first-class issues ---
@@ -651,7 +652,6 @@ class OrchestratorAgent:
         )
 
 
-
         if not hasattr(analysis, "meta") or analysis.meta is None:
             analysis.meta = {}
 
@@ -666,7 +666,6 @@ class OrchestratorAgent:
         analysis.meta["llm_max_savings"] = llm_total
 
 
-
         workflow_log["analysis"]["result"] = analysis
 
         # --------------------------------------------------
@@ -674,7 +673,7 @@ class OrchestratorAgent:
         # --------------------------------------------------
         if progress_callback:
             progress_callback(workflow_log, "complete")
-        
+
         return {
             "facts": facts,
             "analysis": analysis,
@@ -685,3 +684,4 @@ class OrchestratorAgent:
             },
             "_workflow_log": workflow_log,
         }
+

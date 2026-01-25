@@ -15,6 +15,7 @@ import streamlit as st
 # Type Definitions
 # ==============================================================================
 
+
 class HealthcareEntity(TypedDict):
     """Base type for healthcare entities."""
     id: str
@@ -128,16 +129,18 @@ CITIES = [
 # ==============================================================================
 
 @st.cache_data(ttl=None)
+
+
 def generate_fictional_insurance_companies(count: int = 30, seed: int = 42) -> List[InsuranceCompany]:
     """Generate deterministic fictional insurance companies.
-    
+
     Args:
         count: Number of insurance companies to generate (default: 30)
         seed: Random seed for deterministic generation (default: 42)
-    
+
     Returns:
         List of fictional insurance company entities
-    
+
     Example:
         >>> companies = generate_fictional_insurance_companies(30)
         >>> len(companies)
@@ -147,7 +150,7 @@ def generate_fictional_insurance_companies(count: int = 30, seed: int = 42) -> L
     """
     random.seed(seed)
     companies: List[InsuranceCompany] = []
-    
+
     network_types = ["national", "regional", "local"]
     plan_type_options = [
         ["HMO", "PPO"],
@@ -159,13 +162,13 @@ def generate_fictional_insurance_companies(count: int = 30, seed: int = 42) -> L
         ["EPO", "POS"],
         ["PPO", "HDHP"]
     ]
-    
+
     for i in range(count):
         # Generate unique fictional name
         prefix = random.choice(INSURANCE_PREFIXES)
         root = random.choice(INSURANCE_ROOTS)
         suffix = random.choice(INSURANCE_SUFFIXES)
-        
+
         # Occasionally skip prefix or suffix for variety
         if random.random() < 0.3:
             name = f"{root} {suffix}"
@@ -173,12 +176,12 @@ def generate_fictional_insurance_companies(count: int = 30, seed: int = 42) -> L
             name = f"{prefix} {root}"
         else:
             name = f"{prefix} {root} {suffix}"
-        
+
         # Add (DEMO) suffix to make it obvious
         name = f"{name} (DEMO)"
-        
+
         company_id = f"demo_ins_{i+1:03d}"
-        
+
         company: InsuranceCompany = {
             "id": company_id,
             "name": name,
@@ -197,12 +200,12 @@ def generate_fictional_insurance_companies(count: int = 30, seed: int = 42) -> L
                 </div>
             """
         }
-        
+
         companies.append(company)
-    
+
     # Reset seed to avoid affecting other random operations
     random.seed()
-    
+
     return companies
 
 
@@ -211,21 +214,23 @@ def generate_fictional_insurance_companies(count: int = 30, seed: int = 42) -> L
 # ==============================================================================
 
 @st.cache_data(ttl=None)
+
+
 def generate_fictional_healthcare_providers(
     count: int = 10000,
     seed: int = 42,
     insurance_company_ids: List[str] = None
 ) -> List[HealthcareProvider]:
     """Generate deterministic fictional healthcare providers.
-    
+
     Args:
         count: Number of providers to generate (default: 10,000)
         seed: Random seed for deterministic generation (default: 42)
         insurance_company_ids: List of insurance company IDs to randomly assign
-    
+
     Returns:
         List of fictional healthcare provider entities
-    
+
     Example:
         >>> providers = generate_fictional_healthcare_providers(100)
         >>> len(providers)
@@ -235,11 +240,11 @@ def generate_fictional_healthcare_providers(
     """
     random.seed(seed)
     providers: List[HealthcareProvider] = []
-    
+
     # Default insurance IDs if none provided
     if insurance_company_ids is None:
         insurance_company_ids = [f"demo_ins_{i+1:03d}" for i in range(30)]
-    
+
     for i in range(count):
         # Generate provider name (Dr. FirstName LastName format or Practice name)
         if random.random() < 0.7:
@@ -252,22 +257,22 @@ def generate_fictional_healthcare_providers(
             last_name = random.choice(PROVIDER_LAST_NAMES)
             practice_type = random.choice(PROVIDER_PRACTICE_TYPES)
             provider_name = f"{last_name} {practice_type}"
-        
+
         # Add (DEMO) suffix
         provider_name = f"{provider_name} (DEMO)"
-        
+
         provider_id = f"demo_prov_{i+1:06d}"
         specialty = random.choice(PROVIDER_SPECIALTIES)
         city = random.choice(CITIES)
         state = random.choice(US_STATES)
-        
+
         # Randomly assign 1-5 insurance networks
         num_insurances = random.randint(1, 5)
         accepted_insurances = random.sample(
             insurance_company_ids,
             min(num_insurances, len(insurance_company_ids))
         )
-        
+
         provider: HealthcareProvider = {
             "id": provider_id,
             "name": provider_name,
@@ -289,12 +294,12 @@ def generate_fictional_healthcare_providers(
                 </div>
             """
         }
-        
+
         providers.append(provider)
-    
+
     # Reset seed to avoid affecting other random operations
     random.seed()
-    
+
     return providers
 
 
@@ -303,21 +308,23 @@ def generate_fictional_healthcare_providers(
 # ==============================================================================
 
 @st.cache_data(ttl=None)
+
+
 def get_all_fictional_entities(
     insurance_count: int = 30,
     provider_count: int = 10000,
     seed: int = 42
 ) -> dict:
     """Generate all fictional entities in one call.
-    
+
     Args:
         insurance_count: Number of insurance companies (default: 30)
         provider_count: Number of healthcare providers (default: 10,000)
         seed: Random seed for deterministic generation (default: 42)
-    
+
     Returns:
         Dictionary with 'insurance' and 'providers' keys
-    
+
     Example:
         >>> entities = get_all_fictional_entities(30, 100)
         >>> len(entities['insurance'])
@@ -327,17 +334,17 @@ def get_all_fictional_entities(
     """
     # Generate insurance companies first
     insurance_companies = generate_fictional_insurance_companies(insurance_count, seed)
-    
+
     # Extract IDs for provider generation
     insurance_ids = [company['id'] for company in insurance_companies]
-    
+
     # Generate providers with insurance network assignments
     providers = generate_fictional_healthcare_providers(
         provider_count,
         seed,
         insurance_ids
     )
-    
+
     return {
         'insurance': insurance_companies,
         'providers': providers
@@ -346,14 +353,14 @@ def get_all_fictional_entities(
 
 def get_entity_by_id(entity_id: str, entities: List[HealthcareEntity]) -> HealthcareEntity | None:
     """Find an entity by ID.
-    
+
     Args:
         entity_id: The entity ID to search for
         entities: List of entities to search in
-    
+
     Returns:
         Entity dict if found, None otherwise
-    
+
     Example:
         >>> companies = generate_fictional_insurance_companies(30)
         >>> entity = get_entity_by_id('demo_ins_001', companies)
@@ -371,14 +378,14 @@ def filter_providers_by_specialty(
     specialty: str
 ) -> List[HealthcareProvider]:
     """Filter providers by specialty.
-    
+
     Args:
         providers: List of provider entities
         specialty: Specialty to filter by
-    
+
     Returns:
         Filtered list of providers
-    
+
     Example:
         >>> providers = generate_fictional_healthcare_providers(1000)
         >>> cardiologists = filter_providers_by_specialty(providers, 'Cardiology')
@@ -393,14 +400,14 @@ def filter_providers_by_insurance(
     insurance_id: str
 ) -> List[HealthcareProvider]:
     """Filter providers by accepted insurance.
-    
+
     Args:
         providers: List of provider entities
         insurance_id: Insurance company ID to filter by
-    
+
     Returns:
         Filtered list of providers that accept this insurance
-    
+
     Example:
         >>> entities = get_all_fictional_entities(30, 1000)
         >>> in_network = filter_providers_by_insurance(
@@ -415,13 +422,13 @@ def filter_providers_by_insurance(
 
 def get_entity_stats(entities: dict) -> dict:
     """Calculate statistics about generated entities.
-    
+
     Args:
         entities: Dictionary from get_all_fictional_entities()
-    
+
     Returns:
         Dictionary with statistics
-    
+
     Example:
         >>> entities = get_all_fictional_entities(30, 1000)
         >>> stats = get_entity_stats(entities)
@@ -432,19 +439,19 @@ def get_entity_stats(entities: dict) -> dict:
     """
     providers = entities['providers']
     insurance = entities['insurance']
-    
+
     # Count providers by specialty
     specialty_counts = {}
     for provider in providers:
         spec = provider['specialty']
         specialty_counts[spec] = specialty_counts.get(spec, 0) + 1
-    
+
     # Count providers by state
     state_counts = {}
     for provider in providers:
         state = provider['location_state']
         state_counts[state] = state_counts.get(state, 0) + 1
-    
+
     return {
         'total_insurance_companies': len(insurance),
         'total_providers': len(providers),
@@ -461,12 +468,13 @@ def get_entity_stats(entities: dict) -> dict:
 # Validation
 # ==============================================================================
 
+
 def validate_entity_uniqueness(entities: List[HealthcareEntity]) -> bool:
     """Validate that all entity IDs are unique.
-    
+
     Args:
         entities: List of entities to validate
-    
+
     Returns:
         True if all IDs are unique, False otherwise
     """
@@ -476,10 +484,10 @@ def validate_entity_uniqueness(entities: List[HealthcareEntity]) -> bool:
 
 def validate_entity_structure(entity: HealthcareEntity) -> bool:
     """Validate that an entity has required fields.
-    
+
     Args:
         entity: Entity to validate
-    
+
     Returns:
         True if entity is valid, False otherwise
     """
@@ -505,3 +513,4 @@ AVAILABLE_SPECIALTIES = sorted(PROVIDER_SPECIALTIES)
 
 # Available states (for UI filters)
 AVAILABLE_STATES = sorted(US_STATES)
+

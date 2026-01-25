@@ -84,3 +84,4 @@ DOCUMENT:
         }
 
         return AnalysisResult(issues=issues, meta=meta)
+

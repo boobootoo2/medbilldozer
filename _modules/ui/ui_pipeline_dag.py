@@ -7,30 +7,29 @@ document's analysis: classification → extraction → phase-2 parsing → analy
 import streamlit as st
 import streamlit.components.v1 as components
 from typing import Dict, List, Optional, Any
-import json
 
 
 def create_pipeline_dag_container(document_id: Optional[str] = None):
     """Create an empty expandable container for live pipeline updates.
-    
+
     Returns the container and placeholder objects for progressive updates.
-    
+
     Args:
         document_id: Optional document identifier for display
-        
+
     Returns:
         tuple: (expander, placeholder) for updating the DAG
     """
     doc_label = f"Document {document_id}" if document_id else "Document Analysis"
     expander = st.expander(f"📊 Pipeline Workflow: {doc_label}", expanded=False)
-    
+
     with expander:
         placeholder = st.empty()
         # Show initial plan outline
         with placeholder.container():
             st.markdown("### 📋 Analysis Plan")
             st.markdown(_build_initial_plan_html(), unsafe_allow_html=True)
-    
+
     return expander, placeholder
 
 
@@ -109,7 +108,7 @@ def _build_initial_plan_html() -> str:
 
 def update_pipeline_dag(placeholder, workflow_log: Dict[str, Any], document_id: Optional[str] = None, step_status: Optional[str] = None):
     """Update an existing pipeline DAG placeholder with current workflow state.
-    
+
     Args:
         placeholder: Streamlit placeholder object to update
         workflow_log: Current workflow log dict with pipeline stages
@@ -118,15 +117,15 @@ def update_pipeline_dag(placeholder, workflow_log: Dict[str, Any], document_id: 
     """
     if not workflow_log:
         return
-    
+
     # Extract pipeline stages
     pre_extraction = workflow_log.get("pre_extraction", {})
     extraction = workflow_log.get("extraction", {})
     analysis = workflow_log.get("analysis", {})
-    
+
     workflow_id = workflow_log.get("workflow_id", "N/A")
     timestamp = workflow_log.get("timestamp", "N/A")
-    
+
     # If step_status provided, show progressive status
     if step_status:
         progress_html = _build_progress_html(pre_extraction, extraction, analysis, step_status)
@@ -147,20 +146,20 @@ def update_pipeline_dag(placeholder, workflow_log: Dict[str, Any], document_id: 
 
 def _build_progress_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, step_status: str) -> str:
     """Build HTML showing progressive analysis status with current step highlighted.
-    
+
     Args:
         pre_extraction: Pre-extraction stage data
         extraction: Extraction stage data
         analysis: Analysis stage data
         step_status: Current step ('pre_extraction_active', 'extraction_active', 'line_items_active', 'analysis_active', 'complete')
-        
+
     Returns:
         HTML string with styled progress visualization
     """
     # Determine step states
     pre_extraction_done = bool(pre_extraction.get("classification"))
     extraction_done = bool(extraction.get("fact_count", 0) > 0)
-    
+
     # Check for line items
     receipt_items = extraction.get("receipt_item_count", 0)
     medical_items = extraction.get("medical_item_count", 0)
@@ -168,9 +167,9 @@ def _build_progress_html(pre_extraction: Dict, extraction: Dict, analysis: Dict,
     insurance_items = extraction.get("insurance_item_count", 0)
     fsa_items = extraction.get("fsa_item_count", 0)
     line_items_done = (receipt_items + medical_items + dental_items + insurance_items + fsa_items) > 0
-    
+
     analysis_done = bool(analysis.get("result"))
-    
+
     # Map status to styling
     def get_step_class(step_name: str, is_done: bool) -> tuple:
         """Return (icon, border_color, bg_color) for step."""
@@ -182,16 +181,16 @@ def _build_progress_html(pre_extraction: Dict, extraction: Dict, analysis: Dict,
             return "✅", "#38a169", "#f0fff4"
         else:
             return "⏳", "#cbd5e0", "#ffffff"
-    
+
     step1_icon, step1_border, step1_bg = get_step_class("pre_extraction", pre_extraction_done)
     step2_icon, step2_border, step2_bg = get_step_class("extraction", extraction_done)
     step3_icon, step3_border, step3_bg = get_step_class("line_items", line_items_done)
     step4_icon, step4_border, step4_bg = get_step_class("analysis", analysis_done)
-    
+
     # Get details for completed steps (with HTML stripping)
     import re
     from html import unescape, escape
-    
+
     def strip_html(text):
         """Strip HTML tags and decode entities, then escape for safe display."""
         if not isinstance(text, str):
@@ -200,7 +199,7 @@ def _build_progress_html(pre_extraction: Dict, extraction: Dict, analysis: Dict,
         text = unescape(text)
         text = re.sub(r'\s+', ' ', text).strip()
         return escape(text)
-    
+
     doc_type = strip_html(pre_extraction.get("classification", {}).get("document_type", "unknown"))
     fact_count = extraction.get("fact_count", 0)
     line_item_count = receipt_items + medical_items + dental_items + insurance_items + fsa_items
@@ -208,7 +207,7 @@ def _build_progress_html(pre_extraction: Dict, extraction: Dict, analysis: Dict,
     if analysis_done:
         result = analysis.get("result")
         issue_count = len(result.issues) if result and hasattr(result, 'issues') else 0
-    
+
     return f"""
     <style>
         .progress-container {{
@@ -294,13 +293,13 @@ def _build_progress_html(pre_extraction: Dict, extraction: Dict, analysis: Dict,
 
 def render_pipeline_dag(workflow_log: Dict[str, Any], document_id: Optional[str] = None):
     """Render a visual DAG showing the document processing pipeline.
-    
+
     Displays the complete workflow stages with status indicators:
     - Pre-extraction (classification & feature detection)
     - Extraction (fact extraction with chosen extractor)
     - Phase-2 parsing (line-item extraction by document type)
     - Analysis (issue detection with chosen analyzer)
-    
+
     Args:
         workflow_log: Workflow log dict from OrchestratorAgent containing pipeline stages
         document_id: Optional document identifier for display
@@ -308,26 +307,26 @@ def render_pipeline_dag(workflow_log: Dict[str, Any], document_id: Optional[str]
     if not workflow_log:
         st.warning("No workflow log available for pipeline visualization.")
         return
-    
+
     # Extract pipeline stages
     pre_extraction = workflow_log.get("pre_extraction", {})
     extraction = workflow_log.get("extraction", {})
     analysis = workflow_log.get("analysis", {})
-    
+
     # Document header
     doc_label = f"Document {document_id}" if document_id else "Document Analysis"
     workflow_id = workflow_log.get("workflow_id", "N/A")
     timestamp = workflow_log.get("timestamp", "N/A")
-    
+
     # Wrap entire pipeline in an expander/accordion
     with st.expander(f"📊 Pipeline Workflow: {doc_label}", expanded=True):
         st.caption(f"Workflow ID: `{workflow_id}` | Timestamp: `{timestamp}`")
-        
+
         # Create DAG visualization with custom CSS
         dag_html = _build_dag_html(pre_extraction, extraction, analysis)
-        
+
         components.html(dag_html, height=800, scrolling=True)
-        
+
         # Expandable detailed logs
         with st.expander("🔍 View Detailed Pipeline Logs", expanded=False):
             _render_detailed_logs(pre_extraction, extraction, analysis)
@@ -335,19 +334,19 @@ def render_pipeline_dag(workflow_log: Dict[str, Any], document_id: Optional[str]
 
 def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live_update: bool = False) -> str:
     """Build HTML representation of the DAG with status indicators.
-    
+
     Args:
         pre_extraction: Pre-extraction stage data
         extraction: Extraction stage data
         analysis: Analysis stage data
         live_update: Whether this is a live update (shows in-progress states)
-        
+
     Returns:
         HTML string with styled DAG visualization
     """
     import re
     from html import unescape, escape
-    
+
     def strip_html(text):
         """Strip HTML tags and decode entities, then escape for safe display."""
         if not isinstance(text, str):
@@ -360,37 +359,37 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
         text = re.sub(r'\s+', ' ', text).strip()
         # Escape for safe HTML display
         return escape(text)
-    
+
     # Extract key information
     classification = pre_extraction.get("classification", {})
     doc_type = strip_html(classification.get("document_type", "unknown"))
     confidence = classification.get("confidence", 0.0)
-    
+
     extractor = strip_html(pre_extraction.get("extractor_selected", "unknown"))
     extractor_reason = strip_html(pre_extraction.get("extractor_reason", ""))
-    
+
     fact_count = extraction.get("fact_count", 0)
-    
+
     # Determine stage completion
     has_pre_extraction = bool(pre_extraction)
     has_extraction = bool(extraction and fact_count > 0)
     has_analysis = bool(analysis.get("result"))
-    
+
     # Phase-2 line item counts
     receipt_items = extraction.get("receipt_item_count", 0)
     medical_items = extraction.get("medical_item_count", 0)
     dental_items = extraction.get("dental_item_count", 0)
     insurance_items = extraction.get("insurance_item_count", 0)
     fsa_items = extraction.get("fsa_item_count", 0)
-    
+
     phase2_count = receipt_items + medical_items + dental_items + insurance_items + fsa_items
-    
+
     analyzer = strip_html(analysis.get("analyzer", "unknown"))
     analysis_mode = strip_html(analysis.get("mode", "unknown"))
-    
+
     result = analysis.get("result")
     issue_count = len(result.issues) if result and hasattr(result, 'issues') else 0
-    
+
     # Determine phase-2 label based on document type
     phase2_label = "Phase-2 Parsing"
     if doc_type == "pharmacy_receipt":
@@ -403,7 +402,7 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
         phase2_label = "Insurance Claims"
     elif doc_type == "fsa_claim_history":
         phase2_label = "FSA Claims"
-    
+
     # Build HTML
     html = f"""
     <style>
@@ -416,13 +415,13 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
             border-radius: 12px;
             margin: 16px 0;
         }}
-        
+
         .dag-row {{
             display: flex;
             align-items: center;
             gap: 16px;
         }}
-        
+
         .dag-node {{
             flex: 1;
             padding: 16px 20px;
@@ -432,12 +431,12 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
             border-left: 4px solid #667eea;
             transition: transform 0.2s;
         }}
-        
+
         .dag-node:hover {{
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }}
-        
+
         .dag-node-title {{
             font-weight: 700;
             font-size: 14px;
@@ -447,19 +446,19 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
             align-items: center;
             gap: 8px;
         }}
-        
+
         .dag-node-content {{
             font-size: 13px;
             color: #4a5568;
             line-height: 1.6;
         }}
-        
+
         .dag-arrow {{
             color: #667eea;
             font-size: 24px;
             font-weight: bold;
         }}
-        
+
         .dag-badge {{
             display: inline-block;
             padding: 2px 8px;
@@ -469,23 +468,23 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
             background: #e6fffa;
             color: #047857;
         }}
-        
+
         .dag-badge.warning {{
             background: #fef3c7;
             color: #92400e;
         }}
-        
+
         .dag-badge.info {{
             background: #dbeafe;
             color: #1e40af;
         }}
-        
+
         .dag-metric {{
             font-weight: 600;
             color: #667eea;
         }}
     </style>
-    
+
     <div class="dag-container">
         <!-- Stage 1: Pre-Extraction -->
         <div class="dag-row">
@@ -505,7 +504,7 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
             </div>
             <div class="dag-arrow">↓</div>
         </div>
-        
+
         <!-- Stage 2: Extraction -->
         <div class="dag-row">
             <div class="dag-node">
@@ -513,7 +512,7 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
                     🎯 Stage 2: Fact Extraction
                 </div>
                 <div class="dag-node-content">
-                    {'<strong>Status:</strong> <span class="dag-badge warning">⏳ Waiting</span>' if not has_pre_extraction else 
+                    {'<strong>Status:</strong> <span class="dag-badge warning">⏳ Waiting</span>' if not has_pre_extraction else
                      '<strong>Status:</strong> <span class="dag-badge warning">⏳ In Progress</span>' if not has_extraction else f'''
                     <strong>Extractor:</strong> <span class="dag-badge">{extraction.get('extractor', 'N/A')}</span><br/>
                     <strong>Facts Extracted:</strong> <span class="dag-metric">{fact_count}</span> fields<br/>
@@ -523,10 +522,10 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
             </div>
             <div class="dag-arrow">↓</div>
         </div>
-        
+
         <!-- Stage 3: Phase-2 Line Item Parsing (if applicable) -->
         {_build_phase2_node(phase2_label, phase2_count, doc_type, extraction, has_extraction) if (has_extraction or not live_update) and phase2_count > 0 else ""}
-        
+
         <!-- Stage 4: Analysis -->
         <div class="dag-row">
             <div class="dag-node">
@@ -546,20 +545,20 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
         </div>
     </div>
     """
-    
+
     return html
 
 
 def _build_phase2_node(label: str, count: int, doc_type: str, extraction: Dict, has_extraction: bool = True) -> str:
     """Build Phase-2 parsing node HTML if line items were extracted.
-    
+
     Args:
         label: Display label for the phase-2 stage
         count: Number of line items extracted
         doc_type: Document type
         extraction: Extraction stage data for error checking
         has_extraction: Whether extraction stage is complete
-        
+
     Returns:
         HTML string for the phase-2 node
     """
@@ -571,9 +570,9 @@ def _build_phase2_node(label: str, count: int, doc_type: str, extraction: Dict, 
         "insurance_extraction_error",
         "fsa_extraction_error"
     ]
-    
+
     errors = [extraction.get(key) for key in error_keys if extraction.get(key)]
-    
+
     # Determine status based on completion
     if not has_extraction:
         status = "⏳ Waiting"
@@ -584,7 +583,7 @@ def _build_phase2_node(label: str, count: int, doc_type: str, extraction: Dict, 
     else:
         status = "✓ Complete"
         badge_class = ""
-    
+
     return f"""
         <div class="dag-row">
             <div class="dag-node">
@@ -604,16 +603,15 @@ def _build_phase2_node(label: str, count: int, doc_type: str, extraction: Dict, 
 
 def _render_detailed_logs(pre_extraction: Dict, extraction: Dict, analysis: Dict):
     """Render detailed logs in expandable JSON format.
-    
+
     Args:
         pre_extraction: Pre-extraction stage data
         extraction: Extraction stage data
         analysis: Analysis stage data
     """
-    import json
-    import re
+        import re
     from html import unescape
-    
+
     def strip_html(text):
         """Strip HTML tags and decode HTML entities from text."""
         if not isinstance(text, str):
@@ -625,7 +623,7 @@ def _render_detailed_logs(pre_extraction: Dict, extraction: Dict, analysis: Dict
         # Normalize whitespace
         text = re.sub(r'\s+', ' ', text).strip()
         return text
-    
+
     def clean_dict_html(data):
         """Recursively strip HTML from dictionary values."""
         if isinstance(data, dict):
@@ -635,30 +633,30 @@ def _render_detailed_logs(pre_extraction: Dict, extraction: Dict, analysis: Dict
         elif isinstance(data, str):
             return strip_html(data)
         return data
-    
+
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
         st.markdown("**Pre-Extraction Log**")
         # Remove result object for cleaner JSON
         clean_pre = {k: v for k, v in pre_extraction.items() if k != 'result'}
         clean_pre = clean_dict_html(clean_pre)
         st.json(clean_pre)
-    
+
     with col2:
         st.markdown("**Extraction Log**")
         # Remove facts for cleaner display (can be large)
         clean_extraction = {k: v for k, v in extraction.items() if k not in ['facts', 'result']}
         clean_extraction = clean_dict_html(clean_extraction)
         st.json(clean_extraction)
-    
+
     with col3:
         st.markdown("**Analysis Log**")
         # Remove full result object
         clean_analysis = {k: v for k, v in analysis.items() if k != 'result'}
         clean_analysis = clean_dict_html(clean_analysis)
         st.json(clean_analysis)
-    
+
     # Show extracted facts separately (HTML stripped)
     if extraction.get("facts"):
         st.markdown("**Extracted Facts (Plain Text)**")
@@ -668,28 +666,28 @@ def _render_detailed_logs(pre_extraction: Dict, extraction: Dict, analysis: Dict
 
 def render_pipeline_comparison(workflow_logs: List[Dict[str, Any]]):
     """Render side-by-side comparison of multiple document pipelines.
-    
+
     Useful for batch analysis to compare processing paths across documents.
-    
+
     Args:
         workflow_logs: List of workflow log dicts from multiple document analyses
     """
     if not workflow_logs:
         st.info("No workflow logs available for comparison.")
         return
-    
+
     st.markdown("### 📊 Multi-Document Pipeline Comparison")
-    
+
     # Create comparison table
     comparison_data = []
-    
+
     for idx, log in enumerate(workflow_logs, 1):
         pre = log.get("pre_extraction", {})
         extraction = log.get("extraction", {})
         analysis = log.get("analysis", {})
-        
+
         classification = pre.get("classification", {})
-        
+
         comparison_data.append({
             "Doc": f"#{idx}",
             "Type": classification.get("document_type", "unknown"),
@@ -706,5 +704,6 @@ def render_pipeline_comparison(workflow_logs: List[Dict[str, Any]]):
             "Analyzer": analysis.get("analyzer", "N/A"),
             "Issues": len(analysis.get("result", {}).issues) if hasattr(analysis.get("result", {}), 'issues') else 0,
         })
-    
+
     st.table(comparison_data)
+

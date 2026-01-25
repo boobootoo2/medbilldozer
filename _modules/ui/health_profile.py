@@ -20,7 +20,7 @@ SAMPLE_PROFILES = {
         "age": 51,
         "gender": "Male",
         "relationship": "Policy Holder",
-        
+
         # Insurance Information
         "insurance": {
             "provider": "Horizon PPO Plus",
@@ -65,7 +65,7 @@ SAMPLE_PROFILES = {
                 {"code": "71045", "description": "Chest X-Ray - Single View", "accepted_fee": 96.00},
             ],
         },
-        
+
         # Medical History
         "medical_history": {
             "conditions": [
@@ -109,7 +109,7 @@ SAMPLE_PROFILES = {
                 },
             ],
         },
-        
+
         # FSA/HSA Information
         "fsa_hsa": {
             "account_type": "FSA",
@@ -152,7 +152,7 @@ SAMPLE_PROFILES = {
             ],
         },
     },
-    
+
     "dependent": {
         "id": "DEP-001",
         "name": "Jane Sample",
@@ -160,7 +160,7 @@ SAMPLE_PROFILES = {
         "age": 39,
         "gender": "Female",
         "relationship": "Spouse",
-        
+
         # Insurance Information (covered under policy holder's plan)
         "insurance": {
             "provider": "Horizon PPO Plus",
@@ -206,7 +206,7 @@ SAMPLE_PROFILES = {
                 {"code": "71045", "description": "Chest X-Ray - Single View", "accepted_fee": 96.00},
             ],
         },
-        
+
         # Medical History
         "medical_history": {
             "conditions": [
@@ -263,7 +263,7 @@ SAMPLE_PROFILES = {
                 },
             ],
         },
-        
+
         # FSA/HSA Information (shared family account)
         "fsa_hsa": {
             "account_type": "FSA",
@@ -313,42 +313,43 @@ SAMPLE_PROFILES = {
 # Profile Rendering Functions
 # ==================================================
 
+
 def render_profile_selector():
     """Render profile selection dropdown.
-    
+
     Returns:
         str: Selected profile key ('policyholder', 'dependent', or None)
     """
     st.markdown("### 👤 Health Profile")
-    
+
     profile_options = {
         "": "-- Select a Profile --",
         "policyholder": "🔷 John Sample (Policy Holder)",
         "dependent": "🔶 Jane Sample (Dependent - Spouse)",
     }
-    
+
     selected = st.selectbox(
         "Load a pre-configured profile:",
         options=list(profile_options.keys()),
         format_func=lambda x: profile_options[x],
         key="profile_selector",
     )
-    
+
     return selected if selected else None
 
 
 def render_profile_details(profile_key: str):
     """Render detailed profile information in expandable sections.
-    
+
     Args:
         profile_key: Profile key ('policyholder' or 'dependent')
     """
     if profile_key not in SAMPLE_PROFILES:
         st.warning("⚠️ Profile not found")
         return
-    
+
     profile = SAMPLE_PROFILES[profile_key]
-    
+
     # Basic Information
     with st.expander("📋 Basic Information", expanded=True):
         col1, col2 = st.columns(2)
@@ -360,7 +361,7 @@ def render_profile_details(profile_key: str):
             st.markdown(f"**Gender:** {profile['gender']}")
             st.markdown(f"**Relationship:** {profile['relationship']}")
             st.markdown(f"**ID:** {profile['id']}")
-    
+
     # Insurance Information
     with st.expander("🏥 Insurance Information"):
         ins = profile['insurance']
@@ -376,9 +377,9 @@ def render_profile_details(profile_key: str):
             st.markdown(f"**Deductible Met:** ${ins['deductible_met']:,.2f}")
             st.markdown(f"**Out-of-Pocket Max:** ${ins['oop_max']:,.2f}")
             st.markdown(f"**OOP Met:** ${ins['oop_met']:,.2f}")
-        
+
         st.markdown("---")
-        
+
         # Network Providers
         col1, col2 = st.columns(2)
         with col1:
@@ -389,40 +390,40 @@ def render_profile_details(profile_key: str):
             st.markdown("**🟡 Out-of-Network Providers:**")
             for provider in ins.get('out_of_network_providers', []):
                 st.markdown(f"• {provider}")
-        
+
         st.markdown("---")
-        
+
         # In-Network Accepted Fees
         st.markdown("### 🟢 In-Network Accepted Fees")
         if 'in_network_codes' in ins:
             for item in ins['in_network_codes']:
                 st.markdown(f"**{item['code']}** - {item['description']}: ${item['accepted_fee']:,.2f}")
-        
+
         st.markdown("---")
-        
+
         # Out-of-Network Accepted Fees
         st.markdown("### 🟡 Out-of-Network Accepted Fees")
         st.markdown("*Reimbursement: 80% of accepted fee after deductible*")
         if 'out_of_network_codes' in ins:
             for item in ins['out_of_network_codes']:
                 st.markdown(f"**{item['code']}** - {item['description']}: ${item['accepted_fee']:,.2f}")
-    
+
     # Medical History
     with st.expander("🩺 Medical History"):
         med = profile['medical_history']
-        
+
         st.markdown("**Conditions:**")
         for condition in med['conditions']:
             st.markdown(f"- {condition}")
-        
+
         st.markdown("**Current Medications:**")
         for medication in med['medications']:
             st.markdown(f"- {medication}")
-        
+
         st.markdown("**Allergies:**")
         for allergy in med['allergies']:
             st.markdown(f"- ⚠️ {allergy}")
-    
+
     # Recent Procedures
     with st.expander("📅 Recent Procedures"):
         med = profile['medical_history']
@@ -440,7 +441,7 @@ def render_profile_details(profile_key: str):
                 st.markdown("---")
         else:
             st.info("No recent procedures recorded")
-    
+
     # Upcoming Appointments
     with st.expander("📆 Upcoming Appointments"):
         med = profile['medical_history']
@@ -452,7 +453,7 @@ def render_profile_details(profile_key: str):
                 st.markdown("---")
         else:
             st.info("No upcoming appointments scheduled")
-    
+
     # FSA/HSA Information
     with st.expander("💰 FSA/HSA Account"):
         fsa = profile['fsa_hsa']
@@ -467,13 +468,13 @@ def render_profile_details(profile_key: str):
             st.markdown(f"**Claims Approved:** {fsa['claims_approved']}")
             st.markdown(f"**Claims Pending:** {fsa['claims_pending']}")
             st.markdown(f"**Claims Denied:** {fsa['claims_denied']}")
-        
+
         st.markdown("---")
-        
+
         # Eligible Expenses
         st.markdown("### ✅ Eligible Expenses")
         st.markdown("*These expenses can be reimbursed through your FSA/HSA account:*")
-        
+
         # Display in 2 columns for better readability
         eligible = fsa.get('eligible_expenses', [])
         if eligible:
@@ -485,13 +486,13 @@ def render_profile_details(profile_key: str):
             with col2:
                 for expense in eligible[mid_point:]:
                     st.markdown(f"✅ {expense}")
-        
+
         st.markdown("---")
-        
+
         # Ineligible Expenses
         st.markdown("### ❌ Ineligible Expenses")
         st.markdown("*These expenses are NOT reimbursable:*")
-        
+
         ineligible = fsa.get('ineligible_expenses', [])
         if ineligible:
             for expense in ineligible:
@@ -500,10 +501,10 @@ def render_profile_details(profile_key: str):
 
 def get_profile_data(profile_key: str) -> Optional[Dict]:
     """Get profile data by key.
-    
+
     Args:
         profile_key: Profile key ('policyholder' or 'dependent')
-    
+
     Returns:
         Dict with profile data or None if not found
     """
@@ -512,36 +513,36 @@ def get_profile_data(profile_key: str) -> Optional[Dict]:
 
 def get_profile_context_for_analysis(profile_key: str) -> str:
     """Generate context string for LLM analysis based on profile.
-    
+
     Args:
         profile_key: Profile key ('policyholder' or 'dependent')
-    
+
     Returns:
         str: Formatted context string
     """
     profile = get_profile_data(profile_key)
     if not profile:
         return ""
-    
+
     ins = profile['insurance']
     med = profile['medical_history']
-    
+
     # Build in-network codes reference
     in_network_fees = "\n".join([
         f"  - {code['code']}: {code['description']} = ${code['accepted_fee']:.2f}"
         for code in ins.get('in_network_codes', [])
     ])
-    
+
     # Build out-of-network codes reference
     out_network_fees = "\n".join([
         f"  - {code['code']}: {code['description']} = ${code['accepted_fee']:.2f}"
         for code in ins.get('out_of_network_codes', [])
     ])
-    
+
     # Build provider network lists
     in_network_providers = "\n  - ".join(ins.get('in_network_providers', []))
     out_network_providers = "\n  - ".join(ins.get('out_of_network_providers', []))
-    
+
     context = f"""
 ========================================
 PATIENT PROFILE CONTEXT
@@ -587,3 +588,4 @@ BILLING VALIDATION INSTRUCTIONS:
 This profile context enables precise billing error detection and insurance coverage validation.
 """
     return context
+

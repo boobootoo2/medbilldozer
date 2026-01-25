@@ -13,12 +13,13 @@ from datetime import datetime
 # Canonical identity (internal)
 # ==================================================
 
+
 def build_canonical_string(facts: Dict[str, Optional[str]]) -> str:
     """Build canonical string representation of document facts.
-    
+
     Args:
         facts: Dictionary of document facts
-    
+
     Returns:
         str: Canonical string with sorted key-value pairs
     """
@@ -29,10 +30,10 @@ def build_canonical_string(facts: Dict[str, Optional[str]]) -> str:
 
 def hash_canonical(canonical: str) -> str:
     """Generate short hash from canonical string.
-    
+
     Args:
         canonical: Canonical string representation
-    
+
     Returns:
         str: First 10 characters of SHA256 hash
     """
@@ -43,13 +44,14 @@ def hash_canonical(canonical: str) -> str:
 # User-facing document label
 # ==================================================
 
+
 def _shorten(text: Optional[str], max_len=28) -> str:
     """Shorten text to maximum length, normalizing whitespace.
-    
+
     Args:
         text: Text to shorten
         max_len: Maximum length (default 28)
-    
+
     Returns:
         str: Shortened text or "Unknown" if text is None
     """
@@ -60,12 +62,12 @@ def _shorten(text: Optional[str], max_len=28) -> str:
 
 def _format_date(date_str: Optional[str]) -> str:
     """Parse and format date string to YYYY-MM-DD format.
-    
+
     Tries multiple common date formats. Returns original string if parsing fails.
-    
+
     Args:
         date_str: Date string in various formats
-    
+
     Returns:
         str: Date in YYYY-MM-DD format or original string
     """
@@ -83,10 +85,10 @@ def _format_date(date_str: Optional[str]) -> str:
 
 def _pretty_doc_type(doc_type: Optional[str]) -> Optional[str]:
     """Convert document type to user-friendly title case.
-    
+
     Args:
         doc_type: Document type string (e.g., 'insurance_claim')
-    
+
     Returns:
         Optional[str]: Title case string (e.g., 'Insurance Claim') or None
     """
@@ -95,19 +97,18 @@ def _pretty_doc_type(doc_type: Optional[str]) -> Optional[str]:
     return doc_type.replace("_", " ").title()
 
 
-
 def make_user_friendly_document_id(
     facts: Dict[str, Optional[str]],
     fallback_index: Optional[int] = None,
 ) -> str:
     """Generate user-friendly document label from facts.
-    
+
     Creates a readable label like "Provider Name · 2024-01-15 · Document Type"
-    
+
     Args:
         facts: Dictionary of document facts
         fallback_index: Optional index to append for disambiguation
-    
+
     Returns:
         str: User-friendly document label
     """
@@ -143,11 +144,12 @@ def make_user_friendly_document_id(
 # Identity enhancement
 # ==================================================
 
+
 def maybe_enhance_identity(doc: dict) -> None:
     """Enhance document with canonical identity and hash.
-    
+
     Modifies the document dict in-place to add '_identity' field if not present.
-    
+
     Args:
         doc: Document dict with 'facts' key
     """
@@ -173,3 +175,4 @@ def maybe_enhance_identity(doc: dict) -> None:
             facts=facts,
             fallback_index=doc.get("_index"),
         )
+

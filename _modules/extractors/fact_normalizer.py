@@ -24,10 +24,10 @@ TIME_INPUT_FORMATS = [
 
 def _normalize_string(value: Optional[str]) -> Optional[str]:
     """Normalize string to lowercase with collapsed whitespace.
-    
+
     Args:
         value: Input string to normalize
-        
+
     Returns:
         Normalized lowercase string with single spaces, or None if input is empty
     """
@@ -40,12 +40,12 @@ def _normalize_string(value: Optional[str]) -> Optional[str]:
 
 def _normalize_date(value: Optional[str]) -> Optional[str]:
     """Parse date string into ISO format (YYYY-MM-DD).
-    
+
     Tries multiple common date formats and returns first successful parse.
-    
+
     Args:
         value: Date string in various formats (e.g., 'January 18, 2026', '01/18/2026')
-        
+
     Returns:
         ISO-formatted date string (YYYY-MM-DD) or None if parse fails
     """
@@ -66,12 +66,12 @@ def _normalize_date(value: Optional[str]) -> Optional[str]:
 
 def _normalize_time(value: Optional[str]) -> Optional[str]:
     """Parse time string into 24-hour format (HH:MM).
-    
+
     Tries multiple time formats and returns 24-hour normalized format.
-    
+
     Args:
         value: Time string in various formats (e.g., '3:42 PM', '15:42')
-        
+
     Returns:
         24-hour formatted time string (HH:MM) or None if parse fails
     """
@@ -136,3 +136,4 @@ def normalize_facts(facts: Dict[str, Optional[str]]) -> Dict[str, Optional[str]]
             normalized[key] = value
 
     return normalized
+

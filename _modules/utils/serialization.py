@@ -8,12 +8,12 @@ result objects without requiring explicit imports.
 
 def issue_to_dict(issue):
     """Convert an Issue object to a dictionary.
-    
+
     Uses duck typing to extract attributes without importing domain models.
-    
+
     Args:
         issue: Issue object with type, summary, description, confidence attributes
-    
+
     Returns:
         dict: Dictionary representation of the issue
     """
@@ -32,12 +32,12 @@ def issue_to_dict(issue):
 
 def analysis_to_dict(result) -> dict:
     """Convert an AnalysisResult object into a pure dict.
-    
+
     Duck-typed to avoid importing domain models. Extracts issues and metadata.
-    
+
     Args:
         result: AnalysisResult object with issues and meta attributes
-    
+
     Returns:
         dict: Dictionary with 'issues' list and 'meta' dict
     """

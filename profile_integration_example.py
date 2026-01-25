@@ -18,6 +18,8 @@ from _modules.ui.profile_editor import (
 
 
 # Placeholder functions for example purposes
+
+
 def render_home_page():
     """Placeholder for your existing home page."""
     pass
@@ -32,6 +34,7 @@ def render_analysis_page():
 # STEP 2: Initialize session state (add to your existing initialization)
 # ==============================================================================
 
+
 def initialize_app_state():
     """Initialize application session state."""
     # Your existing state initialization...
@@ -44,6 +47,7 @@ def initialize_app_state():
 # ==============================================================================
 # STEP 3: Add navigation option (sidebar approach)
 # ==============================================================================
+
 
 def render_sidebar_navigation():
     """Render sidebar navigation with profile option."""
@@ -72,6 +76,7 @@ def render_sidebar_navigation():
 # ==============================================================================
 # STEP 4: Route to profile page in main()
 # ==============================================================================
+
 
 def main():
     """Main application entry point."""
@@ -102,6 +107,7 @@ def main():
 # ALTERNATIVE: Tab-based navigation
 # ==============================================================================
 
+
 def main_with_tabs():
     """Alternative main function using tabs instead of sidebar."""
 
@@ -128,6 +134,7 @@ def main_with_tabs():
 # ==============================================================================
 # USAGE EXAMPLE: Accessing profile data in your analysis
 # ==============================================================================
+
 
 def analyze_document_with_profile_context(document_text: str):
     """Example: Use profile data to enhance document analysis."""
@@ -175,6 +182,7 @@ def analyze_document_with_profile_context(document_text: str):
 # USAGE EXAMPLE: Check if user has completed profile setup
 # ==============================================================================
 
+
 def check_profile_completeness():
     """Check if user has completed their profile setup."""
     from _modules.ui.profile_editor import (
@@ -221,6 +229,7 @@ from _modules.ui.profile_editor import render_profile_editor, is_profile_editor_
 
 # 2. In your main() function, add navigation:
 
+
 def main():
     # ... your existing setup code ...
 
@@ -259,3 +268,4 @@ def main():
 # export IMPORTER_ENABLED=true
 # streamlit run app.py
 """
+

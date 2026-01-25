@@ -22,7 +22,7 @@ client = OpenAI()
 
 def _safe_empty_result() -> Dict[str, Optional[str]]:
     """Return empty facts dictionary with all keys set to None.
-    
+
     Returns:
         Dictionary with all FACT_KEYS mapped to None
     """
@@ -53,7 +53,7 @@ def extract_facts_openai(raw_text: str) -> Dict[str, Optional[str]]:
 
     prompt = build_fact_extraction_prompt(raw_text)
 
- 
+
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -76,6 +76,7 @@ def extract_facts_openai(raw_text: str) -> Dict[str, Optional[str]]:
         print(f"[langextract] failed: {e}")
         return _safe_empty_result()
 
+
 def run_prompt_openai(prompt: str) -> str:
     """
     Runs a raw prompt using OpenAI and returns the text response.
@@ -94,3 +95,4 @@ def run_prompt_openai(prompt: str) -> str:
 
     content = response.choices[0].message.content or ""
     return _clean_json(content)
+
