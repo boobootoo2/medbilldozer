@@ -4,6 +4,7 @@
 
 pytest==8.3.4
 pytest-mock==3.14.0
+flake8>=7.0.0  # Code linting
 PyYAML>=6.0  # Required for config.py tests
 beautifulsoup4>=4.12.0  # Required for ui.py HTML parsing
 google-genai>=1.0.0  # Required for imports (mocked in tests)
