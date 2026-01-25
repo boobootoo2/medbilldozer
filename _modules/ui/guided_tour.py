@@ -157,14 +157,17 @@ def check_tour_progression():
         # Check if analysis has started (analyzing flag set)
         if st.session_state.get('analyzing', False):
             advance_tour_step("analysis_running")
+            st.rerun()
         # Handle case where analysis completed without intermediate rerun
         elif st.session_state.get('doc_results', False) and not st.session_state.get('analyzing', False):
             advance_tour_step("review_issues")
+            st.rerun()
 
     elif current_step == "analysis_running":
         # Check if analysis is complete
         if st.session_state.get('doc_results') and not st.session_state.get('analyzing', False):
             advance_tour_step("review_issues")
+            st.rerun()
 
     elif current_step == "review_issues":
         # User can manually advance or we wait for them to explore results
@@ -205,6 +208,11 @@ def render_tour_widget():
     current_step = st.session_state.get('tutorial_step', 'welcome')
     show_skip = tour_config.get('show_skip_button', True)
 
+    # Calculate step number
+    step_index = TUTORIAL_STEPS.index(current_step) if current_step in TUTORIAL_STEPS else 0
+    step_number = step_index + 1
+    total_steps = len(TUTORIAL_STEPS)
+
     # Render tour guidance in sidebar
     with st.sidebar:
         # Tour message box with gradient background
@@ -216,6 +224,9 @@ def render_tour_widget():
             color: white;
             margin-bottom: 16px;
         ">
+            <div style="font-size: 11px; opacity: 0.85; margin-bottom: 8px;">
+                Step {step_number} of {total_steps}
+            </div>
             <div style="font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
                 {tour_message['character'].capitalize()} says:
             </div>

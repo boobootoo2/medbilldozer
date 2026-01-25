@@ -293,6 +293,20 @@ def main():
     bootstrap_ui_minimal()
 
     # --------------------------------------------------
+    # Guided Tour Controls (sidebar - at top)
+    # --------------------------------------------------
+    if should_enable_guided_tour():
+        render_tour_controls()
+
+    # --------------------------------------------------
+    # Guided Tour Widget (sidebar - instructions)
+    # --------------------------------------------------
+    if should_enable_guided_tour():
+        render_tour_widget()
+        open_sidebar_for_tour()
+
+
+    # --------------------------------------------------
     # Page Navigation (sidebar - at top)
     # --------------------------------------------------
     with st.sidebar:
@@ -312,6 +326,7 @@ def main():
                     st.rerun()
 
         st.markdown("---")
+
 
     # --------------------------------------------------
     # Route to Profile Editor if selected
@@ -346,19 +361,6 @@ def main():
     # --------------------------------------------------
     if is_privacy_ui_enabled():
         render_privacy_dialog()
-
-    # --------------------------------------------------
-    # Guided Tour Controls (sidebar - at top)
-    # --------------------------------------------------
-    if should_enable_guided_tour():
-        render_tour_controls()
-
-    # --------------------------------------------------
-    # Guided Tour Widget (sidebar - instructions)
-    # --------------------------------------------------
-    if should_enable_guided_tour():
-        render_tour_widget()
-        open_sidebar_for_tour()
 
     # --------------------------------------------------
     # Documentation Assistant (sidebar)
@@ -480,25 +482,36 @@ def main():
         st.success("✓ Analysis history cleared")
         st.rerun()
 
-    if analyze_clicked:
+    # Check if we should proceed with analysis (either button clicked or pending from tour rerun)
+    should_analyze = analyze_clicked or st.session_state.get('pending_analysis', False)
+
+    if should_analyze:
         if not documents:
             show_empty_warning()
             render_contextual_help('error')
+            st.session_state.pending_analysis = False
             return
         if selected_provider == "heuristic":
             show_analysis_error("Local (Offline) analysis isn't wired yet. Use Smart/OpenAI for now.")
             render_contextual_help('error')
+            st.session_state.pending_analysis = False
             return
+
+        # If tour is active and on document_loaded step, advance tour and rerun to show message
+        if (analyze_clicked and
+                st.session_state.get('tour_active', False) and
+                st.session_state.get('tutorial_step') == 'document_loaded'):
+            st.session_state.pending_analysis = True
+            st.session_state.analyzing = True
+            advance_tour_step('analysis_running')
+            st.rerun()
+
+        # Clear pending flag and proceed with analysis
+        st.session_state.pending_analysis = False
+        st.session_state.analyzing = True
 
         # Wrap entire analysis in a spinner
         with st.spinner("Analyzing your documents..."):
-            # Set analyzing flag for tour progression
-            st.session_state.analyzing = True
-
-            # Advance tour step immediately (without rerun to avoid double-click)
-            if (st.session_state.get('tour_active', False) and
-                    st.session_state.get('tutorial_step') == 'document_loaded'):
-                advance_tour_step('analysis_running')
 
             # Show analyzing context
             render_contextual_help('analyzing')
@@ -654,6 +667,8 @@ def main():
             if (st.session_state.get('tour_active', False) and
                     st.session_state.get('tutorial_step') == 'analysis_running'):
                 advance_tour_step('review_issues')
+                # Set flag to trigger widget update after rendering completes
+                st.session_state.tour_needs_refresh = True
 
             if is_coverage_matrix_enabled():
                 coverage_rows = build_coverage_matrix(documents)
@@ -671,6 +686,39 @@ def main():
 
             # Show results context help
             render_contextual_help('results')
+
+            # Save analysis state for potential rerun
+            st.session_state.last_documents = documents
+            st.session_state.last_total_savings = total_potential_savings
+            st.session_state.last_per_doc_savings = per_document_savings
+
+    # Trigger rerun to update tour widget if needed (results will redisplay)
+    if st.session_state.get('tour_needs_refresh', False):
+        st.session_state.tour_needs_refresh = False
+        st.rerun()
+
+    # Display previously analyzed results if they exist (e.g., after tour rerun)
+    elif st.session_state.get('last_documents') and st.session_state.get('doc_results', False):
+        documents = st.session_state.last_documents
+        total_potential_savings = st.session_state.get('last_total_savings', 0.0)
+        per_document_savings = st.session_state.get('last_per_doc_savings', {})
+
+        # Re-render results without re-analyzing
+        for doc in documents:
+            if doc.get("analysis"):
+                show_analysis_success()
+                render_results({
+                    "issues": doc["analysis"].issues,
+                    "_workflow_log": doc.get("_workflow_log")
+                })
+
+        render_total_savings_summary(total_potential_savings, per_document_savings)
+
+        if is_coverage_matrix_enabled():
+            coverage_rows = build_coverage_matrix(documents)
+            render_coverage_matrix(coverage_rows)
+
+        render_contextual_help('results')
 
     # --------------------------------------------------
     # Debug output (read-only)
