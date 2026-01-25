@@ -28,7 +28,7 @@ The current system asks "HOW do you want to upload?" but never asks "FROM WHICH 
 User Journey:
 1. Click "📥 Import Data" button
 2. Step 1: Choose ENTITY (the picker!)
-   
+
    ┌─────────────────────────────────────────┐
    │ Import From:                            │
    │ ○ Insurance Company  ○ Medical Provider │
@@ -66,19 +66,19 @@ User Journey:
 # What the current code does:
 def render_importer_step1():
     st.subheader("Step 1: Choose Data Source")
-    
+
     col1, col2 = st.columns(2)
-    
+
     with col1:
         st.markdown("### 🏥 Insurance Data")
         if st.button("📄 EOB (Explanation of Benefits)"):
             st.session_state.import_source_type = 'insurance_eob'
             st.session_state.import_wizard_step = 2
-        
+
         if st.button("📊 Insurance CSV Export"):
             st.session_state.import_source_type = 'insurance_csv'
             st.session_state.import_wizard_step = 2
-    
+
     with col2:
         st.markdown("### 👨‍⚕️ Provider Data")
         if st.button("🧾 Itemized Medical Bill"):
@@ -109,15 +109,15 @@ This asks "WHAT format?" but not "FROM WHERE?"
 # What it SHOULD do:
 def render_entity_picker():
     """Let user pick a fictional entity to import from."""
-    
+
     from _modules.data.fictional_entities import get_all_fictional_entities
     from _modules.ingest.api import ingest_document
-    
+
     st.subheader("📥 Import Healthcare Data")
-    
+
     # Get entities
     entities = get_all_fictional_entities()
-    
+
     # Entity type selector
     entity_type = st.radio(
         "Import From:",
@@ -125,13 +125,13 @@ def render_entity_picker():
         format_func=lambda x: "💳 Insurance Company" if x == "insurance" else "🏥 Medical Provider",
         horizontal=True
     )
-    
+
     # Get appropriate list
     if entity_type == "insurance":
         entity_list = entities['insurance']
     else:
         entity_list = entities['providers'][:100]  # Show first 100 for performance
-    
+
     # Dropdown selector
     entity_names = [e['name'] for e in entity_list]
     selected_name = st.selectbox(
@@ -139,10 +139,10 @@ def render_entity_picker():
         options=entity_names,
         help="Choose a fictional entity to simulate data import"
     )
-    
+
     # Find the selected entity
     selected_entity = next(e for e in entity_list if e['name'] == selected_name)
-    
+
     # Show entity details
     with st.expander("📋 Entity Details"):
         if entity_type == "insurance":
@@ -153,7 +153,7 @@ def render_entity_picker():
             st.write(f"**ID:** {selected_entity['id']}")
             st.write(f"**Specialty:** {selected_entity['specialty']}")
             st.write(f"**Location:** {selected_entity['location_city']}, {selected_entity['location_state']}")
-    
+
     # Number of items slider
     num_items = st.slider(
         "Number of transactions to import",
@@ -162,7 +162,7 @@ def render_entity_picker():
         value=5,
         help="How many billing line items to generate"
     )
-    
+
     # Import button
     if st.button("🚀 Import Data", type="primary", use_container_width=True):
         with st.spinner(f"Importing from {selected_name}..."):
@@ -174,9 +174,9 @@ def render_entity_picker():
                 "num_line_items": num_items,
                 "metadata": {"source": "profile_editor"}
             }
-            
+
             response = ingest_document(payload)
-            
+
             if response.success:
                 st.success(f"✅ Imported {response.line_items_created} transactions!")
                 st.balloons()
@@ -314,7 +314,7 @@ selected = st.radio(
     "Choose Insurance Company",
     options=[e['name'] for e in entities['insurance'][:5]],
     captions=[
-        f"{e['network_size']} network" 
+        f"{e['network_size']} network"
         for e in entities['insurance'][:5]
     ]
 )
@@ -325,7 +325,7 @@ selected = st.radio(
 Choose Insurance Company:
 ◉ Beacon Life (DEMO)
   national network
-○ Trust Prime (DEMO)  
+○ Trust Prime (DEMO)
   national network
 ○ Metropolitan Classic Group (DEMO)
   local network
@@ -390,20 +390,20 @@ Here's a **drop-in replacement** for Step 1 of the wizard:
 ```python
 def render_importer_step1_with_entity_picker():
     """Step 1: Pick entity (replaces old source type picker)."""
-    
+
     from _modules.data.fictional_entities import get_all_fictional_entities
     from _modules.ingest.api import ingest_document
-    
+
     st.subheader("Step 1: Choose Entity to Import From")
-    
+
     st.info("💡 This simulates connecting to a healthcare portal and importing your billing data.")
-    
+
     # Get entities
     entities = get_all_fictional_entities()
-    
+
     # Layout: 2 columns
     col1, col2 = st.columns([2, 1])
-    
+
     with col1:
         # Entity type
         entity_type = st.radio(
@@ -412,7 +412,7 @@ def render_importer_step1_with_entity_picker():
             format_func=lambda x: "💳 Insurance Company (EOBs, Claims)" if x == "insurance" else "🏥 Medical Provider (Bills, Invoices)",
             help="Insurance companies provide EOBs and claim history. Providers send itemized bills."
         )
-        
+
         # Get list
         if entity_type == "insurance":
             entity_list = entities['insurance']
@@ -420,7 +420,7 @@ def render_importer_step1_with_entity_picker():
         else:
             entity_list = entities['providers'][:50]  # Limit for performance
             icon = "🏥"
-        
+
         # Dropdown
         st.write(f"**{icon} Select Entity:**")
         entity_names = [e['name'] for e in entity_list]
@@ -430,10 +430,10 @@ def render_importer_step1_with_entity_picker():
             label_visibility="collapsed",
             help=f"Choose from {len(entity_list)} fictional entities"
         )
-        
+
         # Find entity
         selected_entity = next(e for e in entity_list if e['name'] == selected_name)
-        
+
         # Number of items
         num_items = st.slider(
             "📊 How many transactions to import?",
@@ -442,13 +442,13 @@ def render_importer_step1_with_entity_picker():
             value=5,
             help="Number of billing line items to generate"
         )
-    
+
     with col2:
         # Entity details card
         st.markdown("**📋 Entity Info:**")
         with st.container(border=True):
             st.write(f"**ID:** `{selected_entity['id']}`")
-            
+
             if entity_type == "insurance":
                 st.write(f"**Network:** {selected_entity['network_size'].title()}")
                 st.write(f"**Plans:**")
@@ -457,21 +457,21 @@ def render_importer_step1_with_entity_picker():
             else:
                 st.write(f"**Specialty:** {selected_entity['specialty']}")
                 st.write(f"**Location:** {selected_entity['location_city']}, {selected_entity['location_state']}")
-        
+
         # Preview button
         if st.button("👁️ Preview Portal", use_container_width=True):
             st.session_state.show_portal_preview = selected_entity['id']
-    
+
     st.markdown("---")
-    
+
     # Action buttons
     col1, col2, col3 = st.columns([1, 1, 1])
-    
+
     with col1:
         if st.button("← Back", use_container_width=True):
             st.session_state.profile_page = 'overview'
             st.rerun()
-    
+
     with col3:
         if st.button("🚀 Import Now", type="primary", use_container_width=True):
             # Do the import!
@@ -486,13 +486,13 @@ def render_importer_step1_with_entity_picker():
                         "entity_name": selected_name
                     }
                 }
-                
+
                 response = ingest_document(payload)
-                
+
                 if response.success:
                     st.success(f"✅ Successfully imported {response.line_items_created} transactions!")
                     st.balloons()
-                    
+
                     # Save job ID and advance to results
                     st.session_state.last_import_job_id = response.job_id
                     st.session_state.import_wizard_step = 3  # Skip to results
@@ -502,7 +502,7 @@ def render_importer_step1_with_entity_picker():
                     with st.expander("Error Details"):
                         for error in response.errors:
                             st.write(f"• {error}")
-    
+
     # Optional: Portal preview
     if st.session_state.get('show_portal_preview'):
         with st.expander("🌐 Portal Preview", expanded=True):
@@ -537,3 +537,4 @@ def render_importer_step1_with_entity_picker():
 - All data marked as "(DEMO)"
 
 Ready to integrate this into the Profile Editor! 🚀
+

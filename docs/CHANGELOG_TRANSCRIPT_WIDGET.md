@@ -13,8 +13,8 @@ Added a collapsible conversation transcript below the Billdozer animation widget
 **HTML Structure**:
 ```html
 <div class="transcript-section">
-    <button 
-        class="transcript-toggle" 
+    <button
+        class="transcript-toggle"
         id="transcriptToggle"
         aria-expanded="false"
         aria-controls="transcriptContent"
@@ -22,8 +22,8 @@ Added a collapsible conversation transcript below the Billdozer animation widget
         <span>📜 Conversation Transcript</span>
         <span class="transcript-arrow">▼</span>
     </button>
-    <div 
-        class="transcript-content" 
+    <div
+        class="transcript-content"
         id="transcriptContent"
         role="region"
         aria-label="Conversation transcript">
@@ -103,7 +103,7 @@ function addToTranscript(character, message) {
     `;
 
     transcriptContent.appendChild(item);
-    
+
     // Auto-scroll to bottom
     transcriptContent.scrollTop = transcriptContent.scrollHeight;
 }
@@ -118,10 +118,10 @@ window.addEventListener("message", (event) => {
     if (!data || data.type !== "CHARACTER_MESSAGE") return;
 
     const { character, message } = data.payload;
-    
+
     // Add to transcript (NEW)
     addToTranscript(character, message);
-    
+
     // Add to animation queue (EXISTING)
     queue.push(data.payload);
     if (!active) playNext();
@@ -244,3 +244,4 @@ Potential improvements:
 - **Persist Across Reruns**: Integrate with Python session state
 - **Copy to Clipboard**: One-click copy of full transcript
 - **Timezone Support**: Show local timezone in timestamps
+

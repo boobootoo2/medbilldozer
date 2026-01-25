@@ -42,7 +42,7 @@ entities = get_all_fictional_entities()
             ...
         },
         {
-            "id": "demo_ins_002", 
+            "id": "demo_ins_002",
             "name": "CarePlus Insurance (DEMO)",
             ...
         }
@@ -188,7 +188,7 @@ import_job = {
     "entity_name": "BlueWave Health (DEMO)",
     "status": "completed",
     "created_at": "2026-01-25T10:30:00Z",
-    
+
     "documents": [
         {
             "document_id": "doc_xyz789",
@@ -197,7 +197,7 @@ import_job = {
             "status": "extracted"
         }
     ],
-    
+
     "line_items": [
         {
             "line_item_id": "item_001",
@@ -215,7 +215,7 @@ import_job = {
         },
         # ... 4 more line items
     ],
-    
+
     "insurance_plan": {
         "carrier_name": "BlueWave Health (DEMO)",
         "plan_name": "BlueWave PPO Plus",
@@ -223,7 +223,7 @@ import_job = {
         "deductible_individual": 1500.00,
         ...
     },
-    
+
     "summary": {
         "total_billed": 750.00,
         "total_allowed": 600.00,
@@ -244,7 +244,7 @@ import_job = {
 import_job = {
     "job_id": "uuid-def456",
     "entity_name": "Dr. Sarah Johnson (DEMO)",
-    
+
     "line_items": [
         {
             "procedure_code": "99214",
@@ -255,7 +255,7 @@ import_job = {
             "source": "demo_sample"
         }
     ],
-    
+
     "provider": {
         "name": "Dr. Sarah Johnson (DEMO)",
         "specialty": "Family Medicine",
@@ -347,17 +347,17 @@ class InMemoryStorage:
     def __init__(self):
         # Simple nested dictionary
         self._data = {}  # user_id -> job_id -> import_job
-    
+
     def store_import(self, user_id, import_job):
         if user_id not in self._data:
             self._data[user_id] = {}
         self._data[user_id][import_job['job_id']] = import_job
-    
+
     def get_user_imports(self, user_id):
         return self._data.get(user_id, {}).values()
 ```
 
-**Pros**: Fast, simple, no setup  
+**Pros**: Fast, simple, no setup
 **Cons**: Lost when app restarts, not scalable
 
 ### Production Storage (Future)
@@ -399,27 +399,27 @@ The existing profile editor has a **wizard interface** but uses **mock extractio
 def render_entity_selector():
     """Let user pick a fictional entity to import from."""
     st.subheader("📥 Import Healthcare Data")
-    
+
     # Get entities
     entities = get_all_fictional_entities()
-    
+
     # Entity type
     entity_type = st.selectbox(
         "Source Type",
         ["insurance", "provider"],
         format_func=lambda x: "Insurance Company" if x == "insurance" else "Medical Provider"
     )
-    
+
     # Entity selection
     entity_list = entities['insurance'] if entity_type == 'insurance' else entities['providers']
     entity_options = {e['name']: e['id'] for e in entity_list}
-    
+
     selected_name = st.selectbox("Select Entity", options=list(entity_options.keys()))
     selected_id = entity_options[selected_name]
-    
+
     # Number of line items
     num_items = st.slider("Number of transactions to import", 1, 20, 5)
-    
+
     # Import button
     if st.button("🚀 Import Data", type="primary"):
         with st.spinner(f"Importing from {selected_name}..."):
@@ -431,9 +431,9 @@ def render_entity_selector():
                 "num_line_items": num_items,
                 "metadata": {"source": "profile_editor"}
             }
-            
+
             response = ingest_document(payload)
-            
+
             if response.success:
                 st.success(f"✅ Imported {response.line_items_created} transactions!")
                 st.session_state.last_import_job_id = response.job_id
@@ -446,15 +446,15 @@ def render_imported_data():
     if 'last_import_job_id' not in st.session_state:
         st.info("No data imported yet. Use the importer above.")
         return
-    
+
     # Get the data
     data = get_normalized_data(
         st.session_state.user_id,
         job_id=st.session_state.last_import_job_id
     )
-    
+
     st.subheader(f"📊 Imported Data ({data.total_line_items} items)")
-    
+
     # Show metadata
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -463,12 +463,12 @@ def render_imported_data():
         st.metric("You Pay", f"${data.metadata['total_patient_responsibility']:.2f}")
     with col3:
         st.metric("Providers", data.metadata['unique_providers'])
-    
+
     # Show line items table
     import pandas as pd
     df = pd.DataFrame(data.line_items)
     st.dataframe(
-        df[['service_date', 'procedure_description', 'billed_amount', 
+        df[['service_date', 'procedure_description', 'billed_amount',
             'patient_responsibility', 'provider_name']],
         use_container_width=True
     )
@@ -557,5 +557,6 @@ TEST 2: List Imports API
 - **Architecture**: `docs/INGESTION_SERVICE_README.md`
 - **Quick Reference**: `API_QUICKREF.md`
 
-**Status**: Fully functional, tested, ready for UI integration  
+**Status**: Fully functional, tested, ready for UI integration
 **Last Updated**: January 25, 2026
+

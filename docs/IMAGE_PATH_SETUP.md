@@ -75,10 +75,10 @@ All HTML files now include JavaScript to detect environment and set image source
 ```javascript
 function getImageBasePath() {
     const hostname = window.location.hostname;
-    const isLocal = hostname === 'localhost' || 
-                   hostname === '127.0.0.1' || 
+    const isLocal = hostname === 'localhost' ||
+                   hostname === '127.0.0.1' ||
                    /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname);
-    
+
     if (isLocal) {
         return 'app/static/images/avatars/transparent';
     } else {
@@ -198,3 +198,4 @@ Potential improvements:
 - Fallback images if CDN fails
 - Configurable CDN base URL via environment variable
 - Image caching strategies
+

@@ -39,7 +39,7 @@ This document describes the test suite for medBillDozer, a Streamlit application
 def test_init_with_valid_yaml_file(self, tmp_path):
     """When valid YAML exists, should load and merge with defaults."""
     config_file = tmp_path / "test_config.yaml"
-    
+
     test_config = {
         "features": {
             "assistant": {
@@ -48,16 +48,16 @@ def test_init_with_valid_yaml_file(self, tmp_path):
             }
         }
     }
-    
+
     with open(config_file, 'w') as f:
         yaml.dump(test_config, f)
-    
+
     config = AppConfig(config_path=config_file)
-    
+
     # Should merge: overrides take precedence
     assert config.config["features"]["assistant"]["enabled"] is False
     assert config.config["features"]["assistant"]["default_provider"] == "gemini"
-    
+
     # Should keep defaults for unspecified values
     assert config.config["features"]["dag"]["enabled"] is True
 ```
@@ -113,17 +113,17 @@ def test_get_answer_openai_calls_api_with_correct_params(self, mock_openai_class
     mock_build_prompt.return_value = "Test prompt"
     mock_client = Mock()
     mock_openai_class.return_value = mock_client
-    
+
     mock_response = Mock()
     mock_response.choices = [Mock()]
     mock_response.choices[0].message.content = "AI response"
     mock_client.chat.completions.create.return_value = mock_response
-    
+
     assistant = DocumentationAssistant.__new__(DocumentationAssistant)
     assistant.docs_cache = {}
-    
+
     result = assistant.get_answer_openai("test question")
-    
+
     # Verify OpenAI API parameters
     mock_client.chat.completions.create.assert_called_once()
     call_kwargs = mock_client.chat.completions.create.call_args[1]
@@ -288,3 +288,4 @@ tests/test_config.py::TestConfigEdgeCases::test_deep_merge_does_not_mutate_input
 **Application Code Modified**: 0 lines
 
 **Ready to Run**: After `pip install pytest pytest-mock`
+

@@ -13,7 +13,7 @@
 
 **Visual:**
 - Background: Light cream/yellow (#FFFBEB)
-- Border: Bright amber (#F59E0B) 
+- Border: Bright amber (#F59E0B)
 - Text: Dark gray (#1F2937)
 - **Result:** High contrast, easy to read
 
@@ -115,5 +115,6 @@ Consider adding dark mode support for:
 
 ---
 
-**Last Updated:** January 25, 2026  
+**Last Updated:** January 25, 2026
 **Related File:** `_modules/ui/ui.py` (lines 180-197)
+

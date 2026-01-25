@@ -609,7 +609,7 @@ def _render_detailed_logs(pre_extraction: Dict, extraction: Dict, analysis: Dict
         extraction: Extraction stage data
         analysis: Analysis stage data
     """
-        import re
+    import re
     from html import unescape
 
     def strip_html(text):

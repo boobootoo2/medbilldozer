@@ -23,10 +23,10 @@ To disable any feature, edit `app_config.yaml` and set `enabled: false`:
 features:
   assistant:
     enabled: false  # Disables the AI documentation assistant
-  
+
   dag:
     enabled: false  # Disables pipeline DAG visualization
-  
+
   debug:
     enabled: true   # Enables debug mode with extra developer options
 ```
@@ -107,12 +107,12 @@ ui:
   page_title: "medBillDozer"
   page_icon: "�"
   layout: "wide"  # or "centered"
-  
+
   sidebar:
     show_logo: true
     show_quick_help_buttons: true
     max_conversation_history: 3
-  
+
   results:
     show_savings_estimate: true
     show_line_items: true
@@ -128,7 +128,7 @@ ai_providers:
   available_providers:
     - "openai"
     - "gemini"
-  
+
   models:
     openai:
       analysis: "gpt-4o-mini"
@@ -314,3 +314,4 @@ ui:
 - See `docs/USER_GUIDE.md` for detailed usage instructions
 - Check console output for configuration loading warnings
 - Restore defaults by deleting custom values from YAML file
+

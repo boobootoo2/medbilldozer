@@ -20,7 +20,7 @@ import_job = import_sample_data(entity, num_line_items=5)
 
 # Result:
 # - 1 ImportJob record
-# - 1 Document record  
+# - 1 Document record
 # - 5 NormalizedLineItem records (with CPT codes, amounts, dates)
 ```
 
@@ -65,11 +65,11 @@ import_job = import_sample_data(entity, num_line_items=5)
 
 ## Key Features
 
-✅ **Realistic Data**: Proper CPT codes, realistic amounts, valid date ranges  
-✅ **Proper Relationships**: `allowed <= billed`, `patient_resp = allowed - paid`  
-✅ **Demo Markers**: All data clearly marked as DEMO/FICTIONAL  
-✅ **No I/O**: Pure data generation, no file/API operations  
-✅ **Deterministic**: Same seed = same output  
+✅ **Realistic Data**: Proper CPT codes, realistic amounts, valid date ranges
+✅ **Proper Relationships**: `allowed <= billed`, `patient_resp = allowed - paid`
+✅ **Demo Markers**: All data clearly marked as DEMO/FICTIONAL
+✅ **No I/O**: Pure data generation, no file/API operations
+✅ **Deterministic**: Same seed = same output
 ✅ **Fast**: <1ms with Streamlit caching
 
 ---
@@ -208,6 +208,7 @@ See `docs/HEALTH_DATA_INGESTION.md` for complete API reference, examples, and de
 
 ---
 
-**Status**: Production-ready ✅  
-**Tests**: All passing ✓  
+**Status**: Production-ready ✅
+**Tests**: All passing ✓
 **Safety**: All data clearly marked as DEMO
+

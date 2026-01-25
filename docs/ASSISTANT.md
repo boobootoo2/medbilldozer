@@ -16,7 +16,7 @@ The Documentation Assistant is an intelligent help system that appears in the si
 
 The assistant reads all documentation files and provides accurate answers to user questions:
 - Quick Start Guide
-- User Guide  
+- User Guide
 - Documentation Index
 - Project README
 
@@ -177,8 +177,8 @@ Contextual help appears as blue info boxes in the sidebar:
 ```
 ℹ️ Document Input Help
 
-Paste your complete medical bill, EOB, or receipt 
-text here. Include all details: headers, line items, 
+Paste your complete medical bill, EOB, or receipt
+text here. Include all details: headers, line items,
 dates, and amounts.
 ```
 
@@ -225,20 +225,20 @@ dates, and amounts.
 
 ### What the Assistant CAN Do
 
-✅ Answer questions about medBillDozer features  
-✅ Explain how to use the application  
-✅ Provide troubleshooting guidance  
-✅ Clarify documentation content  
-✅ Reference specific documentation sections  
+✅ Answer questions about medBillDozer features
+✅ Explain how to use the application
+✅ Provide troubleshooting guidance
+✅ Clarify documentation content
+✅ Reference specific documentation sections
 
 ### What the Assistant CANNOT Do
 
-❌ Provide medical advice  
-❌ Give legal guidance  
-❌ Interpret your specific bills (use the main analysis for that)  
-❌ Answer questions not covered in documentation  
-❌ Guarantee results or outcomes  
-❌ Make decisions for you  
+❌ Provide medical advice
+❌ Give legal guidance
+❌ Interpret your specific bills (use the main analysis for that)
+❌ Answer questions not covered in documentation
+❌ Guarantee results or outcomes
+❌ Make decisions for you
 
 ---
 
@@ -328,27 +328,27 @@ Potential improvements for future versions:
 ```python
 class DocumentationAssistant:
     """AI-powered documentation assistant."""
-    
+
     def __init__(self):
         """Initialize and load documentation files."""
-    
+
     def get_answer(self, question: str, provider: str = "openai") -> str:
         """Get AI-generated answer to question.
-        
+
         Args:
             question: User's question
             provider: 'openai' or 'gemini'
-            
+
         Returns:
             Answer text based on documentation
         """
-    
+
     def search_docs(self, query: str) -> List[Dict]:
         """Search documentation for keyword matches.
-        
+
         Args:
             query: Search term
-            
+
         Returns:
             List of matching sections with previews
         """
@@ -362,7 +362,7 @@ def render_doc_assistant():
 
 def render_contextual_help(context: str):
     """Show context-aware help message.
-    
+
     Args:
         context: 'input', 'demo', 'analyzing', 'results', or 'error'
     """
@@ -389,3 +389,4 @@ Found a bug or have a suggestion?
 ---
 
 **Happy documenting!** 🤖📚
+

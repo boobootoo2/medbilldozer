@@ -101,11 +101,11 @@ The easiest way to see how it works:
 
 ### What Documents Work Best?
 
-✅ **Medical Bills** - Procedure bills with CPT codes  
-✅ **Dental Bills** - Treatment bills with CDT codes  
-✅ **Pharmacy Receipts** - Prescription receipts  
-✅ **EOBs** - Explanation of Benefits from insurance  
-✅ **FSA/HSA Statements** - Claim history reports  
+✅ **Medical Bills** - Procedure bills with CPT codes
+✅ **Dental Bills** - Treatment bills with CDT codes
+✅ **Pharmacy Receipts** - Prescription receipts
+✅ **EOBs** - Explanation of Benefits from insurance
+✅ **FSA/HSA Statements** - Claim history reports
 
 ### How to Prepare Your Document:
 
@@ -147,10 +147,10 @@ The easiest way to see how it works:
 
 ### Your data is safe:
 
-✅ **No storage** - Documents are never saved to disk  
-✅ **No database** - No user accounts or data retention  
-✅ **No tracking** - We don't collect usage data  
-✅ **Session-only** - Everything clears when you close the tab  
+✅ **No storage** - Documents are never saved to disk
+✅ **No database** - No user accounts or data retention
+✅ **No tracking** - We don't collect usage data
+✅ **Session-only** - Everything clears when you close the tab
 
 ### Where does data go?
 
@@ -267,3 +267,4 @@ You're all set! Here's what to do next:
 ---
 
 **Happy bill auditing!** 🏥📊💪
+

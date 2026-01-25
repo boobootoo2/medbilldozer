@@ -84,7 +84,7 @@ python3 -m pytest tests/ -v
 tests/test_doc_assistant.py
 + import sys
 + from unittest.mock import MagicMock
-+ 
++
 + # Mock streamlit and its submodules
 + streamlit_mock = MagicMock()
 + streamlit_mock.components = MagicMock()
@@ -110,6 +110,7 @@ tests/test_doc_assistant.py
 
 ---
 
-**Problem**: Tests failed due to missing Streamlit dependency  
-**Solution**: Mock Streamlit in sys.modules before importing  
+**Problem**: Tests failed due to missing Streamlit dependency
+**Solution**: Mock Streamlit in sys.modules before importing
 **Result**: Tests run without Streamlit, CI passes ✅
+

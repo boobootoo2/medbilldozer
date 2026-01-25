@@ -79,9 +79,9 @@ if st.button("Import Data"):
         "entity_id": selected_entity['id'],
         "num_line_items": 5
     }
-    
+
     response = ingest_document(payload)
-    
+
     if response.success:
         st.success(f"Imported {response.line_items_created} line items")
         # Display data
@@ -161,11 +161,11 @@ This approach enables:
 
 ## What This System Does
 
-✅ **Demonstrates healthcare data aggregation patterns**  
-✅ **Generates realistic but fictional billing data**  
-✅ **Normalizes across different source types** (insurance EOBs, provider bills)  
-✅ **Provides clean programmatic interfaces**  
-✅ **Supports multi-user data isolation**  
+✅ **Demonstrates healthcare data aggregation patterns**
+✅ **Generates realistic but fictional billing data**
+✅ **Normalizes across different source types** (insurance EOBs, provider bills)
+✅ **Provides clean programmatic interfaces**
+✅ **Supports multi-user data isolation**
 ✅ **Shows production-ready architecture patterns**
 
 ---
@@ -367,5 +367,6 @@ See additional documentation:
 - `docs/HEALTH_DATA_INGESTION.md` - Data generation details
 - `docs/DATA_CONNECTOR_ARCHITECTURE.md` - Architecture decisions
 
-**Status**: Demo system, production architecture patterns  
+**Status**: Demo system, production architecture patterns
 **Last Updated**: January 25, 2026
+

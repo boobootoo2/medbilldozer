@@ -58,19 +58,19 @@ from _modules.ingest.api import ingest_document
 
 def render_entity_picker():
     """Let user pick an entity and import data."""
-    
+
     st.subheader("📥 Import Healthcare Data")
-    
+
     # Get entities
     entities = get_all_fictional_entities()
-    
+
     # Choose entity type
     entity_type = st.radio(
         "Import From:",
         ["Insurance Company", "Medical Provider"],
         horizontal=True
     )
-    
+
     # Get appropriate list
     if entity_type == "Insurance Company":
         entity_list = entities['insurance']
@@ -78,19 +78,19 @@ def render_entity_picker():
     else:
         entity_list = entities['providers']
         type_key = "provider"
-    
+
     # Create dropdown options
     entity_names = [e['name'] for e in entity_list]
-    
+
     selected_name = st.selectbox(
         "Select Entity",
         options=entity_names,
         help="Choose a fictional entity to simulate data import"
     )
-    
+
     # Find selected entity
     selected_entity = next(e for e in entity_list if e['name'] == selected_name)
-    
+
     # Show entity details
     with st.expander("📋 Entity Details"):
         if type_key == "insurance":
@@ -99,12 +99,12 @@ def render_entity_picker():
         else:
             st.write(f"**Specialty:** {selected_entity['specialty']}")
             st.write(f"**Location:** {selected_entity['location_city']}, {selected_entity['location_state']}")
-    
+
     # Import button
     col1, col2 = st.columns([3, 1])
     with col1:
         num_items = st.slider("Transactions to import", 1, 20, 5)
-    
+
     with col2:
         st.write("")  # Spacing
         if st.button("🚀 Import", type="primary", use_container_width=True):
@@ -113,7 +113,7 @@ def render_entity_picker():
 
 def import_from_entity(entity, entity_type, num_items):
     """Trigger the import."""
-    
+
     with st.spinner(f"Importing from {entity['name']}..."):
         # Call ingestion API
         payload = {
@@ -123,9 +123,9 @@ def import_from_entity(entity, entity_type, num_items):
             "num_line_items": num_items,
             "metadata": {"source": "entity_picker"}
         }
-        
+
         response = ingest_document(payload)
-        
+
         if response.success:
             st.success(f"✅ Imported {response.line_items_created} transactions!")
             st.session_state.last_import_job_id = response.job_id
@@ -141,18 +141,18 @@ def import_from_entity(entity, entity_type, num_items):
 ```python
 def render_entity_cards():
     """Display entities as cards with import buttons."""
-    
+
     st.subheader("📥 Import Healthcare Data")
-    
+
     entities = get_all_fictional_entities()
-    
+
     # Tabs for entity types
     tab1, tab2 = st.tabs(["💳 Insurance Companies", "🏥 Medical Providers"])
-    
+
     with tab1:
         st.write("Select an insurance company to import claims data:")
         render_insurance_cards(entities['insurance'])
-    
+
     with tab2:
         st.write("Select a medical provider to import billing data:")
         render_provider_cards(entities['providers'][:20])  # Show first 20
@@ -160,21 +160,21 @@ def render_entity_cards():
 
 def render_insurance_cards(insurance_list):
     """Render insurance companies as cards."""
-    
+
     # Show 3 per row
     for i in range(0, len(insurance_list), 3):
         cols = st.columns(3)
-        
+
         for idx, col in enumerate(cols):
             if i + idx < len(insurance_list):
                 company = insurance_list[i + idx]
-                
+
                 with col:
                     with st.container(border=True):
                         st.markdown(f"### {company['name']}")
                         st.caption(f"Network: {company['network_size'].title()}")
                         st.caption(f"Plans: {', '.join(company['plan_types'][:2])}")
-                        
+
                         if st.button(
                             "Import →",
                             key=f"import_{company['id']}",
@@ -185,28 +185,28 @@ def render_insurance_cards(insurance_list):
 
 def render_provider_cards(provider_list):
     """Render providers as cards."""
-    
+
     # Filter by specialty first
     specialties = sorted(set(p['specialty'] for p in provider_list))
     selected_specialty = st.selectbox("Filter by Specialty", ["All"] + specialties)
-    
+
     if selected_specialty != "All":
         provider_list = [p for p in provider_list if p['specialty'] == selected_specialty]
-    
+
     # Show in cards
     for i in range(0, len(provider_list), 3):
         cols = st.columns(3)
-        
+
         for idx, col in enumerate(cols):
             if i + idx < len(provider_list):
                 provider = provider_list[i + idx]
-                
+
                 with col:
                     with st.container(border=True):
                         st.markdown(f"### {provider['name']}")
                         st.caption(f"🏥 {provider['specialty']}")
                         st.caption(f"📍 {provider['location_city']}, {provider['location_state']}")
-                        
+
                         if st.button(
                             "Import →",
                             key=f"import_{provider['id']}",
@@ -217,16 +217,16 @@ def render_provider_cards(provider_list):
 
 def trigger_import(entity, entity_type):
     """Trigger import and save to session state."""
-    
+
     payload = {
         "user_id": st.session_state.get('user_id', 'demo_user_123'),
         "entity_type": entity_type,
         "entity_id": entity['id'],
         "num_line_items": 5
     }
-    
+
     response = ingest_document(payload)
-    
+
     if response.success:
         st.success(f"✅ Imported from {entity['name']}")
         st.session_state.last_import_job_id = response.job_id
@@ -238,11 +238,11 @@ def trigger_import(entity, entity_type):
 ```python
 def render_searchable_entities():
     """Searchable entity picker with filters."""
-    
+
     st.subheader("📥 Import Healthcare Data")
-    
+
     entities = get_all_fictional_entities()
-    
+
     # Entity type selector
     entity_type = st.radio(
         "Import From:",
@@ -250,34 +250,34 @@ def render_searchable_entities():
         format_func=lambda x: "💳 Insurance Company" if x == "insurance" else "🏥 Medical Provider",
         horizontal=True
     )
-    
+
     entity_list = entities['insurance'] if entity_type == 'insurance' else entities['providers']
-    
+
     # Search box
     search_term = st.text_input(
         "🔍 Search",
         placeholder="Search by name, specialty, location...",
         label_visibility="collapsed"
     )
-    
+
     # Filters
     if entity_type == 'insurance':
         col1, col2 = st.columns(2)
-        
+
         with col1:
             network_filter = st.multiselect(
                 "Network Size",
                 ["national", "regional", "local"],
                 default=["national", "regional", "local"]
             )
-        
+
         with col2:
             plan_filter = st.multiselect(
                 "Plan Types",
                 ["HMO", "PPO", "EPO", "POS", "HDHP"],
                 default=["HMO", "PPO", "EPO", "POS", "HDHP"]
             )
-        
+
         # Apply filters
         filtered = [
             e for e in entity_list
@@ -285,10 +285,10 @@ def render_searchable_entities():
             and any(plan in e['plan_types'] for plan in plan_filter)
             and (not search_term or search_term.lower() in e['name'].lower())
         ]
-    
+
     else:  # providers
         col1, col2 = st.columns(2)
-        
+
         with col1:
             specialties = sorted(set(p['specialty'] for p in entity_list))
             specialty_filter = st.multiselect(
@@ -296,7 +296,7 @@ def render_searchable_entities():
                 specialties,
                 default=specialties[:5]
             )
-        
+
         with col2:
             states = sorted(set(p['location_state'] for p in entity_list))
             state_filter = st.multiselect(
@@ -304,33 +304,33 @@ def render_searchable_entities():
                 states,
                 default=states[:10]
             )
-        
+
         # Apply filters
         filtered = [
             e for e in entity_list
             if e['specialty'] in specialty_filter
             and e['location_state'] in state_filter
-            and (not search_term or 
+            and (not search_term or
                  search_term.lower() in e['name'].lower() or
                  search_term.lower() in e['location_city'].lower())
         ]
-    
+
     # Show results
     st.write(f"**{len(filtered)} entities found**")
-    
+
     if filtered:
         # Display as table with import buttons
         for entity in filtered[:20]:  # Limit to 20 for performance
             with st.container(border=True):
                 col1, col2 = st.columns([4, 1])
-                
+
                 with col1:
                     st.markdown(f"**{entity['name']}**")
                     if entity_type == 'insurance':
                         st.caption(f"Network: {entity['network_size']} • Plans: {', '.join(entity['plan_types'][:2])}")
                     else:
                         st.caption(f"{entity['specialty']} • {entity['location_city']}, {entity['location_state']}")
-                
+
                 with col2:
                     if st.button("Import", key=f"btn_{entity['id']}", use_container_width=True):
                         trigger_import(entity, entity_type)
@@ -387,55 +387,55 @@ from _modules.ingest.api import ingest_document, get_normalized_data
 
 def render_data_connector_page():
     """Complete data connector page with entity picker."""
-    
+
     st.title("💳 Healthcare Data Connector")
     st.write("Import billing data from fictional healthcare entities (demo)")
-    
+
     # Initialize session state
     if 'user_id' not in st.session_state:
         st.session_state.user_id = 'demo_user_123'
-    
+
     # Two columns: picker and results
     col1, col2 = st.columns([1, 1])
-    
+
     with col1:
         render_entity_picker()
-    
+
     with col2:
         render_import_results()
 
 
 def render_entity_picker():
     """Left column: entity picker."""
-    
+
     st.subheader("📥 Select Entity")
-    
+
     entities = get_all_fictional_entities()
-    
+
     # Entity type
     entity_type = st.radio(
         "Type",
         ["insurance", "provider"],
         format_func=lambda x: "Insurance" if x == "insurance" else "Provider"
     )
-    
+
     # Get list
     entity_list = entities['insurance'] if entity_type == 'insurance' else entities['providers'][:50]
-    
+
     # Dropdown
     entity_names = [e['name'] for e in entity_list]
     selected_name = st.selectbox("Choose Entity", entity_names)
-    
+
     # Find entity
     selected = next(e for e in entity_list if e['name'] == selected_name)
-    
+
     # Details
     with st.expander("Details"):
         st.json({k: v for k, v in selected.items() if k != 'demo_portal_html'})
-    
+
     # Import
     num_items = st.slider("Transactions", 1, 20, 5)
-    
+
     if st.button("🚀 Import Data", type="primary", use_container_width=True):
         with st.spinner("Importing..."):
             payload = {
@@ -444,9 +444,9 @@ def render_entity_picker():
                 "entity_id": selected['id'],
                 "num_line_items": num_items
             }
-            
+
             response = ingest_document(payload)
-            
+
             if response.success:
                 st.success(f"✅ Imported {response.line_items_created} items!")
                 st.session_state.last_job = response.job_id
@@ -457,23 +457,23 @@ def render_entity_picker():
 
 def render_import_results():
     """Right column: results."""
-    
+
     st.subheader("📊 Imported Data")
-    
+
     if 'last_job' not in st.session_state:
         st.info("No data imported yet. Select an entity and click Import.")
         return
-    
+
     # Get data
     data = get_normalized_data(
         st.session_state.user_id,
         job_id=st.session_state.last_job
     )
-    
+
     if not data.success:
         st.error("Failed to load data")
         return
-    
+
     # Metrics
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -482,13 +482,13 @@ def render_import_results():
         st.metric("Total Billed", f"${data.metadata['total_billed']:.2f}")
     with col3:
         st.metric("You Pay", f"${data.metadata['total_patient_responsibility']:.2f}")
-    
+
     # Table
     import pandas as pd
     df = pd.DataFrame(data.line_items)
-    
+
     st.dataframe(
-        df[['service_date', 'procedure_description', 'billed_amount', 
+        df[['service_date', 'procedure_description', 'billed_amount',
             'patient_responsibility', 'provider_name']],
         use_container_width=True,
         hide_index=True
@@ -515,3 +515,4 @@ def render_import_results():
 4. Add filtering/sorting capabilities
 
 See `docs/HOW_INGESTION_WORKS.md` for complete integration guide.
+

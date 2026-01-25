@@ -363,7 +363,7 @@ Current: JSON Files
          ├──► Simple, portable, human-readable
          ├──► Good for < 10,000 line items
          └──► No dependencies
-         
+
 Future: SQLite
          │
          ├──► Better for > 10,000 line items
@@ -446,3 +446,4 @@ render_profile_editor() -> None  # Render entire profile editor UI
 ---
 
 This architecture provides a solid foundation for profile management while maintaining the privacy-first, local-first principles of medBillDozer.
+
