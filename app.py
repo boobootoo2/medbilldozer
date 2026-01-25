@@ -6,6 +6,7 @@ and UI rendering for detecting billing, pharmacy, dental, and insurance claim is
 # app.py
 import base64
 from pathlib import Path
+import os
 import streamlit as st
 import streamlit.components.v1 as components
 import json
@@ -90,7 +91,79 @@ from _modules.ui.billdozer_widget import (
     render_billdozer_sidebar_widget,
 )
 
+from _modules.ui.profile_editor import (
+    render_profile_editor,
+    is_profile_editor_enabled,
+)
 
+
+
+
+def check_access_password() -> bool:
+    """Check if access password is required and validate user input.
+    
+    Returns:
+        bool: True if access is granted, False if password gate should be shown
+    """
+    # Check if password is set via environment variable
+    required_password = os.environ.get('APP_ACCESS_PASSWORD', '')
+    
+    # If no password is set, grant access
+    if not required_password:
+        return True
+    
+    # Initialize session state for password
+    if 'access_granted' not in st.session_state:
+        st.session_state.access_granted = False
+    
+    # If already granted, allow access
+    if st.session_state.access_granted:
+        return True
+    
+    # Show password gate
+    st.markdown("""
+    <div style="text-align: center; padding: 50px 20px;">
+        <h1>🚜 medBillDozer</h1>
+        <p style="font-size: 18px; color: #666; margin-bottom: 30px;">Enter password to access</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Center the password input
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        password_input = st.text_input(
+            "Password",
+            type="password",
+            key="access_password_input",
+            label_visibility="collapsed",
+            placeholder="Enter access password"
+        )
+        
+        if st.button("Access App", use_container_width=True, type="primary"):
+            if password_input == required_password:
+                st.session_state.access_granted = True
+                st.rerun()
+            else:
+                st.error("❌ Incorrect password. Please try again.")
+    
+    return False
+
+
+def should_enable_guided_tour() -> bool:
+    """Check if guided tour should be enabled based on environment variable.
+    
+    Returns:
+        bool: True if tour should be enabled
+    """
+    # Check environment variable first (overrides config)
+    env_tour = os.environ.get('GUIDED_TOUR', '').upper()
+    if env_tour in ('TRUE', '1', 'YES', 'ON'):
+        return True
+    elif env_tour in ('FALSE', '0', 'NO', 'OFF'):
+        return False
+    
+    # Fall back to config file setting
+    return is_guided_tour_enabled()
 
 
 ENGINE_OPTIONS = {
@@ -140,7 +213,7 @@ def bootstrap_ui():
     render_header()
     
     # Skip demo help message when guided tour is active
-    if not is_guided_tour_enabled():
+    if not should_enable_guided_tour():
         render_contextual_help('demo')
     
     render_demo_documents()
@@ -196,6 +269,18 @@ def main():
     7. Render coverage matrix and debug info
     """
     # --------------------------------------------------
+    # Access Control Gate
+    # --------------------------------------------------
+    if not check_access_password():
+        return  # Stop rendering if password not entered
+    
+    # --------------------------------------------------
+    # Initialize Page Navigation
+    # --------------------------------------------------
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = 'home'
+    
+    # --------------------------------------------------
     # Bootstrap + providers
     # --------------------------------------------------
     bootstrap_ui()
@@ -204,7 +289,7 @@ def main():
     # --------------------------------------------------
     # Guided Tour Initialization
     # --------------------------------------------------
-    if is_guided_tour_enabled():
+    if should_enable_guided_tour():
         initialize_tour_state()
         maybe_launch_tour()
         # Check tour state at start of render to catch any pending step changes
@@ -223,15 +308,43 @@ def main():
         render_privacy_dialog()
 
     # --------------------------------------------------
+    # Page Navigation (sidebar - at top)
+    # --------------------------------------------------
+    with st.sidebar:
+        st.markdown("## 📱 Navigation")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("🏠 Home", use_container_width=True, type="primary" if st.session_state.current_page == 'home' else "secondary"):
+                st.session_state.current_page = 'home'
+                st.rerun()
+        
+        with col2:
+            if is_profile_editor_enabled():
+                if st.button("📋 Profile", use_container_width=True, type="primary" if st.session_state.current_page == 'profile' else "secondary"):
+                    st.session_state.current_page = 'profile'
+                    st.rerun()
+        
+        st.markdown("---")
+    
+    # --------------------------------------------------
+    # Route to Profile Editor if selected
+    # --------------------------------------------------
+    if st.session_state.current_page == 'profile' and is_profile_editor_enabled():
+        render_profile_editor()
+        return  # Skip rest of home page rendering
+    
+    # --------------------------------------------------
     # Guided Tour Controls (sidebar - at top)
     # --------------------------------------------------
-    if is_guided_tour_enabled():
+    if should_enable_guided_tour():
         render_tour_controls()
 
     # --------------------------------------------------
     # Guided Tour Widget (sidebar - instructions)
     # --------------------------------------------------
-    if is_guided_tour_enabled():
+    if should_enable_guided_tour():
         render_tour_widget()
         open_sidebar_for_tour()
 
