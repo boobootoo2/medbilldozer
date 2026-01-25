@@ -213,17 +213,17 @@ Please provide a helpful, accurate answer based on the documentation above. If t
         except Exception as e:
             return f"❌ Gemini API Error: {str(e)}\n\nPlease check your GOOGLE_API_KEY environment variable."
     
-    def get_answer(self, user_question: str, provider: str = "openai") -> str:
+    def get_answer(self, user_question: str, provider: str = "gpt-4o-mini") -> str:
         """Get answer using specified AI provider.
         
         Args:
             user_question: The user's question
-            provider: AI provider to use ('openai' or 'gemini')
+            provider: AI provider to use ('gpt-4o-mini' or 'gemini-2.0-flash-exp')
             
         Returns:
             AI-generated answer based on documentation
         """
-        if provider == "gemini":
+        if provider == "gemini-2.0-flash-exp":
             return self.get_answer_gemini(user_question)
         else:
             return self.get_answer_openai(user_question)
@@ -320,12 +320,12 @@ def render_doc_assistant():
         avatar_html = f"""
         <div style="display: flex; justify-content: center; padding: 12px 0;">
             <div style="display: flex; flex-direction: column; align-items: center;">
-                <div class="child-div nameplate {character}" id="billyAvatar">
-                    <img class="avatar-img" src="{img_ready}" style="display: block;">
-                    <img class="avatar-img" src="{img_closed}" style="display: none;">
-                    <img class="avatar-img" src="{img_talking}" style="display: none;">
-                    <img class="avatar-img" src="{img_talking_closed}" style="display: none;">
-                    <img class="avatar-img" src="{img_smiling}" style="display: none;">
+                <div class="child-div nameplate {character}" id="billyAvatar" role="img" aria-label="{character.capitalize()} avatar animation">
+                    <img class="avatar-img" src="{img_ready}" alt="{character.capitalize()} ready" style="display: block;">
+                    <img class="avatar-img" src="{img_closed}" alt="{character.capitalize()} eyes closed" style="display: none;">
+                    <img class="avatar-img" src="{img_talking}" alt="{character.capitalize()} talking" style="display: none;">
+                    <img class="avatar-img" src="{img_talking_closed}" alt="{character.capitalize()} talking with eyes closed" style="display: none;">
+                    <img class="avatar-img" src="{img_smiling}" alt="{character.capitalize()} smiling" style="display: none;">
                 </div>
             </div>
         </div>
@@ -544,7 +544,7 @@ def render_doc_assistant():
     # AI provider selection
     ai_provider = st.sidebar.selectbox(
         "Assistant AI Provider:",
-        ["openai", "gemini"],
+        ["gpt-4o-mini", "gemini-2.0-flash-exp"],
         help="Choose which AI service to use for the assistant"
     )
     
