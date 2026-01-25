@@ -122,10 +122,17 @@ def setup_page():
     """Configure Streamlit page settings. Must be called first in app.py.
     
     Sets page title and centered layout.
+    Opens sidebar by default if guided tour is active.
     """
+    # Check if tour is active to open sidebar by default
+    initial_sidebar_state = "auto"
+    if hasattr(st, 'session_state') and st.session_state.get('tour_active', False):
+        initial_sidebar_state = "expanded"
+    
     st.set_page_config(
         page_title="medBillDozer",
-        layout="centered"
+        layout="centered",
+        initial_sidebar_state=initial_sidebar_state
     )
 
 
@@ -303,6 +310,12 @@ def inject_css():
         tabindex: -1 !important;
     }
     
+    /* Make widget containers responsive to sidebar */
+    div[data-key="billdozer_widget"],
+    div[data-key="guided_tour_widget"] {
+        transition: margin-left 0.3s ease;
+    }
+    
     @media (max-width: 768px) {
         #med-bill-dozer {
             font-size: 2rem;
@@ -404,6 +417,11 @@ def inject_css():
             outline: 3px dashed currentColor;
             outline-offset: 4px;
             border-radius: 6px;
+        }
+        .st-key-guided_tour_widget {
+            position: fixed;
+            z-index: 1000;
+            bottom: 20px;
         }
 
     """, unsafe_allow_html=True)

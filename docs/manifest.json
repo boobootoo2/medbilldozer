@@ -1,6 +1,6 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 31,
+  "total_modules": 32,
   "modules": [
     {
       "name": "_modules.ui.doc_assistant",
@@ -43,11 +43,23 @@
       "constants": []
     },
     {
+      "name": "_modules.ui.guided_tour",
+      "filepath": "_modules/ui/guided_tour.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 13,
+      "num_dependencies": 0,
+      "constants": [
+        "TUTORIAL_STEPS",
+        "TUTORIAL_MESSAGES"
+      ]
+    },
+    {
       "name": "_modules.ui.billdozer_widget",
       "filepath": "_modules/ui/billdozer_widget.py",
       "has_docstring": false,
       "num_classes": 0,
-      "num_functions": 3,
+      "num_functions": 4,
       "num_dependencies": 0,
       "constants": [
         "BILLDOZER_TOKEN",
@@ -166,7 +178,7 @@
       "filepath": "_modules/utils/config.py",
       "has_docstring": true,
       "num_classes": 1,
-      "num_functions": 7,
+      "num_functions": 8,
       "num_dependencies": 0,
       "constants": []
     },
@@ -296,7 +308,7 @@
       "has_docstring": true,
       "num_classes": 0,
       "num_functions": 4,
-      "num_dependencies": 19,
+      "num_dependencies": 20,
       "constants": [
         "ENGINE_OPTIONS"
       ]

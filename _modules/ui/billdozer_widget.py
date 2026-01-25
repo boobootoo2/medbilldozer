@@ -132,3 +132,46 @@ def dispatch_widget_message(character: str, message: str):
         """,
         height=0,
     )
+
+
+# --------------------------------------------------
+# Sidebar widget renderer
+# --------------------------------------------------
+def render_billdozer_sidebar_widget():
+    """Render billdozer widget in sidebar with bubble styling."""
+    import streamlit as st
+    
+    if not st.session_state.get("show_billdozer_widget", False):
+        return
+    
+    with st.sidebar:
+        # Render widget in a styled bubble
+        st.markdown("""
+        <div style="
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            border-radius: 8px;
+            padding: 16px;
+            color: white;
+            margin-bottom: 16px;
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
+                    BillDozer Status
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Render the actual widget iframe
+        col_widget, col_close = st.columns([20, 1])
+        
+        with col_close:
+            if st.button("✕", key="dismiss_billdozer_sidebar"):
+                st.session_state.show_billdozer_widget = False
+        
+        with col_widget:
+            components.html(
+                get_billdozer_widget_html(),
+                height=180,
+                scrolling=False,
+            )

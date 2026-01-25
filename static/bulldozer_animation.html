@@ -36,6 +36,12 @@
             transform: translateX(-50%);
             width: 90%;
             opacity: 0;
+            /* Animation paused by default, triggered via JavaScript */
+            animation: frameCycle 3s steps(1, end) paused;
+        }
+        /* Active animation class - plays animation */
+        
+        .billdozer_animation.animating img {
             animation: frameCycle 3s steps(1, end) infinite;
         }
         
@@ -316,6 +322,32 @@
         let active = false;
         const transcriptMessages = [];
 
+        // Animation timeout management
+        let animationTimeout = null;
+
+        // Animation control: start animation for 5 seconds
+        function startAnimation() {
+            // Clear any existing timeout
+            if (animationTimeout) {
+                clearTimeout(animationTimeout);
+            }
+
+            // Get all billdozer animation containers
+            const animationContainers = document.querySelectorAll('.billdozer_animation');
+
+            // Add animating class to start animation
+            animationContainers.forEach(container => {
+                container.classList.add('animating');
+            });
+
+            // Stop animation after 5 seconds
+            animationTimeout = setTimeout(() => {
+                animationContainers.forEach(container => {
+                    container.classList.remove('animating');
+                });
+            }, 5000);
+        }
+
         // Transcript toggle functionality
         transcriptToggle.addEventListener("click", () => {
             const isExpanded = transcriptToggle.classList.toggle("expanded");
@@ -409,6 +441,9 @@
 
             // Add to transcript
             addToTranscript(character, message);
+
+            // Start 5-second animation on message receipt
+            startAnimation();
 
             // Add to animation queue
             queue.push(data.payload);

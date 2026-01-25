@@ -14,6 +14,15 @@ import json
 from _modules.ui.privacy_ui import render_privacy_dialog
 from _modules.ui.ui_documents import render_document_inputs
 from _modules.ui.doc_assistant import render_doc_assistant, render_contextual_help
+from _modules.ui.guided_tour import (
+    initialize_tour_state,
+    maybe_launch_tour,
+    check_tour_progression,
+    render_tour_widget,
+    render_tour_controls,
+    advance_tour_step,
+    open_sidebar_for_tour,
+)
 from _modules.ui.health_profile import (
     render_profile_selector,
     render_profile_details,
@@ -71,12 +80,14 @@ from _modules.utils.config import (
     is_debug_enabled,
     is_privacy_ui_enabled,
     is_coverage_matrix_enabled,
+    is_guided_tour_enabled,
 )
 
 from _modules.ui.billdozer_widget import (
     get_billdozer_widget_html,
     install_billdozer_bridge,
     dispatch_widget_message,
+    render_billdozer_sidebar_widget,
 )
 
 
@@ -127,7 +138,11 @@ def bootstrap_ui():
     setup_page()
     inject_css()
     render_header()
-    render_contextual_help('demo')
+    
+    # Skip demo help message when guided tour is active
+    if not is_guided_tour_enabled():
+        render_contextual_help('demo')
+    
     render_demo_documents()
 
 
@@ -173,17 +188,27 @@ def main():
     
     Orchestrates the complete workflow:
     1. Bootstrap UI and register providers
-    2. Render privacy dialog
-    3. Collect document inputs
-    4. Analyze documents with selected provider
-    5. Display results and savings summary
-    6. Render coverage matrix and debug info
+    2. Initialize guided tour state
+    3. Render privacy dialog
+    4. Collect document inputs
+    5. Analyze documents with selected provider
+    6. Display results and savings summary
+    7. Render coverage matrix and debug info
     """
     # --------------------------------------------------
     # Bootstrap + providers
     # --------------------------------------------------
     bootstrap_ui()
     register_providers()
+
+    # --------------------------------------------------
+    # Guided Tour Initialization
+    # --------------------------------------------------
+    if is_guided_tour_enabled():
+        initialize_tour_state()
+        maybe_launch_tour()
+        # Check tour state at start of render to catch any pending step changes
+        check_tour_progression()
 
     # --------------------------------------------------
     # Defaults (can be overridden in debug)
@@ -196,6 +221,19 @@ def main():
     # --------------------------------------------------
     if is_privacy_ui_enabled():
         render_privacy_dialog()
+
+    # --------------------------------------------------
+    # Guided Tour Controls (sidebar - at top)
+    # --------------------------------------------------
+    if is_guided_tour_enabled():
+        render_tour_controls()
+
+    # --------------------------------------------------
+    # Guided Tour Widget (sidebar - instructions)
+    # --------------------------------------------------
+    if is_guided_tour_enabled():
+        render_tour_widget()
+        open_sidebar_for_tour()
 
     # --------------------------------------------------
     # Documentation Assistant (sidebar)
@@ -220,6 +258,9 @@ def main():
     # --------------------------------------------------
     render_contextual_help('input')
     documents = render_document_inputs()
+    
+    # Check tour progression after document input
+    check_tour_progression()
 
     # --------------------------------------------------
     # Analysis provider selector (user-facing)
@@ -324,7 +365,14 @@ def main():
             render_contextual_help('error')
             return
 
-        st.session_state.setdefault("billdozer_analysis_started", False)
+        # Set analyzing flag for tour progression
+        st.session_state.analyzing = True
+        
+        # Advance tour step immediately (without rerun to avoid double-click)
+        if (st.session_state.get('tour_active', False) and 
+            st.session_state.get('tutorial_step') == 'document_loaded'):
+            from _modules.ui.guided_tour import advance_tour_step
+            advance_tour_step('analysis_running')
 
         # Show analyzing context
         render_contextual_help('analyzing')
@@ -332,33 +380,12 @@ def main():
         # Aggregate savings across all documents for this run
         total_potential_savings = 0.0
         per_document_savings = {}
-        
-        if st.session_state.get("_billdozer_dismiss"):
-            st.session_state.show_billdozer_widget = False
-            st.session_state.pop("_billdozer_dismiss", None)
-            st.rerun()
-
 
         install_billdozer_bridge()
         st.session_state.setdefault("show_billdozer_widget", True)
 
-        if st.session_state.show_billdozer_widget:
-            with st.container(key="billdozer_widget"):
-                col_widget, col_close = st.columns([20, 1])
-
-                with col_close:
-                    if st.button("✕", key="dismiss_billdozer"):
-                        st.session_state.show_billdozer_widget = False
-                        # Don't rerun - just hide widget without clearing analysis
-
-                with col_widget:
-                    components.html(
-                        get_billdozer_widget_html(),
-                        height=300,
-                        scrolling=False,
-                    )
         # --------------------------------------------------
-        # Billdozer widget messaging (OUTSIDE render)
+        # Billdozer widget messaging
         # --------------------------------------------------
         st.session_state.setdefault("billdozer_widget_initialized", False)
 
@@ -373,8 +400,8 @@ def main():
         # Analysis start message (ONCE per Analyze click)
         if (
             analyze_clicked
-            and st.session_state.show_billdozer_widget
-            and not st.session_state.billdozer_analysis_started
+            and st.session_state.get('show_billdozer_widget', False)
+            and not st.session_state.get('billdozer_analysis_started', False)
         ):
             dispatch_widget_message("billie", "Bill Dozing Statements")
             st.session_state.billdozer_analysis_started = True
@@ -498,6 +525,16 @@ def main():
 
         # Render the aggregate summary ONCE (after all documents)
         render_total_savings_summary(total_potential_savings, per_document_savings)
+        
+        # Clear analyzing flag and set results for tour progression
+        st.session_state.analyzing = False
+        st.session_state.doc_results = True
+        
+        # Advance tour step to review_issues
+        if (st.session_state.get('tour_active', False) and 
+            st.session_state.get('tutorial_step') == 'analysis_running'):
+            from _modules.ui.guided_tour import advance_tour_step
+            advance_tour_step('review_issues')
         
         if is_coverage_matrix_enabled():
             coverage_rows = build_coverage_matrix(documents)

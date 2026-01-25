@@ -32,6 +32,14 @@ features:
   # Coverage Matrix - Insurance coverage tracking (if applicable)
   coverage_matrix:
     enabled: true
+  
+  # Guided Tour - Interactive tutorial with Billy/Billie narration
+  guided_tour:
+    enabled: true
+    auto_launch_for_new_users: true
+    default_narrator: "billie"  # "billy" or "billie"
+    widget_position: "top"  # "top" or "floating"
+    show_skip_button: true
 
 # ============================================================================
 # UI PREFERENCES

@@ -37,6 +37,13 @@ class AppConfig:
             },
             "coverage_matrix": {
                 "enabled": True
+            },
+            "guided_tour": {
+                "enabled": True,
+                "auto_launch_for_new_users": True,
+                "default_narrator": "billie",
+                "widget_position": "top",
+                "show_skip_button": True
             }
         },
         "ui": {
@@ -227,6 +234,11 @@ def is_dag_enabled() -> bool:
 def is_debug_enabled() -> bool:
     """Check if debug mode is enabled."""
     return get_config().is_feature_enabled("debug")
+
+
+def is_guided_tour_enabled() -> bool:
+    """Check if guided tour feature is enabled."""
+    return get_config().is_feature_enabled("guided_tour")
 
 
 def is_privacy_ui_enabled() -> bool:
