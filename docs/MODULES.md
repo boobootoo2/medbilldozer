@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 31
+**Total Modules:** 32
 
 ### Application (1 modules)
 
@@ -40,10 +40,11 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (8 modules)
+### UI Components (9 modules)
 
 - **_modules.ui.billdozer_widget**: No description
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
+- **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial with Billy/Billie narration.
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.ui**: No description
@@ -948,6 +949,10 @@ Sends a speech message to the widget.
 Safely queues if the iframe is not ready yet.
 Also stores message in session state transcript.
 
+#### `render_billdozer_sidebar_widget()`
+
+Render billdozer widget in sidebar with bubble styling.
+
 
 ## Module: `_modules.ui.doc_assistant`
 
@@ -1029,6 +1034,86 @@ Args:
 ### Dependencies
 
 - `_modules.utils.image_paths`
+
+## Module: `_modules.ui.guided_tour`
+
+**Source:** `_modules/ui/guided_tour.py`
+
+### Description
+
+Guided Tour - Interactive tutorial with Billy/Billie narration.
+
+Provides step-by-step guidance for first-time users through the app's
+main features using state-based progression and avatar narration.
+
+### Constants
+
+- **`TUTORIAL_MESSAGES`**: `{'welcome': {'character': 'billie', 'message': "Hi! I'm Billie D., your guide to finding hidden errors in medical bills. Let me show you how this works!", 'action_prompt': 'Ready to begin'}, 'upload_prompt': {'character': 'billie', 'message': 'First, scroll to the Hospital Bill – Colonoscopy section and click Copy. Next, scroll down to Analyze a Document, paste the text, and click Analyze Document to start checking for billing errors.', 'action_prompt': 'Copy demo, paste into Document 1'}, 'document_loaded': {'character': 'billy', 'message': 'Great — I can see the document text now. Scroll down and click the Analyze Document button to start checking for billing errors.', 'action_prompt': 'Click Analyze Document'}, 'analysis_running': {'character': 'billie', 'message': "I'm examining your document right now. Watch the workflow diagram to see what I'm checking: document type, line items, and billing issues.", 'action_prompt': 'Analysis in progress...'}, 'review_issues': {'character': 'billy', 'message': 'Here are the results! Each issue shows what might be wrong and how much you could save. Expand any section to see more details.', 'action_prompt': 'Review the findings'}, 'coverage_matrix': {'character': 'billie', 'message': 'Want to track multiple bills? The coverage matrix helps you see all your medical expenses across different providers and dates.', 'action_prompt': 'Explore the coverage matrix'}, 'next_actions': {'character': 'billy', 'message': 'You can analyze more documents, ask Billy or Billie questions using the assistant sidebar, or copy results to share with your provider.', 'action_prompt': 'Analyze another document'}, 'tour_complete': {'character': 'billie', 'message': "That's it! You're all set. If you need help anytime, just ask using the assistant in the sidebar. Good luck!", 'action_prompt': 'Exit tour'}}`
+- **`TUTORIAL_STEPS`**: `['welcome', 'upload_prompt', 'document_loaded', 'analysis_running', 'review_issues', 'coverage_matrix', 'next_actions', 'tour_complete']`
+
+### Functions
+
+#### `load_tour_config() -> Dict`
+
+Load guided tour configuration from app_config.yaml.
+
+#### `initialize_tour_state()`
+
+Initialize tour session state variables.
+
+#### `start_tour()`
+
+Start the guided tour.
+
+#### `end_tour()`
+
+End the guided tour.
+
+#### `advance_tour_step(next_step)`
+
+Advance to the next tutorial step.
+
+Args:
+    next_step: The next tutorial step to advance to
+
+#### `check_tour_progression()`
+
+Check app state and automatically advance tour steps when appropriate.
+
+#### `get_tour_message() -> Optional[Dict]`
+
+Get the current tour message based on tutorial step.
+
+Returns:
+    Dict with character, message, and action_prompt, or None if tour not active
+
+#### `render_tour_widget()`
+
+Render the guided tour widget with narrator guidance in the sidebar.
+
+#### `render_tour_controls()`
+
+Render tour control buttons in sidebar.
+
+#### `should_auto_launch_tour() -> bool`
+
+Determine if tour should auto-launch for new users.
+
+Returns:
+    True if tour should launch, False otherwise
+
+#### `maybe_launch_tour()`
+
+Auto-launch tour for new users if configured.
+
+#### `install_tour_bridge()`
+
+Install JavaScript bridge to handle tour events from widget.
+
+#### `open_sidebar_for_tour()`
+
+Open the sidebar automatically when tour is active.
+
 
 ## Module: `_modules.ui.health_profile`
 
@@ -1170,6 +1255,7 @@ Args:
 Configure Streamlit page settings. Must be called first in app.py.
 
 Sets page title and centered layout.
+Opens sidebar by default if guided tour is active.
 
 #### `inject_css()`
 
@@ -1552,6 +1638,10 @@ Check if pipeline DAG visualization is enabled.
 
 Check if debug mode is enabled.
 
+#### `is_guided_tour_enabled() -> bool`
+
+Check if guided tour feature is enabled.
+
 #### `is_privacy_ui_enabled() -> bool`
 
 Check if privacy UI is enabled.
@@ -1722,11 +1812,12 @@ Main application entry point.
 
 Orchestrates the complete workflow:
 1. Bootstrap UI and register providers
-2. Render privacy dialog
-3. Collect document inputs
-4. Analyze documents with selected provider
-5. Display results and savings summary
-6. Render coverage matrix and debug info
+2. Initialize guided tour state
+3. Render privacy dialog
+4. Collect document inputs
+5. Analyze documents with selected provider
+6. Display results and savings summary
+7. Render coverage matrix and debug info
 
 
 ### Dependencies
@@ -1741,6 +1832,7 @@ Orchestrates the complete workflow:
 - `_modules.providers.openai_analysis_provider`
 - `_modules.ui.billdozer_widget`
 - `_modules.ui.doc_assistant`
+- `_modules.ui.guided_tour`
 - `_modules.ui.health_profile`
 - `_modules.ui.privacy_ui`
 - `_modules.ui.ui`
