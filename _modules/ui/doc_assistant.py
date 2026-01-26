@@ -663,6 +663,47 @@ def render_doc_assistant():
 
 
 def render_contextual_help(context: str):
+    """
+    Render contextual help banners with a dismiss button.
+    Safe against multiple renders in a single Streamlit run.
+    """
+
+    # ---- session-scoped namespace (stable across reruns) ----
+    session_ns = st.session_state.setdefault(
+        "_contextual_help_ns",
+        hex(id(st.session_state))
+    )
+
+    alert_key = context  # e.g. "results", "input", "analyzing"
+
+    # ---- persistent dismiss state ----
+    dismissed_key = f"help_dismissed_{alert_key}"
+    if st.session_state.get(dismissed_key, False):
+        return
+
+    # ---- UNIQUE button key (this fixes the error) ----
+    dismiss_button_key = f"dismiss_{alert_key}_{session_ns}"
+
+    # ---- UI ----
+    col1, col2 = st.columns([20, 1])
+
+    with col1:
+        st.info(
+            {
+                "input": "Paste one or more documents to begin analysis.",
+                "analyzing": "We’re analyzing your documents. This may take a moment.",
+                "results": "Review the detected issues below. Expand any item for details.",
+                "error": "There was a problem analyzing your documents.",
+                "demo": "Try copying one of the demo documents above to see how it works.",
+            }.get(alert_key, "Helpful information is available."),
+            icon="ℹ️",
+        )
+
+    with col2:
+        if st.button("✕", key=dismiss_button_key, help="Dismiss"):
+            st.session_state[dismissed_key] = True
+            st.rerun()
+
     """Render contextual help based on current page/action.
 
     Args:

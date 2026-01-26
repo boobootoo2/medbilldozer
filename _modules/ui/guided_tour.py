@@ -472,16 +472,59 @@ def install_paste_detector():
                 textareas.forEach(function(textarea) {
                     if (!textarea.hasAttribute('data-paste-listener')) {
                         textarea.setAttribute('data-paste-listener', 'true');
-                        textarea.addEventListener('paste', function(e) {
-                            // Trigger a rerun after paste by simulating a change event
-                            setTimeout(function() {
-                                textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                                textarea.blur(); // Remove focus to trigger Streamlit update
-                                setTimeout(function() {
-                                    textarea.focus(); // Return focus
-                                }, 50);
-                            }, 100);
+                        textarea.addEventListener('paste', function () {
+                            setTimeout(function () {
+
+                                // 🚫 Run only once
+                                if (window.__tour_add_doc_highlighted) {
+                                    return;
+                                }
+
+                                // ✅ Ensure this is the FIRST visible textarea (Document 1)
+                                const visibleTextareas = Array.from(
+                                    window.parent.document.querySelectorAll('textarea')
+                                ).filter(t => t.offsetParent !== null);
+
+                                if (!visibleTextareas.length || textarea !== visibleTextareas[0]) {
+                                    return;
+                                }
+
+                                // Mark as handled
+                                window.__tour_add_doc_highlighted = true;
+
+                                // 1️⃣ Highlight the pasted textarea
+                                if (window.parent.highlightElement) {
+                                    window.parent.highlightElement(textarea);
+                                }
+
+                                // 2️⃣ Highlight ➕ Add another document button
+                                function highlightAddAnotherDocumentButton() {
+                                    const buttons = window.parent.document.querySelectorAll('button');
+
+                                    for (let btn of buttons) {
+                                        const text = (btn.innerText || '').toLowerCase();
+
+                                        if (text.includes('add another document')) {
+                                            if (window.parent.highlightElement) {
+                                                window.parent.highlightElement(btn);
+                                                console.log('✓ Highlighted Add another document button');
+                                            }
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                }
+
+                                // Try immediately + retry for Streamlit timing
+                                highlightAddAnotherDocumentButton();
+                                setTimeout(highlightAddAnotherDocumentButton, 300);
+                                setTimeout(highlightAddAnotherDocumentButton, 600);
+                                setTimeout(highlightAddAnotherDocumentButton, 1000);
+
+                            }, 150);
                         });
+
+
                     }
                 });
             }
@@ -709,22 +752,30 @@ def highlight_tour_elements():
                 const buttons = window.parent.document.querySelectorAll('button');
 
                 for (let btn of buttons) {
-                    if (btn.textContent.includes('Add Another Document')) {
+                    const text = (btn.textContent || '').trim();
+
+                    if (text.includes('Add Another Document')) {
+                        btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         if (window.parent.highlightElement) {
                             window.parent.highlightElement(btn);
+                            console.log('✓ Highlighted Add Another Document button');
                         }
-                        return;
+                        return true;
                     }
                 }
+                return false;
             }
 
-            // Try immediately and retry in case button loads slowly
+            // Try immediately + retry (Streamlit renders lazily)
             highlightAddDocButton();
-            setTimeout(highlightAddDocButton, 500);
+            setTimeout(highlightAddDocButton, 300);
+            setTimeout(highlightAddDocButton, 600);
             setTimeout(highlightAddDocButton, 1000);
+            setTimeout(highlightAddDocButton, 1500);
         })();
         </script>
         """
+
 
     # Inject the highlight script if we have one
     if highlight_script:
