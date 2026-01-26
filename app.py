@@ -19,6 +19,7 @@ from _modules.ui.guided_tour import (
     render_tour_controls,
     advance_tour_step,
     open_sidebar_for_tour,
+    install_paste_detector,
 )
 from _modules.ui.health_profile import (
     render_profile_selector,
@@ -385,6 +386,9 @@ def main():
     # --------------------------------------------------
     render_contextual_help('input')
     documents = render_document_inputs()
+
+    # Install paste detector for tour (triggers immediate detection on paste)
+    install_paste_detector()
 
     # Check tour progression after document input
     check_tour_progression()
