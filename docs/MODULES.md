@@ -1880,6 +1880,14 @@ Auto-launch tour for new users if configured.
 
 Install JavaScript bridge to handle tour events from widget.
 
+#### `check_pharmacy_copy_click()`
+
+Check if pharmacy receipt copy button was clicked and advance tour.
+
+#### `install_copy_button_detector()`
+
+Install JavaScript to detect clicks on pharmacy receipt copy button.
+
 #### `install_paste_detector()`
 
 Install JavaScript to detect paste events in text areas and trigger rerun.
