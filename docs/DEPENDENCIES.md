@@ -65,6 +65,11 @@ Module dependencies within the project:
 **Depends on:**
 - `_modules.utils.image_paths`
 
+### `_modules.ui.splash_screen`
+
+**Depends on:**
+- `_modules.ui.billdozer_widget`
+
 ### `_modules.ui.ui`
 
 **Depends on:**
@@ -89,6 +94,7 @@ Module dependencies within the project:
 - `_modules.ui.health_profile`
 - `_modules.ui.privacy_ui`
 - `_modules.ui.profile_editor`
+- `_modules.ui.splash_screen`
 - `_modules.ui.ui`
 - `_modules.ui.ui_coverage_matrix`
 - `_modules.ui.ui_documents`

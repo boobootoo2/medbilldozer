@@ -42,12 +42,11 @@ def get_image_url(relative_path: str) -> str:
         relative_path: Relative path from project root (e.g., 'images/avatars/billy.png')
 
     Returns:
-        str: Full URL for production or relative path for local
+        str: Full GitHub CDN URL (works for both local and production)
 
     Example:
         >>> get_image_url('images/avatars/billie__eyes_open__ready.png')
-        # Local: 'app/static/images/avatars/billie__eyes_open__ready.png'
-        # Prod: 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/images/avatars/billie__eyes_open__ready.png'
+        # Returns: 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/avatars/billie__eyes_open__ready.png'
     """
     # Clean up the path
     clean_path = relative_path.strip('/')
@@ -60,13 +59,11 @@ def get_image_url(relative_path: str) -> str:
     if clean_path.startswith('app/static/'):
         clean_path = clean_path[11:]
 
-    if is_local_environment():
-        # For local, use the Streamlit app/static path convention
-        return f"app/static/{clean_path}"
-    else:
-        # For production, use GitHub CDN
-        base_cdn_url = "https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main"
-        return f"{base_cdn_url}/{clean_path}"
+    # Always use GitHub CDN (works for both local and production)
+    # This is necessary because Streamlit's static file serving doesn't work inside iframes
+    # Images are stored in the static/ directory in the repo
+    base_cdn_url = "https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static"
+    return f"{base_cdn_url}/{clean_path}"
 
 
 def get_avatar_url(avatar_filename: str) -> str:

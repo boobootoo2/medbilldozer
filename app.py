@@ -97,6 +97,11 @@ from _modules.ui.profile_editor import (
     is_profile_editor_enabled,
 )
 
+from _modules.ui.splash_screen import (
+    should_show_splash_screen,
+    render_splash_screen,
+)
+
 
 def check_access_password() -> bool:
     """Check if access password is required and validate user input.
@@ -294,6 +299,13 @@ def main():
     # --------------------------------------------------
     if not check_access_password():
         return  # Stop rendering if password not entered
+
+    # --------------------------------------------------
+    # Splash Screen (before everything if tour enabled)
+    # --------------------------------------------------
+    if should_enable_guided_tour() and should_show_splash_screen():
+        render_splash_screen()
+        return  # Stop rendering until splash is dismissed
 
     # --------------------------------------------------
     # Initialize Page Navigation

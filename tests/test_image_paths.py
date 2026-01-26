@@ -40,10 +40,10 @@ class TestGetImageUrl:
     """Test image URL generation."""
 
     def test_returns_local_path_for_local_env(self, monkeypatch):
-        """Should return local path when running locally."""
+        """Should return GitHub CDN URL (used for both local and production)."""
         monkeypatch.setenv('HOSTNAME', 'localhost')
         url = get_image_url('images/avatars/billie.png')
-        assert url == 'app/static/images/avatars/billie.png'
+        assert url == 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/avatars/billie.png'
 
     def test_returns_cdn_url_for_production(self, monkeypatch):
         """Should return GitHub CDN URL for production."""
@@ -62,13 +62,13 @@ class TestGetImageUrl:
         """Should handle static/ prefix in paths."""
         monkeypatch.setenv('HOSTNAME', 'localhost')
         url = get_image_url('static/images/test.png')
-        assert url == 'app/static/images/test.png'
+        assert url == 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/test.png'
 
     def test_strips_app_static_prefix(self, monkeypatch):
         """Should handle app/static/ prefix in paths."""
         monkeypatch.setenv('HOSTNAME', 'localhost')
         url = get_image_url('app/static/images/test.png')
-        assert url == 'app/static/images/test.png'
+        assert url == 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/test.png'
 
 
 class TestGetAvatarUrl:
@@ -78,7 +78,7 @@ class TestGetAvatarUrl:
         """Should construct proper avatar path."""
         monkeypatch.setenv('HOSTNAME', 'localhost')
         url = get_avatar_url('billie__eyes_open__ready.png')
-        assert url == 'app/static/images/avatars/billie__eyes_open__ready.png'
+        assert url == 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/avatars/billie__eyes_open__ready.png'
 
 
 class TestGetTransparentAvatarUrl:
@@ -88,7 +88,7 @@ class TestGetTransparentAvatarUrl:
         """Should construct proper transparent avatar path."""
         monkeypatch.setenv('HOSTNAME', 'localhost')
         url = get_transparent_avatar_url('billie__eyes_closed__billdozer_down.png')
-        assert url == 'app/static/images/avatars/transparent/billie__eyes_closed__billdozer_down.png'
+        assert url == 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/avatars/transparent/billie__eyes_closed__billdozer_down.png'
 
 
 class TestUrlFormatting:
@@ -98,7 +98,7 @@ class TestUrlFormatting:
         """Should handle leading slashes in paths."""
         monkeypatch.setenv('HOSTNAME', 'localhost')
         url = get_image_url('/images/test.png')
-        assert url == 'app/static/images/test.png'
+        assert url == 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/test.png'
 
     def test_handles_trailing_slash(self, monkeypatch):
         """Should handle trailing slashes in paths."""

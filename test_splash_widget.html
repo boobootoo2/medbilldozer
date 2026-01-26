@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splash Widget Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .splash-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .splash-content {
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .splash-title {
+            font-size: 3.5em;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .splash-subtitle {
+            font-size: 1.5em;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+        
+        .splash-widget-container {
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            min-height: 300px;
+        }
+        
+        .splash-description {
+            font-size: 1.2em;
+            line-height: 1.8;
+            margin: 30px auto;
+            max-width: 700px;
+            opacity: 0.9;
+        }
+        /* Test iframe styling */
+        
+        iframe.test-iframe {
+            width: 100%;
+            height: 300px;
+            border: none;
+            background: transparent;
+        }
+        
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+            font-size: 12px;
+        }
+        
+        .status-item {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+        }
+        
+        .success {
+            border-left-color: #10b981;
+        }
+        
+        .error {
+            border-left-color: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Status Monitor -->
+    <div class="status">
+        <h3 style="margin: 0 0 10px 0;">Widget Test Status</h3>
+        <div id="status-log"></div>
+    </div>
+
+    <!-- Splash Screen -->
+    <div class="splash-container">
+        <div class="splash-content">
+            <div class="splash-title">🚜 medBillDozer</div>
+
+            <div class="splash-subtitle">
+                Find Hidden Errors in Medical Bills
+            </div>
+
+            <div class="splash-widget-container" id="splash-widget-container">
+                <!-- Widget will be moved here -->
+                <div style="color: white; opacity: 0.7;">Waiting for widget...</div>
+            </div>
+
+            <div class="splash-description">
+                <p><strong>Hi! We're Billy and Billie,</strong> your guides to uncovering billing errors.</p>
+                <p>
+                    We analyze medical bills, pharmacy receipts, dental claims, and insurance statements to find overcharges, duplicate charges, and coding errors that could save you money.
+                </p>
+                <p>
+                    Let us show you how easy it is to check your bills for accuracy!
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- This simulates the widget iframe that Streamlit would create -->
+    <iframe class="test-iframe stIFrame" id="widget-iframe" src="static/bulldozer_animation.html" style="height: 300px;"></iframe>
+
+    <script>
+        const statusLog = document.getElementById('status-log');
+
+        function log(message, isSuccess = true) {
+            const item = document.createElement('div');
+            item.className = `status-item ${isSuccess ? 'success' : 'error'}`;
+            item.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            statusLog.appendChild(item);
+            console.log(message);
+        }
+
+        // Test the widget moving logic
+        (function() {
+            let moved = false;
+            let attempts = 0;
+            const maxAttempts = 20;
+
+            log('Starting widget detection...');
+
+            function findAndMoveWidget() {
+                if (moved || attempts >= maxAttempts) {
+                    if (!moved) {
+                        log(`Failed to move widget after ${maxAttempts} attempts`, false);
+                    }
+                    return;
+                }
+                attempts++;
+                log(`Attempt ${attempts}: Looking for widget...`);
+
+                // Find the splash widget container
+                const container = document.getElementById('splash-widget-container');
+                if (!container) {
+                    log('Container not found!', false);
+                    setTimeout(findAndMoveWidget, 200);
+                    return;
+                }
+
+                // Find all iframes
+                const allIframes = document.querySelectorAll('iframe.stIFrame, iframe.test-iframe');
+                log(`Found ${allIframes.length} iframe(s)`);
+
+                let widgetIframe = null;
+
+                // Find the widget iframe (look for one with height 300 that's not already in container)
+                for (let iframe of allIframes) {
+                    const height = iframe.style.height || iframe.getAttribute('height') || '';
+                    log(`Checking iframe: height="${height}", in container=${container.contains(iframe)}`);
+
+                    if (height.includes('300') && !container.contains(iframe)) {
+                        widgetIframe = iframe;
+                        log(`Found widget iframe!`);
+                        break;
+                    }
+                }
+
+                if (widgetIframe) {
+                    // Clear the "waiting" message
+                    container.innerHTML = '';
+
+                    // Move the iframe into the container
+                    container.appendChild(widgetIframe);
+                    moved = true;
+                    log('✓ Widget successfully moved into container!');
+
+                    // Log final state
+                    log(`Container now has ${container.children.length} child(ren)`);
+                } else {
+                    log('Widget iframe not found yet, retrying...', false);
+                    // Keep trying
+                    setTimeout(findAndMoveWidget, 200);
+                }
+            }
+
+            // Start trying after a brief delay to simulate Streamlit rendering
+            setTimeout(() => {
+                log('Initiating widget search...');
+                findAndMoveWidget();
+            }, 500);
+        })();
+    </script>
+</body>
+
+</html>

@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 37
+**Total Modules:** 38
 
 ### Application (5 modules)
 
@@ -44,7 +44,7 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (10 modules)
+### UI Components (11 modules)
 
 - **_modules.ui.billdozer_widget**: No description
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
@@ -52,6 +52,7 @@
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
+- **_modules.ui.splash_screen**: Splash Screen - Welcome screen with Billdozer introduction.
 - **_modules.ui.ui**: No description
 - **_modules.ui.ui_coverage_matrix**: Coverage matrix UI rendering.
 - **_modules.ui.ui_documents**: Document input and management UI.
@@ -2277,6 +2278,42 @@ Provides navigation between different profile sections and
 the data importer wizard.
 
 
+## Module: `_modules.ui.splash_screen`
+
+**Source:** `_modules/ui/splash_screen.py`
+
+### Description
+
+Splash Screen - Welcome screen with Billdozer introduction.
+
+Shows a fullscreen welcome screen with Billy and Billie explaining the app
+when GUIDED_TOUR=TRUE. Animation runs once and user can dismiss to proceed.
+
+### Functions
+
+#### `should_show_splash_screen() -> bool`
+
+Check if splash screen should be shown.
+
+Returns:
+    bool: True if splash screen has not been dismissed yet
+
+#### `dismiss_splash_screen()`
+
+Mark splash screen as dismissed.
+
+#### `render_splash_screen()`
+
+Render fullscreen splash screen with Billdozer widget.
+
+Shows Billy and Billie introducing the app with animation.
+User can click dismiss button to proceed to main app.
+
+
+### Dependencies
+
+- `_modules.ui.billdozer_widget`
+
 ## Module: `_modules.ui.ui`
 
 **Source:** `_modules/ui/ui.py`
@@ -2755,12 +2792,11 @@ Args:
     relative_path: Relative path from project root (e.g., 'images/avatars/billy.png')
 
 Returns:
-    str: Full URL for production or relative path for local
+    str: Full GitHub CDN URL (works for both local and production)
 
 Example:
     >>> get_image_url('images/avatars/billie__eyes_open__ready.png')
-    # Local: 'app/static/images/avatars/billie__eyes_open__ready.png'
-    # Prod: 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/images/avatars/billie__eyes_open__ready.png'
+    # Returns: 'https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/avatars/billie__eyes_open__ready.png'
 
 #### `get_avatar_url(avatar_filename) -> str`
 
@@ -2933,6 +2969,7 @@ Orchestrates the complete workflow:
 - `_modules.ui.health_profile`
 - `_modules.ui.privacy_ui`
 - `_modules.ui.profile_editor`
+- `_modules.ui.splash_screen`
 - `_modules.ui.ui`
 - `_modules.ui.ui_coverage_matrix`
 - `_modules.ui.ui_documents`
