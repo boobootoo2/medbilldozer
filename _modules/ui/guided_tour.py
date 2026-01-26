@@ -15,7 +15,6 @@ from pathlib import Path
 TUTORIAL_STEPS = [
     "welcome",
     "upload_prompt",
-    "first_document_loaded",
     "add_second_document",
     "second_document_loaded",
     "analysis_running",
@@ -37,15 +36,10 @@ TUTORIAL_MESSAGES = {
         "message": "First, scroll to the Hospital Bill – Colonoscopy section and click Copy. Next, scroll down to Analyze a Document and paste the text into Document 1.",
         "action_prompt": "Copy and paste into Document 1",
     },
-    "first_document_loaded": {
-        "character": "billy",
-        "message": "Perfect! Now let's add a second document. Scroll to the Pharmacy Receipt – FSA Claim section and click Copy.",
-        "action_prompt": "Copy pharmacy receipt",
-    },
     "add_second_document": {
-        "character": "billie",
-        "message": "Great! Now click the 'Add Another Document' button, then paste the pharmacy receipt into Document 2.",
-        "action_prompt": "Add document and paste",
+        "character": "billy",
+        "message": "Perfect! Now let's add a second document. Click 'Add Another Document', then scroll to the Pharmacy Receipt – FSA Claim section, click Copy, and paste into Document 2.",
+        "action_prompt": "Add document and paste pharmacy receipt",
     },
     "second_document_loaded": {
         "character": "billy",
@@ -161,26 +155,8 @@ def check_tour_progression():
             # Track that we detected the text to avoid re-triggering
             if not st.session_state.get('tour_first_doc_detected', False):
                 st.session_state.tour_first_doc_detected = True
-                advance_tour_step("first_document_loaded")
+                advance_tour_step("add_second_document")
                 st.rerun()
-
-    elif current_step == "first_document_loaded":
-        # Check if this is a reload triggered by pharmacy copy button click
-        # If we've just entered this step fresh, don't advance yet
-        # But if sessionStorage flag is set (from pharmacy button click), advance
-        if st.session_state.get('_ready_to_advance_from_pharmacy_copy', False):
-            st.session_state._ready_to_advance_from_pharmacy_copy = False
-            st.session_state._pharmacy_handled_for_step3 = False  # Reset for next time
-            advance_tour_step("add_second_document")
-            st.rerun()
-        # Set flag on next render (after page fully loaded)
-        elif not st.session_state.get('_pharmacy_handled_for_step3', False):
-            # First time on this step, prepare to detect clicks
-            pass
-        else:
-            # We've been on this step and pharmacy copy was clicked
-            # Set flag to advance on next render cycle
-            st.session_state._ready_to_advance_from_pharmacy_copy = True
 
     elif current_step == "add_second_document":
         # Check if second document has been loaded
@@ -375,42 +351,25 @@ def install_tour_bridge():
 
 
 def check_pharmacy_copy_click():
-    """Check if pharmacy receipt copy button was clicked and advance tour."""
-    if not st.session_state.get('tour_active', False):
-        return
+    """Check if pharmacy receipt copy button was clicked and advance tour.
 
-    current_step = st.session_state.get('tutorial_step', 'welcome')
-
-    if current_step != 'first_document_loaded':
-        return
-
-    # Check if we've already handled the pharmacy copy on this step
-    if st.session_state.get('_pharmacy_handled_for_step3', False):
-        return
-
-    # Single script to check and handle pharmacy copy click
-    components.html(
-        """
-        <script>
-        (function() {
-            const clicked = localStorage.getItem('pharmacy_copy_clicked');
-            if (clicked === 'true') {
-                localStorage.removeItem('pharmacy_copy_clicked');
-                // Reload to trigger tour progression
-                window.parent.location.reload();
-            }
-        })();
-        </script>
-        """,
-        height=0,
-    )
-
-    # If we reach here without reloading, mark as handled
-    st.session_state._pharmacy_handled_for_step3 = True
+    Note: This function is deprecated as step 3 (first_document_loaded) has been removed.
+    Kept for backwards compatibility but no longer active.
+    """
+    # Function no longer needed as we skip directly from upload_prompt to add_second_document
+    return
 
 
 def install_copy_button_detector():
-    """Install JavaScript to detect clicks on pharmacy receipt copy button."""
+    """Install JavaScript to detect clicks on pharmacy receipt copy button.
+
+    Note: This function is deprecated as step 3 (first_document_loaded) has been removed.
+    Kept for backwards compatibility but no longer active.
+    """
+    # Function no longer needed as we skip directly from upload_prompt to add_second_document
+    return
+
+    # Dead code below kept for reference
     if not st.session_state.get('tour_active', False):
         return
 
