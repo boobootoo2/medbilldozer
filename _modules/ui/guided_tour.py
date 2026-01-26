@@ -15,7 +15,9 @@ from pathlib import Path
 TUTORIAL_STEPS = [
     "welcome",
     "upload_prompt",
-    "document_loaded",
+    "first_document_loaded",
+    "add_second_document",
+    "second_document_loaded",
     "analysis_running",
     "review_issues",
     "coverage_matrix",
@@ -32,12 +34,22 @@ TUTORIAL_MESSAGES = {
     },
     "upload_prompt": {
         "character": "billie",
-        "message": "First, scroll to the Hospital Bill – Colonoscopy section and click Copy. Next, scroll down to Analyze a Document, paste the text, and click Analyze Document to start checking for billing errors.",
-        "action_prompt": "Copy demo, paste into Document 1",
+        "message": "First, scroll to the Hospital Bill – Colonoscopy section and click Copy. Next, scroll down to Analyze a Document and paste the text into Document 1.",
+        "action_prompt": "Copy and paste into Document 1",
     },
-    "document_loaded": {
+    "first_document_loaded": {
         "character": "billy",
-        "message": "Great — I can see the document text now. Scroll down and click the Analyze Document button to start checking for billing errors.",
+        "message": "Perfect! Now let's add a second document. Scroll to the Pharmacy Receipt – FSA Claim section and click Copy.",
+        "action_prompt": "Copy pharmacy receipt",
+    },
+    "add_second_document": {
+        "character": "billie",
+        "message": "Great! Now click the 'Add Another Document' button, then paste the pharmacy receipt into Document 2.",
+        "action_prompt": "Add document and paste",
+    },
+    "second_document_loaded": {
+        "character": "billy",
+        "message": "Excellent! You now have two documents ready. Scroll down and click the Analyze Document button to check both for billing errors.",
         "action_prompt": "Click Analyze Document",
     },
     "analysis_running": {
@@ -141,19 +153,33 @@ def check_tour_progression():
 
     # Auto-advance based on state changes
     if current_step == "upload_prompt":
-        # Check if document has been loaded (text pasted into text area)
-        # Check the actual document input field
+        # Check if first document has been loaded (text pasted into text area)
         doc_input_0 = st.session_state.get('doc_input_0', '')
 
         # Consider document loaded if there's substantial text (more than 50 chars)
         if doc_input_0 and len(doc_input_0.strip()) > 50:
             # Track that we detected the text to avoid re-triggering
-            if not st.session_state.get('tour_text_detected', False):
-                st.session_state.tour_text_detected = True
-                advance_tour_step("document_loaded")
+            if not st.session_state.get('tour_first_doc_detected', False):
+                st.session_state.tour_first_doc_detected = True
+                advance_tour_step("first_document_loaded")
                 st.rerun()
 
-    elif current_step == "document_loaded":
+    elif current_step == "first_document_loaded":
+        # Wait for user to read message, then auto-advance to add second doc step
+        # User will manually click continue to proceed
+        pass
+
+    elif current_step == "add_second_document":
+        # Check if second document has been loaded
+        doc_input_1 = st.session_state.get('doc_input_1', '')
+
+        if doc_input_1 and len(doc_input_1.strip()) > 50:
+            if not st.session_state.get('tour_second_doc_detected', False):
+                st.session_state.tour_second_doc_detected = True
+                advance_tour_step("second_document_loaded")
+                st.rerun()
+
+    elif current_step == "second_document_loaded":
         # Check if analysis has started (analyzing flag set)
         if st.session_state.get('analyzing', False):
             advance_tour_step("analysis_running")
@@ -262,7 +288,7 @@ def render_tour_controls():
         with col1:
             # Next step button (for manual advancement on exploration steps)
             # Show Continue for welcome and exploration steps
-            manual_steps = ["welcome", "review_issues", "coverage_matrix", "next_actions"]
+            manual_steps = ["welcome", "first_document_loaded", "review_issues", "coverage_matrix", "next_actions"]
             if current_step in manual_steps and step_index < len(TUTORIAL_STEPS) - 1:
                 if st.button("Continue ▶", key="tour_next", use_container_width=True):
                     next_step = TUTORIAL_STEPS[step_index + 1]

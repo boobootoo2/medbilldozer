@@ -497,10 +497,10 @@ def main():
             st.session_state.pending_analysis = False
             return
 
-        # If tour is active and on document_loaded step, advance tour and rerun to show message
+        # If tour is active and on second_document_loaded step, advance tour and rerun to show message
         if (analyze_clicked and
                 st.session_state.get('tour_active', False) and
-                st.session_state.get('tutorial_step') == 'document_loaded'):
+                st.session_state.get('tutorial_step') == 'second_document_loaded'):
             st.session_state.pending_analysis = True
             st.session_state.analyzing = True
             advance_tour_step('analysis_running')
