@@ -963,7 +963,7 @@ def render_importer_step1():
             st.rerun()
 
     with col3:
-        if st.button("� Import Now", type="primary", use_container_width=True):
+        if st.button("Import Now", type="primary", use_container_width=True):
             # Do the import!
             with st.spinner(f"Importing from {selected_name}..."):
                 # Get or create user_id

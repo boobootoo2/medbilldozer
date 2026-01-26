@@ -10,6 +10,7 @@ from typing import Optional, Dict, List
 import re
 import time
 import random
+import numpy as np
 import streamlit.components.v1 as components
 import base64
 from _modules.utils.image_paths import get_avatar_url

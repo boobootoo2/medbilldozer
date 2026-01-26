@@ -1816,10 +1816,20 @@ main features using state-based progression and avatar narration.
 
 ### Constants
 
-- **`TUTORIAL_MESSAGES`**: `{'welcome': {'character': 'billie', 'message': "Hi! I'm Billie D., your guide to finding hidden errors in medical bills. Let me show you how this works!", 'action_prompt': 'Ready to begin'}, 'copy_first_document': {'character': 'billie', 'message': 'First, scroll to the Hospital Bill – Colonoscopy section and click Copy.', 'action_prompt': 'Click Copy on Hospital Bill'}, 'paste_first_document': {'character': 'billy', 'message': 'Great! Now scroll down to Analyze a Document and paste the text into Document 1.', 'action_prompt': 'Paste into Document 1'}, 'add_second_document': {'character': 'billy', 'message': "Perfect! Now let's add a second document. Click 'Add Another Document', then scroll to the Pharmacy Receipt – FSA Claim section, click Copy, and paste into Document 2.", 'action_prompt': 'Add document and paste pharmacy receipt'}, 'second_document_loaded': {'character': 'billy', 'message': 'Excellent! You now have two documents ready. Scroll down and click the Analyze Document button to check both for billing errors.', 'action_prompt': 'Click Analyze Document'}, 'analysis_running': {'character': 'billie', 'message': "I'm examining your document right now. Watch the workflow diagram to see what I'm checking: document type, line items, and billing issues.", 'action_prompt': 'Analysis in progress...'}, 'review_issues': {'character': 'billy', 'message': 'Here are the results! Each issue shows what might be wrong and how much you could save. Expand any section to see more details.', 'action_prompt': 'Review the findings'}, 'coverage_matrix': {'character': 'billie', 'message': 'Want to track multiple bills? The coverage matrix helps you see all your medical expenses across different providers and dates.', 'action_prompt': 'Explore the coverage matrix'}, 'next_actions': {'character': 'billy', 'message': 'You can analyze more documents, ask Billy or Billie questions using the assistant sidebar, or copy results to share with your provider.', 'action_prompt': 'Analyze another document'}, 'tour_complete': {'character': 'billie', 'message': "That's it! You're all set. If you need help anytime, just ask using the assistant in the sidebar. Good luck!", 'action_prompt': 'Exit tour'}}`
-- **`TUTORIAL_STEPS`**: `['welcome', 'copy_first_document', 'paste_first_document', 'add_second_document', 'second_document_loaded', 'analysis_running', 'review_issues', 'coverage_matrix', 'next_actions', 'tour_complete']`
+- **`MANUAL_STEPS`**: `['welcome', 'copy_first_document', 'review_issues', 'coverage_matrix', 'next_actions', 'profile_view', 'import_view', 'import_now']`
+- **`TUTORIAL_MESSAGES`**: `{'welcome': {'character': 'billie', 'message': "Hi! I'm Billie D., your guide to finding hidden errors in medical bills. Let me show you how this works!", 'action_prompt': 'Ready to begin'}, 'copy_first_document': {'character': 'billie', 'message': 'First, scroll to the Hospital Bill – Colonoscopy section and click Copy.', 'action_prompt': 'Click Copy on Hospital Bill'}, 'paste_first_document': {'character': 'billy', 'message': 'Great! Now scroll down to Analyze a Document and paste the text into Document 1.', 'action_prompt': 'Paste into Document 1'}, 'add_second_document': {'character': 'billy', 'message': "Perfect! Now let's add a second document. Click 'Add Another Document', then scroll to the Pharmacy Receipt – FSA Claim section, click Copy, and paste into Document 2.", 'action_prompt': 'Add document and paste pharmacy receipt'}, 'second_document_loaded': {'character': 'billy', 'message': 'Excellent! You now have two documents ready. Scroll down and click the Analyze Document button to check both for billing errors.', 'action_prompt': 'Click Analyze Document'}, 'analysis_running': {'character': 'billie', 'message': "I'm examining your document right now. Click on '📊 Pipeline Workflow: Document Analysis' to expand it and watch the workflow diagram to see what I'm checking: document type, line items, and billing issues.", 'action_prompt': 'Click Pipeline Workflow to watch progress'}, 'review_issues': {'character': 'billy', 'message': 'Here are the results! Each issue shows what might be wrong and how much you could save. Expand any section to see more details.', 'action_prompt': 'Review the findings'}, 'coverage_matrix': {'character': 'billie', 'message': 'Want to track multiple bills? The coverage matrix helps you see all your medical expenses across different providers and dates.', 'action_prompt': 'Explore the coverage matrix'}, 'next_actions': {'character': 'billy', 'message': 'You can analyze more documents, ask Billy or Billie questions using the assistant sidebar, or copy results to share with your provider.', 'action_prompt': 'Analyze another document'}, 'profile_view': {'character': 'billie', 'message': 'You can see what the profile admissions look like, by clicking the profile button on the sidepanel.', 'action_prompt': 'Profile View'}, 'import_view': {'character': 'billy', 'message': 'You can see how to import documents from health providers and insurance companies by clicking Import Data in the main panel.', 'action_prompt': 'Import View'}, 'import_now': {'character': 'billy', 'message': 'Click the dropdown under Select Entity to choose an insurance company. Select any company and then click Import Now', 'action_prompt': 'Import Now'}, 'tour_complete': {'character': 'billie', 'message': "That's it! You're all set. If you need help anytime, just ask using the assistant in the sidebar. Good luck!", 'action_prompt': 'Exit tour'}}`
+- **`TUTORIAL_STEPS`**: `['welcome', 'copy_first_document', 'paste_first_document', 'add_second_document', 'second_document_loaded', 'analysis_running', 'review_issues', 'coverage_matrix', 'next_actions', 'profile_view', 'import_view', 'import_now', 'tour_complete']`
 
 ### Functions
+
+#### `run_guided_tour_runtime()`
+
+Runs guided tour lifecycle in the correct order.
+Call ONCE per rerun, AFTER main UI render.
+
+#### `open_and_scroll_pipeline_workflow_step6()`
+
+Step 6: Expand Pipeline Workflow accordion and scroll it into view.
 
 #### `load_tour_config() -> Dict`
 
@@ -1873,6 +1883,12 @@ Returns:
 #### `maybe_launch_tour()`
 
 Auto-launch tour for new users if configured.
+
+#### `highlight_continue_button_for_manual_steps()`
+
+Highlight the Continue button during manual tour steps.
+This function provides continuous highlighting for the Continue button
+on all manual steps to ensure visibility.
 
 #### `install_tour_bridge()`
 

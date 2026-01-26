@@ -22,7 +22,22 @@ TUTORIAL_STEPS = [
     "review_issues",
     "coverage_matrix",
     "next_actions",
+    "profile_view",
+    "import_view",
+    "import_now",
     "tour_complete",
+]
+
+# Steps that require manual "Continue" advancement
+MANUAL_STEPS = [
+    "welcome",
+    "copy_first_document",
+    "review_issues",
+    "coverage_matrix",
+    "next_actions",
+    "profile_view",
+    "import_view",
+    "import_now",
 ]
 
 # Tutorial messages for each step
@@ -54,8 +69,8 @@ TUTORIAL_MESSAGES = {
     },
     "analysis_running": {
         "character": "billie",
-        "message": "I'm examining your document right now. Watch the workflow diagram to see what I'm checking: document type, line items, and billing issues.",
-        "action_prompt": "Analysis in progress...",
+        "message": "I'm examining your document right now. Click on '📊 Pipeline Workflow: Document Analysis' to expand it and watch the workflow diagram to see what I'm checking: document type, line items, and billing issues.",
+        "action_prompt": "Click Pipeline Workflow to watch progress",
     },
     "review_issues": {
         "character": "billy",
@@ -72,12 +87,131 @@ TUTORIAL_MESSAGES = {
         "message": "You can analyze more documents, ask Billy or Billie questions using the assistant sidebar, or copy results to share with your provider.",
         "action_prompt": "Analyze another document",
     },
+    "profile_view": {
+        "character": "billie",
+        "message": "You can see what the profile admissions look like, by clicking the profile button on the sidepanel.",
+        "action_prompt": "Profile View",
+    },
+    "import_view": {
+        "character": "billy",
+        "message": "You can see how to import documents from health providers and insurance companies by clicking Import Data in the main panel.",
+        "action_prompt": "Import View",
+    },
+    "import_now": {
+        "character": "billy",
+        "message": "Click the dropdown under Select Entity to choose an insurance company. Select any company and then click Import Now",
+        "action_prompt": "Import Now",
+    },
     "tour_complete": {
         "character": "billie",
         "message": "That's it! You're all set. If you need help anytime, just ask using the assistant in the sidebar. Good luck!",
         "action_prompt": "Exit tour",
     },
 }
+
+
+def run_guided_tour_runtime():
+    """
+    Runs guided tour lifecycle in the correct order.
+    Call ONCE per rerun, AFTER main UI render.
+    """
+    if not st.session_state.get("tour_active", False):
+        return
+
+    # 1. Progress state machine
+    check_tour_progression()
+
+    # 2. UI overlays (sidebar)
+    render_tour_widget()
+    render_tour_controls()
+
+    # 3. Visual emphasis
+    highlight_tour_elements()
+    highlight_continue_button_for_manual_steps()
+
+    # 4. Step-specific effects
+    open_and_scroll_pipeline_workflow_step6()
+
+    # 5. Sidebar control
+    open_sidebar_for_tour()
+
+
+def open_and_scroll_pipeline_workflow_step6():
+    """Step 6: Expand Pipeline Workflow accordion and scroll it into view."""
+    if not st.session_state.get("tour_active", False):
+        return
+
+    if st.session_state.get("tutorial_step") != "analysis_running":
+        return
+
+    components.html(
+        """
+        <script>
+        (function () {
+            // Prevent running more than once per session
+            if (window.__pipelineWorkflowOpened) {
+                return;
+            }
+
+            function tryOpenWorkflow() {
+                const candidates = Array.from(
+                    window.parent.document.querySelectorAll('details, div')
+                );
+
+                for (let el of candidates) {
+                    const text = (el.innerText || '').trim();
+
+                    if (text.startsWith('📊 Pipeline Workflow')) {
+                        // 1️⃣ Expand accordion if it's a <details>
+                        if (el.tagName === 'DETAILS' && !el.open) {
+                            el.open = true;
+                        }
+
+                        // 2️⃣ Scroll so top is 10px from viewport
+                        const rect = el.getBoundingClientRect();
+                        const absoluteTop =
+                            rect.top + window.parent.pageYOffset - 10;
+
+                        window.parent.scrollTo({
+                            top: absoluteTop,
+                            behavior: 'smooth'
+                        });
+
+                        // 3️⃣ Optional highlight
+                        if (window.parent.highlightElement) {
+                            window.parent.highlightElement(el);
+                        }
+
+                        window.__pipelineWorkflowOpened = true;
+                        console.log('✓ Pipeline Workflow expanded and scrolled');
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            // Initial attempt
+            if (tryOpenWorkflow()) return;
+
+            // Observe DOM mutations until it appears
+            const observer = new MutationObserver(() => {
+                if (tryOpenWorkflow()) {
+                    observer.disconnect();
+                }
+            });
+
+            observer.observe(window.parent.document.body, {
+                childList: true,
+                subtree: true
+            });
+
+            // Safety timeout (disconnect after 8s)
+            setTimeout(() => observer.disconnect(), 8000);
+        })();
+        </script>
+        """,
+        height=0,
+    )
 
 
 def load_tour_config() -> Dict:
@@ -289,8 +423,7 @@ def render_tour_controls():
         with col1:
             # Next step button (for manual advancement on exploration steps)
             # Show Continue for welcome, copy step, and exploration steps
-            manual_steps = ["welcome", "copy_first_document", "review_issues", "coverage_matrix", "next_actions"]
-            if current_step in manual_steps and step_index < len(TUTORIAL_STEPS) - 1:
+            if current_step in MANUAL_STEPS and step_index < len(TUTORIAL_STEPS) - 1:
                 if st.button("Continue ▶", key="tour_next", use_container_width=True):
                     next_step = TUTORIAL_STEPS[step_index + 1]
                     advance_tour_step(next_step)
@@ -338,6 +471,52 @@ def maybe_launch_tour():
 
 
 # Install message bridge for tour events
+def highlight_continue_button_for_manual_steps():
+    """Highlight the Continue button during manual tour steps.
+    This function provides continuous highlighting for the Continue button
+    on all manual steps to ensure visibility.
+    """
+    if not st.session_state.get('tour_active', False):
+        return
+
+    current_step = st.session_state.get('tutorial_step')
+
+    if current_step not in MANUAL_STEPS:
+        return
+
+    components.html(
+        """
+        <script>
+        (function () {
+            function highlightContinueButton() {
+                const buttons = window.parent.document.querySelectorAll('button');
+
+                for (let btn of buttons) {
+                    const text = (btn.innerText || '').trim();
+
+                    if (text.startsWith('Continue') && text.includes('▶')) {
+                        // Use the global highlightElement function for consistent styling
+                        if (window.parent.highlightElement) {
+                            window.parent.highlightElement(btn);
+                            console.log('Highlighted Continue button (manual step)');
+                        }
+                        return;
+                    }
+                }
+            }
+
+            // Streamlit renders lazily → retry multiple times
+            highlightContinueButton();
+            setTimeout(highlightContinueButton, 300);
+            setTimeout(highlightContinueButton, 600);
+            setTimeout(highlightContinueButton, 1000);
+            setTimeout(highlightContinueButton, 1500);
+            setTimeout(highlightContinueButton, 2000);
+        })();
+        </script>
+        """,
+        height=0,
+    )
 
 
 def install_tour_bridge():
@@ -656,8 +835,9 @@ def highlight_tour_elements():
     # Map steps to elements that should be highlighted
     highlight_script = ""
 
-    if current_step == "welcome":
-        # Step 1: Highlight the Continue button in sidebar
+    # For all manual steps, highlight the Continue button
+    if current_step in MANUAL_STEPS:
+        # Highlight the Continue button in sidebar for manual steps
         highlight_script = """
         <script>
         (function() {
@@ -668,7 +848,7 @@ def highlight_tour_elements():
                     if (btn.textContent.includes('Continue') && btn.textContent.includes('▶')) {
                         if (window.parent.highlightElement) {
                             window.parent.highlightElement(btn);
-                            console.log('Highlighted Continue button');
+                            console.log('Highlighted Continue button for manual step');
                         }
                         return;
                     }
@@ -683,9 +863,10 @@ def highlight_tour_elements():
         </script>
         """
 
-    elif current_step == "copy_first_document":
+    # Additional step-specific highlights
+    if current_step == "copy_first_document":
         # Step 2: Highlight the first copy button (Hospital Bill - Colonoscopy)
-        highlight_script = """
+        highlight_script += """
         <script>
         (function() {
             function highlightFirstCopyButton() {
@@ -717,7 +898,7 @@ def highlight_tour_elements():
 
     elif current_step == "paste_first_document":
         # Step 3: Highlight the first textarea (Document 1)
-        highlight_script = """
+        highlight_script += """
         <script>
         (function() {
             function highlightFirstTextarea() {
@@ -772,6 +953,139 @@ def highlight_tour_elements():
             setTimeout(highlightAddDocButton, 600);
             setTimeout(highlightAddDocButton, 1000);
             setTimeout(highlightAddDocButton, 1500);
+        })();
+        </script>
+        """
+
+    elif current_step == "profile_view":
+        # Step 10: Highlight the profile button in sidebar
+        highlight_script += """
+        <script>
+        (function() {
+            function highlightProfileButton() {
+                const buttons = window.parent.document.querySelectorAll('button');
+
+                for (let btn of buttons) {
+                    const text = (btn.textContent || '').trim().toLowerCase();
+
+                    if (text.includes('profile') || text.includes('👤')) {
+                        if (window.parent.highlightElement) {
+                            window.parent.highlightElement(btn);
+                            console.log('✓ Highlighted Profile button');
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            // Try immediately + retry (Streamlit renders lazily)
+            highlightProfileButton();
+            setTimeout(highlightProfileButton, 300);
+            setTimeout(highlightProfileButton, 600);
+            setTimeout(highlightProfileButton, 1000);
+            setTimeout(highlightProfileButton, 1500);
+        })();
+        </script>
+        """
+
+    elif current_step == "import_view":
+        # Step 11: Highlight the Import Data button
+        highlight_script += """
+        <script>
+        (function() {
+            let highlightAttempts = 0;
+            const maxAttempts = 20;
+
+            function highlightImportDataButton() {
+                highlightAttempts++;
+
+                // Search in main document
+                const buttons = window.parent.document.querySelectorAll('button');
+
+                for (let btn of buttons) {
+                    const text = (btn.textContent || '').trim();
+
+                    // Look for Import Data button (case insensitive)
+                    if (text.toLowerCase().includes('import data')) {
+                        // Scroll into view first
+                        btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                        // Highlight after a brief delay to ensure scroll completes
+                        setTimeout(() => {
+                            if (window.parent.highlightElement) {
+                                window.parent.highlightElement(btn);
+                                console.log('✓ Highlighted Import Data button');
+                            }
+                        }, 200);
+                        return true;
+                    }
+                }
+
+                // If not found and haven't exceeded max attempts, try again
+                if (highlightAttempts < maxAttempts) {
+                    setTimeout(highlightImportDataButton, 500);
+                } else {
+                    console.warn('Import Data button not found after ' + maxAttempts + ' attempts');
+                }
+                return false;
+            }
+            // Start trying
+            highlightImportDataButton();
+        })();
+        </script>
+        """
+
+
+    elif current_step == "import_now":
+        # Step 12: Highlight Select Entity dropdown and Import Now button
+        highlight_script += """
+        <script>
+        (function() {
+            function highlightImportControls() {
+                let foundCount = 0;
+
+                // Find Select Entity dropdown
+                const labels = window.parent.document.querySelectorAll('label, div');
+                for (let label of labels) {
+                    const text = (label.textContent || '').trim();
+                    if (text.includes('Select Entity')) {
+                        // Find the associated select/dropdown element
+                        const selectBox = label.nextElementSibling || label.querySelector('select, div[data-baseweb="select"]');
+                        if (selectBox) {
+                            if (window.parent.highlightElement) {
+                                window.parent.highlightElement(selectBox);
+                                console.log('✓ Highlighted Select Entity dropdown');
+                                foundCount++;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                // Find Import Now button
+                const buttons = window.parent.document.querySelectorAll('button');
+                for (let btn of buttons) {
+                    const text = (btn.textContent || '').trim();
+                    if (text.includes('Import Now')) {
+                        if (window.parent.highlightElement) {
+                            window.parent.highlightElement(btn);
+                            console.log('✓ Highlighted Import Now button');
+                            foundCount++;
+                        }
+                        break;
+                    }
+                }
+
+                return foundCount > 0;
+            }
+
+            // Try immediately + retry (Streamlit renders lazily)
+            highlightImportControls();
+            setTimeout(highlightImportControls, 300);
+            setTimeout(highlightImportControls, 600);
+            setTimeout(highlightImportControls, 1000);
+            setTimeout(highlightImportControls, 1500);
         })();
         </script>
         """
