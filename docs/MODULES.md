@@ -1795,10 +1795,8 @@ Returns:
 
 #### `render_contextual_help(context)`
 
-Render contextual help based on current page/action.
-
-Args:
-    context: Current context (e.g., 'input', 'results', 'error')
+Render contextual help banners with a dismiss button.
+Safe against multiple renders in a single Streamlit run.
 
 
 ### Dependencies

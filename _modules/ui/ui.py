@@ -445,6 +445,40 @@ def inject_css():
             z-index: 1000;
             bottom: 20px;
         }
+        .demo-highlight {
+            /* Light theme: dark shadow for contrast against light backgrounds */
+            box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.6),
+                        0 0 20px 8px rgba(255, 193, 7, 0.4) !important;
+            transition: box-shadow 0.3s ease-in-out !important;
+            border-radius: 4px !important;
+            position: relative !important;
+            z-index: 1000 !important;
+        }
+        /* Textarea highlight: solid outline that survives overflow clipping */
+        textarea.demo-highlight {
+        outline: 4px solid rgba(255, 193, 7, 0.95) !important;
+        outline-offset: 4px !important;
+
+        /* Optional: add an inner ring (not clipped, because it's inset) */
+        box-shadow: inset 0 0 0 2px rgba(255, 193, 7, 0.55) !important;
+
+        border-radius: 6px !important;
+        }
+
+        /* Dark mode tweak (optional) */
+        @media (prefers-color-scheme: dark) {
+        textarea.demo-highlight {
+            outline: 4px solid rgba(255, 215, 64, 0.95) !important;
+            box-shadow: inset 0 0 0 2px rgba(255, 215, 64, 0.6) !important;
+        }
+        }
+
+        /* Streamlit theme attribute (covers explicit dark theme) */
+        [data-theme="dark"] textarea.demo-highlight {
+        outline: 4px solid rgba(255, 215, 64, 0.95) !important;
+        box-shadow: inset 0 0 0 2px rgba(255, 215, 64, 0.6) !important;
+        }
+
 
     """, unsafe_allow_html=True)
 
