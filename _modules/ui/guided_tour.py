@@ -529,12 +529,19 @@ def install_tour_highlight_styles():
         </style>
 
         <script>
-        // Install global highlight function for tour usage
-        window.highlightElement = function(el) {
-            if (!el) return;
-            el.classList.add("demo-highlight");
-            setTimeout(() => el.classList.remove("demo-highlight"), 1200);
-        };
+        // Install global highlight function for tour usage on parent window
+        (function() {
+            window.parent.highlightElement = function(el) {
+                console.log('Highlighting element:', el);
+                if (!el) {
+                    console.warn('highlightElement called with null element');
+                    return;
+                }
+                el.classList.add("demo-highlight");
+                setTimeout(() => el.classList.remove("demo-highlight"), 1200);
+            };
+            console.log('Tour highlight function installed on window.parent');
+        })();
         </script>
         """,
         height=0,
