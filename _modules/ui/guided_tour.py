@@ -531,15 +531,58 @@ def install_tour_highlight_styles():
         <script>
         // Install global highlight function for tour usage on parent window
         (function() {
+            // CSS to inject into iframes
+            const highlightCSS = `
+                .demo-highlight {
+                    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.6),
+                                0 0 20px 8px rgba(255, 193, 7, 0.4) !important;
+                    transition: box-shadow 0.3s ease-in-out !important;
+                    border-radius: 4px !important;
+                    position: relative !important;
+                    z-index: 1000 !important;
+                }
+                @media (prefers-color-scheme: dark) {
+                    .demo-highlight {
+                        box-shadow: 0 0 0 3px rgba(255, 215, 64, 0.8),
+                                    0 0 25px 10px rgba(255, 215, 64, 0.5) !important;
+                    }
+                }
+                [data-theme="dark"] .demo-highlight {
+                    box-shadow: 0 0 0 3px rgba(255, 215, 64, 0.8),
+                                0 0 25px 10px rgba(255, 215, 64, 0.5) !important;
+                }
+            `;
+
+            // Function to inject CSS into an iframe
+            function injectCSSIntoIframe(iframeDoc) {
+                if (iframeDoc.getElementById('tour-highlight-styles')) {
+                    return; // Already injected
+                }
+                const style = iframeDoc.createElement('style');
+                style.id = 'tour-highlight-styles';
+                style.textContent = highlightCSS;
+                (iframeDoc.head || iframeDoc.documentElement).appendChild(style);
+            }
+
+            // Main highlight function
             window.parent.highlightElement = function(el) {
                 console.log('Highlighting element:', el);
                 if (!el) {
                     console.warn('highlightElement called with null element');
                     return;
                 }
+
+                // Check if element is in an iframe
+                const doc = el.ownerDocument;
+                if (doc !== window.parent.document) {
+                    // Element is in an iframe, inject CSS if needed
+                    injectCSSIntoIframe(doc);
+                }
+
                 el.classList.add("demo-highlight");
                 setTimeout(() => el.classList.remove("demo-highlight"), 1200);
             };
+
             console.log('Tour highlight function installed on window.parent');
         })();
         </script>
