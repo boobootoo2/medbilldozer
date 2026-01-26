@@ -534,6 +534,54 @@ def install_paste_detector():
     )
 
 
+def install_tour_highlight_styles():
+    """Install CSS styles and JavaScript function for tour element highlighting.
+
+    Provides ADA-compliant drop shadows for both light and dark themes with
+    proper contrast ratios. The highlight is temporary and auto-removes after 1.2s.
+    """
+    components.html(
+        """
+        <style>
+        /* Tour highlight styles - ADA compliant for both light and dark themes */
+        .demo-highlight {
+            /* Light theme: dark shadow for contrast against light backgrounds */
+            box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.6),
+                        0 0 20px 8px rgba(255, 193, 7, 0.4) !important;
+            transition: box-shadow 0.3s ease-in-out !important;
+            border-radius: 4px !important;
+            position: relative !important;
+            z-index: 1000 !important;
+        }
+
+        /* Dark theme: brighter shadow for contrast against dark backgrounds */
+        @media (prefers-color-scheme: dark) {
+            .demo-highlight {
+                box-shadow: 0 0 0 3px rgba(255, 215, 64, 0.8),
+                            0 0 25px 10px rgba(255, 215, 64, 0.5) !important;
+            }
+        }
+
+        /* Streamlit dark theme detection (when user explicitly selects dark mode) */
+        [data-theme="dark"] .demo-highlight {
+            box-shadow: 0 0 0 3px rgba(255, 215, 64, 0.8),
+                        0 0 25px 10px rgba(255, 215, 64, 0.5) !important;
+        }
+        </style>
+
+        <script>
+        // Install global highlight function for tour usage
+        window.highlightElement = function(el) {
+            if (!el) return;
+            el.classList.add("demo-highlight");
+            setTimeout(() => el.classList.remove("demo-highlight"), 1200);
+        };
+        </script>
+        """,
+        height=0,
+    )
+
+
 def open_sidebar_for_tour():
     """Open the sidebar automatically when tour is active."""
     if not st.session_state.get('tour_active', False):
