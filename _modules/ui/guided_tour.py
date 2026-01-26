@@ -10,7 +10,6 @@ from typing import Dict, List, Optional
 import yaml
 from pathlib import Path
 
-
 # Tutorial step definitions
 TUTORIAL_STEPS = [
     "welcome",
@@ -127,7 +126,6 @@ def run_guided_tour_runtime():
 
     # 3. Visual emphasis
     highlight_tour_elements()
-    highlight_continue_button_for_manual_steps()
 
     # 4. Step-specific effects
     open_and_scroll_pipeline_workflow_step6()
@@ -219,31 +217,31 @@ def load_tour_config() -> Dict:
     config_path = Path(__file__).parent.parent.parent / "app_config.yaml"
 
     if config_path.exists():
-        with open(config_path, 'r') as f:
+        with open(config_path, "r") as f:
             config = yaml.safe_load(f)
-            return config.get('features', {}).get('guided_tour', {})
+            return config.get("features", {}).get("guided_tour", {})
 
     return {
-        'enabled': False,
-        'auto_launch_for_new_users': True,
-        'default_narrator': 'billie',
-        'widget_position': 'top',
-        'show_skip_button': True,
+        "enabled": False,
+        "auto_launch_for_new_users": True,
+        "default_narrator": "billie",
+        "widget_position": "top",
+        "show_skip_button": True,
     }
 
 
 def initialize_tour_state():
     """Initialize tour session state variables."""
-    if 'tour_active' not in st.session_state:
+    if "tour_active" not in st.session_state:
         st.session_state.tour_active = False
 
-    if 'tutorial_step' not in st.session_state:
+    if "tutorial_step" not in st.session_state:
         st.session_state.tutorial_step = "welcome"
 
-    if 'tour_completed' not in st.session_state:
+    if "tour_completed" not in st.session_state:
         st.session_state.tour_completed = False
 
-    if 'is_first_visit' not in st.session_state:
+    if "is_first_visit" not in st.session_state:
         st.session_state.is_first_visit = True
 
 
@@ -280,10 +278,10 @@ def advance_tour_step(next_step: str):
 
 def check_tour_progression():
     """Check app state and automatically advance tour steps when appropriate."""
-    if not st.session_state.get('tour_active', False):
+    if not st.session_state.get("tour_active", False):
         return
 
-    current_step = st.session_state.get('tutorial_step', 'welcome')
+    current_step = st.session_state.get("tutorial_step", "welcome")
 
     # Auto-advance based on state changes
     if current_step == "copy_first_document":
@@ -294,39 +292,43 @@ def check_tour_progression():
 
     elif current_step == "paste_first_document":
         # Check if first document has been loaded (text pasted into text area)
-        doc_input_0 = st.session_state.get('doc_input_0', '')
+        doc_input_0 = st.session_state.get("doc_input_0", "")
 
         # Consider document loaded if there's substantial text (more than 50 chars)
         if doc_input_0 and len(doc_input_0.strip()) > 50:
             # Track that we detected the text to avoid re-triggering
-            if not st.session_state.get('tour_first_doc_detected', False):
+            if not st.session_state.get("tour_first_doc_detected", False):
                 st.session_state.tour_first_doc_detected = True
                 advance_tour_step("add_second_document")
                 st.rerun()
 
     elif current_step == "add_second_document":
         # Check if second document has been loaded
-        doc_input_1 = st.session_state.get('doc_input_1', '')
+        doc_input_1 = st.session_state.get("doc_input_1", "")
 
         if doc_input_1 and len(doc_input_1.strip()) > 50:
-            if not st.session_state.get('tour_second_doc_detected', False):
+            if not st.session_state.get("tour_second_doc_detected", False):
                 st.session_state.tour_second_doc_detected = True
                 advance_tour_step("second_document_loaded")
                 st.rerun()
 
     elif current_step == "second_document_loaded":
         # Check if analysis has started (analyzing flag set)
-        if st.session_state.get('analyzing', False):
+        if st.session_state.get("analyzing", False):
             advance_tour_step("analysis_running")
             st.rerun()
         # Handle case where analysis completed without intermediate rerun
-        elif st.session_state.get('doc_results', False) and not st.session_state.get('analyzing', False):
+        elif st.session_state.get("doc_results", False) and not st.session_state.get(
+            "analyzing", False
+        ):
             advance_tour_step("review_issues")
             st.rerun()
 
     elif current_step == "analysis_running":
         # Check if analysis is complete
-        if st.session_state.get('doc_results') and not st.session_state.get('analyzing', False):
+        if st.session_state.get("doc_results") and not st.session_state.get(
+            "analyzing", False
+        ):
             advance_tour_step("review_issues")
             st.rerun()
 
@@ -345,10 +347,10 @@ def get_tour_message() -> Optional[Dict]:
     Returns:
         Dict with character, message, and action_prompt, or None if tour not active
     """
-    if not st.session_state.get('tour_active', False):
+    if not st.session_state.get("tour_active", False):
         return None
 
-    current_step = st.session_state.get('tutorial_step', 'welcome')
+    current_step = st.session_state.get("tutorial_step", "welcome")
     return TUTORIAL_MESSAGES.get(current_step)
 
 
@@ -356,28 +358,31 @@ def render_tour_widget():
     """Render the guided tour widget with narrator guidance in the sidebar."""
     tour_config = load_tour_config()
 
-    if not tour_config.get('enabled', False):
+    if not tour_config.get("enabled", False):
         return
 
-    if not st.session_state.get('tour_active', False):
+    if not st.session_state.get("tour_active", False):
         return
 
     tour_message = get_tour_message()
     if not tour_message:
         return
 
-    current_step = st.session_state.get('tutorial_step', 'welcome')
-    show_skip = tour_config.get('show_skip_button', True)
+    current_step = st.session_state.get("tutorial_step", "welcome")
+    show_skip = tour_config.get("show_skip_button", True)
 
     # Calculate step number
-    step_index = TUTORIAL_STEPS.index(current_step) if current_step in TUTORIAL_STEPS else 0
+    step_index = (
+        TUTORIAL_STEPS.index(current_step) if current_step in TUTORIAL_STEPS else 0
+    )
     step_number = step_index + 1
     total_steps = len(TUTORIAL_STEPS)
 
     # Render tour guidance in sidebar
     with st.sidebar:
         # Tour message box with gradient background
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 8px;
@@ -398,24 +403,30 @@ def render_tour_widget():
                 <strong>Next:</strong> {tour_message['action_prompt']}
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
 
 def render_tour_controls():
     """Render tour control buttons in sidebar."""
-    if not st.session_state.get('tour_active', False):
+    if not st.session_state.get("tour_active", False):
         return
 
     with st.sidebar:
         st.markdown("---")
         st.markdown("### 📚 Guided Tour")
 
-        current_step = st.session_state.get('tutorial_step', 'welcome')
-        step_index = TUTORIAL_STEPS.index(current_step) if current_step in TUTORIAL_STEPS else 0
+        current_step = st.session_state.get("tutorial_step", "welcome")
+        step_index = (
+            TUTORIAL_STEPS.index(current_step) if current_step in TUTORIAL_STEPS else 0
+        )
 
         # Show progress
         st.progress(step_index / (len(TUTORIAL_STEPS) - 1))
-        st.caption(f"Step {step_index + 1} of {len(TUTORIAL_STEPS)}: {current_step.replace('_', ' ').title()}")
+        st.caption(
+            f"Step {step_index + 1} of {len(TUTORIAL_STEPS)}: {current_step.replace('_', ' ').title()}"
+        )
         st.markdown("")
 
         col1, col2 = st.columns(2)
@@ -450,15 +461,15 @@ def should_auto_launch_tour() -> bool:
     """
     tour_config = load_tour_config()
 
-    if not tour_config.get('enabled', False):
+    if not tour_config.get("enabled", False):
         return False
 
-    if not tour_config.get('auto_launch_for_new_users', True):
+    if not tour_config.get("auto_launch_for_new_users", True):
         return False
 
     # Check if this is first visit and tour hasn't been completed
-    is_first = st.session_state.get('is_first_visit', True)
-    completed = st.session_state.get('tour_completed', False)
+    is_first = st.session_state.get("is_first_visit", True)
+    completed = st.session_state.get("tour_completed", False)
 
     return is_first and not completed
 
@@ -476,43 +487,65 @@ def highlight_continue_button_for_manual_steps():
     This function provides continuous highlighting for the Continue button
     on all manual steps to ensure visibility.
     """
-    if not st.session_state.get('tour_active', False):
+    if not st.session_state.get("tour_active", False):
         return
 
-    current_step = st.session_state.get('tutorial_step')
+    current_step = st.session_state.get("tutorial_step")
 
     if current_step not in MANUAL_STEPS:
         return
 
     components.html(
-        """
+        f"""
         <script>
-        (function () {
-            function highlightContinueButton() {
+        (function () {{
+            const stepName = '{current_step}';
+            let intervalId;
+            let foundCount = 0;
+
+            function highlightContinueButton() {{
                 const buttons = window.parent.document.querySelectorAll('button');
+                let found = false;
 
-                for (let btn of buttons) {
-                    const text = (btn.innerText || '').trim();
+                for (let btn of buttons) {{
+                    const text = (btn.innerText || btn.textContent || '').trim();
 
-                    if (text.startsWith('Continue') && text.includes('▶')) {
+                    if (text.includes('Continue') && text.includes('▶')) {{
+                        found = true;
                         // Use the global highlightElement function for consistent styling
-                        if (window.parent.highlightElement) {
+                        if (window.parent.highlightElement) {{
                             window.parent.highlightElement(btn);
-                            console.log('Highlighted Continue button (manual step)');
-                        }
-                        return;
-                    }
-                }
-            }
+                            foundCount++;
+                            if (foundCount === 1) {{
+                                console.log('✓ Highlighted Continue button (step: ' + stepName + ')');
+                            }}
+                        }}
+                        break;
+                    }}
+                }}
 
-            // Streamlit renders lazily → retry multiple times
+                // If found a few times, we can stop checking
+                if (foundCount > 3) {{
+                    clearInterval(intervalId);
+                }}
+
+                return found;
+            }}
+
+            // Highlight immediately
             highlightContinueButton();
-            setTimeout(highlightContinueButton, 300);
-            setTimeout(highlightContinueButton, 600);
-            setTimeout(highlightContinueButton, 1000);
-            setTimeout(highlightContinueButton, 1500);
-            setTimeout(highlightContinueButton, 2000);
-        })();
+
+            // Then keep checking every 500ms to re-apply highlight
+            intervalId = setInterval(highlightContinueButton, 500);
+
+            // Stop after 15 seconds
+            setTimeout(function() {{
+                clearInterval(intervalId);
+                if (foundCount === 0) {{
+                    console.warn('Continue button never found for step: ' + stepName);
+                }}
+            }}, 15000);
+        }})();
         </script>
         """,
         height=0,
@@ -561,13 +594,13 @@ def install_copy_button_detector():
     return
 
     # Dead code below kept for reference
-    if not st.session_state.get('tour_active', False):
+    if not st.session_state.get("tour_active", False):
         return
 
-    current_step = st.session_state.get('tutorial_step', 'welcome')
+    current_step = st.session_state.get("tutorial_step", "welcome")
 
     # Only install during step where we're waiting for pharmacy receipt copy
-    if current_step != 'first_document_loaded':
+    if current_step != "first_document_loaded":
         return
 
     components.html(
@@ -632,13 +665,13 @@ def install_copy_button_detector():
 
 def install_paste_detector():
     """Install JavaScript to detect paste events in text areas and trigger rerun."""
-    if not st.session_state.get('tour_active', False):
+    if not st.session_state.get("tour_active", False):
         return
 
-    current_step = st.session_state.get('tutorial_step', 'welcome')
+    current_step = st.session_state.get("tutorial_step", "welcome")
 
     # Only install during steps where we're waiting for paste
-    if current_step not in ['paste_first_document', 'add_second_document']:
+    if current_step not in ["paste_first_document", "add_second_document"]:
         return
 
     components.html(
@@ -827,10 +860,10 @@ def install_tour_highlight_styles():
 
 def highlight_tour_elements():
     """Highlight interactive elements based on current tour step."""
-    if not st.session_state.get('tour_active', False):
+    if not st.session_state.get("tour_active", False):
         return
 
-    current_step = st.session_state.get('tutorial_step', 'welcome')
+    current_step = st.session_state.get("tutorial_step", "welcome")
 
     # Map steps to elements that should be highlighted
     highlight_script = ""
@@ -838,28 +871,35 @@ def highlight_tour_elements():
     # For all manual steps, highlight the Continue button
     if current_step in MANUAL_STEPS:
         # Highlight the Continue button in sidebar for manual steps
-        highlight_script = """
+        highlight_script = f"""
         <script>
-        (function() {
-            function highlightContinueButton() {
-                // Find button by looking for text content "Continue"
-                const buttons = window.parent.document.querySelectorAll('button');
-                for (let btn of buttons) {
-                    if (btn.textContent.includes('Continue') && btn.textContent.includes('▶')) {
-                        if (window.parent.highlightElement) {
+        (function() {{
+            let checkCount = 0;
+            
+            function findAndHighlightContinue() {{
+                checkCount++;
+                const allButtons = window.parent.document.querySelectorAll('button');
+                
+                for (let btn of allButtons) {{
+                    const btnText = btn.textContent || btn.innerText || '';
+                    if (btnText.includes('Continue') && btnText.includes('▶')) {{
+                        if (window.parent.highlightElement) {{
                             window.parent.highlightElement(btn);
-                            console.log('Highlighted Continue button for manual step');
-                        }
-                        return;
-                    }
-                }
-            }
-
-            // Try immediately and retry
-            setTimeout(highlightContinueButton, 500);
-            setTimeout(highlightContinueButton, 1000);
-            setTimeout(highlightContinueButton, 1500);
-        })();
+                        }}
+                        return true;
+                    }}
+                }}
+                
+                if (checkCount < 10) {{
+                    setTimeout(findAndHighlightContinue, 500);
+                }}
+                return false;
+            }}
+            
+            setTimeout(findAndHighlightContinue, 100);
+            setTimeout(findAndHighlightContinue, 500);
+            setTimeout(findAndHighlightContinue, 1000);
+        }})();
         </script>
         """
 
@@ -1036,7 +1076,6 @@ def highlight_tour_elements():
         </script>
         """
 
-
     elif current_step == "import_now":
         # Step 12: Highlight Select Entity dropdown and Import Now button
         highlight_script += """
@@ -1090,7 +1129,6 @@ def highlight_tour_elements():
         </script>
         """
 
-
     # Inject the highlight script if we have one
     if highlight_script:
         components.html(highlight_script, height=0)
@@ -1098,10 +1136,10 @@ def highlight_tour_elements():
 
 def open_sidebar_for_tour():
     """Open the sidebar automatically when tour is active."""
-    if not st.session_state.get('tour_active', False):
+    if not st.session_state.get("tour_active", False):
         return
 
-    if not st.session_state.get('tour_sidebar_opened', False):
+    if not st.session_state.get("tour_sidebar_opened", False):
         components.html(
             """
             <script>
@@ -1120,4 +1158,3 @@ def open_sidebar_for_tour():
             height=0,
         )
         st.session_state.tour_sidebar_opened = True
-
