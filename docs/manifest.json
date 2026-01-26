@@ -56,7 +56,7 @@
       "filepath": "_modules/ui/guided_tour.py",
       "has_docstring": true,
       "num_classes": 0,
-      "num_functions": 14,
+      "num_functions": 16,
       "num_dependencies": 0,
       "constants": [
         "TUTORIAL_STEPS",

@@ -165,9 +165,22 @@ def check_tour_progression():
                 st.rerun()
 
     elif current_step == "first_document_loaded":
-        # Wait for user to read message, then auto-advance to add second doc step
-        # User will manually click continue to proceed
-        pass
+        # Check if this is a reload triggered by pharmacy copy button click
+        # If we've just entered this step fresh, don't advance yet
+        # But if sessionStorage flag is set (from pharmacy button click), advance
+        if st.session_state.get('_ready_to_advance_from_pharmacy_copy', False):
+            st.session_state._ready_to_advance_from_pharmacy_copy = False
+            st.session_state._pharmacy_handled_for_step3 = False  # Reset for next time
+            advance_tour_step("add_second_document")
+            st.rerun()
+        # Set flag on next render (after page fully loaded)
+        elif not st.session_state.get('_pharmacy_handled_for_step3', False):
+            # First time on this step, prepare to detect clicks
+            pass
+        else:
+            # We've been on this step and pharmacy copy was clicked
+            # Set flag to advance on next render cycle
+            st.session_state._ready_to_advance_from_pharmacy_copy = True
 
     elif current_step == "add_second_document":
         # Check if second document has been loaded
@@ -288,7 +301,7 @@ def render_tour_controls():
         with col1:
             # Next step button (for manual advancement on exploration steps)
             # Show Continue for welcome and exploration steps
-            manual_steps = ["welcome", "first_document_loaded", "review_issues", "coverage_matrix", "next_actions"]
+            manual_steps = ["welcome", "review_issues", "coverage_matrix", "next_actions"]
             if current_step in manual_steps and step_index < len(TUTORIAL_STEPS) - 1:
                 if st.button("Continue ▶", key="tour_next", use_container_width=True):
                     next_step = TUTORIAL_STEPS[step_index + 1]
@@ -354,6 +367,112 @@ def install_tour_bridge():
                     }, '*');
                 }
             });
+        })();
+        </script>
+        """,
+        height=0,
+    )
+
+
+def check_pharmacy_copy_click():
+    """Check if pharmacy receipt copy button was clicked and advance tour."""
+    if not st.session_state.get('tour_active', False):
+        return
+
+    current_step = st.session_state.get('tutorial_step', 'welcome')
+
+    if current_step != 'first_document_loaded':
+        return
+
+    # Check if we've already handled the pharmacy copy on this step
+    if st.session_state.get('_pharmacy_handled_for_step3', False):
+        return
+
+    # Single script to check and handle pharmacy copy click
+    components.html(
+        """
+        <script>
+        (function() {
+            const clicked = localStorage.getItem('pharmacy_copy_clicked');
+            if (clicked === 'true') {
+                localStorage.removeItem('pharmacy_copy_clicked');
+                // Reload to trigger tour progression
+                window.parent.location.reload();
+            }
+        })();
+        </script>
+        """,
+        height=0,
+    )
+
+    # If we reach here without reloading, mark as handled
+    st.session_state._pharmacy_handled_for_step3 = True
+
+
+def install_copy_button_detector():
+    """Install JavaScript to detect clicks on pharmacy receipt copy button."""
+    if not st.session_state.get('tour_active', False):
+        return
+
+    current_step = st.session_state.get('tutorial_step', 'welcome')
+
+    # Only install during step where we're waiting for pharmacy receipt copy
+    if current_step != 'first_document_loaded':
+        return
+
+    components.html(
+        """
+        <script>
+        (function() {
+            let checkInterval;
+            let clickDetected = false;
+
+            function findAndMonitorPharmacyButton() {
+                // Find all copy buttons in the document
+                const iframes = window.parent.document.querySelectorAll('iframe');
+
+                iframes.forEach(function(iframe) {
+                    try {
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        const buttons = iframeDoc.querySelectorAll('button[id^="copy_"]');
+
+                        buttons.forEach(function(button) {
+                            // Check if this is likely the pharmacy receipt button
+                            // Look for nearby text containing "Pharmacy" or "💊"
+                            let nearbyText = '';
+                            let parent = button.parentElement;
+                            for (let i = 0; i < 5 && parent; i++) {
+                                nearbyText += parent.textContent || '';
+                                parent = parent.parentElement;
+                            }
+
+                            if ((nearbyText.includes('Pharmacy') || nearbyText.includes('💊')) && !clickDetected) {
+                                button.addEventListener('click', function() {
+                                    if (!clickDetected) {
+                                        clickDetected = true;
+                                        // Store flag in localStorage to persist across rerun
+                                        localStorage.setItem('pharmacy_copy_clicked', 'true');
+                                        // Trigger page refresh after short delay
+                                        setTimeout(function() {
+                                            window.parent.location.reload();
+                                        }, 200);
+                                    }
+                                });
+                            }
+                        });
+                    } catch (e) {
+                        // Cross-origin iframe, skip
+                    }
+                });
+            }
+
+            // Check periodically for the button
+            checkInterval = setInterval(findAndMonitorPharmacyButton, 500);
+
+            // Stop checking after 30 seconds
+            setTimeout(function() {
+                clearInterval(checkInterval);
+            }, 30000);
         })();
         </script>
         """,
