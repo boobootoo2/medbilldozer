@@ -361,6 +361,60 @@ def install_tour_bridge():
     )
 
 
+def install_paste_detector():
+    """Install JavaScript to detect paste events in text areas and trigger rerun."""
+    if not st.session_state.get('tour_active', False):
+        return
+
+    current_step = st.session_state.get('tutorial_step', 'welcome')
+
+    # Only install during steps where we're waiting for paste
+    if current_step not in ['upload_prompt', 'add_second_document']:
+        return
+
+    components.html(
+        """
+        <script>
+        (function() {
+            // Function to add paste listener to all text areas
+            function addPasteListeners() {
+                const textareas = window.parent.document.querySelectorAll('textarea');
+                textareas.forEach(function(textarea) {
+                    if (!textarea.hasAttribute('data-paste-listener')) {
+                        textarea.setAttribute('data-paste-listener', 'true');
+                        textarea.addEventListener('paste', function(e) {
+                            // Trigger a rerun after paste by simulating a change event
+                            setTimeout(function() {
+                                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                                textarea.blur(); // Remove focus to trigger Streamlit update
+                                setTimeout(function() {
+                                    textarea.focus(); // Return focus
+                                }, 50);
+                            }, 100);
+                        });
+                    }
+                });
+            }
+
+            // Run immediately
+            addPasteListeners();
+
+            // Also watch for new textareas being added
+            const observer = new MutationObserver(function(mutations) {
+                addPasteListeners();
+            });
+
+            observer.observe(window.parent.document.body, {
+                childList: true,
+                subtree: true
+            });
+        })();
+        </script>
+        """,
+        height=0,
+    )
+
+
 def open_sidebar_for_tour():
     """Open the sidebar automatically when tour is active."""
     if not st.session_state.get('tour_active', False):

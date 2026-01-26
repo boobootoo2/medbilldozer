@@ -1880,6 +1880,10 @@ Auto-launch tour for new users if configured.
 
 Install JavaScript bridge to handle tour events from widget.
 
+#### `install_paste_detector()`
+
+Install JavaScript to detect paste events in text areas and trigger rerun.
+
 #### `open_sidebar_for_tour()`
 
 Open the sidebar automatically when tour is active.
