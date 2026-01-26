@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 37
+**Total Modules:** 38
 
 ### Application (5 modules)
 
@@ -44,7 +44,7 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (10 modules)
+### UI Components (11 modules)
 
 - **_modules.ui.billdozer_widget**: No description
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
@@ -52,6 +52,7 @@
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
+- **_modules.ui.splash_screen**: Splash Screen - Welcome screen with Billdozer introduction.
 - **_modules.ui.ui**: No description
 - **_modules.ui.ui_coverage_matrix**: Coverage matrix UI rendering.
 - **_modules.ui.ui_documents**: Document input and management UI.

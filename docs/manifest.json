@@ -1,6 +1,6 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 37,
+  "total_modules": 38,
   "modules": [
     {
       "name": "_modules.ui.doc_assistant",
@@ -63,6 +63,15 @@
         "MANUAL_STEPS",
         "TUTORIAL_MESSAGES"
       ]
+    },
+    {
+      "name": "_modules.ui.splash_screen",
+      "filepath": "_modules/ui/splash_screen.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 3,
+      "num_dependencies": 1,
+      "constants": []
     },
     {
       "name": "_modules.ui.billdozer_widget",
@@ -374,7 +383,7 @@
       "has_docstring": true,
       "num_classes": 0,
       "num_functions": 7,
-      "num_dependencies": 21,
+      "num_dependencies": 22,
       "constants": [
         "ENGINE_OPTIONS"
       ]
