@@ -1892,6 +1892,13 @@ Install JavaScript to detect clicks on pharmacy receipt copy button.
 
 Install JavaScript to detect paste events in text areas and trigger rerun.
 
+#### `install_tour_highlight_styles()`
+
+Install CSS styles and JavaScript function for tour element highlighting.
+
+Provides ADA-compliant drop shadows for both light and dark themes with
+proper contrast ratios. The highlight is temporary and auto-removes after 1.2s.
+
 #### `open_sidebar_for_tour()`
 
 Open the sidebar automatically when tour is active.

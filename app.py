@@ -22,6 +22,7 @@ from _modules.ui.guided_tour import (
     install_paste_detector,
     install_copy_button_detector,
     check_pharmacy_copy_click,
+    install_tour_highlight_styles,
 )
 from _modules.ui.health_profile import (
     render_profile_selector,
@@ -223,6 +224,9 @@ def bootstrap_home_page():
         render_contextual_help('demo')
 
     render_demo_documents()
+
+    # Install tour highlight styles for element emphasis
+    install_tour_highlight_styles()
 
     # Install copy button detector for tour (detects pharmacy receipt copy click)
     install_copy_button_detector()
