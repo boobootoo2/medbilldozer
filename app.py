@@ -23,6 +23,7 @@ from _modules.ui.guided_tour import (
     install_copy_button_detector,
     check_pharmacy_copy_click,
     install_tour_highlight_styles,
+    highlight_tour_elements,
 )
 from _modules.ui.health_profile import (
     render_profile_selector,
@@ -317,6 +318,7 @@ def main():
     if should_enable_guided_tour():
         render_tour_widget()
         open_sidebar_for_tour()
+        highlight_tour_elements()
 
 
     # --------------------------------------------------
