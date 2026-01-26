@@ -14,7 +14,8 @@ from pathlib import Path
 # Tutorial step definitions
 TUTORIAL_STEPS = [
     "welcome",
-    "upload_prompt",
+    "copy_first_document",
+    "paste_first_document",
     "add_second_document",
     "second_document_loaded",
     "analysis_running",
@@ -31,10 +32,15 @@ TUTORIAL_MESSAGES = {
         "message": "Hi! I'm Billie D., your guide to finding hidden errors in medical bills. Let me show you how this works!",
         "action_prompt": "Ready to begin",
     },
-    "upload_prompt": {
+    "copy_first_document": {
         "character": "billie",
-        "message": "First, scroll to the Hospital Bill – Colonoscopy section and click Copy. Next, scroll down to Analyze a Document and paste the text into Document 1.",
-        "action_prompt": "Copy and paste into Document 1",
+        "message": "First, scroll to the Hospital Bill – Colonoscopy section and click Copy.",
+        "action_prompt": "Click Copy on Hospital Bill",
+    },
+    "paste_first_document": {
+        "character": "billy",
+        "message": "Great! Now scroll down to Analyze a Document and paste the text into Document 1.",
+        "action_prompt": "Paste into Document 1",
     },
     "add_second_document": {
         "character": "billy",
@@ -146,7 +152,13 @@ def check_tour_progression():
     current_step = st.session_state.get('tutorial_step', 'welcome')
 
     # Auto-advance based on state changes
-    if current_step == "upload_prompt":
+    if current_step == "copy_first_document":
+        # Auto-advance to paste step after a short delay (user has copied)
+        # This step will be manually advanced or we can detect clipboard
+        # For now, user will use Continue button
+        pass
+
+    elif current_step == "paste_first_document":
         # Check if first document has been loaded (text pasted into text area)
         doc_input_0 = st.session_state.get('doc_input_0', '')
 
@@ -276,8 +288,8 @@ def render_tour_controls():
 
         with col1:
             # Next step button (for manual advancement on exploration steps)
-            # Show Continue for welcome and exploration steps
-            manual_steps = ["welcome", "review_issues", "coverage_matrix", "next_actions"]
+            # Show Continue for welcome, copy step, and exploration steps
+            manual_steps = ["welcome", "copy_first_document", "review_issues", "coverage_matrix", "next_actions"]
             if current_step in manual_steps and step_index < len(TUTORIAL_STEPS) - 1:
                 if st.button("Continue ▶", key="tour_next", use_container_width=True):
                     next_step = TUTORIAL_STEPS[step_index + 1]
@@ -447,7 +459,7 @@ def install_paste_detector():
     current_step = st.session_state.get('tutorial_step', 'welcome')
 
     # Only install during steps where we're waiting for paste
-    if current_step not in ['upload_prompt', 'add_second_document']:
+    if current_step not in ['paste_first_document', 'add_second_document']:
         return
 
     components.html(
@@ -580,7 +592,7 @@ def install_tour_highlight_styles():
                 }
 
                 el.classList.add("demo-highlight");
-                setTimeout(() => el.classList.remove("demo-highlight"), 1200);
+                setTimeout(() => el.classList.remove("demo-highlight"), 6000);
             };
 
             console.log('Tour highlight function installed on window.parent');
@@ -606,17 +618,29 @@ def highlight_tour_elements():
         highlight_script = """
         <script>
         (function() {
-            setTimeout(function() {
-                const continueBtn = window.parent.document.querySelector('button[key="tour_next"]');
-                if (continueBtn && window.parent.highlightElement) {
-                    window.parent.highlightElement(continueBtn);
+            function highlightContinueButton() {
+                // Find button by looking for text content "Continue"
+                const buttons = window.parent.document.querySelectorAll('button');
+                for (let btn of buttons) {
+                    if (btn.textContent.includes('Continue') && btn.textContent.includes('▶')) {
+                        if (window.parent.highlightElement) {
+                            window.parent.highlightElement(btn);
+                            console.log('Highlighted Continue button');
+                        }
+                        return;
+                    }
                 }
-            }, 500);
+            }
+
+            // Try immediately and retry
+            setTimeout(highlightContinueButton, 500);
+            setTimeout(highlightContinueButton, 1000);
+            setTimeout(highlightContinueButton, 1500);
         })();
         </script>
         """
 
-    elif current_step == "upload_prompt":
+    elif current_step == "copy_first_document":
         # Step 2: Highlight the first copy button (Hospital Bill - Colonoscopy)
         highlight_script = """
         <script>
@@ -644,6 +668,34 @@ def highlight_tour_elements():
             highlightFirstCopyButton();
             setTimeout(highlightFirstCopyButton, 500);
             setTimeout(highlightFirstCopyButton, 1000);
+        })();
+        </script>
+        """
+
+    elif current_step == "paste_first_document":
+        # Step 3: Highlight the first textarea (Document 1)
+        highlight_script = """
+        <script>
+        (function() {
+            function highlightFirstTextarea() {
+                const textareas = window.parent.document.querySelectorAll('textarea');
+
+                // Find the first visible textarea
+                for (let textarea of textareas) {
+                    if (textarea.offsetParent !== null) {
+                        if (window.parent.highlightElement) {
+                            window.parent.highlightElement(textarea);
+                            console.log('Highlighted first textarea');
+                        }
+                        return;
+                    }
+                }
+            }
+
+            // Try immediately and retry in case content loads slowly
+            highlightFirstTextarea();
+            setTimeout(highlightFirstTextarea, 500);
+            setTimeout(highlightFirstTextarea, 1000);
         })();
         </script>
         """
