@@ -1899,6 +1899,10 @@ Install CSS styles and JavaScript function for tour element highlighting.
 Provides ADA-compliant drop shadows for both light and dark themes with
 proper contrast ratios. The highlight is temporary and auto-removes after 1.2s.
 
+#### `highlight_tour_elements()`
+
+Highlight interactive elements based on current tour step.
+
 #### `open_sidebar_for_tour()`
 
 Open the sidebar automatically when tour is active.

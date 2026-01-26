@@ -582,6 +582,94 @@ def install_tour_highlight_styles():
     )
 
 
+def highlight_tour_elements():
+    """Highlight interactive elements based on current tour step."""
+    if not st.session_state.get('tour_active', False):
+        return
+
+    current_step = st.session_state.get('tutorial_step', 'welcome')
+
+    # Map steps to elements that should be highlighted
+    highlight_script = ""
+
+    if current_step == "welcome":
+        # Step 1: Highlight the Continue button in sidebar
+        highlight_script = """
+        <script>
+        (function() {
+            setTimeout(function() {
+                const continueBtn = window.parent.document.querySelector('button[key="tour_next"]');
+                if (continueBtn && window.parent.highlightElement) {
+                    window.parent.highlightElement(continueBtn);
+                }
+            }, 500);
+        })();
+        </script>
+        """
+
+    elif current_step == "upload_prompt":
+        # Step 2: Highlight the first copy button (Hospital Bill - Colonoscopy)
+        highlight_script = """
+        <script>
+        (function() {
+            function highlightFirstCopyButton() {
+                const iframes = window.parent.document.querySelectorAll('iframe');
+
+                for (let iframe of iframes) {
+                    try {
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        const copyButtons = iframeDoc.querySelectorAll('button[id^="copy_"]');
+
+                        if (copyButtons.length > 0 && window.parent.highlightElement) {
+                            // Highlight the first copy button found
+                            window.parent.highlightElement(copyButtons[0]);
+                            return;
+                        }
+                    } catch (e) {
+                        // Cross-origin iframe, skip
+                    }
+                }
+            }
+
+            // Try immediately and retry a few times in case content loads slowly
+            highlightFirstCopyButton();
+            setTimeout(highlightFirstCopyButton, 500);
+            setTimeout(highlightFirstCopyButton, 1000);
+        })();
+        </script>
+        """
+
+    elif current_step == "add_second_document":
+        # Step 4: Highlight "Add Another Document" button
+        highlight_script = """
+        <script>
+        (function() {
+            function highlightAddDocButton() {
+                const buttons = window.parent.document.querySelectorAll('button');
+
+                for (let btn of buttons) {
+                    if (btn.textContent.includes('Add Another Document')) {
+                        if (window.parent.highlightElement) {
+                            window.parent.highlightElement(btn);
+                        }
+                        return;
+                    }
+                }
+            }
+
+            // Try immediately and retry in case button loads slowly
+            highlightAddDocButton();
+            setTimeout(highlightAddDocButton, 500);
+            setTimeout(highlightAddDocButton, 1000);
+        })();
+        </script>
+        """
+
+    # Inject the highlight script if we have one
+    if highlight_script:
+        components.html(highlight_script, height=0)
+
+
 def open_sidebar_for_tour():
     """Open the sidebar automatically when tour is active."""
     if not st.session_state.get('tour_active', False):
