@@ -40,6 +40,44 @@ def render_splash_screen():
     # Fullscreen container
     st.html("""
     <style>
+    /* ===============================
+    SPLASH BASE (SAFE VERSION)
+    =============================== */
+
+    .splash-container {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    }
+
+
+    .splash-content {
+    width: 100%;
+    max-width: 800px;
+    }
+
+    /* Responsive text */
+    .splash-title {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 800;
+    }
+
+    .splash-subtitle {
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    margin-bottom: 20px;
+    }
+
+    .splash-description {
+    font-size: clamp(0.95rem, 2.5vw, 1.2rem);
+    line-height: 1.6;
+    }
+
     /* Hide Streamlit default elements for splash screen */
     .splash-active header[data-testid="stHeader"] {
         display: none !important;
@@ -56,93 +94,6 @@ def render_splash_screen():
     .splash-enabled section > div {
         padding: 0;
         max-width: none;
-    }
-    
-    /* Splash screen styles */
-    .splash-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        color: white;
-        text-align: center;
-        padding: 0 20px;
-        overflow: hidden;
-    }
-    
-    .splash-content {
-        max-width: 800px;
-        width: 100%;
-        animation: fadeInUp 0.8s ease-out;
-    }
-    
-    .splash-title {
-        font-size: 3.5em;
-        font-weight: 800;
-        margin-bottom: 20px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .splash-subtitle {
-        font-size: 1.5em;
-        margin-bottom: 40px;
-        opacity: 0.95;
-        font-weight: 400;
-    }
-    
-    .splash-widget-container {
-        margin: 40px auto;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        padding: 30px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    }
-    
-    .splash-description {
-        font-size: 1.2em;
-        line-height: 1.8;
-        margin: 30px auto;
-        max-width: 700px;
-        opacity: 0.9;
-    }
-    
-    .splash-dismiss-btn {
-        margin-top: 40px;
-        padding: 15px 50px;
-        font-size: 1.2em;
-        background: white;
-        color: #667eea;
-        border: none;
-        border-radius: 50px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    
-    .splash-dismiss-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        background: #f8f9fa;
-    }
-    
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
     }
     </style>
     """)
@@ -185,6 +136,7 @@ def render_splash_screen():
         text-align: center;
         padding: 0 20px;
         overflow: hidden;
+        left: -20px; /* Adjust for Streamlit padding */
     }
     
     .splash-content {
@@ -518,11 +470,13 @@ def render_splash_screen():
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             cursor: pointer;
             transition: all 0.3s ease;
+            width: auto;
         }
         div[data-testid="stButton"] > button[kind="primary"]:hover {
             transform: translateX(-50%) translateY(-2px);
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
             background: #f0f0f0 !important;
+            width: auto;
         }
         </style>
     """, unsafe_allow_html=True)

@@ -871,8 +871,9 @@ def highlight_tour_elements():
     # For all manual steps, highlight the Continue button
     if current_step in MANUAL_STEPS:
         # Highlight the Continue button in sidebar for manual steps
-        highlight_script = f"""
+        highlight_script = f"""\
         <script>
+
         (function() {{
             let checkCount = 0;
             
