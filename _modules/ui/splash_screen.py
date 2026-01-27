@@ -58,16 +58,29 @@ def render_splash_screen():
 
 
     .splash-content {
-        width: 100%;
+        width: 90%;
         max-width: 800px;
         justify-content: flex-start;
         margin-top: 80px;
     }
 
+
+
     /* Responsive text */
     .splash-title {
-    font-size: clamp(2rem, 6vw, 3.5rem);
-    font-weight: 800;
+        font-size: clamp(2rem, 6vw, 3.5rem);
+        font-weight: 800;
+        
+        margin: 0px;
+        font-style: italic;
+        font-size: 2rem;
+            scroll-margin-top: 3.75rem;
+            font-weight: 700;
+    padding: 1.25rem 0px 1rem;
+        font-family: "Source Sans", sans-serif;
+    line-height: 1.2;
+    margin: 0px;
+    color: inherit;
     }
 
     .splash-subtitle {
@@ -147,17 +160,22 @@ def render_splash_screen():
     }
     
     .splash-content {
-        max-width: 800px;
-        width: 100%;
+        width: 90%;
         animation: fadeInUp 0.8s ease-out;
         margin-top: 80px;
     }
     
     .splash-title {
-        font-size: 3.5em;
-        font-weight: 800;
         margin-bottom: 20px;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-style: italic;
+        font-size: 2rem;
+        scroll-margin-top: 3.75rem;
+        font-weight: 700;
+        padding: 1.25rem 0px 1rem;
+        font-family: "Source Sans", sans-serif;
+        line-height: 1.2;
+        color: black;
     }
     
     .splash-subtitle {
@@ -197,11 +215,12 @@ def render_splash_screen():
     </style>
     <div class="splash-container">
     <div class="splash-content">
-        <div class="splash-title"><img src="https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/avatars/transparent/billy__eyes_open__billdozer_up.png" alt="Billy character with eyes open looking up" style="
-    height: 87px;
-    width: auto;
-"> medBillDozer</div>
-
+        <div class="splash-title">
+        <img src="https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/avatars/transparent/billy__eyes_open__billdozer_up.png" alt="Billy character with eyes open looking up" style="
+            height: 87px;
+            width: auto;" /> 
+            medBill<span style="color: rgb(45, 164, 78);">Dozer</span>
+        </div>
         <div class="splash-subtitle">
         Find Hidden Errors in Medical Bills
         </div>
@@ -332,6 +351,30 @@ def render_splash_screen():
                 opacity: 1;
                 }
 
+                #splash-transcript {
+                scrollbar-width: thin; /* Firefox */
+                scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.1); /* Firefox */
+                }
+
+                /* Webkit browsers (Chrome, Safari, Edge) */
+                #splash-transcript::-webkit-scrollbar {
+                width: 8px;
+                }
+
+                #splash-transcript::-webkit-scrollbar-track {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 4px;
+                }
+
+                #splash-transcript::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.5);
+                border-radius: 4px;
+                }
+
+                #splash-transcript::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.7);
+                }
+
 
             </style>
             
@@ -374,7 +417,7 @@ def render_splash_screen():
     margin-top: 12px;
     text-align: center;
     max-height: 70px;
-    overflow-y: auto;
+    overflow-y: scroll;
   "
 >
   <div
@@ -495,6 +538,10 @@ def render_splash_screen():
             // Visual transcript sync
             transcriptLines.forEach((el, idx) => {
             el.classList.toggle("active", idx === messageIndex);
+            // Auto-scroll to active line
+            if (idx === messageIndex) {
+                el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+            }
             });
 
             messageIndex++;
