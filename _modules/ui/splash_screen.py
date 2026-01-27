@@ -434,14 +434,15 @@ def render_splash_screen():
   ></div>
 
     <p class="transcript-line" data-index="0">
-        Hi! We're Billy and Billie, your guides to uncovering billing errors.
+    Hi! We’re Billy and Billie—your guides to finding billing mistakes.
     </p>
     <p class="transcript-line" data-index="1">
-        We analyze medical bills, pharmacy receipts, dental claims, and insurance statements to find overcharges, duplicate charges, and coding errors that could save you money.
+    We scan medical bills, pharmacy receipts, dental claims, and insurance statements to uncover overcharges, duplicates, and missed reimbursements.
     </p>
     <p class="transcript-line" data-index="2">
-        Let us show you how easy it is to check your bills for accuracy!
+    Ready to see how easy it is to double-check your bills?
     </p>
+
     </div>
 
     </div>
@@ -483,10 +484,20 @@ def render_splash_screen():
         
         // Pre-populate queue with welcome messages - split long messages into chunks
         const rawMessages = [
-            { character: "billie", message: "Hi! We're Billy and Billie, your guides to uncovering billing errors." },
-            { character: "billy", message: "We analyze medical bills, pharmacy receipts, dental claims, and insurance statements to find overcharges, duplicate charges, and coding errors that could save you money." },
-            { character: "billie", message: "Let us show you how easy it is to check your bills for accuracy!" }
+            {
+                character: "billie",
+                message: "Hi! We’re Billy and Billie—your guides to finding billing mistakes."
+            },
+            {
+                character: "billy",
+                message: "We scan medical bills, pharmacy receipts, dental claims, and insurance statements to uncover overcharges, duplicates, and missed reimbursements."
+            },
+            {
+                character: "billie",
+                message: "Ready to see how easy it is to double-check your bills?"
+            }
         ];
+
         
         const queue = [];
         const maxChars = 40;
@@ -614,7 +625,4 @@ def render_splash_screen():
     
     if st.button("Get Started 🚀", key="dismiss_splash_btn", type="primary"):
         dismiss_splash_screen()
-        # Activate Intro.js tour
-        from _modules.ui.guided_tour import activate_tour
-        activate_tour()
         st.rerun()
