@@ -121,6 +121,10 @@ def _privacy_dialog():
         disabled=not accept_privacy,
     ):
         st.session_state.privacy_acknowledged = True
+        # Trigger guided tour if enabled
+        if st.session_state.get('splash_dismissed', False):
+            from _modules.ui.guided_tour import activate_tour
+            activate_tour()
         st.rerun()
 
 
