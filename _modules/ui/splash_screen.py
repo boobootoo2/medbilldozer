@@ -614,3 +614,7 @@ def render_splash_screen():
     
     if st.button("Get Started 🚀", key="dismiss_splash_btn", type="primary"):
         dismiss_splash_screen()
+        # Activate Intro.js tour
+        from _modules.ui.guided_tour import activate_tour
+        activate_tour()
+        st.rerun()
