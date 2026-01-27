@@ -522,12 +522,14 @@ def render_header():
             }}
             </style>
             <div style="display:flex;gap:18px;align-items:center;">
-              <div class="med-bill-dozer-logo" role="img" aria-label="medBillDozer logo"></div>
+              <img src="https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/avatars/transparent/billy__eyes_open__billdozer_up.png" alt="Billy character with eyes open looking up" style="
+            height: 87px;
+            width: auto;" /> 
               <div>
                 <h1 style="margin:0;font-style:italic;">
                     medBill<span style="color:#2DA44E;">Dozer</span>
                 </h1>
-                <div style="color:#4B5563;">
+                <div style="opacity:0.7;">
                     Detecting billing, pharmacy, dental, and insurance claim issues
                 </div>
               </div>
