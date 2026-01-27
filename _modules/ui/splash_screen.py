@@ -49,7 +49,7 @@ def render_splash_screen():
     min-height: 100vh;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     color: white;
     text-align: center;
@@ -58,8 +58,10 @@ def render_splash_screen():
 
 
     .splash-content {
-    width: 100%;
-    max-width: 800px;
+        width: 100%;
+        max-width: 800px;
+        justify-content: flex-start;
+        margin-top: 80px;
     }
 
     /* Responsive text */
@@ -128,8 +130,8 @@ def render_splash_screen():
         height: 100vh;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
+        justify-content: flex-start;
         flex-direction: column;
-        justify-content: center;
         align-items: center;
         z-index: 9999;
         color: white;
@@ -143,6 +145,7 @@ def render_splash_screen():
         max-width: 800px;
         width: 100%;
         animation: fadeInUp 0.8s ease-out;
+        margin-top: 80px;
     }
     
     .splash-title {
@@ -311,6 +314,19 @@ def render_splash_screen():
                     border-left: 22px solid white;
                     transform: rotate(45deg);
                 }
+                .transcript-line {
+                font-size: 0.95rem;
+                line-height: 1.4;
+                margin: 6px 0;
+                opacity: 0.6;
+                transition: all 0.2s ease;
+                }
+
+                .transcript-line.active {
+                font-weight: 700;
+                opacity: 1;
+                }
+
             </style>
             
             <div class="inner-container" role="region" aria-label="Billdozer animation widget">
@@ -344,23 +360,50 @@ def render_splash_screen():
             </div>
         </div>
 
-        <div class="splash-description">
-        <p><strong>Hi! We're Billy and Billie,</strong> your guides to uncovering billing errors.</p>
-        <p>
-            We analyze medical bills, pharmacy receipts, dental claims,
-            and insurance statements to find overcharges, duplicate charges,
-            and coding errors that could save you money.
-        </p>
-        <p>
-            Let us show you how easy it is to check your bills for accuracy!
-        </p>
-        </div>
+<div
+  id="splash-transcript"
+  role="region"
+  aria-label="Billdozer spoken messages"
+  style="
+    margin-top: 12px;
+    text-align: center;
+  "
+>
+  <div
+    id="splash-live"
+    aria-live="polite"
+    aria-atomic="true"
+    style="
+      position: absolute;
+      left: -9999px;
+      height: 1px;
+      width: 1px;
+      overflow: hidden;
+    "
+  ></div>
+
+    <p class="transcript-line" data-index="0">
+        Hi! We're Billy and Billie, your guides to uncovering billing errors.
+    </p>
+    <p class="transcript-line" data-index="1">
+        We analyze medical bills, pharmacy receipts, dental claims, and insurance statements to find overcharges, duplicate charges, and coding errors that could save you money.
+    </p>
+    <p class="transcript-line" data-index="2">
+        Let us show you how easy it is to check your bills for accuracy!
+    </p>
+    </div>
+
     </div>
     </div>
     
     <script>
     (function() {
         console.log("[Splash Widget] Script starting...");
+        
+        const liveRegion = document.getElementById("splash-live");
+        const transcriptLines = document.querySelectorAll(".transcript-line");
+        let messageIndex = 0;
+
         
         const container = document.querySelector(".splash-widget-container .inner-container");
         const speechLayer = document.querySelector(".splash-widget-container .speech-layer");
@@ -423,7 +466,22 @@ def render_splash_screen():
             }
             
             active = true;
+
             const { character, message } = queue.shift();
+
+            // Screen reader announcement
+            if (liveRegion) {
+            liveRegion.textContent = message;
+            }
+
+            // Visual transcript sync
+            transcriptLines.forEach((el, idx) => {
+            el.classList.toggle("active", idx === messageIndex);
+            });
+
+            messageIndex++;
+
+
             console.log("[Splash Widget] Showing message from", character, ":", message);
             
             container.classList.remove("talking-left", "talking-right");
