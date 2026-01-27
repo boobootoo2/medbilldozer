@@ -147,27 +147,31 @@ def install_introjs_library():
                     bottom: auto !important;
                 }
                 
-                /* Override step counter to always show '8' as total */
+                /* Override step counter to always show '9' as total */
                 .introjs-helperNumberLayer {
                     font-size: 0;
                 }
                 .introjs-helperNumberLayer::before {
                     font-size: 14px;
                 }
-                .introjs-tooltip[data-step="1"] ~ .introjs-helperNumberLayer::before { content: '1 of 8'; }
-                .introjs-tooltip[data-step="2"] ~ .introjs-helperNumberLayer::before { content: '2 of 8'; }
-                .introjs-tooltip[data-step="3"] ~ .introjs-helperNumberLayer::before { content: '3 of 8'; }
-                .introjs-tooltip[data-step="4"] ~ .introjs-helperNumberLayer::before { content: '4 of 8'; }
-                .introjs-tooltip[data-step="5"] ~ .introjs-helperNumberLayer::before { content: '5 of 8'; }
-                .introjs-tooltip[data-step="6"] ~ .introjs-helperNumberLayer::before { content: '6 of 8'; }
-                .introjs-tooltip[data-step="7"] ~ .introjs-helperNumberLayer::before { content: '7 of 8'; }
-                body:has([data-step="1"].introjs-showElement) .introjs-helperNumberLayer::before { content: '1 of 8' !important; }
-                body:has([data-step="2"].introjs-showElement) .introjs-helperNumberLayer::before { content: '2 of 8' !important; }
-                body:has([data-step="3"].introjs-showElement) .introjs-helperNumberLayer::before { content: '3 of 8' !important; }
-                body:has([data-step="4"].introjs-showElement) .introjs-helperNumberLayer::before { content: '4 of 8' !important; }
-                body:has([data-step="5"].introjs-showElement) .introjs-helperNumberLayer::before { content: '5 of 8' !important; }
-                body:has([data-step="6"].introjs-showElement) .introjs-helperNumberLayer::before { content: '6 of 8' !important; }
-                body:has([data-step="7"].introjs-showElement) .introjs-helperNumberLayer::before { content: '7 of 8' !important; }
+                .introjs-tooltip[data-step="1"] ~ .introjs-helperNumberLayer::before { content: '1 of 9'; }
+                .introjs-tooltip[data-step="2"] ~ .introjs-helperNumberLayer::before { content: '2 of 9'; }
+                .introjs-tooltip[data-step="3"] ~ .introjs-helperNumberLayer::before { content: '3 of 9'; }
+                .introjs-tooltip[data-step="4"] ~ .introjs-helperNumberLayer::before { content: '4 of 9'; }
+                .introjs-tooltip[data-step="5"] ~ .introjs-helperNumberLayer::before { content: '5 of 9'; }
+                .introjs-tooltip[data-step="6"] ~ .introjs-helperNumberLayer::before { content: '6 of 9'; }
+                .introjs-tooltip[data-step="7"] ~ .introjs-helperNumberLayer::before { content: '7 of 9'; }
+                .introjs-tooltip[data-step="8"] ~ .introjs-helperNumberLayer::before { content: '8 of 9'; }
+                .introjs-tooltip[data-step="9"] ~ .introjs-helperNumberLayer::before { content: '9 of 9'; }
+                body:has([data-step="1"].introjs-showElement) .introjs-helperNumberLayer::before { content: '1 of 9' !important; }
+                body:has([data-step="2"].introjs-showElement) .introjs-helperNumberLayer::before { content: '2 of 9' !important; }
+                body:has([data-step="3"].introjs-showElement) .introjs-helperNumberLayer::before { content: '3 of 9' !important; }
+                body:has([data-step="4"].introjs-showElement) .introjs-helperNumberLayer::before { content: '4 of 9' !important; }
+                body:has([data-step="5"].introjs-showElement) .introjs-helperNumberLayer::before { content: '5 of 9' !important; }
+                body:has([data-step="6"].introjs-showElement) .introjs-helperNumberLayer::before { content: '6 of 9' !important; }
+                body:has([data-step="7"].introjs-showElement) .introjs-helperNumberLayer::before { content: '7 of 9' !important; }
+                body:has([data-step="8"].introjs-showElement) .introjs-helperNumberLayer::before { content: '8 of 9' !important; }
+                body:has([data-step="9"].introjs-showElement) .introjs-helperNumberLayer::before { content: '9 of 9' !important; }
             `;
             head.appendChild(style);
         }
@@ -204,7 +208,7 @@ def render_tour_steps():
             // Step 1: Welcome - Title/Logo area
             const logo = doc.querySelector('img[alt*="Billy"]');
             if (logo && !logo.hasAttribute('data-intro')) {
-                logo.setAttribute('data-intro', '👋 Hi! I\\'m Billy, and with my partner Billie, we\\'ll help you find hidden errors in medical bills. Let\\'s get started!');
+                logo.setAttribute('data-intro', "👋 Hi! I'm Billy, and with my partner Billie, we'll help you find hidden errors in medical bills. Let's get started!");
                 logo.setAttribute('data-step', '1');
                 logo.setAttribute('data-position', 'bottom');
             }
@@ -248,7 +252,7 @@ def render_tour_steps():
             // Step 5: Analyze button
             buttons.forEach(btn => {
                 if (btn.textContent.includes('Analyze') && !btn.hasAttribute('data-intro')) {
-                    btn.setAttribute('data-intro', '🔍 Once you\\'ve pasted your document, click here to start the analysis. I\\'ll check for billing errors, overcharges, and coding mistakes.');
+                    btn.setAttribute('data-intro', "🔍 Once you've pasted your document, click here to start the analysis. I'll check for billing errors, overcharges, and coding mistakes.");
                     btn.setAttribute('data-step', '5');
                     btn.setAttribute('data-position', 'top');
                 }
@@ -272,13 +276,11 @@ def render_tour_steps():
                 profileBtn.setAttribute('data-position', 'right');
             }
             
-            // Step 8: Final step - create hidden marker element
-            // Check if step 8 marker already exists
-            let finalDiv = doc.getElementById('tour-step-8-marker');
-            if (!finalDiv) {
+            // Step 8: Profile view description
+            let profileDiv = doc.getElementById('tour-step-8-marker');
+            if (!profileDiv) {
                 console.log("Creating step 8 marker div...");
                 
-                // Try to find a good container (fallback to body if needed)
                 let container = doc.querySelector('.main') || 
                                doc.querySelector('[data-testid="stAppViewContainer"]') || 
                                doc.querySelector('.stApp') ||
@@ -286,24 +288,33 @@ def render_tour_steps():
                 
                 console.log("Step 8 container:", container?.tagName, container?.className);
                 
-                // Create the marker div
-                finalDiv = doc.createElement('div');
-                finalDiv.id = 'tour-step-8-marker';
-                finalDiv.setAttribute('data-intro', '👤 In the Profile view, you can manage your health insurance details, track provider information, and save your medical history for faster analysis. This helps us give you more accurate insights!');
-                finalDiv.setAttribute('data-step', '8');
+                profileDiv = doc.createElement('div');
+                profileDiv.id = 'tour-step-8-marker';
+                profileDiv.setAttribute('data-intro', '👤 In the Profile view, you can manage your health insurance details, track provider information, and save your medical history for faster analysis. This helps us give you more accurate insights!');
+                profileDiv.setAttribute('data-step', '8');
                 
-                // Make it invisible but still counted by Intro.js
-                finalDiv.style.position = 'absolute';
-                finalDiv.style.visibility = 'hidden';
-                finalDiv.style.width = '1px';
-                finalDiv.style.height = '1px';
-                finalDiv.style.top = '0';
-                finalDiv.style.left = '0';
+                profileDiv.style.position = 'absolute';
+                profileDiv.style.visibility = 'hidden';
+                profileDiv.style.width = '1px';
+                profileDiv.style.height = '1px';
+                profileDiv.style.top = '0';
+                profileDiv.style.left = '0';
                 
-                container.appendChild(finalDiv);
+                container.appendChild(profileDiv);
                 console.log("✓ Created step 8 marker div, appended to:", container.tagName);
             } else {
                 console.log("Step 8 marker already exists");
+            }
+            
+            // Step 9: API Documentation button
+            const apiBtn = Array.from(buttons).find(btn => 
+                btn.textContent.includes('🔌') || btn.textContent.includes('API')
+            );
+            console.log("apiBtn", apiBtn);
+            if (apiBtn && !apiBtn.hasAttribute('data-intro')) {
+                apiBtn.setAttribute('data-intro', "🔌 Built for healthcare and insurance workflows. MedBillDozer's API enables programmatic data ingestion and quality validation of medical records, powered by MedGemma's healthcare-aligned LLM and designed for claims and audit pipelines.");
+                apiBtn.setAttribute('data-step', '9');
+                apiBtn.setAttribute('data-position', 'right');
             }
         }
         
@@ -440,6 +451,12 @@ def start_introjs_tour():
                         
                         // Handle step changes
                         intro.onbeforechange(function(targetElement) {
+                            // Safety check for window.parent.document
+                            if (!window.parent || !window.parent.document) {
+                                console.error('[Intro.js] Lost parent document access');
+                                return;
+                            }
+                            
                             const doc = window.parent.document;
                             const currentStep = this._currentStep;
                             const totalSteps = this._introItems.length;
@@ -453,20 +470,8 @@ def start_introjs_tour():
                                 }
                             }
                             
-                            // Step 7: Click Profile button automatically
-                            if (currentStep === 6) { // Step 7 is index 6 (0-based)
-                                const buttons = doc.querySelectorAll('button[kind="secondary"]');
-                                for (let btn of buttons) {
-                                    if (btn.textContent.includes('Profile')) {
-                                        console.log('[Intro.js] Clicking Profile button for step 7');
-                                        setTimeout(() => btn.click(), 300);
-                                        break;
-                                    }
-                                }
-                            }
-                            
-                            // If we just moved to the last step (step 8), auto-complete after showing it
-                            if (currentStep === 7) { // Step 8 is index 7 (0-based)
+                            // Step 9: Auto-complete after showing API button tooltip
+                            if (currentStep === 8) { // Step 9 is index 8 (0-based)
                                 setTimeout(() => {
                                     intro.exit(true);
                                 }, 5000); // Show last step for 5 seconds then close
