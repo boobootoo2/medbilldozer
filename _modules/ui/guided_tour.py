@@ -18,9 +18,14 @@ def initialize_tour_state():
 
 
 def maybe_launch_tour():
-    """Launch tour if conditions are met (called after splash screen)."""
-    # If splash was just dismissed and tour hasn't been completed, activate it
+    """Launch tour if conditions are met (after splash and privacy)."""
+    # Tour should start after:
+    # 1. Splash screen dismissed
+    # 2. Privacy policy accepted
+    # 3. Tour not already completed
+    # 4. Tour not already active
     if st.session_state.get('splash_dismissed', False) and \
+       st.session_state.get('privacy_acknowledged', False) and \
        not st.session_state.get('tour_completed', False) and \
        not st.session_state.get('tour_active', False):
         activate_tour()
@@ -95,6 +100,8 @@ def install_introjs_library():
                 .introjs-skipbutton {
                     color: #667eea;
                     font-weight: 600;
+                    width: 60px;
+                    font-size: 12px;
                 }
                 
                 .introjs-prevbutton {
@@ -103,9 +110,13 @@ def install_introjs_library():
                 }
                 
                 .introjs-helperLayer {
-                    background-color: rgba(0, 0, 0, 0.7);
+                    background-color: rgba(0, 0, 0, 0.7) !important;
                 }
-                
+                [data-step="1"] {
+                    background: white !important;
+                    border-radius: 50px !important;
+                    padding: 10px !important;
+                }
                 .introjs-tooltipReferenceLayer {
                     background-color: transparent;
                     border: 3px solid #667eea;
@@ -126,6 +137,37 @@ def install_introjs_library():
                     color: #667eea;
                     margin-bottom: 8px;
                 }
+                
+                /* Force step 3 tooltip to bottom */
+                .introjs-tooltip[data-step="3"] {
+                    position: absolute !important;
+                }
+                .introjs-bottom[data-step="3"] {
+                    top: auto !important;
+                    bottom: auto !important;
+                }
+                
+                /* Override step counter to always show '8' as total */
+                .introjs-helperNumberLayer {
+                    font-size: 0;
+                }
+                .introjs-helperNumberLayer::before {
+                    font-size: 14px;
+                }
+                .introjs-tooltip[data-step="1"] ~ .introjs-helperNumberLayer::before { content: '1 of 8'; }
+                .introjs-tooltip[data-step="2"] ~ .introjs-helperNumberLayer::before { content: '2 of 8'; }
+                .introjs-tooltip[data-step="3"] ~ .introjs-helperNumberLayer::before { content: '3 of 8'; }
+                .introjs-tooltip[data-step="4"] ~ .introjs-helperNumberLayer::before { content: '4 of 8'; }
+                .introjs-tooltip[data-step="5"] ~ .introjs-helperNumberLayer::before { content: '5 of 8'; }
+                .introjs-tooltip[data-step="6"] ~ .introjs-helperNumberLayer::before { content: '6 of 8'; }
+                .introjs-tooltip[data-step="7"] ~ .introjs-helperNumberLayer::before { content: '7 of 8'; }
+                body:has([data-step="1"].introjs-showElement) .introjs-helperNumberLayer::before { content: '1 of 8' !important; }
+                body:has([data-step="2"].introjs-showElement) .introjs-helperNumberLayer::before { content: '2 of 8' !important; }
+                body:has([data-step="3"].introjs-showElement) .introjs-helperNumberLayer::before { content: '3 of 8' !important; }
+                body:has([data-step="4"].introjs-showElement) .introjs-helperNumberLayer::before { content: '4 of 8' !important; }
+                body:has([data-step="5"].introjs-showElement) .introjs-helperNumberLayer::before { content: '5 of 8' !important; }
+                body:has([data-step="6"].introjs-showElement) .introjs-helperNumberLayer::before { content: '6 of 8' !important; }
+                body:has([data-step="7"].introjs-showElement) .introjs-helperNumberLayer::before { content: '7 of 8' !important; }
             `;
             head.appendChild(style);
         }
@@ -167,12 +209,23 @@ def render_tour_steps():
                 logo.setAttribute('data-position', 'bottom');
             }
             
-            // Step 2: Sample documents section
-            const sampleDocs = doc.querySelector('[data-testid="stExpander"]');
-            if (sampleDocs && !sampleDocs.hasAttribute('data-intro')) {
-                sampleDocs.setAttribute('data-intro', '📋 First, let\\'s try analyzing a sample document. Click here to see example bills you can copy and paste.');
-                sampleDocs.setAttribute('data-step', '2');
-                sampleDocs.setAttribute('data-position', 'bottom');
+            // Get all buttons once for steps 4 and 5
+            const buttons = doc.querySelectorAll('button');
+            
+            // Step 2: Demo Documents section (heading)
+            // Note: Copy buttons are inside iframes, so we target the section heading instead
+            const demoHeadings = doc.querySelectorAll('h3');
+            let demoSection = null;
+            for (let heading of demoHeadings) {
+                if (heading.textContent.includes('Demo Documents') && !heading.hasAttribute('data-intro')) {
+                    demoSection = heading;
+                    break;
+                }
+            }
+            if (demoSection) {
+                demoSection.setAttribute('data-intro', '📋 Here are sample medical bills you can try. Expand any document and click the Copy button to copy it to your clipboard, then paste it below for analysis.');
+                demoSection.setAttribute('data-step', '2');
+                demoSection.setAttribute('data-position', 'bottom');
             }
             
             // Step 3: Document input area
@@ -180,11 +233,10 @@ def render_tour_steps():
             if (textAreas.length > 0 && !textAreas[0].hasAttribute('data-intro')) {
                 textAreas[0].parentElement.setAttribute('data-intro', '✍️ Paste your medical bill, pharmacy receipt, or insurance statement here. You can add multiple documents to compare.');
                 textAreas[0].parentElement.setAttribute('data-step', '3');
-                textAreas[0].parentElement.setAttribute('data-position', 'top');
+                textAreas[0].parentElement.setAttribute('data-position', 'bottom');
             }
             
             // Step 4: Add document button
-            const buttons = doc.querySelectorAll('button');
             buttons.forEach(btn => {
                 if (btn.textContent.includes('Add Another Document') && !btn.hasAttribute('data-intro')) {
                     btn.setAttribute('data-intro', '➕ Click here to add multiple documents for comparison analysis.');
@@ -204,6 +256,7 @@ def render_tour_steps():
             
             // Step 6: Sidebar
             const sidebar = doc.querySelector('[data-testid="stSidebar"]');
+            console.log("sidebar", sidebar);
             if (sidebar && !sidebar.hasAttribute('data-intro')) {
                 sidebar.setAttribute('data-intro', '💬 Use the sidebar to ask Billy or Billie questions about your bills, view your health profile, or import data from providers.');
                 sidebar.setAttribute('data-step', '6');
@@ -212,21 +265,45 @@ def render_tour_steps():
             
             // Step 7: Profile section (in sidebar)
             const profileBtn = doc.querySelector('button[kind="secondary"]');
+            console.log("profileBtn", profileBtn);
             if (profileBtn && profileBtn.textContent.includes('Profile') && !profileBtn.hasAttribute('data-intro')) {
                 profileBtn.setAttribute('data-intro', '👤 View and manage your health profile, including insurance coverage and provider information.');
                 profileBtn.setAttribute('data-step', '7');
                 profileBtn.setAttribute('data-position', 'right');
             }
             
-            // Step 8: Final step
-            const mainContent = doc.querySelector('.main');
-            if (mainContent && !mainContent.hasAttribute('data-intro-final')) {
-                mainContent.setAttribute('data-intro-final', 'true');
-                const finalDiv = doc.createElement('div');
-                finalDiv.setAttribute('data-intro', '✅ That\\'s it! You\\'re ready to start finding billing errors. If you need help, just ask using the assistant in the sidebar. Good luck!');
+            // Step 8: Final step - create hidden marker element
+            // Check if step 8 marker already exists
+            let finalDiv = doc.getElementById('tour-step-8-marker');
+            if (!finalDiv) {
+                console.log("Creating step 8 marker div...");
+                
+                // Try to find a good container (fallback to body if needed)
+                let container = doc.querySelector('.main') || 
+                               doc.querySelector('[data-testid="stAppViewContainer"]') || 
+                               doc.querySelector('.stApp') ||
+                               doc.body;
+                
+                console.log("Step 8 container:", container?.tagName, container?.className);
+                
+                // Create the marker div
+                finalDiv = doc.createElement('div');
+                finalDiv.id = 'tour-step-8-marker';
+                finalDiv.setAttribute('data-intro', '👤 In the Profile view, you can manage your health insurance details, track provider information, and save your medical history for faster analysis. This helps us give you more accurate insights!');
                 finalDiv.setAttribute('data-step', '8');
-                finalDiv.style.display = 'none';
-                mainContent.appendChild(finalDiv);
+                
+                // Make it invisible but still counted by Intro.js
+                finalDiv.style.position = 'absolute';
+                finalDiv.style.visibility = 'hidden';
+                finalDiv.style.width = '1px';
+                finalDiv.style.height = '1px';
+                finalDiv.style.top = '0';
+                finalDiv.style.left = '0';
+                
+                container.appendChild(finalDiv);
+                console.log("✓ Created step 8 marker div, appended to:", container.tagName);
+            } else {
+                console.log("Step 8 marker already exists");
             }
         }
         
@@ -275,43 +352,140 @@ def start_introjs_tour():
         waitForIntroJs(() => {
             console.log('[Intro.js] Intro.js library ready');
             
-            // Ensure steps are set up
-            if (window.parent.setupTourSteps) {
-                console.log('[Intro.js] Setting up tour steps...');
-                window.parent.setupTourSteps();
+            // Wait for UI elements to be rendered
+            function waitForUIElements(callback, maxAttempts = 50) {
+                let attempts = 0;
+                const checkInterval = setInterval(() => {
+                    attempts++;
+                    const doc = window.parent.document;
+                    const textAreas = doc.querySelectorAll('textarea');
+                    const buttons = doc.querySelectorAll('button');
+                    const analyzeBtn = Array.from(buttons).some(btn => btn.textContent.includes('Analyze'));
+                    
+                    console.log('[Intro.js] Check', attempts, '- TextAreas:', textAreas.length, 'Buttons:', buttons.length, 'Analyze:', analyzeBtn);
+                    
+                    if (textAreas.length > 0 && buttons.length > 5 && analyzeBtn) {
+                        console.log('[Intro.js] UI elements ready after', attempts, 'attempts');
+                        clearInterval(checkInterval);
+                        callback();
+                    } else if (attempts >= maxAttempts) {
+                        console.warn('[Intro.js] UI elements not all found after', attempts, 'attempts, starting tour anyway');
+                        console.log('[Intro.js] Final state - TextAreas:', textAreas.length, 'Buttons:', buttons.length);
+                        clearInterval(checkInterval);
+                        callback();
+                    }
+                }, 400);
             }
             
-            // Wait a moment for attributes to be applied
-            setTimeout(() => {
-                console.log('[Intro.js] Initializing tour...');
-                const intro = window.parent.introJs();
+            waitForUIElements(() => {
+                // Ensure steps are set up
+                if (window.parent.setupTourSteps) {
+                    console.log('[Intro.js] Setting up tour steps...');
+                    window.parent.setupTourSteps();
+                }
                 
-                intro.setOptions({
-                    showProgress: true,
-                    showBullets: true,
-                    exitOnOverlayClick: false,
-                    exitOnEsc: true,
-                    nextLabel: 'Next →',
-                    prevLabel: '← Back',
-                    doneLabel: 'Done! 🎉',
-                    skipLabel: 'Skip Tour',
-                    scrollToElement: true,
-                    scrollPadding: 30,
-                    overlayOpacity: 0.7,
-                    showStepNumbers: true,
-                });
-                
-                intro.oncomplete(() => {
-                    console.log('[Intro.js] Tour completed!');
-                });
-                
-                intro.onexit(() => {
-                    console.log('[Intro.js] Tour exited');
-                });
-                
-                console.log('[Intro.js] Starting tour now...');
-                intro.start();
-            }, 500);
+                // Wait a moment for attributes to be applied, then verify step count
+                setTimeout(() => {
+                    const doc = window.parent.document;
+                    
+                    // CRITICAL: Ensure sidebar is expanded so steps 6-8 can be counted
+                    const sidebar = doc.querySelector('[data-testid="stSidebar"]');
+                    const sidebarCollapse = doc.querySelector('[data-testid="collapsedControl"]');
+                    if (sidebar && sidebarCollapse) {
+                        const sidebarRect = sidebar.getBoundingClientRect();
+                        // If sidebar is collapsed (very narrow), expand it
+                        if (sidebarRect.width < 100) {
+                            console.log('[Intro.js] Expanding sidebar before tour...');
+                            sidebarCollapse.click();
+                            // Wait for sidebar to expand
+                            setTimeout(() => continueInit(), 500);
+                            return;
+                        }
+                    }
+                    
+                    continueInit();
+                    
+                    function continueInit() {
+                        console.log('[Intro.js] Verifying tour steps...');
+                        // Re-run setup to catch any new elements (especially in sidebar)
+                        if (window.parent.setupTourSteps) {
+                            window.parent.setupTourSteps();
+                        }
+                        
+                        const stepsFound = doc.querySelectorAll('[data-step]');
+                        console.log('[Intro.js] Steps found before init:', stepsFound.length);
+                        stepsFound.forEach((el, i) => {
+                            console.log(`  Step ${el.getAttribute('data-step')}: ${el.tagName} - ${el.getAttribute('data-intro')?.substring(0, 50)}...`);
+                        });
+                        
+                        console.log('[Intro.js] Initializing tour...');
+                        const intro = window.parent.introJs();
+                        
+                        intro.setOptions({
+                            showProgress: true,
+                            showBullets: true,
+                            exitOnOverlayClick: false,
+                            exitOnEsc: true,
+                            nextLabel: 'Next →',
+                            prevLabel: '← Back',
+                            doneLabel: 'Done! 🎉',
+                            skipLabel: 'Skip Tour',
+                            scrollToElement: true,
+                            scrollPadding: 30,
+                            overlayOpacity: 0.7,
+                            showStepNumbers: true,
+                            tooltipPosition: 'auto',
+                            positionPrecedence: ['bottom', 'right', 'top', 'left'],
+                        });
+                        
+                        // Handle step changes
+                        intro.onbeforechange(function(targetElement) {
+                            const doc = window.parent.document;
+                            const currentStep = this._currentStep;
+                            const totalSteps = this._introItems.length;
+                            
+                            // Step 6: Open sidebar automatically
+                            if (currentStep === 5) { // Step 6 is index 5 (0-based)
+                                const sidebarCollapse = doc.querySelector('[data-testid="collapsedControl"]');
+                                if (sidebarCollapse) {
+                                    console.log('[Intro.js] Opening sidebar for step 6');
+                                    sidebarCollapse.click();
+                                }
+                            }
+                            
+                            // Step 7: Click Profile button automatically
+                            if (currentStep === 6) { // Step 7 is index 6 (0-based)
+                                const buttons = doc.querySelectorAll('button[kind="secondary"]');
+                                for (let btn of buttons) {
+                                    if (btn.textContent.includes('Profile')) {
+                                        console.log('[Intro.js] Clicking Profile button for step 7');
+                                        setTimeout(() => btn.click(), 300);
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            // If we just moved to the last step (step 8), auto-complete after showing it
+                            if (currentStep === 7) { // Step 8 is index 7 (0-based)
+                                setTimeout(() => {
+                                    intro.exit(true);
+                                }, 5000); // Show last step for 5 seconds then close
+                            }
+                        });
+                        
+                        intro.oncomplete(() => {
+                            console.log('[Intro.js] Tour completed!');
+                        });
+                        
+                        intro.onexit(() => {
+                            console.log('[Intro.js] Tour exited');
+                        });
+                        
+                        console.log('[Intro.js] Starting tour now...');
+                        intro.start();
+                    } // End continueInit()
+                }, 500);
+            });
         });
     })();
     </script>

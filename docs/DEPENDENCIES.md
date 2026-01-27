@@ -60,6 +60,12 @@ Module dependencies within the project:
 **Depends on:**
 - `_modules.providers.llm_interface`
 
+### `_modules.ui.api_docs_page`
+
+**Depends on:**
+- `_modules.data.fictional_entities`
+- `_modules.ingest.api`
+
 ### `_modules.ui.doc_assistant`
 
 **Depends on:**
@@ -88,6 +94,7 @@ Module dependencies within the project:
 - `_modules.providers.llm_interface`
 - `_modules.providers.medgemma_hosted_provider`
 - `_modules.providers.openai_analysis_provider`
+- `_modules.ui.api_docs_page`
 - `_modules.ui.billdozer_widget`
 - `_modules.ui.doc_assistant`
 - `_modules.ui.guided_tour`
