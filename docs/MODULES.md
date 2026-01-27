@@ -48,7 +48,7 @@
 
 - **_modules.ui.billdozer_widget**: No description
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
-- **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial with Billy/Billie narration.
+- **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial using Intro.js.
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
@@ -1810,123 +1810,85 @@ Safe against multiple renders in a single Streamlit run.
 
 ### Description
 
-Guided Tour - Interactive tutorial with Billy/Billie narration.
+Guided Tour - Interactive tutorial using Intro.js.
 
 Provides step-by-step guidance for first-time users through the app's
-main features using state-based progression and avatar narration.
-
-### Constants
-
-- **`MANUAL_STEPS`**: `['welcome', 'copy_first_document', 'review_issues', 'coverage_matrix', 'next_actions', 'profile_view', 'import_view', 'import_now']`
-- **`TUTORIAL_MESSAGES`**: `{'welcome': {'character': 'billie', 'message': "Hi! I'm Billie D., your guide to finding hidden errors in medical bills. Let me show you how this works!", 'action_prompt': 'Ready to begin'}, 'copy_first_document': {'character': 'billie', 'message': 'First, scroll to the Hospital Bill – Colonoscopy section and click Copy.', 'action_prompt': 'Click Copy on Hospital Bill'}, 'paste_first_document': {'character': 'billy', 'message': 'Great! Now scroll down to Analyze a Document and paste the text into Document 1.', 'action_prompt': 'Paste into Document 1'}, 'add_second_document': {'character': 'billy', 'message': "Perfect! Now let's add a second document. Click 'Add Another Document', then scroll to the Pharmacy Receipt – FSA Claim section, click Copy, and paste into Document 2.", 'action_prompt': 'Add document and paste pharmacy receipt'}, 'second_document_loaded': {'character': 'billy', 'message': 'Excellent! You now have two documents ready. Scroll down and click the Analyze Document button to check both for billing errors.', 'action_prompt': 'Click Analyze Document'}, 'analysis_running': {'character': 'billie', 'message': "I'm examining your document right now. Click on '📊 Pipeline Workflow: Document Analysis' to expand it and watch the workflow diagram to see what I'm checking: document type, line items, and billing issues.", 'action_prompt': 'Click Pipeline Workflow to watch progress'}, 'review_issues': {'character': 'billy', 'message': 'Here are the results! Each issue shows what might be wrong and how much you could save. Expand any section to see more details.', 'action_prompt': 'Review the findings'}, 'coverage_matrix': {'character': 'billie', 'message': 'Want to track multiple bills? The coverage matrix helps you see all your medical expenses across different providers and dates.', 'action_prompt': 'Explore the coverage matrix'}, 'next_actions': {'character': 'billy', 'message': 'You can analyze more documents, ask Billy or Billie questions using the assistant sidebar, or copy results to share with your provider.', 'action_prompt': 'Analyze another document'}, 'profile_view': {'character': 'billie', 'message': 'You can see what the profile admissions look like, by clicking the profile button on the sidepanel.', 'action_prompt': 'Profile View'}, 'import_view': {'character': 'billy', 'message': 'You can see how to import documents from health providers and insurance companies by clicking Import Data in the main panel.', 'action_prompt': 'Import View'}, 'import_now': {'character': 'billy', 'message': 'Click the dropdown under Select Entity to choose an insurance company. Select any company and then click Import Now', 'action_prompt': 'Import Now'}, 'tour_complete': {'character': 'billie', 'message': "That's it! You're all set. If you need help anytime, just ask using the assistant in the sidebar. Good luck!", 'action_prompt': 'Exit tour'}}`
-- **`TUTORIAL_STEPS`**: `['welcome', 'copy_first_document', 'paste_first_document', 'add_second_document', 'second_document_loaded', 'analysis_running', 'review_issues', 'coverage_matrix', 'next_actions', 'profile_view', 'import_view', 'import_now', 'tour_complete']`
+main features using the Intro.js library.
 
 ### Functions
 
-#### `run_guided_tour_runtime()`
-
-Runs guided tour lifecycle in the correct order.
-Call ONCE per rerun, AFTER main UI render.
-
-#### `open_and_scroll_pipeline_workflow_step6()`
-
-Step 6: Expand Pipeline Workflow accordion and scroll it into view.
-
-#### `load_tour_config() -> Dict`
-
-Load guided tour configuration from app_config.yaml.
-
 #### `initialize_tour_state()`
 
-Initialize tour session state variables.
-
-#### `start_tour()`
-
-Start the guided tour.
-
-#### `end_tour()`
-
-End the guided tour.
-
-#### `advance_tour_step(next_step)`
-
-Advance to the next tutorial step.
-
-Args:
-    next_step: The next tutorial step to advance to
-
-#### `check_tour_progression()`
-
-Check app state and automatically advance tour steps when appropriate.
-
-#### `get_tour_message() -> Optional[Dict]`
-
-Get the current tour message based on tutorial step.
-
-Returns:
-    Dict with character, message, and action_prompt, or None if tour not active
-
-#### `render_tour_widget()`
-
-Render the guided tour widget with narrator guidance in the sidebar.
-
-#### `render_tour_controls()`
-
-Render tour control buttons in sidebar.
-
-#### `should_auto_launch_tour() -> bool`
-
-Determine if tour should auto-launch for new users.
-
-Returns:
-    True if tour should launch, False otherwise
+Initialize tour-related session state variables.
 
 #### `maybe_launch_tour()`
 
-Auto-launch tour for new users if configured.
+Launch tour if conditions are met (called after splash screen).
 
-#### `highlight_continue_button_for_manual_steps()`
+#### `install_introjs_library()`
 
-Highlight the Continue button during manual tour steps.
-This function provides continuous highlighting for the Continue button
-on all manual steps to ensure visibility.
+Install Intro.js CSS and JS files into parent document.
 
-#### `install_tour_bridge()`
+#### `render_tour_steps()`
 
-Install JavaScript bridge to handle tour events from widget.
+Add data-intro attributes to elements for the guided tour.
 
-#### `check_pharmacy_copy_click()`
+#### `start_introjs_tour()`
 
-Check if pharmacy receipt copy button was clicked and advance tour.
+Start the Intro.js tour.
 
-Note: This function is deprecated as step 3 (first_document_loaded) has been removed.
-Kept for backwards compatibility but no longer active.
+#### `run_guided_tour_runtime()`
 
-#### `install_copy_button_detector()`
+Runs guided tour using Intro.js.
+Call ONCE per rerun, AFTER main UI render.
 
-Install JavaScript to detect clicks on pharmacy receipt copy button.
+#### `activate_tour()`
 
-Note: This function is deprecated as step 3 (first_document_loaded) has been removed.
-Kept for backwards compatibility but no longer active.
+Activate the guided tour (called after splash screen dismissal).
 
-#### `install_paste_detector()`
+#### `check_tour_progression()`
 
-Install JavaScript to detect paste events in text areas and trigger rerun.
+Compatibility - no longer needed with Intro.js.
 
-#### `install_tour_highlight_styles()`
+#### `render_tour_widget()`
 
-Install CSS styles and JavaScript function for tour element highlighting.
+Compatibility - Intro.js handles tour UI.
 
-Provides ADA-compliant drop shadows for both light and dark themes with
-proper contrast ratios. The highlight is temporary and auto-removes after 1.2s.
+#### `render_tour_controls()`
 
-#### `highlight_tour_elements()`
+Compatibility - Intro.js handles controls.
 
-Highlight interactive elements based on current tour step.
+#### `advance_tour_step()`
+
+Compatibility - Intro.js handles step advancement.
 
 #### `open_sidebar_for_tour()`
 
-Open the sidebar automatically when tour is active.
+Compatibility - manual sidebar control if needed.
+
+#### `install_paste_detector()`
+
+Compatibility - no longer needed.
+
+#### `install_copy_button_detector()`
+
+Compatibility - no longer needed.
+
+#### `check_pharmacy_copy_click()`
+
+Compatibility - no longer needed.
+
+#### `install_tour_highlight_styles()`
+
+Compatibility - Intro.js handles highlighting.
+
+#### `highlight_tour_elements()`
+
+Compatibility - Intro.js handles highlighting.
+
+#### `open_and_scroll_pipeline_workflow_step6()`
+
+Compatibility - Intro.js handles scrolling.
 
 
 ## Module: `_modules.ui.health_profile`

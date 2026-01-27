@@ -14,16 +14,8 @@ from _modules.ui.doc_assistant import render_doc_assistant, render_contextual_he
 from _modules.ui.guided_tour import (
     initialize_tour_state,
     maybe_launch_tour,
-    check_tour_progression,
-    render_tour_widget,
-    render_tour_controls,
-    advance_tour_step,
-    open_sidebar_for_tour,
-    install_paste_detector,
-    install_copy_button_detector,
-    check_pharmacy_copy_click,
-    install_tour_highlight_styles,
-    highlight_tour_elements,
+    run_guided_tour_runtime,
+    activate_tour,
 )
 from _modules.ui.health_profile import (
     render_profile_selector,
@@ -231,14 +223,7 @@ def bootstrap_home_page():
 
     render_demo_documents()
 
-    # Install tour highlight styles for element emphasis
-    install_tour_highlight_styles()
-
-    # Install copy button detector for tour (detects pharmacy receipt copy click)
-    install_copy_button_detector()
-
-    # Check if pharmacy copy button was clicked
-    check_pharmacy_copy_click()
+    # Tour handled by Intro.js runtime
 
 
 # ==================================================
@@ -319,18 +304,10 @@ def main():
     bootstrap_ui_minimal()
 
     # --------------------------------------------------
-    # Guided Tour Controls (sidebar - at top)
+    # Guided Tour (Intro.js)
     # --------------------------------------------------
     if should_enable_guided_tour():
-        render_tour_controls()
-
-    # --------------------------------------------------
-    # Guided Tour Widget (sidebar - instructions)
-    # --------------------------------------------------
-    if should_enable_guided_tour():
-        render_tour_widget()
-        open_sidebar_for_tour()
-        highlight_tour_elements()
+        run_guided_tour_runtime()
 
 
     # --------------------------------------------------
@@ -374,8 +351,6 @@ def main():
     if should_enable_guided_tour():
         initialize_tour_state()
         maybe_launch_tour()
-        # Check tour state at start of render to catch any pending step changes
-        check_tour_progression()
 
     # --------------------------------------------------
     # Defaults (can be overridden in debug)
@@ -413,11 +388,7 @@ def main():
     render_contextual_help('input')
     documents = render_document_inputs()
 
-    # Install paste detector for tour (triggers immediate detection on paste)
-    install_paste_detector()
-
-    # Check tour progression after document input
-    check_tour_progression()
+    # Tour monitoring handled by Intro.js
 
     # --------------------------------------------------
     # Analysis provider selector (user-facing)
@@ -533,7 +504,7 @@ def main():
                 st.session_state.get('tutorial_step') == 'second_document_loaded'):
             st.session_state.pending_analysis = True
             st.session_state.analyzing = True
-            advance_tour_step('analysis_running')
+            # Tour progression handled by Intro.js
             st.rerun()
 
         # Clear pending flag and proceed with analysis
@@ -696,7 +667,7 @@ def main():
             # Advance tour step to review_issues
             if (st.session_state.get('tour_active', False) and
                     st.session_state.get('tutorial_step') == 'analysis_running'):
-                advance_tour_step('review_issues')
+                # Tour progression handled by Intro.js
                 # Set flag to trigger widget update after rendering completes
                 st.session_state.tour_needs_refresh = True
 
