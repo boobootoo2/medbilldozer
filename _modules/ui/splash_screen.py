@@ -92,11 +92,16 @@ def render_splash_screen():
         max-width: 100% !important;
     }
     
-    /* Remove padding and max-width from parent containers */
-    .splash-enabled section > div {
-        padding: 0;
-        max-width: none;
+    /* Mobile portrait ONLY */
+    @media (max-width: 480px) and (orientation: portrait) {
+        .splash-enabled section > div {
+            padding: 0;
+            overflow: hidden !important;
+            position: fixed;
+            width: 100%;
+        }
     }
+
     </style>
     """)
     
@@ -327,6 +332,7 @@ def render_splash_screen():
                 opacity: 1;
                 }
 
+
             </style>
             
             <div class="inner-container" role="region" aria-label="Billdozer animation widget">
@@ -367,6 +373,8 @@ def render_splash_screen():
   style="
     margin-top: 12px;
     text-align: center;
+    max-height: 70px;
+    overflow-y: auto;
   "
 >
   <div
@@ -397,6 +405,16 @@ def render_splash_screen():
     </div>
     
     <script>
+    (function() {
+    if (window.parent && window.parent.document) {
+        const body = window.parent.document.body;
+
+        body.classList.add('splash-enabled');
+        body.classList.add('splash-scroll-locked');
+
+        console.log('[Splash] Scroll locked');
+    }
+    })();
     (function() {
         console.log("[Splash Widget] Script starting...");
         
@@ -536,6 +554,14 @@ def render_splash_screen():
             background: #f0f0f0 !important;
             width: auto;
         }
+        
+
+        @media (max-width: 932px) and (orientation: landscape) {
+        div[data-testid="stButton"] > button[kind="primary"] {
+            bottom: 10px;
+        }
+        }
+
         </style>
     """, unsafe_allow_html=True)
     
