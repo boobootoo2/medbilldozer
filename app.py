@@ -94,6 +94,8 @@ from _modules.ui.splash_screen import (
     render_splash_screen,
 )
 
+from _modules.ui.api_docs_page import render_api_docs_page
+
 
 def check_access_password() -> bool:
     """Check if access password is required and validate user input.
@@ -316,7 +318,7 @@ def main():
     with st.sidebar:
         st.markdown("## 📱 Navigation")
 
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
 
         with col1:
             if st.button("🏠 Home", use_container_width=True, type="primary" if st.session_state.current_page == 'home' else "secondary"):
@@ -329,6 +331,11 @@ def main():
                     st.session_state.current_page = 'profile'
                     st.rerun()
 
+        with col3:
+            if st.button("🔌 API", use_container_width=True, type="primary" if st.session_state.current_page == 'api' else "secondary"):
+                st.session_state.current_page = 'api'
+                st.rerun()
+
         st.markdown("---")
 
 
@@ -337,6 +344,13 @@ def main():
     # --------------------------------------------------
     if st.session_state.current_page == 'profile' and is_profile_editor_enabled():
         render_profile_editor()
+        return  # Skip rest of home page rendering
+
+    # --------------------------------------------------
+    # Route to API Documentation if selected
+    # --------------------------------------------------
+    if st.session_state.current_page == 'api':
+        render_api_docs_page()
         return  # Skip rest of home page rendering
 
     # --------------------------------------------------

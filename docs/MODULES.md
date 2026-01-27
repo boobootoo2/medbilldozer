@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 38
+**Total Modules:** 39
 
 ### Application (5 modules)
 
@@ -44,8 +44,9 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (11 modules)
+### UI Components (12 modules)
 
+- **_modules.ui.api_docs_page**: Interactive API Documentation Page for Streamlit
 - **_modules.ui.billdozer_widget**: No description
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
 - **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial using Intro.js.
@@ -1696,6 +1697,65 @@ OpenAI-powered analysis provider.
 
 - `_modules.providers.llm_interface`
 
+## Module: `_modules.ui.api_docs_page`
+
+**Source:** `_modules/ui/api_docs_page.py`
+
+### Description
+
+Interactive API Documentation Page for Streamlit
+
+A Swagger-like interactive API documentation interface that runs entirely
+within Streamlit, allowing users to explore and test API endpoints.
+
+### Functions
+
+#### `render_api_docs_page()`
+
+Main API documentation page with interactive testing
+
+#### `render_overview()`
+
+Render API overview page
+
+#### `render_list_entities()`
+
+Render List Entities endpoint
+
+#### `render_ingest_document()`
+
+Render Ingest Document endpoint
+
+#### `render_list_imports()`
+
+Render List Imports endpoint
+
+#### `render_get_data()`
+
+Render Get Normalized Data endpoint
+
+#### `render_get_status()`
+
+Render Get Import Status endpoint
+
+#### `render_endpoint_badge(method, title)`
+
+Render endpoint method badge
+
+#### `render_response_section(status_code, response_data)`
+
+Render response section with JSON
+
+#### `render_code_examples(endpoint_name, python_code, js_code)`
+
+Render code examples in multiple languages
+
+
+### Dependencies
+
+- `_modules.data.fictional_entities`
+- `_modules.ingest.api`
+
 ## Module: `_modules.ui.billdozer_widget`
 
 **Source:** `_modules/ui/billdozer_widget.py`
@@ -1823,7 +1883,7 @@ Initialize tour-related session state variables.
 
 #### `maybe_launch_tour()`
 
-Launch tour if conditions are met (called after splash screen).
+Launch tour if conditions are met (after splash and privacy).
 
 #### `install_introjs_library()`
 
@@ -2925,6 +2985,7 @@ Orchestrates the complete workflow:
 - `_modules.providers.llm_interface`
 - `_modules.providers.medgemma_hosted_provider`
 - `_modules.providers.openai_analysis_provider`
+- `_modules.ui.api_docs_page`
 - `_modules.ui.billdozer_widget`
 - `_modules.ui.doc_assistant`
 - `_modules.ui.guided_tour`
