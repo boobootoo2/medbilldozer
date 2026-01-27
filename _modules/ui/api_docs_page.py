@@ -231,8 +231,12 @@ def render_ingest_document():
         
         with col2:
             # Get entities for dropdown
-            entities = get_all_fictional_entities()
-            filtered_entities = [e for e in entities if e['type'] == entity_type]
+            all_entities = get_all_fictional_entities()
+            # Extract the appropriate list based on entity_type
+            if entity_type == 'insurance':
+                filtered_entities = all_entities['insurance']
+            else:  # provider
+                filtered_entities = all_entities['providers']
             entity_names = {f"{e['name']} ({e['id']})": e['id'] for e in filtered_entities}
             
             selected_entity = st.selectbox(
