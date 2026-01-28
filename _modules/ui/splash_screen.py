@@ -307,7 +307,7 @@ def render_splash_screen():
                     background: white;
                     border-radius: 10px;
                     padding: 8px 12px;
-                    font-size: 12px;
+                    font-size: 14px;
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
                     margin-bottom: 60px;
                     position: relative;
