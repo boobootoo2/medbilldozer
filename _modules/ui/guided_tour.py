@@ -38,8 +38,18 @@ TOUR_STEPS = [
     TourStep(
         id=2,
         title="Demo Documents",
-        description="📋 Here are sample medical bills you can try. Expand any document and click the Copy button to copy it to your clipboard, then paste it below for analysis.",
-        narration="Here are sample medical bills you can try. Expand any document and click the Copy button, then paste it below for analysis.",
+        description=(
+            "📋 Try real-world sample documents to see how MedBillDozer works. "
+            "We’ve included hospital procedure bills, pharmacy receipts, dental statements, "
+            "FSA statements, and insurance claim histories. "
+            "Just expand any document, click Copy, and paste it below for analysis."
+        ),
+        narration=(
+            "📋 Try real-world sample documents to see how MedBillDozer works. "
+            "We’ve included hospital procedure bills, pharmacy receipts, dental statements, "
+            "FSA statements, and insurance claim histories. "
+            "Just expand any document, click Copy, and paste it below for analysis."
+        ),
         target="demo_section",
         position="top"
     ),
@@ -62,8 +72,22 @@ TOUR_STEPS = [
     TourStep(
         id=5,
         title="Start Analysis",
-        description="🔍 Once you've pasted your document, click here to start the analysis. I'll check for billing errors, overcharges, and coding mistakes.",
-        narration="Once you've pasted your document, click here to start the analysis. I'll check for billing errors, overcharges, and coding mistakes.",
+        description=(
+            "🔍 Click here to start the analysis. MedBillDozer first uses local heuristic models "
+            "to classify the document type. If Smart AI is enabled, it then selects the optimal "
+            "model to extract structured facts from the document. Each document is assigned a "
+            "unique ID based on fact fingerprints, making the workflow deterministic and idempotent. "
+            "Scroll down and expand the accordion after Document 1 to view a DAG diagram showing "
+            "the data pipeline. Analysis findings appear further down once processing is complete."
+        ),
+        narration=(
+            "Click here to start the analysis. MedBillDozer first uses local heuristic models "
+            "to classify the document type. If Smart AI is enabled, it then selects the optimal "
+            "model to extract structured facts from the document. Each document is assigned a "
+            "unique ID based on fact fingerprints, making the workflow deterministic and idempotent. "
+            "Scroll down and expand the accordion after Document 1 to view a DAG diagram showing "
+            "the data pipeline. Analysis findings appear further down once processing is complete."
+        ),
         target="analyze_button",
         position="top"
     ),
