@@ -7,6 +7,11 @@ main features using pure Streamlit session state and UI components.
 import streamlit as st
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
+import os
+from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -15,6 +20,7 @@ class TourStep:
     id: int
     title: str
     description: str
+    narration: str  # Spoken version for audio playback
     target: str  # Which UI element this step refers to
     position: str  # Where to display the tooltip
     
@@ -25,6 +31,7 @@ TOUR_STEPS = [
         id=1,
         title="Welcome to MedBillDozer!",
         description="👋 Hi! I'm Billy, and with my partner Billie, we'll help you find hidden errors in medical bills. Let's get started!",
+        narration="Hi! I'm Billy. With my partner Billie, we'll help you uncover hidden billing errors in your medical bills. Let's get started!",
         target="logo",
         position="top"
     ),
@@ -32,6 +39,7 @@ TOUR_STEPS = [
         id=2,
         title="Demo Documents",
         description="📋 Here are sample medical bills you can try. Expand any document and click the Copy button to copy it to your clipboard, then paste it below for analysis.",
+        narration="Here are sample medical bills you can try. Expand any document and click the Copy button, then paste it below for analysis.",
         target="demo_section",
         position="top"
     ),
@@ -39,6 +47,7 @@ TOUR_STEPS = [
         id=3,
         title="Document Input",
         description="✍️ Paste your medical bill, pharmacy receipt, or insurance statement here. You can add multiple documents to compare.",
+        narration="Paste your medical bill, pharmacy receipt, or insurance statement here. You can add multiple documents to compare.",
         target="text_input",
         position="top"
     ),
@@ -46,6 +55,7 @@ TOUR_STEPS = [
         id=4,
         title="Add Multiple Documents",
         description="➕ Click here to add multiple documents for comparison analysis.",
+        narration="Click here to add multiple documents for comparison analysis.",
         target="add_document",
         position="top"
     ),
@@ -53,6 +63,7 @@ TOUR_STEPS = [
         id=5,
         title="Start Analysis",
         description="🔍 Once you've pasted your document, click here to start the analysis. I'll check for billing errors, overcharges, and coding mistakes.",
+        narration="Once you've pasted your document, click here to start the analysis. I'll check for billing errors, overcharges, and coding mistakes.",
         target="analyze_button",
         position="top"
     ),
@@ -60,6 +71,7 @@ TOUR_STEPS = [
         id=6,
         title="Sidebar Navigation",
         description="💬 Use the sidebar to ask Billy or Billie questions about your bills, view your health profile, or import data from providers.",
+        narration="Use the sidebar to ask Billy or Billie questions about your bills, view your health profile, or import data from providers.",
         target="sidebar",
         position="main"
     ),
@@ -67,6 +79,7 @@ TOUR_STEPS = [
         id=7,
         title="Your Profile",
         description="👤 View and manage your health profile, including insurance coverage and provider information.",
+        narration="View and manage your health profile, including insurance coverage and provider information.",
         target="profile_button",
         position="sidebar"
     ),
@@ -74,6 +87,7 @@ TOUR_STEPS = [
         id=8,
         title="Profile Management",
         description="👤 In the Profile view, you can manage your health insurance details, track provider information, and save your medical history for faster analysis. This helps us give you more accurate insights!",
+        narration="In the Profile view, you can manage your health insurance details, track provider information, and save your medical history for faster analysis. This helps us give you more accurate insights!",
         target="profile_section",
         position="main"
     ),
@@ -81,6 +95,7 @@ TOUR_STEPS = [
         id=9,
         title="API Integration",
         description="🔌 Built for healthcare and insurance workflows. MedBillDozer's API enables programmatic data ingestion and quality validation of medical records, powered by MedGemma's healthcare-aligned LLM and designed for claims and audit pipelines.",
+        narration="Built for healthcare and insurance workflows. MedBillDozer's API enables programmatic data ingestion and quality validation of medical records, powered by MedGemma's healthcare-aligned LLM and designed for claims and audit pipelines.",
         target="api_button",
         position="sidebar"
     ),
@@ -154,6 +169,56 @@ def skip_tour():
     complete_tour()
 
 
+def generate_audio_narration(step_id: int, narration_text: str) -> Optional[Path]:
+    """Generate audio narration using OpenAI Neural TTS with caching.
+    
+    Args:
+        step_id: The tour step ID
+        narration_text: Text to synthesize
+        
+    Returns:
+        Path to audio file, or None if generation fails
+    """
+    audio_dir = Path("audio")
+    audio_dir.mkdir(exist_ok=True)
+    
+    audio_file = audio_dir / f"tour_step_{step_id}.mp3"
+    
+    # Return cached file if exists
+    if audio_file.exists():
+        return audio_file
+    
+    # Try to generate using OpenAI TTS
+    try:
+        from openai import OpenAI
+        
+        # Initialize client (uses OPENAI_API_KEY from environment)
+        client = OpenAI()
+        
+        logger.info(f"Generating audio narration for step {step_id}...")
+        
+        # Generate speech
+        response = client.audio.speech.create(
+            model="tts-1",  # Use tts-1 for faster, tts-1-hd for highest quality
+            voice="alloy",  # Options: alloy, echo, fable, onyx, nova, shimmer
+            input=narration_text,
+            speed=1.0  # 0.25 to 4.0
+        )
+        
+        # Save to file
+        audio_file.write_bytes(response.read())
+        logger.info(f"✅ Generated audio: {audio_file}")
+        
+        return audio_file
+        
+    except ImportError:
+        logger.debug("OpenAI library not available for audio generation")
+        return None
+    except Exception as e:
+        logger.warning(f"Failed to generate audio for step {step_id}: {e}")
+        return None
+
+
 def run_guided_tour_runtime():
     """Runs guided tour using Streamlit session state.  Call ONCE per rerun, from within sidebar context."""
     tour_active = st.session_state.get("tour_active", False)
@@ -168,6 +233,17 @@ def run_guided_tour_runtime():
     
     # Show tour (already in sidebar context from caller)
     st.markdown("---")
+    
+    # Audio narration (generate on-demand with caching)
+    audio_file = generate_audio_narration(current_step.id, current_step.narration)
+    if audio_file and audio_file.exists():
+        try:
+            st.audio(str(audio_file), format="audio/mp3", autoplay=True)
+        except Exception as e:
+            # Silently skip if audio playback fails - don't break the tour
+            logger.debug(f"Audio playback failed: {e}")
+            pass
+    
     st.info(f"""
 **Step {current_step.id} of {len(TOUR_STEPS)}: {current_step.title}**
 
