@@ -1,10 +1,19 @@
-# Tour Audio Narration Files
+# Audio Narration Files
 
-This directory contains audio narration files for the guided tour.
+This directory contains audio narration files for the splash screen and guided tour.
 
 ## File Structure
 
-Each tour step should have a corresponding audio file:
+### Splash Screen Audio (Billy & Billie)
+
+```
+audio/
+├── splash_billie_0.mp3  # Billie's welcome (nova voice)
+├── splash_billy_1.mp3   # Billy's explanation (echo voice)
+└── splash_billie_2.mp3  # Billie's call to action (nova voice)
+```
+
+### Guided Tour Audio
 
 ```
 audio/
@@ -21,6 +30,20 @@ audio/
 
 ## Generating Audio Files
 
+### Splash Screen Audio
+
+```bash
+# Generate splash screen audio (Billy & Billie)
+python scripts/generate_splash_audio.py
+```
+
+**Output:**
+- 3 audio files (~310 KB total)
+- Billy (male, echo voice): Technical explanation
+- Billie (female, nova voice): Welcome & call to action
+
+### Guided Tour Audio
+
 ### Recommended: OpenAI Neural TTS ⭐
 
 **Highest quality, sounds like a real human:**
@@ -29,7 +52,7 @@ audio/
 # Set your API key
 export OPENAI_API_KEY='your-api-key-here'
 
-# Generate all files automatically
+# Generate all tour files automatically
 python scripts/generate_tour_audio.py --openai
 ```
 
