@@ -1890,6 +1890,7 @@ Represents a single step in the guided tour.
 - `id`
 - `title`
 - `description`
+- `narration`
 - `target`
 - `position`
 
@@ -1927,6 +1928,17 @@ Mark the tour as completed.
 #### `skip_tour()`
 
 Skip the tour.
+
+#### `generate_audio_narration(step_id, narration_text) -> Optional[Path]`
+
+Generate audio narration using OpenAI Neural TTS with caching.
+
+Args:
+    step_id: The tour step ID
+    narration_text: Text to synthesize
+    
+Returns:
+    Path to audio file, or None if generation fails
 
 #### `run_guided_tour_runtime()`
 
