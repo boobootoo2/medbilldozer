@@ -165,32 +165,37 @@ def run_guided_tour_runtime():
     current_step = get_current_step()
     if not current_step:
         return
-    # Show tour info box
-    with st.container():
+    
+    # Show tour in sidebar for natural sticky behavior
+    with st.sidebar:
+        st.markdown("---")
         st.info(f"""
 **Step {current_step.id} of {len(TOUR_STEPS)}: {current_step.title}**
 
 {current_step.description}
 """)
-        cols = st.columns([1, 1, 1, 2])
-        with cols[0]:
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
             if current_step.id > 1:
                 if st.button("← Back", key="tour_back", use_container_width=True):
                     previous_tour_step()
                     st.rerun()
-        with cols[1]:
+        with col2:
             if current_step.id < len(TOUR_STEPS):
                 if st.button("Next →", key="tour_next", use_container_width=True):
                     advance_tour_step()
                     st.rerun()
             else:
-                if st.button("Done! 🎉", key="tour_done", use_container_width=True):
+                if st.button("✓ Done", key="tour_done", use_container_width=True):
                     complete_tour()
                     st.rerun()
-        with cols[2]:
-            if st.button("Skip Tour", key="tour_skip", use_container_width=True):
+        with col3:
+            if st.button("Skip", key="tour_skip", use_container_width=True):
                 skip_tour()
                 st.rerun()
+        
+        st.markdown("---")
 
 
 def show_tour_step_hint(step_target: str):
