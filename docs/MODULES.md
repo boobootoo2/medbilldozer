@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 39
+**Total Modules:** 40
 
 ### Application (5 modules)
 
@@ -44,12 +44,13 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (12 modules)
+### UI Components (13 modules)
 
 - **_modules.ui.api_docs_page**: Interactive API Documentation Page for Streamlit
 - **_modules.ui.billdozer_widget**: No description
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
-- **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial using Intro.js.
+- **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial using Streamlit Session State (No JavaScript).
+- **_modules.ui.guided_tour_old**: Guided Tour - Interactive tutorial using Intro.js.
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
@@ -1867,6 +1868,146 @@ Safe against multiple renders in a single Streamlit run.
 ## Module: `_modules.ui.guided_tour`
 
 **Source:** `_modules/ui/guided_tour.py`
+
+### Description
+
+Guided Tour - Interactive tutorial using Streamlit Session State (No JavaScript).
+
+Provides step-by-step guidance for first-time users through the app's
+main features using pure Streamlit session state and UI components.
+
+### Constants
+
+- **`TOUR_STEPS`**: `<complex value>`
+
+### Classes
+
+#### `TourStep`
+
+Represents a single step in the guided tour.
+
+**Attributes:**
+- `id`
+- `title`
+- `description`
+- `target`
+- `position`
+
+
+### Functions
+
+#### `initialize_tour_state()`
+
+Initialize tour-related session state variables.
+
+#### `maybe_launch_tour()`
+
+Launch tour if conditions are met (after splash and privacy).
+
+#### `activate_tour()`
+
+Activate the guided tour (called after splash screen dismissal).
+
+#### `get_current_step() -> Optional[TourStep]`
+
+Get the current tour step.
+
+#### `advance_tour_step()`
+
+Move to the next step in the tour.
+
+#### `previous_tour_step()`
+
+Move to the previous step in the tour.
+
+#### `complete_tour()`
+
+Mark the tour as completed.
+
+#### `skip_tour()`
+
+Skip the tour.
+
+#### `run_guided_tour_runtime()`
+
+Runs guided tour using Streamlit session state.  Call ONCE per rerun, AFTER main UI render.
+
+#### `show_tour_step_hint(step_target)`
+
+Show a visual hint for a specific tour step target.
+
+#### `tour_step_marker(step_target)`
+
+Mark a UI element as a tour target and show hint if it's the current step.
+
+#### `check_tour_progression()`
+
+Compatibility - handled by session state.
+
+#### `render_tour_widget()`
+
+Compatibility - handled by run_guided_tour_runtime.
+
+#### `render_tour_controls()`
+
+Compatibility - handled by run_guided_tour_runtime.
+
+#### `open_sidebar_for_tour()`
+
+Compatibility - Streamlit handles sidebar state.
+
+#### `install_paste_detector()`
+
+Compatibility - no longer needed.
+
+#### `install_copy_button_detector()`
+
+Compatibility - no longer needed.
+
+#### `check_pharmacy_copy_click()`
+
+Compatibility - no longer needed.
+
+#### `install_tour_highlight_styles()`
+
+Compatibility - no longer needed.
+
+#### `highlight_tour_elements()`
+
+Compatibility - no longer needed.
+
+#### `open_and_scroll_pipeline_workflow_step6()`
+
+Compatibility - no longer needed.
+
+#### `is_tour_on_step(step_id) -> bool`
+
+Check if the tour is currently on a specific step.
+
+#### `is_tour_on_target(target) -> bool`
+
+Check if the tour is currently focused on a specific target.
+
+#### `get_tour_progress() -> Tuple[int, int]`
+
+Get the current tour progress.
+
+#### `pause_tour()`
+
+Pause the tour temporarily.
+
+#### `resume_tour()`
+
+Resume a paused tour.
+
+#### `is_tour_paused() -> bool`
+
+Check if the tour is currently paused.
+
+
+## Module: `_modules.ui.guided_tour_old`
+
+**Source:** `_modules/ui/guided_tour_old.py`
 
 ### Description
 

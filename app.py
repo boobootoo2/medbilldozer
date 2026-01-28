@@ -733,8 +733,6 @@ def main():
             coverage_rows = build_coverage_matrix(documents)
             render_coverage_matrix(coverage_rows)
 
-        render_contextual_help('results')
-
     # --------------------------------------------------
     # Debug output (read-only)
     # --------------------------------------------------
