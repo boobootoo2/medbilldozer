@@ -29,9 +29,19 @@ class TourStep:
 TOUR_STEPS = [
     TourStep(
         id=1,
-        title="Welcome to MedBillDozer!",
-        description="👋 Hi! I'm Billy, and with my partner Billie, we'll help you find hidden errors in medical bills. Let's get started!",
-        narration="Hi! I'm Billy. With my partner Billie, we'll help you uncover hidden billing errors in your medical bills. Let's get started!",
+        title="Welcome to MedBillDozer",
+        description=(
+            "👋 Welcome to MedBillDozer. This project demonstrates an end-to-end healthcare "
+            "document analysis system that combines deterministic data pipelines with "
+            "MedGemma, an open-weight healthcare model from Google’s Health AI Developer Foundations, "
+            "for medical reasoning and validation."
+        ),
+        narration=(
+            "Welcome to MedBillDozer. This project demonstrates an end-to-end healthcare "
+            "document analysis system that combines deterministic data pipelines with "
+            "MedGemma, an open-weight healthcare model from Google’s Health AI Developer Foundations, "
+            "for medical reasoning and validation."
+        ),
         target="logo",
         position="top"
     ),
@@ -39,16 +49,15 @@ TOUR_STEPS = [
         id=2,
         title="Demo Documents",
         description=(
-            "📋 Try real-world sample documents to see how MedBillDozer works. "
-            "We’ve included hospital procedure bills, pharmacy receipts, dental statements, "
-            "FSA statements, and insurance claim histories. "
-            "Just expand any document, click Copy, and paste it below for analysis."
+            "📋 These sample documents represent common healthcare artifacts used in claims "
+            "and audit workflows, including hospital procedure bills, pharmacy receipts, "
+            "dental statements, FSA statements, and insurance claim histories. Each example "
+            "demonstrates copy-and-paste ingestion of real-world data."
         ),
         narration=(
-            "📋 Try real-world sample documents to see how MedBillDozer works. "
-            "We’ve included hospital procedure bills, pharmacy receipts, dental statements, "
-            "FSA statements, and insurance claim histories. "
-            "Just expand any document, click Copy, and paste it below for analysis."
+            "These sample documents represent common healthcare artifacts used in claims "
+            "and audit workflows, including hospital procedure bills, pharmacy receipts, "
+            "dental statements, FSA statements, and insurance claim histories."
         ),
         target="demo_section",
         position="top"
@@ -56,73 +65,165 @@ TOUR_STEPS = [
     TourStep(
         id=3,
         title="Document Input",
-        description="✍️ Paste your medical bill, pharmacy receipt, or insurance statement here. You can add multiple documents to compare.",
-        narration="Paste your medical bill, pharmacy receipt, or insurance statement here. You can add multiple documents to compare.",
+        description=(
+            "✍️ Documents are ingested as raw text. The system supports multiple documents "
+            "per session to enable cross-document comparison, normalization, and validation."
+        ),
+        narration=(
+            "Documents are ingested as raw text. The system supports multiple documents "
+            "per session to enable cross-document comparison, normalization, and validation."
+        ),
         target="text_input",
         position="top"
     ),
     TourStep(
         id=4,
-        title="Add Multiple Documents",
-        description="➕ Click here to add multiple documents for comparison analysis.",
-        narration="Click here to add multiple documents for comparison analysis.",
+        title="Multi-Document Analysis",
+        description=(
+            "➕ Adding multiple documents allows the system to correlate transactions, "
+            "coverage, and line items across providers, dates of service, and claims."
+        ),
+        narration=(
+            "Adding multiple documents allows the system to correlate transactions, "
+            "coverage, and line items across providers, dates of service, and claims."
+        ),
         target="add_document",
         position="top"
     ),
     TourStep(
         id=5,
-        title="Start Analysis",
+        title="Analysis Engine Selection",
         description=(
-            "🔍 Click here to start the analysis. MedBillDozer first uses local heuristic models "
-            "to classify the document type. If Smart AI is enabled, it then selects the optimal "
-            "model to extract structured facts from the document. Each document is assigned a "
-            "unique ID based on fact fingerprints, making the workflow deterministic and idempotent. "
-            "Scroll down and expand the accordion after Document 1 to view a DAG diagram showing "
-            "the data pipeline. Analysis findings appear further down once processing is complete."
+            "⚙️ The analysis engine is configurable. Reviewers can select which AI model is "
+            "used for downstream medical analysis and validation, including MedGemma from "
+            "Google’s Health AI Developer Foundations, as well as alternative general-purpose models. "
+            "Extraction remains decoupled, enabling clean separation between data ingestion "
+            "and clinical reasoning."
         ),
         narration=(
-            "Click here to start the analysis. MedBillDozer first uses local heuristic models "
-            "to classify the document type. If Smart AI is enabled, it then selects the optimal "
-            "model to extract structured facts from the document. Each document is assigned a "
-            "unique ID based on fact fingerprints, making the workflow deterministic and idempotent. "
-            "Scroll down and expand the accordion after Document 1 to view a DAG diagram showing "
-            "the data pipeline. Analysis findings appear further down once processing is complete."
+            "The analysis engine is configurable. Reviewers can select which AI model is "
+            "used for downstream medical analysis and validation, including MedGemma from "
+            "Google’s Health AI Developer Foundations, as well as alternative general-purpose models. "
+            "Extraction remains decoupled from analysis."
+        ),
+        target="analysis_engine",
+        position="top"
+    ),
+    TourStep(
+        id=6,
+        title="Deterministic Analysis Pipeline",
+        description=(
+            "🔍 When analysis begins, documents are first classified using local heuristics, "
+            "then passed through configurable extractors to produce structured facts. "
+            "MedGemma is subsequently used to analyze, validate, and reason over these facts "
+            "in a healthcare-specific context. Fact fingerprints generate stable document IDs, "
+            "ensuring deterministic and idempotent processing across repeated runs."
+        ),
+        narration=(
+            "When analysis begins, documents are first classified using local heuristics, "
+            "then passed through configurable extractors to produce structured facts. "
+            "MedGemma is used to analyze, validate, and reason over these facts in a "
+            "healthcare-specific context. Fact fingerprints ensure deterministic and "
+            "idempotent processing."
         ),
         target="analyze_button",
         position="top"
     ),
     TourStep(
-        id=6,
-        title="Sidebar Navigation",
-        description="💬 Use the sidebar to ask Billy or Billie questions about your bills, view your health profile, or import data from providers.",
-        narration="Use the sidebar to ask Billy or Billie questions about your bills, view your health profile, or import data from providers.",
-        target="sidebar",
+        id=7,
+        title="Pipeline Observability",
+        description=(
+            "📊 Expand the accordion after Document 1 to inspect the execution DAG. "
+            "This provides observability into classification, extraction, normalization, "
+            "and validation stages of the pipeline."
+        ),
+        narration=(
+            "You can expand the accordion after Document 1 to inspect the execution DAG. "
+            "This provides observability into classification, extraction, normalization, "
+            "and validation stages of the pipeline."
+        ),
+        target="pipeline_dag",
         position="main"
     ),
     TourStep(
-        id=7,
-        title="Your Profile",
-        description="👤 View and manage your health profile, including insurance coverage and provider information.",
-        narration="View and manage your health profile, including insurance coverage and provider information.",
-        target="profile_button",
-        position="sidebar"
-    ),
-    TourStep(
         id=8,
-        title="Profile Management",
-        description="👤 In the Profile view, you can manage your health insurance details, track provider information, and save your medical history for faster analysis. This helps us give you more accurate insights!",
-        narration="In the Profile view, you can manage your health insurance details, track provider information, and save your medical history for faster analysis. This helps us give you more accurate insights!",
-        target="profile_section",
+        title="Analysis Findings",
+        description=(
+            "📌 Once processing completes, findings are displayed below, including potential "
+            "billing errors, duplicate charges, coverage inconsistencies, and detected anomalies."
+        ),
+        narration=(
+            "Once processing completes, findings are displayed below, including potential "
+            "billing errors, duplicate charges, coverage inconsistencies, and detected anomalies."
+        ),
+        target="results_section",
         position="main"
     ),
     TourStep(
         id=9,
-        title="API Integration",
-        description="🔌 Built for healthcare and insurance workflows. MedBillDozer's API enables programmatic data ingestion and quality validation of medical records, powered by MedGemma's healthcare-aligned LLM and designed for claims and audit pipelines.",
-        narration="Built for healthcare and insurance workflows. MedBillDozer's API enables programmatic data ingestion and quality validation of medical records, powered by MedGemma's healthcare-aligned LLM and designed for claims and audit pipelines.",
+        title="Sidebar Navigation",
+        description=(
+            "💬 The sidebar provides access to system interactions, including querying Billy "
+            "or Billie for explanations, navigating the application, viewing the health profile, "
+            "and importing data from external providers."
+        ),
+        narration=(
+            "The sidebar provides access to system interactions, including querying Billy "
+            "or Billie for explanations, navigating the application, viewing the health profile, "
+            "and importing data from external providers."
+        ),
+        target="sidebar",
+        position="main"
+    ),
+    TourStep(
+        id=10,
+        title="Health Profile",
+        description=(
+            "👤 The Health Profile stores persistent user context such as insurance coverage "
+            "and provider information, which is used to enrich downstream analysis."
+        ),
+        narration=(
+            "The Health Profile stores persistent user context such as insurance coverage "
+            "and provider information, which is used to enrich downstream analysis."
+        ),
+        target="profile_button",
+        position="sidebar"
+    ),
+    TourStep(
+        id=11,
+        title="Profile Management",
+        description=(
+            "👤 Within the Profile view, users can manage insurance details, provider data, "
+            "and historical medical information. This persistent context enables faster, "
+            "more accurate analysis and supports longitudinal validation across documents."
+        ),
+        narration=(
+            "Within the Profile view, users can manage insurance details, provider data, "
+            "and historical medical information. This persistent context enables faster, "
+            "more accurate analysis and supports longitudinal validation across documents."
+        ),
+        target="profile_section",
+        position="main"
+    ),
+    TourStep(
+        id=12,
+        title="Healthcare-Ready API",
+        description=(
+            "🔌 MedBillDozer exposes an API for healthcare and insurance systems, enabling "
+            "programmatic ingestion of medical documents and MedGemma-powered analysis "
+            "for validation, anomaly detection, and quality review. This architecture "
+            "supports deployment in privacy-sensitive or offline environments."
+        ),
+        narration=(
+            "MedBillDozer exposes an API for healthcare and insurance systems, enabling "
+            "programmatic ingestion of medical documents and MedGemma-powered analysis "
+            "for validation, anomaly detection, and quality review. This architecture "
+            "supports privacy-sensitive or offline deployment."
+        ),
         target="api_button",
         position="sidebar"
     ),
+
 ]
 
 
