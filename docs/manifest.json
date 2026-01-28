@@ -1,6 +1,6 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 39,
+  "total_modules": 40,
   "modules": [
     {
       "name": "_modules.ui.doc_assistant",
@@ -52,13 +52,24 @@
       "constants": []
     },
     {
-      "name": "_modules.ui.guided_tour",
-      "filepath": "_modules/ui/guided_tour.py",
+      "name": "_modules.ui.guided_tour_old",
+      "filepath": "_modules/ui/guided_tour_old.py",
       "has_docstring": true,
       "num_classes": 0,
       "num_functions": 18,
       "num_dependencies": 0,
       "constants": []
+    },
+    {
+      "name": "_modules.ui.guided_tour",
+      "filepath": "_modules/ui/guided_tour.py",
+      "has_docstring": true,
+      "num_classes": 1,
+      "num_functions": 27,
+      "num_dependencies": 0,
+      "constants": [
+        "TOUR_STEPS"
+      ]
     },
     {
       "name": "_modules.ui.splash_screen",
