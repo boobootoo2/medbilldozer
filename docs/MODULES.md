@@ -2477,11 +2477,27 @@ Returns:
 
 Mark splash screen as dismissed.
 
+#### `generate_splash_audio(character, text, index)`
+
+Generate audio narration for splash screen using OpenAI TTS.
+
+Args:
+    character: Either 'billy' (male voice) or 'billie' (female voice)
+    text: Text to synthesize
+    index: Message index for file naming
+    
+Returns:
+    Path to audio file, or None if generation fails
+
+#### `prepare_splash_audio()`
+
+Pre-generate all splash screen audio files.
+
 #### `render_splash_screen()`
 
 Render fullscreen splash screen with Billdozer widget.
 
-Shows Billy and Billie introducing the app with animation.
+Shows Billy and Billie introducing the app with animation and audio narration.
 User can click dismiss button to proceed to main app.
 
 

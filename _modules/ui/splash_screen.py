@@ -7,11 +7,15 @@ when GUIDED_TOUR=TRUE. Animation runs once and user can dismiss to proceed.
 import streamlit as st
 import streamlit.components.v1 as components
 from pathlib import Path
+import logging
+import base64
 from _modules.ui.billdozer_widget import (
     get_billdozer_widget_html,
     install_billdozer_bridge,
     dispatch_widget_message,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def should_show_splash_screen() -> bool:
@@ -31,12 +35,111 @@ def dismiss_splash_screen():
     st.session_state.splash_dismissed = True
 
 
+def generate_splash_audio(character: str, text: str, index: int):
+    """Generate audio narration for splash screen using OpenAI TTS.
+    
+    Args:
+        character: Either 'billy' (male voice) or 'billie' (female voice)
+        text: Text to synthesize
+        index: Message index for file naming
+        
+    Returns:
+        Path to audio file, or None if generation fails
+    """
+    audio_dir = Path("audio")
+    audio_dir.mkdir(exist_ok=True)
+    
+    audio_file = audio_dir / f"splash_{character}_{index}.mp3"
+    
+    # Return cached file if exists
+    if audio_file.exists():
+        return audio_file
+    
+    # Try to generate using OpenAI TTS
+    try:
+        from openai import OpenAI
+        
+        # Initialize client (uses OPENAI_API_KEY from environment)
+        client = OpenAI()
+        
+        # Choose voice based on character
+        # Billy (male): echo (authoritative, clear)
+        # Billie (female): nova (warm, friendly)
+        voice = "echo" if character == "billy" else "nova"
+        
+        logger.info(f"Generating splash audio for {character} (voice: {voice})...")
+        
+        # Generate speech
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice=voice,
+            input=text,
+            speed=1.0
+        )
+        
+        # Save to file
+        audio_file.write_bytes(response.read())
+        logger.info(f"✅ Generated splash audio: {audio_file}")
+        
+        return audio_file
+        
+    except ImportError:
+        logger.debug("OpenAI library not available for audio generation")
+        return None
+    except Exception as e:
+        logger.warning(f"Failed to generate splash audio for {character}_{index}: {e}")
+        return None
+
+
+def prepare_splash_audio():
+    """Pre-generate all splash screen audio files."""
+    messages = [
+        ("billie", "Hi! We're Billy and Billie—your guides to finding billing mistakes."),
+        ("billy", "We scan medical bills, pharmacy receipts, dental claims, and insurance statements to uncover overcharges, duplicates, and missed reimbursements."),
+        ("billie", "Ready to see how easy it is to double-check your bills?")
+    ]
+    
+    for index, (character, text) in enumerate(messages):
+        generate_splash_audio(character, text, index)
+
+
 def render_splash_screen():
     """Render fullscreen splash screen with Billdozer widget.
     
-    Shows Billy and Billie introducing the app with animation.
+    Shows Billy and Billie introducing the app with animation and audio narration.
     User can click dismiss button to proceed to main app.
     """
+    # Pre-generate audio files (will use cache if already exist)
+    prepare_splash_audio()
+    
+    # Check which audio files are available and convert to base64 data URIs
+    import json
+    audio_dir = Path("audio")
+    audio_files = []
+    for i in range(3):
+        character = ["billie", "billy", "billie"][i]
+        audio_file = audio_dir / f"splash_{character}_{i}.mp3"
+        if audio_file.exists():
+            # Read audio file and convert to base64 data URI
+            # This bypasses Streamlit's file serving issues
+            try:
+                with open(audio_file, "rb") as f:
+                    audio_data = f.read()
+                    audio_base64 = base64.b64encode(audio_data).decode('utf-8')
+                    data_uri = f"data:audio/mpeg;base64,{audio_base64}"
+                    audio_files.append(data_uri)
+                    logger.info(f"✅ Converted {audio_file.name} to base64 ({len(audio_base64)} chars)")
+            except Exception as e:
+                logger.error(f"❌ Failed to read {audio_file}: {e}")
+                audio_files.append(None)
+        else:
+            logger.warning(f"⚠️ Audio file not found: {audio_file}")
+            audio_files.append(None)
+    
+    # Convert to JSON string for JavaScript
+    audio_files_json = json.dumps(audio_files)
+    logger.info(f"📦 Prepared {len([f for f in audio_files if f])} audio files as data URIs")
+    
     # Fullscreen container
     st.html("""
     <style>
@@ -214,6 +317,9 @@ def render_splash_screen():
     }
     </style>
     <div class="splash-container">
+    <button class="audio-enable-btn" id="audio-enable-btn">
+        🔊 Enable Audio
+    </button>
     <div class="splash-content">
         <div class="splash-title">
         <img src="https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/avatars/transparent/billy__eyes_open__billdozer_up.png" alt="Billy character with eyes open looking up" style="
@@ -374,6 +480,40 @@ def render_splash_screen():
                 #splash-transcript::-webkit-scrollbar-thumb:hover {
                 background: rgba(255, 255, 255, 0.7);
                 }
+                
+                /* Audio Enable Button */
+                .audio-enable-btn {
+                    position: absolute;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(255, 255, 255, 0.2);
+                    border: 2px solid white;
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 25px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 600;
+                    backdrop-filter: blur(10px);
+                    transition: all 0.3s ease;
+                    z-index: 10000;
+                    display: none;
+                }
+                
+                .audio-enable-btn:hover {
+                    background: rgba(255, 255, 255, 0.3);
+                    transform: scale(1.05);
+                }
+                
+                .audio-enable-btn.show {
+                    display: block;
+                    animation: pulse 2s infinite;
+                }
+                
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.7; }
+                }
 
 
             </style>
@@ -462,9 +602,18 @@ def render_splash_screen():
     (function() {
         console.log("[Splash Widget] Script starting...");
         
+        // Audio file paths (injected from Python)
+        const audioFiles = """ + audio_files_json + """;
+        console.log("[Splash Widget] Audio files:", audioFiles);
+        
+        // Track if audio has been enabled
+        let audioEnabled = false;
+        let audioBlockedDetected = false;
+        const audioEnableBtn = document.getElementById('audio-enable-btn');
+        
         const liveRegion = document.getElementById("splash-live");
         const transcriptLines = document.querySelectorAll(".transcript-line");
-        let messageIndex = 0;
+        let currentMessageIndex = -1;
 
         
         const container = document.querySelector(".splash-widget-container .inner-container");
@@ -499,20 +648,70 @@ def render_splash_screen():
         ];
 
         
+        // Create audio elements for each message
+        const audioElements = [];
+        console.log("[Splash Widget] Creating audio elements from:", audioFiles);
+        console.log("[Splash Widget] Audio files type:", typeof audioFiles);
+        console.log("[Splash Widget] Is array?", Array.isArray(audioFiles));
+        
+        rawMessages.forEach((msg, idx) => {
+            const audioPath = audioFiles[idx];
+            console.log(`[Splash Widget] Processing message ${idx}, path:`, audioPath, "type:", typeof audioPath);
+            
+            if (audioPath && audioPath !== 'None' && audioPath !== null) {
+                try {
+                    const audio = new Audio(audioPath);
+                    audio.preload = 'auto';
+                    
+                    // Add event listeners for debugging
+                    audio.addEventListener('loadeddata', () => {
+                        console.log(`[Splash Widget] ✅ Audio ${idx} loaded successfully:`, audioPath);
+                    });
+                    audio.addEventListener('error', (e) => {
+                        console.error(`[Splash Widget] ❌ Audio ${idx} load error:`, e, audioPath);
+                    });
+                    audio.addEventListener('play', () => {
+                        console.log(`[Splash Widget] ▶️ Audio ${idx} started playing`);
+                    });
+                    audio.addEventListener('ended', () => {
+                        console.log(`[Splash Widget] ⏹️ Audio ${idx} finished playing`);
+                    });
+                    
+                    audioElements.push(audio);
+                    console.log(`[Splash Widget] ✅ Created audio element ${idx}:`, audioPath);
+                } catch (err) {
+                    console.error("[Splash Widget] ❌ Failed to create audio:", err);
+                    audioElements.push(null);
+                }
+            } else {
+                console.warn(`[Splash Widget] ⚠️ Skipping message ${idx} - invalid path:`, audioPath);
+                audioElements.push(null);
+            }
+        });
+        
+        console.log("[Splash Widget] Total audio elements created:", audioElements.filter(a => a !== null).length);
+        
         const queue = [];
         const maxChars = 40;
         
-        rawMessages.forEach(({ character, message }) => {
+        rawMessages.forEach(({ character, message }, msgIndex) => {
             // Split message into words
             const words = message.split(' ');
             let chunk = '';
+            let isFirstChunk = true;
             
             words.forEach((word, index) => {
                 const testChunk = chunk ? chunk + ' ' + word : word;
                 
                 if (testChunk.length > maxChars && chunk) {
                     // Push current chunk and start new one
-                    queue.push({ character, message: chunk });
+                    queue.push({ 
+                        character, 
+                        message: chunk, 
+                        audioIndex: msgIndex, 
+                        isFirstChunk: isFirstChunk 
+                    });
+                    isFirstChunk = false;
                     chunk = word;
                 } else {
                     chunk = testChunk;
@@ -520,12 +719,18 @@ def render_splash_screen():
                 
                 // Push final chunk
                 if (index === words.length - 1 && chunk) {
-                    queue.push({ character, message: chunk });
+                    queue.push({ 
+                        character, 
+                        message: chunk, 
+                        audioIndex: msgIndex, 
+                        isFirstChunk: isFirstChunk 
+                    });
                 }
             });
         });
         
         let active = false;
+        let currentAudio = null;
         
         function playNext() {
             console.log("[Splash Widget] Playing next message, queue length:", queue.length);
@@ -533,29 +738,87 @@ def render_splash_screen():
                 active = false;
                 speechLayer.style.display = "none";
                 container.classList.remove("talking-left", "talking-right");
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
                 console.log("[Splash Widget] Queue empty, finished");
                 return;
             }
             
             active = true;
 
-            const { character, message } = queue.shift();
+            const { character, message, audioIndex, isFirstChunk } = queue.shift();
+            
+            // Update message index when we hit a new message
+            if (isFirstChunk && audioIndex !== currentMessageIndex) {
+                currentMessageIndex = audioIndex;
+                
+                // Visual transcript sync
+                transcriptLines.forEach((el, idx) => {
+                    el.classList.toggle("active", idx === currentMessageIndex);
+                    // Auto-scroll to active line
+                    if (idx === currentMessageIndex) {
+                        el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+                    }
+                });
+            }
+            
+            // Play audio only on first chunk of each message
+            if (isFirstChunk) {
+                console.log(`[Splash Widget] First chunk of message ${audioIndex}`);
+                console.log(`[Splash Widget] Audio element exists?`, !!audioElements[audioIndex]);
+                console.log(`[Splash Widget] Audio element:`, audioElements[audioIndex]);
+                
+                if (audioElements[audioIndex]) {
+                    if (currentAudio) {
+                        console.log("[Splash Widget] Pausing previous audio");
+                        currentAudio.pause();
+                    }
+                    currentAudio = audioElements[audioIndex];
+                    console.log(`[Splash Widget] 🎵 Attempting to play audio ${audioIndex}...`);
+                    console.log(`[Splash Widget] Audio src:`, currentAudio.src);
+                    console.log(`[Splash Widget] Audio ready state:`, currentAudio.readyState);
+                    console.log(`[Splash Widget] Audio paused?`, currentAudio.paused);
+                    
+                    currentAudio.play()
+                        .then(() => {
+                            console.log(`[Splash Widget] ✅ Successfully started playing audio ${audioIndex}`);
+                            audioEnabled = true;
+                            // Hide the enable button if it's showing
+                            if (audioEnableBtn) {
+                                audioEnableBtn.classList.remove('show');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(`[Splash Widget] ❌ Audio playback failed for message ${audioIndex}:`, err);
+                            console.error(`[Splash Widget] Error name:`, err.name);
+                            console.error(`[Splash Widget] Error message:`, err.message);
+                            
+                            // Try to provide helpful error messages
+                            if (err.name === 'NotAllowedError') {
+                                console.error('[Splash Widget] 🚫 Browser blocked autoplay. User interaction required.');
+                                console.error('[Splash Widget] 💡 Tip: Click the "Enable Audio" button.');
+                                
+                                // Show the enable audio button
+                                if (audioEnableBtn && !audioBlockedDetected) {
+                                    audioBlockedDetected = true;
+                                    audioEnableBtn.classList.add('show');
+                                    audioEnableBtn.textContent = '🔊 Click to Enable Audio';
+                                }
+                            } else if (err.name === 'NotSupportedError') {
+                                console.error('[Splash Widget] 🚫 Audio format not supported by browser.');
+                            }
+                        });
+                } else {
+                    console.warn(`[Splash Widget] ⚠️ No audio element for message ${audioIndex}`);
+                }
+            }
 
             // Screen reader announcement
             if (liveRegion) {
-            liveRegion.textContent = message;
+                liveRegion.textContent = message;
             }
-
-            // Visual transcript sync
-            transcriptLines.forEach((el, idx) => {
-            el.classList.toggle("active", idx === messageIndex);
-            // Auto-scroll to active line
-            if (idx === messageIndex) {
-                el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
-            }
-            });
-
-            messageIndex++;
 
 
             console.log("[Splash Widget] Showing message from", character, ":", message);
@@ -572,6 +835,30 @@ def render_splash_screen():
                 console.log("[Splash Widget] Message complete, waiting before next");
                 setTimeout(playNext, 300);
             }, 3000);
+        }
+        
+        // Audio enable button click handler
+        if (audioEnableBtn) {
+            audioEnableBtn.addEventListener('click', function() {
+                console.log('[Splash Widget] 🎵 User clicked Enable Audio button');
+                audioEnabled = true;
+                audioEnableBtn.classList.remove('show');
+                audioEnableBtn.textContent = '✅ Audio Enabled';
+                
+                // Try to play the first audio if we have one
+                if (audioElements.length > 0 && audioElements[0]) {
+                    console.log('[Splash Widget] 🎵 Attempting to play first audio after enable...');
+                    audioElements[0].play()
+                        .then(() => {
+                            console.log('[Splash Widget] ✅ Audio playback working!');
+                            audioEnableBtn.style.display = 'none';
+                        })
+                        .catch(err => {
+                            console.error('[Splash Widget] ❌ Still cannot play:', err);
+                            audioEnableBtn.textContent = '❌ Audio Blocked';
+                        });
+                }
+            });
         }
         
         // Start showing messages after a brief delay
