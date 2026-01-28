@@ -306,16 +306,13 @@ def main():
     bootstrap_ui_minimal()
 
     # --------------------------------------------------
-    # Guided Tour (Intro.js)
-    # --------------------------------------------------
-    if should_enable_guided_tour():
-        run_guided_tour_runtime()
-
-
-    # --------------------------------------------------
     # Page Navigation (sidebar - at top)
     # --------------------------------------------------
     with st.sidebar:
+        # Guided Tour at top of sidebar
+        if should_enable_guided_tour():
+            run_guided_tour_runtime()
+        
         st.markdown("## 📱 Navigation")
 
         col1, col2, col3 = st.columns(3)
@@ -713,7 +710,11 @@ def main():
         st.rerun()
 
     # Display previously analyzed results if they exist (e.g., after tour rerun)
-    elif st.session_state.get('last_documents') and st.session_state.get('doc_results', False):
+    # Only show cached results if we're NOT currently in an analysis run
+    elif (st.session_state.get('last_documents') and 
+          st.session_state.get('doc_results', False) and 
+          not st.session_state.get('analyzing', False) and 
+          not analyze_clicked):
         documents = st.session_state.last_documents
         total_potential_savings = st.session_state.get('last_total_savings', 0.0)
         per_document_savings = st.session_state.get('last_per_doc_savings', {})
