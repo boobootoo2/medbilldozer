@@ -97,14 +97,13 @@ TOUR_STEPS = [
             "⚙️ The analysis engine is configurable. Reviewers can select which AI model is "
             "used for downstream medical analysis and validation, including MedGemma from "
             "Google’s Health AI Developer Foundations, as well as alternative general-purpose models. "
-            "Extraction remains decoupled, enabling clean separation between data ingestion "
-            "and clinical reasoning."
+            "Extraction remains decoupled from analysis to preserve deterministic ingestion."
         ),
         narration=(
             "The analysis engine is configurable. Reviewers can select which AI model is "
             "used for downstream medical analysis and validation, including MedGemma from "
             "Google’s Health AI Developer Foundations, as well as alternative general-purpose models. "
-            "Extraction remains decoupled from analysis."
+            "Extraction remains decoupled from analysis to preserve deterministic ingestion."
         ),
         target="analysis_engine",
         position="top"
@@ -122,9 +121,9 @@ TOUR_STEPS = [
         narration=(
             "When analysis begins, documents are first classified using local heuristics, "
             "then passed through configurable extractors to produce structured facts. "
-            "MedGemma is used to analyze, validate, and reason over these facts in a "
-            "healthcare-specific context. Fact fingerprints ensure deterministic and "
-            "idempotent processing."
+            "MedGemma is subsequently used to analyze, validate, and reason over these facts "
+            "in a healthcare-specific context. Fact fingerprints generate stable document IDs, "
+            "ensuring deterministic and idempotent processing across repeated runs."
         ),
         target="analyze_button",
         position="top"
@@ -218,12 +217,11 @@ TOUR_STEPS = [
             "MedBillDozer exposes an API for healthcare and insurance systems, enabling "
             "programmatic ingestion of medical documents and MedGemma-powered analysis "
             "for validation, anomaly detection, and quality review. This architecture "
-            "supports privacy-sensitive or offline deployment."
+            "supports deployment in privacy-sensitive or offline environments."
         ),
         target="api_button",
         position="sidebar"
     ),
-
 ]
 
 
