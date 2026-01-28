@@ -7,11 +7,14 @@ when GUIDED_TOUR=TRUE. Animation runs once and user can dismiss to proceed.
 import streamlit as st
 import streamlit.components.v1 as components
 from pathlib import Path
+import logging
 from _modules.ui.billdozer_widget import (
     get_billdozer_widget_html,
     install_billdozer_bridge,
     dispatch_widget_message,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def should_show_splash_screen() -> bool:
@@ -31,12 +34,95 @@ def dismiss_splash_screen():
     st.session_state.splash_dismissed = True
 
 
+def generate_splash_audio(character: str, text: str, index: int):
+    """Generate audio narration for splash screen using OpenAI TTS.
+    
+    Args:
+        character: Either 'billy' (male voice) or 'billie' (female voice)
+        text: Text to synthesize
+        index: Message index for file naming
+        
+    Returns:
+        Path to audio file, or None if generation fails
+    """
+    audio_dir = Path("audio")
+    audio_dir.mkdir(exist_ok=True)
+    
+    audio_file = audio_dir / f"splash_{character}_{index}.mp3"
+    
+    # Return cached file if exists
+    if audio_file.exists():
+        return audio_file
+    
+    # Try to generate using OpenAI TTS
+    try:
+        from openai import OpenAI
+        
+        # Initialize client (uses OPENAI_API_KEY from environment)
+        client = OpenAI()
+        
+        # Choose voice based on character
+        # Billy (male): echo (authoritative, clear)
+        # Billie (female): nova (warm, friendly)
+        voice = "echo" if character == "billy" else "nova"
+        
+        logger.info(f"Generating splash audio for {character} (voice: {voice})...")
+        
+        # Generate speech
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice=voice,
+            input=text,
+            speed=1.0
+        )
+        
+        # Save to file
+        audio_file.write_bytes(response.read())
+        logger.info(f"✅ Generated splash audio: {audio_file}")
+        
+        return audio_file
+        
+    except ImportError:
+        logger.debug("OpenAI library not available for audio generation")
+        return None
+    except Exception as e:
+        logger.warning(f"Failed to generate splash audio for {character}_{index}: {e}")
+        return None
+
+
+def prepare_splash_audio():
+    """Pre-generate all splash screen audio files."""
+    messages = [
+        ("billie", "Hi! We're Billy and Billie—your guides to finding billing mistakes."),
+        ("billy", "We scan medical bills, pharmacy receipts, dental claims, and insurance statements to uncover overcharges, duplicates, and missed reimbursements."),
+        ("billie", "Ready to see how easy it is to double-check your bills?")
+    ]
+    
+    for index, (character, text) in enumerate(messages):
+        generate_splash_audio(character, text, index)
+
+
 def render_splash_screen():
     """Render fullscreen splash screen with Billdozer widget.
     
-    Shows Billy and Billie introducing the app with animation.
+    Shows Billy and Billie introducing the app with animation and audio narration.
     User can click dismiss button to proceed to main app.
     """
+    # Pre-generate audio files (will use cache if already exist)
+    prepare_splash_audio()
+    
+    # Check which audio files are available
+    audio_dir = Path("audio")
+    audio_files = []
+    for i in range(3):
+        character = ["billie", "billy", "billie"][i]
+        audio_file = audio_dir / f"splash_{character}_{i}.mp3"
+        if audio_file.exists():
+            # Convert to relative path for web access
+            audio_files.append(f"audio/splash_{character}_{i}.mp3")
+        else:
+            audio_files.append(None)
+    
     # Fullscreen container
     st.html("""
     <style>
@@ -462,6 +548,10 @@ def render_splash_screen():
     (function() {
         console.log("[Splash Widget] Script starting...");
         
+        // Audio file paths (injected from Python)
+        const audioFiles = """ + str(audio_files) + """;
+        console.log("[Splash Widget] Audio files:", audioFiles);
+        
         const liveRegion = document.getElementById("splash-live");
         const transcriptLines = document.querySelectorAll(".transcript-line");
         let messageIndex = 0;
@@ -499,20 +589,46 @@ def render_splash_screen():
         ];
 
         
+        // Create audio elements for each message
+        const audioElements = [];
+        rawMessages.forEach((msg, idx) => {
+            const audioPath = audioFiles[idx];
+            if (audioPath && audioPath !== 'None' && audioPath !== null) {
+                try {
+                    const audio = new Audio(audioPath);
+                    audio.preload = 'auto';
+                    audioElements.push(audio);
+                    console.log("[Splash Widget] Loaded audio for message", idx, ":", audioPath);
+                } catch (err) {
+                    console.warn("[Splash Widget] Failed to load audio:", err);
+                    audioElements.push(null);
+                }
+            } else {
+                audioElements.push(null);
+            }
+        });
+        
         const queue = [];
         const maxChars = 40;
         
-        rawMessages.forEach(({ character, message }) => {
+        rawMessages.forEach(({ character, message }, msgIndex) => {
             // Split message into words
             const words = message.split(' ');
             let chunk = '';
+            let isFirstChunk = true;
             
             words.forEach((word, index) => {
                 const testChunk = chunk ? chunk + ' ' + word : word;
                 
                 if (testChunk.length > maxChars && chunk) {
                     // Push current chunk and start new one
-                    queue.push({ character, message: chunk });
+                    queue.push({ 
+                        character, 
+                        message: chunk, 
+                        audioIndex: msgIndex, 
+                        isFirstChunk: isFirstChunk 
+                    });
+                    isFirstChunk = false;
                     chunk = word;
                 } else {
                     chunk = testChunk;
@@ -520,12 +636,18 @@ def render_splash_screen():
                 
                 // Push final chunk
                 if (index === words.length - 1 && chunk) {
-                    queue.push({ character, message: chunk });
+                    queue.push({ 
+                        character, 
+                        message: chunk, 
+                        audioIndex: msgIndex, 
+                        isFirstChunk: isFirstChunk 
+                    });
                 }
             });
         });
         
         let active = false;
+        let currentAudio = null;
         
         function playNext() {
             console.log("[Splash Widget] Playing next message, queue length:", queue.length);
@@ -533,13 +655,29 @@ def render_splash_screen():
                 active = false;
                 speechLayer.style.display = "none";
                 container.classList.remove("talking-left", "talking-right");
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
                 console.log("[Splash Widget] Queue empty, finished");
                 return;
             }
             
             active = true;
 
-            const { character, message } = queue.shift();
+            const { character, message, audioIndex, isFirstChunk } = queue.shift();
+            
+            // Play audio only on first chunk of each message
+            if (isFirstChunk && audioElements[audioIndex]) {
+                if (currentAudio) {
+                    currentAudio.pause();
+                }
+                currentAudio = audioElements[audioIndex];
+                console.log("[Splash Widget] Playing audio for message", audioIndex);
+                currentAudio.play().catch(err => {
+                    console.warn('[Splash Widget] Audio playback failed:', err);
+                });
+            }
 
             // Screen reader announcement
             if (liveRegion) {
