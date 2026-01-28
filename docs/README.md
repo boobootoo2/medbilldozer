@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 39
+**Total Modules:** 40
 
 ### Application (5 modules)
 
@@ -44,12 +44,13 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (12 modules)
+### UI Components (13 modules)
 
 - **_modules.ui.api_docs_page**: Interactive API Documentation Page for Streamlit
 - **_modules.ui.billdozer_widget**: No description
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
-- **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial using Intro.js.
+- **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial using Streamlit Session State (No JavaScript).
+- **_modules.ui.guided_tour_old**: Guided Tour - Interactive tutorial using Intro.js.
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
