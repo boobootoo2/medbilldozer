@@ -155,10 +155,10 @@ def skip_tour():
 
 
 def run_guided_tour_runtime():
-    """Runs guided tour using Streamlit session state.  Call ONCE per rerun, AFTER main UI render."""
+    """Runs guided tour using Streamlit session state.  Call ONCE per rerun, from within sidebar context."""
     tour_active = st.session_state.get("tour_active", False)
     if not tour_active:
-        if st.sidebar.button("🚀 Start Guided Tour", key="manual_tour_start"):
+        if st.button("🚀 Start Guided Tour", key="manual_tour_start", use_container_width=True):
             activate_tour()
             st.rerun()
         return
@@ -166,36 +166,35 @@ def run_guided_tour_runtime():
     if not current_step:
         return
     
-    # Show tour in sidebar for natural sticky behavior
-    with st.sidebar:
-        st.markdown("---")
-        st.info(f"""
+    # Show tour (already in sidebar context from caller)
+    st.markdown("---")
+    st.info(f"""
 **Step {current_step.id} of {len(TOUR_STEPS)}: {current_step.title}**
 
 {current_step.description}
 """)
-        
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if current_step.id > 1:
-                if st.button("← Back", key="tour_back", use_container_width=True):
-                    previous_tour_step()
-                    st.rerun()
-        with col2:
-            if current_step.id < len(TOUR_STEPS):
-                if st.button("Next →", key="tour_next", use_container_width=True):
-                    advance_tour_step()
-                    st.rerun()
-            else:
-                if st.button("✓ Done", key="tour_done", use_container_width=True):
-                    complete_tour()
-                    st.rerun()
-        with col3:
-            if st.button("Skip", key="tour_skip", use_container_width=True):
-                skip_tour()
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if current_step.id > 1:
+            if st.button("← Back", key="tour_back", use_container_width=True):
+                previous_tour_step()
                 st.rerun()
-        
-        st.markdown("---")
+    with col2:
+        if current_step.id < len(TOUR_STEPS):
+            if st.button("Next →", key="tour_next", use_container_width=True):
+                advance_tour_step()
+                st.rerun()
+        else:
+            if st.button("✓ Done", key="tour_done", use_container_width=True):
+                complete_tour()
+                st.rerun()
+    with col3:
+        if st.button("Skip", key="tour_skip", use_container_width=True):
+            skip_tour()
+            st.rerun()
+    
+    st.markdown("---")
 
 
 def show_tour_step_hint(step_target: str):

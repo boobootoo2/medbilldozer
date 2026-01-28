@@ -1930,7 +1930,7 @@ Skip the tour.
 
 #### `run_guided_tour_runtime()`
 
-Runs guided tour using Streamlit session state.  Call ONCE per rerun, AFTER main UI render.
+Runs guided tour using Streamlit session state.  Call ONCE per rerun, from within sidebar context.
 
 #### `show_tour_step_hint(step_target)`
 
