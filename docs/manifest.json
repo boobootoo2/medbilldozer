@@ -35,8 +35,8 @@
       "name": "_modules.ui.profile_editor",
       "filepath": "_modules/ui/profile_editor.py",
       "has_docstring": true,
-      "num_classes": 6,
-      "num_functions": 32,
+      "num_classes": 7,
+      "num_functions": 35,
       "num_dependencies": 0,
       "constants": []
     },
@@ -45,7 +45,7 @@
       "filepath": "_modules/ui/health_profile.py",
       "has_docstring": true,
       "num_classes": 0,
-      "num_functions": 4,
+      "num_functions": 6,
       "num_dependencies": 0,
       "constants": [
         "SAMPLE_PROFILES"
@@ -455,7 +455,7 @@
       "has_docstring": true,
       "num_classes": 0,
       "num_functions": 1,
-      "num_dependencies": 18,
+      "num_dependencies": 19,
       "constants": []
     }
   ]

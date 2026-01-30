@@ -106,6 +106,23 @@ class ImportJob(TypedDict, total=False):
     error_message: Optional[str]
 
 
+class Receipt(TypedDict, total=False):
+    """Receipt tracking and management."""
+    receipt_id: str
+    file_name: str
+    document_fingerprint: str  # hash of content for identification
+    source_method: str  # upload, paste
+    file_type: str  # pdf, image, text
+    raw_content: str  # base64 for files, text for pasted
+    status: str  # review, pending_review, reconciled
+    amount: Optional[float]
+    date: Optional[str]
+    provider: Optional[str]
+    notes: str
+    created_at: str
+    updated_at: str
+
+
 # ==============================================================================
 # CONFIGURATION & FEATURE FLAGS
 # ==============================================================================
@@ -238,6 +255,121 @@ def save_line_items(items: List[NormalizedLineItem]) -> None:
     atomic_write_json(items_path, items)
 
 
+def load_receipts() -> List[Receipt]:
+    """Load receipts from disk, or return sample receipts if none exist."""
+    receipts_path = get_data_dir() / "receipts.json"
+    if receipts_path.exists():
+        with open(receipts_path, 'r') as f:
+            return json.load(f)
+    # Return sample receipts for demonstration if no receipts file exists
+    return SAMPLE_RECEIPTS.copy()
+
+
+def save_receipts(receipts: List[Receipt]) -> None:
+    """Save receipts to disk with atomic write."""
+    receipts_path = get_data_dir() / "receipts.json"
+    atomic_write_json(receipts_path, receipts)
+
+
+# Sample receipts for demonstration
+SAMPLE_RECEIPTS: List[Receipt] = [
+    {
+        'receipt_id': 'rcpt_sample_1',
+        'file_name': 'Dr_Smith_Office_Visit.pdf',
+        'document_fingerprint': 'a1b2c3d4e5f6',
+        'source_method': 'upload',
+        'file_type': 'pdf',
+        'raw_content': 'U2FtcGxlIFBERiBjb250ZW50IGZvciBEci4gU21pdGggb2ZmaWNlIHZpc2l0',  # Base64 encoded sample
+        'status': 'pending_review',
+        'amount': 150.00,
+        'date': '2026-01-15',
+        'provider': 'Dr. John Smith, MD',
+        'notes': 'Annual physical exam with lab work',
+        'created_at': '2026-01-15T10:30:00',
+        'updated_at': '2026-01-15T10:30:00'
+    },
+    {
+        'receipt_id': 'rcpt_sample_2',
+        'file_name': 'Pharmacy_Receipt_CVS.png',
+        'document_fingerprint': 'f6e5d4c3b2a1',
+        'source_method': 'upload',
+        'file_type': 'png',
+        'raw_content': 'U2FtcGxlIGltYWdlIGNvbnRlbnQgZm9yIHBoYXJtYWN5IHJlY2VpcHQ=',  # Base64 encoded sample
+        'status': 'reconciled',
+        'amount': 45.99,
+        'date': '2026-01-20',
+        'provider': 'CVS Pharmacy',
+        'notes': 'Prescription refill - Lisinopril 10mg',
+        'created_at': '2026-01-20T14:15:00',
+        'updated_at': '2026-01-22T09:00:00'
+    },
+    {
+        'receipt_id': 'rcpt_sample_3',
+        'file_name': 'Pasted_20260125_083045.txt',
+        'document_fingerprint': '9z8y7x6w5v4u',
+        'source_method': 'paste',
+        'file_type': 'text',
+        'raw_content': '''ABC Medical Center
+123 Health St, San Francisco, CA 94102
+Phone: (415) 555-0123
+
+RECEIPT
+
+Date: January 25, 2026
+Patient: John Doe
+DOB: 01/15/1980
+
+Service: X-Ray Imaging - Chest
+Procedure Code: 71020
+
+Amount Charged: $250.00
+Insurance Payment: $200.00
+Patient Responsibility: $50.00
+
+Payment received: $50.00 (Credit Card)
+
+Thank you for choosing ABC Medical Center.''',
+        'status': 'review',
+        'amount': 50.00,
+        'date': '2026-01-25',
+        'provider': 'ABC Medical Center',
+        'notes': '',
+        'created_at': '2026-01-25T08:30:45',
+        'updated_at': '2026-01-25T08:30:45'
+    },
+    {
+        'receipt_id': 'rcpt_sample_4',
+        'file_name': 'Lab_Results_Quest.pdf',
+        'document_fingerprint': '3u4v5w6x7y8z',
+        'source_method': 'upload',
+        'file_type': 'pdf',
+        'raw_content': 'U2FtcGxlIFBERiBjb250ZW50IGZvciBsYWIgcmVzdWx0cyBmcm9tIFF1ZXN0',  # Base64 encoded sample
+        'status': 'pending_review',
+        'amount': 89.50,
+        'date': '2026-01-10',
+        'provider': 'Quest Diagnostics',
+        'notes': 'Comprehensive metabolic panel and lipid panel',
+        'created_at': '2026-01-10T16:20:00',
+        'updated_at': '2026-01-10T16:20:00'
+    },
+    {
+        'receipt_id': 'rcpt_sample_5',
+        'file_name': 'Dental_Cleaning_Receipt.jpg',
+        'document_fingerprint': 'q1w2e3r4t5y6',
+        'source_method': 'upload',
+        'file_type': 'jpg',
+        'raw_content': 'U2FtcGxlIGltYWdlIGNvbnRlbnQgZm9yIGRlbnRhbCBjbGVhbmluZyByZWNlaXB0',  # Base64 encoded sample
+        'status': 'reconciled',
+        'amount': 125.00,
+        'date': '2026-01-05',
+        'provider': 'Bright Smile Dental',
+        'notes': 'Routine cleaning and exam. Next appointment scheduled for July 2026.',
+        'created_at': '2026-01-05T11:00:00',
+        'updated_at': '2026-01-28T10:15:00'
+    }
+]
+
+
 # ==============================================================================
 # SESSION STATE INITIALIZATION
 # ==============================================================================
@@ -269,6 +401,74 @@ def initialize_profile_state():
 def render_profile_overview():
     """Render profile overview page with quick stats and actions."""
     st.header("👤 Profile Overview")
+
+    # Import receipt uploader and sample profiles
+    from _modules.ui.health_profile import render_receipt_uploader, SAMPLE_PROFILES
+    
+    # Receipt Upload Section
+    st.markdown("---")
+    render_receipt_uploader()
+    
+    st.markdown("---")
+    
+    # Insurance Network Providers Display (automatically loaded)
+    st.subheader("🏥 Insurance Network Providers")
+    
+    # Display both policy holder and dependent profiles
+    profiles_to_display = [
+        ("policyholder", SAMPLE_PROFILES["policyholder"]),
+        ("dependent", SAMPLE_PROFILES["dependent"])
+    ]
+    
+    # Display providers for each subscriber
+    for idx, (profile_key, profile_data) in enumerate(profiles_to_display):
+        with st.expander(
+            f"👤 {profile_data['name']} ({profile_data['relationship']}) - {profile_data['insurance']['provider']}",
+            expanded=(idx == 0)  # First one (policy holder) expanded by default
+        ):
+            ins_data = profile_data['insurance']
+            
+            # Insurance summary
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f"**Member ID:** {ins_data['member_id']}")
+                st.markdown(f"**Plan Type:** {ins_data['plan_type']}")
+            with col2:
+                st.markdown(f"**Deductible:** ${ins_data['deductible_annual']:,.2f}")
+                st.markdown(f"**Met:** ${ins_data['deductible_met']:,.2f}")
+            with col3:
+                st.markdown(f"**OOP Max:** ${ins_data['oop_max']:,.2f}")
+                st.markdown(f"**Met:** ${ins_data['oop_met']:,.2f}")
+            
+            st.markdown("---")
+            
+            # Provider networks
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**✅ In-Network Providers**")
+                for provider in ins_data['in_network_providers']:
+                    st.markdown(f"• {provider}")
+            
+            with col2:
+                st.markdown("**⚠️ Out-of-Network Providers**")
+                for provider in ins_data['out_of_network_providers']:
+                    st.markdown(f"• {provider}")
+            
+            # Covered CPT codes sample
+            st.markdown("---")
+            st.markdown("**📋 Sample Covered Procedures (In-Network)**")
+            
+            # Show first 4 codes in a compact format
+            code_cols = st.columns(2)
+            for idx, code_info in enumerate(ins_data['in_network_codes'][:4]):
+                with code_cols[idx % 2]:
+                    st.markdown(
+                        f"**{code_info['code']}**: {code_info['description']} "
+                        f"(${code_info['accepted_fee']:.2f})"
+                    )
+    
+    st.markdown("---")
 
     profile = load_profile()
     plans = load_insurance_plans()
@@ -868,6 +1068,231 @@ def render_provider_form(providers: List[Provider]):
             if st.form_submit_button("❌ Cancel", use_container_width=True):
                 st.session_state.editing_provider_id = None
                 st.rerun()
+
+
+# ==============================================================================
+# RECEIPTS MANAGER
+# ==============================================================================
+
+
+def render_receipts_manager():
+    """Render receipts management interface with upload/paste and status table."""
+    import hashlib
+    import base64
+    
+    st.header("🧾 Receipt Manager")
+    
+    receipts = load_receipts()
+    
+    # Upload/Paste Section
+    st.subheader("Add New Receipt")
+    
+    tab1, tab2 = st.tabs(["📤 Upload File", "📋 Paste Text"])
+    
+    with tab1:
+        st.markdown("Upload receipt files (PDF, PNG, JPG)")
+        uploaded_files = st.file_uploader(
+            "Choose receipt files",
+            type=["pdf", "png", "jpg", "jpeg"],
+            accept_multiple_files=True,
+            key="receipt_file_uploader"
+        )
+        
+        if uploaded_files and st.button("💾 Save Uploaded Receipts", key="save_uploaded"):
+            for uploaded_file in uploaded_files:
+                # Read file content
+                file_bytes = uploaded_file.read()
+                
+                # Create document fingerprint (hash)
+                fingerprint = hashlib.md5(file_bytes).hexdigest()[:12]
+                
+                # Encode to base64 for storage
+                file_content = base64.b64encode(file_bytes).decode('utf-8')
+                
+                # Create receipt record
+                new_receipt: Receipt = {
+                    'receipt_id': f"rcpt_{datetime.utcnow().timestamp()}",
+                    'file_name': uploaded_file.name,
+                    'document_fingerprint': fingerprint,
+                    'source_method': 'upload',
+                    'file_type': uploaded_file.type.split('/')[-1] if uploaded_file.type else 'unknown',
+                    'raw_content': file_content,
+                    'status': 'pending_review',
+                    'amount': None,
+                    'date': None,
+                    'provider': None,
+                    'notes': '',
+                    'created_at': datetime.utcnow().isoformat(),
+                    'updated_at': datetime.utcnow().isoformat()
+                }
+                
+                receipts.append(new_receipt)
+            
+            save_receipts(receipts)
+            st.success(f"✅ {len(uploaded_files)} receipt(s) uploaded successfully!")
+            st.rerun()
+    
+    with tab2:
+        st.markdown("Paste receipt text or details")
+        
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            pasted_text = st.text_area(
+                "Paste receipt text",
+                height=200,
+                placeholder="Paste the text from your receipt here...",
+                key="receipt_paste_area"
+            )
+        
+        with col2:
+            st.write("**Optional Details**")
+            paste_amount = st.number_input("Amount ($)", min_value=0.0, step=0.01, key="paste_amount")
+            paste_provider = st.text_input("Provider", placeholder="Dr. Smith", key="paste_provider")
+        
+        if pasted_text and st.button("💾 Save Pasted Receipt", key="save_pasted"):
+            # Create document fingerprint (hash of text)
+            fingerprint = hashlib.md5(pasted_text.encode()).hexdigest()[:12]
+            
+            new_receipt: Receipt = {
+                'receipt_id': f"rcpt_{datetime.utcnow().timestamp()}",
+                'file_name': f"Pasted_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.txt",
+                'document_fingerprint': fingerprint,
+                'source_method': 'paste',
+                'file_type': 'text',
+                'raw_content': pasted_text,
+                'status': 'pending_review',
+                'amount': paste_amount if paste_amount > 0 else None,
+                'date': None,
+                'provider': paste_provider if paste_provider else None,
+                'notes': '',
+                'created_at': datetime.utcnow().isoformat(),
+                'updated_at': datetime.utcnow().isoformat()
+            }
+            
+            receipts.append(new_receipt)
+            save_receipts(receipts)
+            st.success("✅ Receipt text saved successfully!")
+            st.rerun()
+    
+    st.markdown("---")
+    
+    # Receipt Table
+    st.subheader("📋 Receipt Inventory")
+    
+    if not receipts:
+        st.info("📭 No receipts on file. Upload or paste a receipt to get started!")
+    else:
+        # Status filter
+        col1, col2, col3 = st.columns([2, 2, 1])
+        
+        with col1:
+            status_filter = st.multiselect(
+                "Filter by Status",
+                options=["review", "pending_review", "reconciled"],
+                default=["review", "pending_review", "reconciled"],
+                format_func=lambda x: {
+                    "review": "🛑 Review",
+                    "pending_review": "🟡 Pending Review",
+                    "reconciled": "✅ Reconciled"
+                }[x]
+            )
+        
+        with col2:
+            st.metric("Total Receipts", len(receipts))
+        
+        with col3:
+            if st.button("🔄 Refresh"):
+                st.rerun()
+        
+        # Filter receipts
+        filtered_receipts = [r for r in receipts if r['status'] in status_filter]
+        
+        st.write(f"**Showing {len(filtered_receipts)} of {len(receipts)} receipts**")
+        
+        # Display receipts table
+        for receipt in sorted(filtered_receipts, key=lambda x: x.get('created_at', ''), reverse=True):
+            status_emoji = {
+                "review": "🛑",
+                "pending_review": "🟡",
+                "reconciled": "✅"
+            }.get(receipt['status'], "⚪")
+            
+            status_label = {
+                "review": "Review",
+                "pending_review": "Pending Review",
+                "reconciled": "Reconciled"
+            }.get(receipt['status'], "Unknown")
+            
+            with st.expander(
+                f"{status_emoji} {receipt['file_name']} - {status_label}",
+                expanded=False
+            ):
+                col1, col2, col3 = st.columns([2, 2, 1])
+                
+                with col1:
+                    st.write(f"**Fingerprint:** `{receipt['document_fingerprint']}`")
+                    st.write(f"**Source:** {receipt['source_method'].title()}")
+                    st.write(f"**Type:** {receipt['file_type']}")
+                    st.write(f"**Created:** {receipt.get('created_at', '')[:10]}")
+                
+                with col2:
+                    st.write(f"**Amount:** ${receipt.get('amount', 0.0):.2f}" if receipt.get('amount') else "**Amount:** N/A")
+                    st.write(f"**Provider:** {receipt.get('provider', 'N/A')}")
+                    st.write(f"**Date:** {receipt.get('date', 'N/A')}")
+                
+                with col3:
+                    # Status change buttons
+                    new_status = st.selectbox(
+                        "Change Status",
+                        options=["review", "pending_review", "reconciled"],
+                        index=["review", "pending_review", "reconciled"].index(receipt['status']),
+                        format_func=lambda x: {
+                            "review": "🛑 Review",
+                            "pending_review": "🟡 Pending",
+                            "reconciled": "✅ Reconciled"
+                        }[x],
+                        key=f"status_{receipt['receipt_id']}"
+                    )
+                    
+                    if new_status != receipt['status']:
+                        if st.button("Update", key=f"update_{receipt['receipt_id']}"):
+                            receipt['status'] = new_status
+                            receipt['updated_at'] = datetime.utcnow().isoformat()
+                            save_receipts(receipts)
+                            st.success(f"Status updated to {new_status}")
+                            st.rerun()
+                
+                # Notes section
+                st.markdown("---")
+                notes = st.text_area(
+                    "Notes",
+                    value=receipt.get('notes', ''),
+                    height=100,
+                    key=f"notes_{receipt['receipt_id']}"
+                )
+                
+                col1, col2 = st.columns([1, 1])
+                
+                with col1:
+                    if st.button("💾 Save Notes", key=f"save_notes_{receipt['receipt_id']}"):
+                        receipt['notes'] = notes
+                        receipt['updated_at'] = datetime.utcnow().isoformat()
+                        save_receipts(receipts)
+                        st.success("Notes saved!")
+                        st.rerun()
+                
+                with col2:
+                    if st.button("🗑️ Delete", key=f"delete_{receipt['receipt_id']}"):
+                        receipts = [r for r in receipts if r['receipt_id'] != receipt['receipt_id']]
+                        save_receipts(receipts)
+                        st.success("Receipt deleted!")
+                        st.rerun()
+                
+                # Show content preview for text receipts
+                if receipt['source_method'] == 'paste':
+                    with st.expander("📄 View Content"):
+                        st.text(receipt.get('raw_content', '')[:500] + ('...' if len(receipt.get('raw_content', '')) > 500 else ''))
 
 
 # ==============================================================================
@@ -1600,7 +2025,8 @@ def render_profile_editor():
             'overview': '🏠 Overview',
             'identity': '👤 Identity',
             'insurance': '🏥 Insurance',
-            'providers': '👨‍⚕️ Providers'
+            'providers': '👨‍⚕️ Providers',
+            'receipts': '🧾 Receipts'
         }
 
         if is_importer_enabled():
@@ -1628,6 +2054,8 @@ def render_profile_editor():
         render_insurance_editor()
     elif page == 'providers':
         render_provider_editor()
+    elif page == 'receipts':
+        render_receipts_manager()
     elif page == 'importer':
         render_importer()
 

@@ -28,11 +28,13 @@ from _modules.ui.guided_tour import (
     initialize_tour_state,
     maybe_launch_tour,
 )
-# from _modules.ui.health_profile import (
-#     render_profile_selector,
-#     render_profile_details,
-#     get_profile_context_for_analysis,
-# )
+from _modules.ui.health_profile import (
+    render_profile_selector,
+    render_profile_details,
+    get_profile_context_for_analysis,
+    render_receipt_uploader,
+    get_uploaded_receipts_context,
+)
 from _modules.ui.ui import (
     render_provider_selector,
     render_analyze_button,
@@ -149,18 +151,6 @@ def main():
         render_doc_assistant()
 
     # --------------------------------------------------
-    # Health Profile (Optional)
-    # --------------------------------------------------
-    # st.markdown("---")
-    # selected_profile = render_profile_selector()
-
-    # if selected_profile:
-    #     render_profile_details(selected_profile)
-    #     st.info("💡 Profile loaded! The analysis will consider this patient's insurance and medical history.")
-
-    # st.markdown("---")
-
-    # --------------------------------------------------
     # Document input (UI ONCE)
     # --------------------------------------------------
     render_contextual_help('input')
@@ -169,21 +159,30 @@ def main():
     # Tour monitoring handled by Intro.js
 
     # --------------------------------------------------
-    # Analysis provider selector (user-facing)
+    # Provider Overview (Engine + Health Profile)
     # --------------------------------------------------
+    st.markdown("### 📊 Analysis Overview")
+    
     # Use config debug setting OR legacy runtime flag
     debug_mode = is_debug_enabled() or debug_enabled()
 
-    if debug_mode:
-        providers = ProviderRegistry.list()
-        selected_provider = render_provider_selector(providers)  # keep in debug for now
-    else:
-        engine_label = st.selectbox(
-            "Analysis Engine",
-            options=list(ENGINE_OPTIONS.keys()),
-            index=0,
-        )
-        selected_provider = ENGINE_OPTIONS[engine_label]
+    # Create columns for provider/engine and health profile
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        if debug_mode:
+            providers = ProviderRegistry.list()
+            selected_provider = render_provider_selector(providers)  # keep in debug for now
+        else:
+            engine_label = st.selectbox(
+                "Analysis Engine",
+                options=list(ENGINE_OPTIONS.keys()),
+                index=0,
+            )
+            selected_provider = ENGINE_OPTIONS[engine_label]
+    
+
+    st.markdown("---")
 
     if is_coverage_matrix_enabled():
         coverage_rows = build_coverage_matrix(documents)
@@ -223,18 +222,10 @@ def main():
     if selected_provider is None:
         selected_provider = "gpt-4o-mini"
 
-    # --------------------------------------------------
-    # Orchestrator (NO UI inside)
-    # --------------------------------------------------
-    # Get profile context if a profile is selected
-    profile_context = None
-    # if selected_profile:
-    #     profile_context = get_profile_context_for_analysis(selected_profile)
 
     agent = OrchestratorAgent(
         extractor_override=extractor_override,
-        analyzer_override=analyzer_override or selected_provider,
-        profile_context=profile_context,
+        analyzer_override=analyzer_override or selected_provider
     )
 
 
