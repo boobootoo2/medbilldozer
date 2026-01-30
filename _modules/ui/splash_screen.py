@@ -1005,7 +1005,7 @@ def render_splash_screen():
                 speechLayer.style.display = "none";
                 container.classList.remove("talking-left", "talking-right");
                 console.log("[Splash Widget] Message complete, waiting before next");
-                setTimeout(playNext, 300);
+                setTimeout(playNext, 1200);
             }, 3000);
         }
         
@@ -1039,14 +1039,61 @@ def render_splash_screen():
             getStartedBtn.addEventListener('click', function() {
                 console.log('[Splash Widget] 🚀 User clicked Get Started button');
                 
-                // Send message to parent Streamlit app
-                if (window.parent) {
-                    window.parent.postMessage({
-                        type: 'streamlit:setComponentValue',
-                        key: 'dismiss_splash',
-                        value: true
-                    }, '*');
-                    console.log('[Splash Widget] ✅ Sent dismiss message to parent');
+                // Find and click the Streamlit button in parent document
+                if (window.parent && window.parent.document) {
+                    const parentDoc = window.parent.document;
+                    
+                    // Try multiple selectors to find the button
+                    let hiddenButton = null;
+                    
+                    // Try 1: By aria-label
+                    hiddenButton = parentDoc.querySelector('button[aria-label="Get Started"]');
+                    if (hiddenButton) {
+                        console.log('[Splash Widget] ✅ Found button by aria-label');
+                    }
+                    
+                    // Try 2: By help text
+                    if (!hiddenButton) {
+                        hiddenButton = parentDoc.querySelector('button[title="Get Started"]');
+                        if (hiddenButton) {
+                            console.log('[Splash Widget] ✅ Found button by title');
+                        }
+                    }
+                    
+                    // Try 3: Find any button with the arrow icon text
+                    if (!hiddenButton) {
+                        const buttons = parentDoc.querySelectorAll('button[data-testid*="baseButton"]');
+                        for (let btn of buttons) {
+                            if (btn.textContent.trim() === '▶' || btn.textContent.includes('▶')) {
+                                hiddenButton = btn;
+                                console.log('[Splash Widget] ✅ Found button by icon text');
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Try 4: Find by class structure (column with button)
+                    if (!hiddenButton) {
+                        const buttons = parentDoc.querySelectorAll('button');
+                        console.log('[Splash Widget] 🔍 Searching through', buttons.length, 'buttons...');
+                        for (let btn of buttons) {
+                            const text = btn.textContent.trim();
+                            console.log('[Splash Widget] 🔍 Button text:', text);
+                            if (text === '▶') {
+                                hiddenButton = btn;
+                                console.log('[Splash Widget] ✅ Found button by exact match');
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (hiddenButton) {
+                        console.log('[Splash Widget] ✅ Clicking button...');
+                        hiddenButton.click();
+                        console.log('[Splash Widget] ✅ Button clicked successfully');
+                    } else {
+                        console.error('[Splash Widget] ❌ Could not find hidden button after all attempts');
+                    }
                 }
             });
         }
@@ -1062,38 +1109,26 @@ def render_splash_screen():
     </script>
     """, height=1000, scrolling=False)
 
-    # Check if dismiss was triggered from iframe
-    if 'splash_dismiss_clicked' not in st.session_state:
-        st.session_state.splash_dismiss_clicked = False
+    # Actual Streamlit button (positioned off-screen but functional)
+    # Using custom CSS to hide it visually but keep it in DOM for JavaScript
+    st.markdown("""
+        <style>
+        /* Hide the dismiss button container visually but keep in DOM */
+        div[data-testid="column"]:has(button[aria-label="Get Started"]) {
+            position: fixed !important;
+            left: -9999px !important;
+            top: -9999px !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        /* Make sure button itself is still clickable via JavaScript */
+        button[aria-label="Get Started"] {
+            pointer-events: auto !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
     
-    # Add a listener script to detect iframe messages
-    dismiss_check = components.html("""
-        <script>
-        (function() {
-            console.log('[Splash Listener] Initializing dismiss listener...');
-            
-            // Listen for messages from iframe
-            window.addEventListener('message', function(event) {
-                if (event.data && event.data.type === 'streamlit:setComponentValue') {
-                    if (event.data.key === 'dismiss_splash' && event.data.value === true) {
-                        console.log('[Splash Listener] ✅ Received dismiss signal from iframe');
-                        
-                        // Send value back to Streamlit using proper component communication
-                        window.parent.postMessage({
-                            isStreamlitMessage: true,
-                            type: 'streamlit:setComponentValue',
-                            value: true
-                        }, '*');
-                    }
-                }
-            });
-            
-            console.log('[Splash Listener] ✅ Listener ready');
-        })();
-        </script>
-    """, height=0, key="splash_dismiss_listener")
-    
-    # If dismiss signal received, dismiss and rerun
-    if dismiss_check:
+    # Create button with clear aria-label for JavaScript to find
+    if st.button("▶", key="dismiss_splash_btn", type="secondary", help="Get Started", use_container_width=False):
         dismiss_splash_screen()
         st.rerun()
