@@ -14,6 +14,7 @@ from _modules.ui.billdozer_widget import (
     install_billdozer_bridge,
     dispatch_widget_message,
 )
+from _modules.ui.audio_controls import is_audio_muted
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +112,9 @@ def render_splash_screen():
     """
     # Pre-generate audio files (will use cache if already exist)
     prepare_splash_audio()
+    
+    # Check if audio is muted
+    audio_muted = is_audio_muted()
     
     # Check which audio files are available and convert to base64 data URIs
     import json
@@ -345,8 +349,24 @@ def render_splash_screen():
                 
                 .splash-widget-container .billdozer_animation {
                     position: relative;
-                    width: 33.3333%;
                     height: 140px;
+                }
+                
+                .splash-widget-container .billdozer_animation:first-of-type {
+                    width: 20%;
+                }
+                
+                .splash-widget-container .billdozer_animation:nth-of-type(2) {
+                    width: 60%;
+                }
+                
+                .splash-widget-container .billdozer_animation:nth-of-type(2) img {
+                    width: 100px;
+                    height: auto;
+                }
+                
+                .splash-widget-container .billdozer_animation:nth-of-type(3) {
+                    width: 20%;
                 }
                 
                 .splash-widget-container .billdozer_animation img {
@@ -413,7 +433,7 @@ def render_splash_screen():
                     background: white;
                     border-radius: 10px;
                     padding: 8px 12px;
-                    font-size: 14px;
+                    font-size: 18px;
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
                     margin-bottom: 60px;
                     position: relative;
@@ -481,6 +501,53 @@ def render_splash_screen():
                 background: rgba(255, 255, 255, 0.7);
                 }
                 
+                /* Transcript Accordion */
+                .transcript-accordion {
+                    margin-top: 12px;
+                    text-align: center;
+                }
+                
+                .transcript-accordion summary {
+                    cursor: pointer;
+                    padding: 8px 16px;
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 8px;
+                    color: white;
+                    font-size: 14px;
+                    font-weight: 600;
+                    list-style: none;
+                    display: inline-block;
+                    transition: all 0.2s ease;
+                    user-select: none;
+                }
+                
+                .transcript-accordion summary::-webkit-details-marker {
+                    display: none;
+                }
+                
+                .transcript-accordion summary::before {
+                    content: '▶ ';
+                    display: inline-block;
+                    transition: transform 0.2s ease;
+                }
+                
+                .transcript-accordion[open] summary::before {
+                    transform: rotate(90deg);
+                }
+                
+                .transcript-accordion summary:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-color: rgba(255, 255, 255, 0.5);
+                }
+                
+                .transcript-accordion .transcript-content {
+                    margin-top: 12px;
+                    max-height: 70px;
+                    overflow-y: auto;
+                    text-align: center;
+                }
+                
                 /* Audio Enable Button */
                 .audio-enable-btn {
                     position: absolute;
@@ -513,6 +580,53 @@ def render_splash_screen():
                 @keyframes pulse {
                     0%, 100% { opacity: 1; }
                     50% { opacity: 0.7; }
+                }
+                
+                /* Transcript Accordion */
+                .transcript-accordion {
+                    margin-top: 12px;
+                    text-align: center;
+                }
+                
+                .transcript-accordion summary {
+                    cursor: pointer;
+                    padding: 8px 16px;
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 8px;
+                    color: white;
+                    font-size: 14px;
+                    font-weight: 600;
+                    list-style: none;
+                    display: inline-block;
+                    transition: all 0.2s ease;
+                    user-select: none;
+                }
+                
+                .transcript-accordion summary::-webkit-details-marker {
+                    display: none;
+                }
+                
+                .transcript-accordion summary::before {
+                    content: '▶ ';
+                    display: inline-block;
+                    transition: transform 0.2s ease;
+                }
+                
+                .transcript-accordion[open] summary::before {
+                    transform: rotate(90deg);
+                }
+                
+                .transcript-accordion summary:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-color: rgba(255, 255, 255, 0.5);
+                }
+                
+                .transcript-accordion .transcript-content {
+                    margin-top: 12px;
+                    max-height: 70px;
+                    overflow-y: auto;
+                    text-align: center;
                 }
 
 
@@ -549,8 +663,11 @@ def render_splash_screen():
             </div>
         </div>
 
-<div
-  id="splash-transcript"
+<details class="transcript-accordion">
+  <summary>Transcript</summary>
+  <div class="transcript-content">
+    <div
+      id="splash-transcript"
   role="region"
   aria-label="Billdozer spoken messages"
   style="
@@ -582,8 +699,9 @@ def render_splash_screen():
     <p class="transcript-line" data-index="2">
     Ready to see how easy it is to double-check your bills?
     </p>
-
     </div>
+  </div>
+</details>
 
     </div>
     </div>
@@ -606,8 +724,11 @@ def render_splash_screen():
         const audioFiles = """ + audio_files_json + """;
         console.log("[Splash Widget] Audio files:", audioFiles);
         
-        // Track if audio has been enabled
-        let audioEnabled = false;
+        // Track if audio has been enabled or muted (from Python config)
+        const audioMuted = """ + ("true" if audio_muted else "false") + """;
+        console.log("[Splash Widget] Audio muted:", audioMuted);
+        
+        let audioEnabled = !audioMuted;
         let audioBlockedDetected = false;
         const audioEnableBtn = document.getElementById('audio-enable-btn');
         
@@ -692,7 +813,7 @@ def render_splash_screen():
         console.log("[Splash Widget] Total audio elements created:", audioElements.filter(a => a !== null).length);
         
         const queue = [];
-        const maxChars = 40;
+        const maxChars = 70;
         
         rawMessages.forEach(({ character, message }, msgIndex) => {
             // Split message into words
@@ -764,8 +885,8 @@ def render_splash_screen():
                 });
             }
             
-            // Play audio only on first chunk of each message
-            if (isFirstChunk) {
+            // Play audio only on first chunk of each message (and if not muted)
+            if (isFirstChunk && !audioMuted) {
                 console.log(`[Splash Widget] First chunk of message ${audioIndex}`);
                 console.log(`[Splash Widget] Audio element exists?`, !!audioElements[audioIndex]);
                 console.log(`[Splash Widget] Audio element:`, audioElements[audioIndex]);

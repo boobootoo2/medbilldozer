@@ -66,14 +66,25 @@ Module dependencies within the project:
 - `_modules.data.fictional_entities`
 - `_modules.ingest.api`
 
+### `_modules.ui.audio_controls`
+
+**Depends on:**
+- `_modules.utils.config`
+
 ### `_modules.ui.doc_assistant`
 
 **Depends on:**
 - `_modules.utils.image_paths`
 
+### `_modules.ui.guided_tour`
+
+**Depends on:**
+- `_modules.ui.audio_controls`
+
 ### `_modules.ui.splash_screen`
 
 **Depends on:**
+- `_modules.ui.audio_controls`
 - `_modules.ui.billdozer_widget`
 
 ### `_modules.ui.ui`
@@ -95,6 +106,7 @@ Module dependencies within the project:
 - `_modules.providers.medgemma_hosted_provider`
 - `_modules.providers.openai_analysis_provider`
 - `_modules.ui.api_docs_page`
+- `_modules.ui.audio_controls`
 - `_modules.ui.billdozer_widget`
 - `_modules.ui.doc_assistant`
 - `_modules.ui.guided_tour`

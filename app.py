@@ -96,6 +96,11 @@ from _modules.ui.splash_screen import (
 
 from _modules.ui.api_docs_page import render_api_docs_page
 
+from _modules.ui.audio_controls import (
+    initialize_audio_state,
+    render_mute_button,
+)
+
 
 def check_access_password() -> bool:
     """Check if access password is required and validate user input.
@@ -304,11 +309,19 @@ def main():
     # Minimal Bootstrap (for all pages)
     # --------------------------------------------------
     bootstrap_ui_minimal()
+    
+    # --------------------------------------------------
+    # Audio Controls (initialize state)
+    # --------------------------------------------------
+    initialize_audio_state()
 
     # --------------------------------------------------
     # Page Navigation (sidebar - at top)
     # --------------------------------------------------
     with st.sidebar:
+        # Audio mute button at very top
+        render_mute_button()
+        
         # Guided Tour at top of sidebar
         if should_enable_guided_tour():
             run_guided_tour_runtime()

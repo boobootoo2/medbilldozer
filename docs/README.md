@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 40
+**Total Modules:** 41
 
 ### Application (5 modules)
 
@@ -44,9 +44,10 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (13 modules)
+### UI Components (14 modules)
 
 - **_modules.ui.api_docs_page**: Interactive API Documentation Page for Streamlit
+- **_modules.ui.audio_controls**: Audio Controls - Mute/unmute button for audio narration.
 - **_modules.ui.billdozer_widget**: No description
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
 - **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial using Streamlit Session State (No JavaScript).
