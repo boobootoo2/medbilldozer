@@ -10,6 +10,7 @@ from dataclasses import dataclass
 import os
 from pathlib import Path
 import logging
+from _modules.ui.audio_controls import is_audio_muted
 
 logger = logging.getLogger(__name__)
 
@@ -357,15 +358,17 @@ def run_guided_tour_runtime():
     # Show tour (already in sidebar context from caller)
     st.markdown("---")
     
-    # Audio narration (generate on-demand with caching)
-    audio_file = generate_audio_narration(current_step.id, current_step.narration)
-    if audio_file and audio_file.exists():
-        try:
-            st.audio(str(audio_file), format="audio/mp3", autoplay=True)
-        except Exception as e:
-            # Silently skip if audio playback fails - don't break the tour
-            logger.debug(f"Audio playback failed: {e}")
-            pass
+    # Audio narration (generate on-demand with caching, only if not muted)
+    audio_file = None
+    if not is_audio_muted():
+        audio_file = generate_audio_narration(current_step.id, current_step.narration)
+        if audio_file and audio_file.exists():
+            try:
+                st.audio(str(audio_file), format="audio/mp3", autoplay=True)
+            except Exception as e:
+                # Silently skip if audio playback fails - don't break the tour
+                logger.debug(f"Audio playback failed: {e}")
+                pass
     
     st.info(f"""
 **Step {current_step.id} of {len(TOUR_STEPS)}: {current_step.title}**

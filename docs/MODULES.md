@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 40
+**Total Modules:** 41
 
 ### Application (5 modules)
 
@@ -44,9 +44,10 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (13 modules)
+### UI Components (14 modules)
 
 - **_modules.ui.api_docs_page**: Interactive API Documentation Page for Streamlit
+- **_modules.ui.audio_controls**: Audio Controls - Mute/unmute button for audio narration.
 - **_modules.ui.billdozer_widget**: No description
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
 - **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial using Streamlit Session State (No JavaScript).
@@ -1757,6 +1758,72 @@ Render code examples in multiple languages
 - `_modules.data.fictional_entities`
 - `_modules.ingest.api`
 
+## Module: `_modules.ui.audio_controls`
+
+**Source:** `_modules/ui/audio_controls.py`
+
+### Description
+
+Audio Controls - Mute/unmute button for audio narration.
+
+Provides a persistent mute button that controls all audio playback
+across splash screen and guided tour.
+
+### Functions
+
+#### `initialize_audio_state()`
+
+Initialize audio state in session state.
+
+#### `is_audio_muted() -> bool`
+
+Check if audio is currently muted.
+
+Returns:
+    bool: True if audio is muted or disabled in config
+
+#### `toggle_mute()`
+
+Toggle audio mute state.
+
+#### `render_mute_button()`
+
+Render a floating mute/unmute button in the top-right corner.
+
+The button appears as a small icon button that persists across pages
+and controls all audio playback.
+
+#### `render_inline_mute_button()`
+
+Render an inline mute button (for use within other components).
+
+This is a smaller, more compact version suitable for embedding
+in other UI elements.
+
+#### `get_audio_enabled_for_javascript() -> str`
+
+Get audio enabled state as JavaScript boolean.
+
+Returns:
+    str: JavaScript boolean ('true' or 'false')
+
+#### `inject_audio_state_into_html(html) -> str`
+
+Inject audio mute state into HTML/JavaScript.
+
+Replaces placeholder {{AUDIO_ENABLED}} with actual state.
+
+Args:
+    html: HTML string with {{AUDIO_ENABLED}} placeholder
+    
+Returns:
+    str: HTML with audio state injected
+
+
+### Dependencies
+
+- `_modules.utils.config`
+
 ## Module: `_modules.ui.billdozer_widget`
 
 **Source:** `_modules/ui/billdozer_widget.py`
@@ -2016,6 +2083,10 @@ Resume a paused tour.
 
 Check if the tour is currently paused.
 
+
+### Dependencies
+
+- `_modules.ui.audio_controls`
 
 ## Module: `_modules.ui.guided_tour_old`
 
@@ -2503,6 +2574,7 @@ User can click dismiss button to proceed to main app.
 
 ### Dependencies
 
+- `_modules.ui.audio_controls`
 - `_modules.ui.billdozer_widget`
 
 ## Module: `_modules.ui.ui`
@@ -2950,6 +3022,22 @@ Check if guided tour feature is enabled.
 
 Check if privacy UI is enabled.
 
+#### `is_audio_enabled() -> bool`
+
+Check if audio narration is enabled.
+
+#### `is_audio_autoplay_enabled() -> bool`
+
+Check if audio autoplay is enabled.
+
+#### `should_show_mute_button() -> bool`
+
+Check if mute button should be shown in UI.
+
+#### `get_default_volume() -> float`
+
+Get default audio volume (0.0 to 1.0).
+
 #### `is_coverage_matrix_enabled() -> bool`
 
 Check if coverage matrix feature is enabled.
@@ -3155,6 +3243,7 @@ Orchestrates the complete workflow:
 - `_modules.providers.medgemma_hosted_provider`
 - `_modules.providers.openai_analysis_provider`
 - `_modules.ui.api_docs_page`
+- `_modules.ui.audio_controls`
 - `_modules.ui.billdozer_widget`
 - `_modules.ui.doc_assistant`
 - `_modules.ui.guided_tour`
