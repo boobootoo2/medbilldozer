@@ -324,6 +324,9 @@ def render_splash_screen():
     <button class="audio-enable-btn" id="audio-enable-btn">
         🔊 Enable Audio
     </button>
+    <button class="get-started-btn" id="get-started-btn">
+        Get Started 🚀
+    </button>
     <div class="splash-content">
         <div class="splash-title">
         <img src="https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/avatars/transparent/billy__eyes_open__billdozer_up.png" alt="Billy character with eyes open looking up" style="
@@ -530,6 +533,7 @@ def render_splash_screen():
                     content: '▶ ';
                     display: inline-block;
                     transition: transform 0.2s ease;
+                    margin-right: 8px;
                 }
                 
                 .transcript-accordion[open] summary::before {
@@ -552,24 +556,25 @@ def render_splash_screen():
                 .audio-enable-btn {
                     position: absolute;
                     top: 20px;
-                    right: 20px;
+                    right: 30px;
                     background: rgba(255, 255, 255, 0.2);
-                    border: 2px solid white;
+                    border: 3px solid white;
                     color: white;
-                    padding: 10px 20px;
-                    border-radius: 25px;
+                    border-radius: 50px;
                     cursor: pointer;
-                    font-size: 14px;
-                    font-weight: 600;
+                    font-size: 16px;
+                    font-weight: 700;
                     backdrop-filter: blur(10px);
                     transition: all 0.3s ease;
                     z-index: 10000;
                     display: none;
+                    height: 48px;
+                    box-sizing: border-box;
                 }
                 
                 .audio-enable-btn:hover {
                     background: rgba(255, 255, 255, 0.3);
-                    transform: scale(1.05);
+                    transform: translateY(-2px);
                 }
                 
                 .audio-enable-btn.show {
@@ -582,6 +587,51 @@ def render_splash_screen():
                     50% { opacity: 0.7; }
                 }
                 
+                /* Get Started Button */
+                .get-started-btn {
+                    position: absolute;
+                    top: 20px;
+                    left: 30px;
+                    background: white;
+                    border: 3px solid white;
+                    color: #667eea;
+                    border-radius: 50px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 700;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                    backdrop-filter: blur(10px);
+                    transition: all 0.3s ease;
+                    z-index: 10000;
+                    height: 48px;
+                    box-sizing: border-box;
+                }
+                
+                .get-started-btn:hover {
+                    background: #f0f0f0;
+                    transform: translateY(-2px);
+                    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+                }
+                
+                @media (max-width: 932px) and (orientation: landscape) {
+                    .get-started-btn {
+                        font-size: 14px;
+                        height: 40px;
+                    }
+                    .audio-enable-btn {
+                        font-size: 14px;
+                        height: 40px;
+                    }
+                }
+                
+                @media (max-width: 1024px) {
+                    .get-started-btn {
+                        top: 50px;
+                    }
+                    .audio-enable-btn {
+                        top: 50px;
+                    }
+                }
                 /* Transcript Accordion */
                 .transcript-accordion {
                     margin-top: 12px;
@@ -611,6 +661,7 @@ def render_splash_screen():
                     content: '▶ ';
                     display: inline-block;
                     transition: transform 0.2s ease;
+                    margin-right: 8px;
                 }
                 
                 .transcript-accordion[open] summary::before {
@@ -982,6 +1033,24 @@ def render_splash_screen():
             });
         }
         
+        // Get Started button click handler
+        const getStartedBtn = document.getElementById('get-started-btn');
+        if (getStartedBtn) {
+            getStartedBtn.addEventListener('click', function() {
+                console.log('[Splash Widget] 🚀 User clicked Get Started button');
+                
+                // Send message to parent Streamlit app
+                if (window.parent) {
+                    window.parent.postMessage({
+                        type: 'streamlit:setComponentValue',
+                        key: 'dismiss_splash',
+                        value: true
+                    }, '*');
+                    console.log('[Splash Widget] ✅ Sent dismiss message to parent');
+                }
+            });
+        }
+        
         // Start showing messages after a brief delay
         setTimeout(() => {
             console.log("[Splash Widget] Starting welcome message sequence");
@@ -993,44 +1062,38 @@ def render_splash_screen():
     </script>
     """, height=1000, scrolling=False)
 
-    # Style and render dismiss button positioned over splash screen
-    st.markdown("""
-        <style>
-        div[data-testid="stButton"] > button[kind="primary"] {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10000;
-            background: white !important;
-            color: #667eea !important;
-            font-size: 18px;
-            font-weight: 700;
-            padding: 16px 48px;
-            border-radius: 50px;
-            border: 3px solid white !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: auto;
-        }
-        div[data-testid="stButton"] > button[kind="primary"]:hover {
-            transform: translateX(-50%) translateY(-2px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-            background: #f0f0f0 !important;
-            width: auto;
-        }
-        
-
-        @media (max-width: 932px) and (orientation: landscape) {
-        div[data-testid="stButton"] > button[kind="primary"] {
-            bottom: 10px;
-        }
-        }
-
-        </style>
-    """, unsafe_allow_html=True)
+    # Check if dismiss was triggered from iframe
+    if 'splash_dismiss_clicked' not in st.session_state:
+        st.session_state.splash_dismiss_clicked = False
     
-    if st.button("Get Started 🚀", key="dismiss_splash_btn", type="primary"):
+    # Add a listener script to detect iframe messages
+    dismiss_check = components.html("""
+        <script>
+        (function() {
+            console.log('[Splash Listener] Initializing dismiss listener...');
+            
+            // Listen for messages from iframe
+            window.addEventListener('message', function(event) {
+                if (event.data && event.data.type === 'streamlit:setComponentValue') {
+                    if (event.data.key === 'dismiss_splash' && event.data.value === true) {
+                        console.log('[Splash Listener] ✅ Received dismiss signal from iframe');
+                        
+                        // Send value back to Streamlit using proper component communication
+                        window.parent.postMessage({
+                            isStreamlitMessage: true,
+                            type: 'streamlit:setComponentValue',
+                            value: true
+                        }, '*');
+                    }
+                }
+            });
+            
+            console.log('[Splash Listener] ✅ Listener ready');
+        })();
+        </script>
+    """, height=0, key="splash_dismiss_listener")
+    
+    # If dismiss signal received, dismiss and rerun
+    if dismiss_check:
         dismiss_splash_screen()
         st.rerun()
