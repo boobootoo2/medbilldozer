@@ -28,11 +28,11 @@ from _modules.ui.guided_tour import (
     initialize_tour_state,
     maybe_launch_tour,
 )
-from _modules.ui.health_profile import (
-    render_profile_selector,
-    render_profile_details,
-    get_profile_context_for_analysis,
-)
+# from _modules.ui.health_profile import (
+#     render_profile_selector,
+#     render_profile_details,
+#     get_profile_context_for_analysis,
+# )
 from _modules.ui.ui import (
     render_provider_selector,
     render_analyze_button,
@@ -151,14 +151,14 @@ def main():
     # --------------------------------------------------
     # Health Profile (Optional)
     # --------------------------------------------------
-    st.markdown("---")
-    selected_profile = render_profile_selector()
+    # st.markdown("---")
+    # selected_profile = render_profile_selector()
 
-    if selected_profile:
-        render_profile_details(selected_profile)
-        st.info("💡 Profile loaded! The analysis will consider this patient's insurance and medical history.")
+    # if selected_profile:
+    #     render_profile_details(selected_profile)
+    #     st.info("💡 Profile loaded! The analysis will consider this patient's insurance and medical history.")
 
-    st.markdown("---")
+    # st.markdown("---")
 
     # --------------------------------------------------
     # Document input (UI ONCE)
@@ -228,8 +228,8 @@ def main():
     # --------------------------------------------------
     # Get profile context if a profile is selected
     profile_context = None
-    if selected_profile:
-        profile_context = get_profile_context_for_analysis(selected_profile)
+    # if selected_profile:
+    #     profile_context = get_profile_context_for_analysis(selected_profile)
 
     agent = OrchestratorAgent(
         extractor_override=extractor_override,

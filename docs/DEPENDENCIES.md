@@ -146,7 +146,6 @@ Module dependencies within the project:
 - `_modules.ui.bootstrap`
 - `_modules.ui.doc_assistant`
 - `_modules.ui.guided_tour`
-- `_modules.ui.health_profile`
 - `_modules.ui.page_router`
 - `_modules.ui.privacy_ui`
 - `_modules.ui.splash_screen`
