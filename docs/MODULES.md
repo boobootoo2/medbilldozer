@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 41
+**Total Modules:** 46
 
 ### Application (5 modules)
 
@@ -14,8 +14,10 @@
 - **_modules.ingest.api**: Demo-Only Healthcare Data Ingestion API
 - **app**: MedBillDozer - Medical billing error detection application.
 
-### Core Business Logic (4 modules)
+### Core Business Logic (6 modules)
 
+- **_modules.core.analysis_runner**: Document analysis workflow runner and coordination.
+- **_modules.core.auth**: Authentication and access control for the application.
 - **_modules.core.coverage_matrix**: Cross-document coverage matrix builder.
 - **_modules.core.document_identity**: Document identity and labeling utilities.
 - **_modules.core.orchestrator_agent**: Main workflow orchestration for healthcare document analysis.
@@ -29,12 +31,13 @@
 - **_modules.extractors.local_heuristic_extractor**: Deterministic local heuristic fact extractor.
 - **_modules.extractors.openai_langextractor**: OpenAI-based LLM fact extractor and generic prompt runner.
 
-### LLM Providers (4 modules)
+### LLM Providers (5 modules)
 
 - **_modules.providers.gemini_analysis_provider**: Gemini-powered healthcare document analysis provider.
 - **_modules.providers.llm_interface**: Model-agnostic LLM interface for medBillDozer.
 - **_modules.providers.medgemma_hosted_provider**: MedGemma hosted model analysis provider.
 - **_modules.providers.openai_analysis_provider**: OpenAI-powered healthcare document analysis provider.
+- **_modules.providers.provider_registry**: Provider registration and management for LLM analysis providers.
 
 ### Prompt Builders (5 modules)
 
@@ -44,15 +47,17 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (14 modules)
+### UI Components (16 modules)
 
 - **_modules.ui.api_docs_page**: Interactive API Documentation Page for Streamlit
 - **_modules.ui.audio_controls**: Audio Controls - Mute/unmute button for audio narration.
 - **_modules.ui.billdozer_widget**: No description
+- **_modules.ui.bootstrap**: UI bootstrap and initialization functions.
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
 - **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial using Streamlit Session State (No JavaScript).
 - **_modules.ui.guided_tour_old**: Guided Tour - Interactive tutorial using Intro.js.
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
+- **_modules.ui.page_router**: Page navigation and routing for the application.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
 - **_modules.ui.splash_screen**: Splash Screen - Welcome screen with Billdozer introduction.
@@ -67,6 +72,78 @@
 - **_modules.utils.image_paths**: Image path utilities for handling local vs production CDN URLs.
 - **_modules.utils.runtime_flags**: Runtime flags and feature toggles.
 - **_modules.utils.serialization**: Serialization utilities for converting analysis objects to dicts.
+
+
+## Module: `_modules.core.analysis_runner`
+
+**Source:** `_modules/core/analysis_runner.py`
+
+### Description
+
+Document analysis workflow runner and coordination.
+
+### Functions
+
+#### `render_total_savings_summary(total_potential_savings, per_document_savings)`
+
+Render aggregate savings summary across all analyzed documents.
+
+Args:
+    total_potential_savings: Total potential savings amount
+    per_document_savings: Dict mapping document IDs to their savings amounts
+
+#### `run_document_analysis(documents, agent, analyze_clicked) -> Optional[Dict[str, Any]]`
+
+Run analysis on all documents and return aggregate results.
+
+Args:
+    documents: List of document dictionaries with raw_text
+    agent: Configured OrchestratorAgent instance
+    analyze_clicked: True if analysis was triggered by button click
+
+Returns:
+    Dict with total_savings, per_document_savings, and documents, or None if error
+
+#### `render_cached_results(documents, total_potential_savings, per_document_savings)`
+
+Render previously analyzed results from cache.
+
+Args:
+    documents: List of document dictionaries with analysis results
+    total_potential_savings: Total potential savings amount
+    per_document_savings: Dict mapping document IDs to their savings amounts
+
+
+### Dependencies
+
+- `_modules.core.coverage_matrix`
+- `_modules.core.document_identity`
+- `_modules.core.orchestrator_agent`
+- `_modules.core.transaction_normalization`
+- `_modules.ui.billdozer_widget`
+- `_modules.ui.doc_assistant`
+- `_modules.ui.ui`
+- `_modules.ui.ui_coverage_matrix`
+- `_modules.ui.ui_pipeline_dag`
+- `_modules.utils.config`
+- `_modules.utils.serialization`
+
+## Module: `_modules.core.auth`
+
+**Source:** `_modules/core/auth.py`
+
+### Description
+
+Authentication and access control for the application.
+
+### Functions
+
+#### `check_access_password() -> bool`
+
+Check if access password is required and validate user input.
+
+Returns:
+    bool: True if access is granted, False if password gate should be shown
 
 
 ## Module: `_modules.core.coverage_matrix`
@@ -1699,6 +1776,35 @@ OpenAI-powered analysis provider.
 
 - `_modules.providers.llm_interface`
 
+## Module: `_modules.providers.provider_registry`
+
+**Source:** `_modules/providers/provider_registry.py`
+
+### Description
+
+Provider registration and management for LLM analysis providers.
+
+### Constants
+
+- **`ENGINE_OPTIONS`**: `{'Smart (Recommended)': None, 'gpt-4o-mini': 'gpt-4o-mini', 'gemini-3-flash-preview': 'gemini-3-flash-preview', 'Local (Offline)': 'heuristic'}`
+
+### Functions
+
+#### `register_providers()`
+
+Register available LLM analysis providers.
+
+Attempts to register MedGemma, Gemini, and OpenAI providers.
+Only registers providers that pass health checks.
+
+
+### Dependencies
+
+- `_modules.providers.gemini_analysis_provider`
+- `_modules.providers.llm_interface`
+- `_modules.providers.medgemma_hosted_provider`
+- `_modules.providers.openai_analysis_provider`
+
 ## Module: `_modules.ui.api_docs_page`
 
 **Source:** `_modules/ui/api_docs_page.py`
@@ -1852,6 +1958,44 @@ Also stores message in session state transcript.
 
 Render billdozer widget in sidebar with bubble styling.
 
+
+## Module: `_modules.ui.bootstrap`
+
+**Source:** `_modules/ui/bootstrap.py`
+
+### Description
+
+UI bootstrap and initialization functions.
+
+### Functions
+
+#### `should_enable_guided_tour() -> bool`
+
+Check if guided tour should be enabled based on environment variable.
+
+Returns:
+    bool: True if tour should be enabled
+
+#### `bootstrap_ui_minimal()`
+
+Initialize minimal UI components for all pages.
+
+Sets up page configuration, CSS styles, and header.
+Should be called on all pages (home and profile).
+
+#### `bootstrap_home_page()`
+
+Initialize home page specific UI components.
+
+Renders demo documents and contextual help.
+Should only be called on the home page.
+
+
+### Dependencies
+
+- `_modules.ui.doc_assistant`
+- `_modules.ui.ui`
+- `_modules.utils.config`
 
 ## Module: `_modules.ui.doc_assistant`
 
@@ -2226,6 +2370,45 @@ Args:
 Returns:
     str: Formatted context string
 
+
+## Module: `_modules.ui.page_router`
+
+**Source:** `_modules/ui/page_router.py`
+
+### Description
+
+Page navigation and routing for the application.
+
+### Functions
+
+#### `render_page_navigation()`
+
+Render page navigation controls in the sidebar.
+
+Shows navigation buttons for Home, Profile (if enabled), and API pages.
+Also renders audio controls and guided tour if enabled.
+
+Returns:
+    str: Current page name ('home', 'profile', or 'api')
+
+#### `route_to_page(page) -> bool`
+
+Route to the specified page and render its content.
+
+Args:
+    page: Page name ('home', 'profile', or 'api')
+
+Returns:
+    bool: True if page was rendered (app should stop), False if should continue to home page
+
+
+### Dependencies
+
+- `_modules.ui.api_docs_page`
+- `_modules.ui.audio_controls`
+- `_modules.ui.bootstrap`
+- `_modules.ui.guided_tour`
+- `_modules.ui.profile_editor`
 
 ## Module: `_modules.ui.privacy_ui`
 
@@ -3169,54 +3352,7 @@ MedBillDozer - Medical billing error detection application.
 Main Streamlit application that orchestrates document analysis, provider registration,
 and UI rendering for detecting billing, pharmacy, dental, and insurance claim issues.
 
-### Constants
-
-- **`ENGINE_OPTIONS`**: `{'Smart (Recommended)': None, 'gpt-4o-mini': 'gpt-4o-mini', 'gemini-3-flash-preview': 'gemini-3-flash-preview', 'Local (Offline)': 'heuristic'}`
-
 ### Functions
-
-#### `check_access_password() -> bool`
-
-Check if access password is required and validate user input.
-
-Returns:
-    bool: True if access is granted, False if password gate should be shown
-
-#### `should_enable_guided_tour() -> bool`
-
-Check if guided tour should be enabled based on environment variable.
-
-Returns:
-    bool: True if tour should be enabled
-
-#### `render_total_savings_summary(total_potential_savings, per_document_savings)`
-
-Render aggregate savings summary across all analyzed documents.
-
-Args:
-    total_potential_savings: Total potential savings amount
-    per_document_savings: Dict mapping document IDs to their savings amounts
-
-#### `bootstrap_ui_minimal()`
-
-Initialize minimal UI components for all pages.
-
-Sets up page configuration, CSS styles, and header.
-Should be called on all pages (home and profile).
-
-#### `bootstrap_home_page()`
-
-Initialize home page specific UI components.
-
-Renders demo documents and contextual help.
-Should only be called on the home page.
-
-#### `register_providers()`
-
-Register available LLM analysis providers.
-
-Attempts to register MedGemma, Gemini, and OpenAI providers.
-Only registers providers that pass health checks.
 
 #### `main()`
 
@@ -3234,27 +3370,22 @@ Orchestrates the complete workflow:
 
 ### Dependencies
 
+- `_modules.core.analysis_runner`
+- `_modules.core.auth`
 - `_modules.core.coverage_matrix`
-- `_modules.core.document_identity`
 - `_modules.core.orchestrator_agent`
-- `_modules.core.transaction_normalization`
-- `_modules.providers.gemini_analysis_provider`
 - `_modules.providers.llm_interface`
-- `_modules.providers.medgemma_hosted_provider`
-- `_modules.providers.openai_analysis_provider`
-- `_modules.ui.api_docs_page`
+- `_modules.providers.provider_registry`
 - `_modules.ui.audio_controls`
-- `_modules.ui.billdozer_widget`
+- `_modules.ui.bootstrap`
 - `_modules.ui.doc_assistant`
 - `_modules.ui.guided_tour`
 - `_modules.ui.health_profile`
+- `_modules.ui.page_router`
 - `_modules.ui.privacy_ui`
-- `_modules.ui.profile_editor`
 - `_modules.ui.splash_screen`
 - `_modules.ui.ui`
 - `_modules.ui.ui_coverage_matrix`
 - `_modules.ui.ui_documents`
-- `_modules.ui.ui_pipeline_dag`
 - `_modules.utils.config`
 - `_modules.utils.runtime_flags`
-- `_modules.utils.serialization`

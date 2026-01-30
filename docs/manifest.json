@@ -1,7 +1,16 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 41,
+  "total_modules": 46,
   "modules": [
+    {
+      "name": "_modules.ui.bootstrap",
+      "filepath": "_modules/ui/bootstrap.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 3,
+      "num_dependencies": 3,
+      "constants": []
+    },
     {
       "name": "_modules.ui.doc_assistant",
       "filepath": "_modules/ui/doc_assistant.py",
@@ -90,6 +99,15 @@
       "constants": []
     },
     {
+      "name": "_modules.ui.page_router",
+      "filepath": "_modules/ui/page_router.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 2,
+      "num_dependencies": 5,
+      "constants": []
+    },
+    {
       "name": "_modules.ui.billdozer_widget",
       "filepath": "_modules/ui/billdozer_widget.py",
       "has_docstring": false,
@@ -138,6 +156,15 @@
       "constants": []
     },
     {
+      "name": "_modules.core.auth",
+      "filepath": "_modules/core/auth.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 1,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
       "name": "_modules.core.coverage_matrix",
       "filepath": "_modules/core/coverage_matrix.py",
       "has_docstring": true,
@@ -153,6 +180,15 @@
       "num_classes": 1,
       "num_functions": 5,
       "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.core.analysis_runner",
+      "filepath": "_modules/core/analysis_runner.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 3,
+      "num_dependencies": 11,
       "constants": []
     },
     {
@@ -207,6 +243,17 @@
       "num_functions": 0,
       "num_dependencies": 0,
       "constants": []
+    },
+    {
+      "name": "_modules.providers.provider_registry",
+      "filepath": "_modules/providers/provider_registry.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 1,
+      "num_dependencies": 4,
+      "constants": [
+        "ENGINE_OPTIONS"
+      ]
     },
     {
       "name": "_modules.providers.openai_analysis_provider",
@@ -407,11 +454,9 @@
       "filepath": "app.py",
       "has_docstring": true,
       "num_classes": 0,
-      "num_functions": 7,
-      "num_dependencies": 24,
-      "constants": [
-        "ENGINE_OPTIONS"
-      ]
+      "num_functions": 1,
+      "num_dependencies": 19,
+      "constants": []
     }
   ]
 }
