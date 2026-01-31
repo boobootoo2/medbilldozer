@@ -37,7 +37,7 @@ def bootstrap_ui_minimal():
 def bootstrap_home_page():
     """Initialize home page specific UI components.
 
-    Renders demo documents and contextual help.
+    Renders demo documents and contextual help for POC workflow.
     Should only be called on the home page.
     """
     # Skip demo help message when guided tour is active
