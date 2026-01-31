@@ -120,6 +120,16 @@ Module dependencies within the project:
 - `_modules.ui.guided_tour`
 - `_modules.ui.profile_editor`
 
+### `_modules.ui.prod_workflow`
+
+**Depends on:**
+- `_modules.utils.sanitize`
+
+### `_modules.ui.profile_editor`
+
+**Depends on:**
+- `_modules.utils.sanitize`
+
 ### `_modules.ui.splash_screen`
 
 **Depends on:**

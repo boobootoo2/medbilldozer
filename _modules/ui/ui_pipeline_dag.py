@@ -28,6 +28,10 @@ def create_pipeline_dag_container(document_id: Optional[str] = None):
         # Show initial plan outline
         with placeholder.container():
             st.markdown("### 📋 Analysis Plan")
+            # SECURITY: unsafe_allow_html=True is safe here because:
+            # - _build_initial_plan_html() returns predefined HTML structure
+            # - No user input in the plan HTML
+            # - Content is generated from static step definitions
             st.markdown(_build_initial_plan_html(), unsafe_allow_html=True)
 
     return expander, placeholder

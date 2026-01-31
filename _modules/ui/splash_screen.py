@@ -1136,6 +1136,10 @@ def render_splash_screen():
             pointer-events: auto !important;
         }
         </style>
+    # SECURITY: unsafe_allow_html=True is safe here because:
+    # - Static CSS for hiding splash screen button styling
+    # - No user input or dynamic content
+    # - Pure CSS styling rules only
     """, unsafe_allow_html=True)
     
     # Create button with clear aria-label for JavaScript to find

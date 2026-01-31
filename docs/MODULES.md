@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 47
+**Total Modules:** 48
 
 ### Application (5 modules)
 
@@ -67,11 +67,12 @@
 - **_modules.ui.ui_documents**: Document input and management UI.
 - **_modules.ui.ui_pipeline_dag**: Pipeline DAG Visualization - Visual representation of document analysis workflow.
 
-### Utilities (4 modules)
+### Utilities (5 modules)
 
 - **_modules.utils.config**: Application Configuration Manager.
 - **_modules.utils.image_paths**: Image path utilities for handling local vs production CDN URLs.
 - **_modules.utils.runtime_flags**: Runtime flags and feature toggles.
+- **_modules.utils.sanitize**: Sanitization utilities for user input to prevent XSS attacks.
 - **_modules.utils.serialization**: Serialization utilities for converting analysis objects to dicts.
 
 
@@ -2605,6 +2606,10 @@ to the session documents if they don't already exist (based on document ID).
 Render production workflow interface with preloaded documents.
 
 
+### Dependencies
+
+- `_modules.utils.sanitize`
+
 ## Module: `_modules.ui.profile_editor`
 
 **Source:** `_modules/ui/profile_editor.py`
@@ -2900,6 +2905,10 @@ Main entry point for profile editor interface.
 Provides navigation between different profile sections and
 the data importer wizard.
 
+
+### Dependencies
+
+- `_modules.utils.sanitize`
 
 ## Module: `_modules.ui.splash_screen`
 
@@ -3495,6 +3504,151 @@ Debug mode can be activated by adding ?debug=1 to the URL.
 
 Returns:
     bool: True if debug mode is enabled, False otherwise
+
+
+## Module: `_modules.utils.sanitize`
+
+**Source:** `_modules/utils/sanitize.py`
+
+### Description
+
+Sanitization utilities for user input to prevent XSS attacks.
+
+This module provides comprehensive input sanitization to protect against:
+- JavaScript injection
+- HTML injection
+- Script tag injection
+- Event handler injection
+- Data URI schemes
+- Other XSS attack vectors
+
+Use these functions before rendering any user-provided content in the UI.
+
+### Constants
+
+- **`SCRIPT_PATTERNS`**: `<complex value>`
+
+### Functions
+
+#### `sanitize_text(text, allow_newlines) -> str`
+
+Sanitize text input by removing dangerous patterns and escaping HTML.
+
+Args:
+    text: Input text to sanitize (will be converted to string)
+    allow_newlines: If True, preserves newline characters
+    
+Returns:
+    Sanitized text safe for display
+    
+Examples:
+    >>> sanitize_text("<script>alert('xss')</script>Hello")
+    "Hello"
+    >>> sanitize_text("Normal text with <b>tags</b>")
+    "Normal text with &lt;b&gt;tags&lt;/b&gt;"
+
+#### `sanitize_filename(filename) -> str`
+
+Sanitize filename to prevent path traversal and injection.
+
+Args:
+    filename: Filename to sanitize
+    
+Returns:
+    Safe filename with dangerous characters removed
+    
+Examples:
+    >>> sanitize_filename("../../etc/passwd")
+    "passwd"
+    >>> sanitize_filename("file<script>.txt")
+    "file.txt"
+
+#### `sanitize_html_content(content, max_length) -> str`
+
+Sanitize HTML content for safe display in text areas or code blocks.
+
+This is more aggressive than sanitize_text and suitable for
+displaying user-provided content that might contain HTML/code.
+
+Args:
+    content: Content to sanitize
+    max_length: Optional maximum length to truncate to
+    
+Returns:
+    Sanitized content safe for display
+
+#### `sanitize_dict(data, keys_to_sanitize) -> dict`
+
+Recursively sanitize dictionary values.
+
+Args:
+    data: Dictionary to sanitize
+    keys_to_sanitize: Optional list of keys to sanitize. If None, sanitizes all string values.
+    
+Returns:
+    Dictionary with sanitized values
+    
+Examples:
+    >>> sanitize_dict({"name": "<script>alert(1)</script>John", "age": 30})
+    {"name": "John", "age": 30}
+
+#### `sanitize_for_markdown(text) -> str`
+
+Sanitize text for safe use in Streamlit markdown with unsafe_allow_html=True.
+
+This is the most restrictive sanitization and should be used when
+rendering user content in markdown with HTML enabled.
+
+Args:
+    text: Text to sanitize
+    
+Returns:
+    Sanitized text safe for markdown with HTML
+
+#### `sanitize_provider_name(name) -> str`
+
+Sanitize provider/user names for display.
+
+Args:
+    name: Name to sanitize
+    
+Returns:
+    Sanitized name
+
+#### `sanitize_amount(amount) -> float`
+
+Sanitize and validate amount values.
+
+Args:
+    amount: Amount to sanitize
+    
+Returns:
+    Float value, 0.0 if invalid
+
+#### `sanitize_date(date) -> str`
+
+Sanitize date strings.
+
+Args:
+    date: Date to sanitize
+    
+Returns:
+    Sanitized date string or "N/A"
+
+#### `safe_format(template) -> str`
+
+Safely format a string template with sanitized user inputs.
+
+Args:
+    template: Format string
+    **kwargs: Values to format (will be sanitized)
+    
+Returns:
+    Formatted string with sanitized values
+    
+Examples:
+    >>> safe_format("Hello {name}!", name="<script>alert(1)</script>John")
+    "Hello John!"
 
 
 ## Module: `_modules.utils.serialization`

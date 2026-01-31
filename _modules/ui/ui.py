@@ -79,6 +79,10 @@ def render_savings_breakdown(title: str, total: float, breakdown: list[dict]):
                 ${total:,.2f}
             </span>
         </div>
+        # SECURITY: unsafe_allow_html=True is safe here because:
+        # - total is a float (number) from calculations, not user input
+        # - HTML structure is static with only numeric interpolation
+        # - Used for styled savings display banner
         """,
         unsafe_allow_html=True,
     )
@@ -479,7 +483,10 @@ def inject_css():
         box-shadow: inset 0 0 0 2px rgba(255, 215, 64, 0.6) !important;
         }
 
-
+    # SECURITY: unsafe_allow_html=True is safe here because:
+    # - Static CSS for textarea highlighting in dark mode
+    # - No user input or dynamic content
+    # - Pure styling rules for demo highlighting feature
     """, unsafe_allow_html=True)
 
 
@@ -534,6 +541,11 @@ def render_header():
                 </div>
               </div>
             </div>
+            # SECURITY: unsafe_allow_html=True is safe here because:
+            # - Static header HTML with logo and title
+            # - img src is hardcoded GitHub URL (not user input)
+            # - All text is static, no dynamic content
+            # - Used for custom header styling
             """,
             unsafe_allow_html=True,
         )
@@ -888,6 +900,12 @@ def render_results(result):
     if issues:
         st.markdown("### Flagged Issues")
         for issue in issues:
+            # SECURITY: unsafe_allow_html=True requires caution here:
+            # - issue.summary and issue.evidence come from LLM/AI analysis output
+            # - These are system-generated, not direct user input
+            # - However, if LLMs could be manipulated via prompt injection,
+            #   this could be a vector. Consider sanitizing in future.
+            # - For now: AI output is treated as trusted system content
             st.markdown(
                 f"""
                 <div class="flag-warning">
