@@ -81,6 +81,107 @@ SAMPLE_IMPORTED_LINE_ITEMS = [
     }
 ]
 
+# Sample insurance plan document (for demo)
+SAMPLE_INSURANCE_PLAN_DOCUMENT = {
+    'plan_id': 'PLAN-DEMO-001',
+    'plan_name': 'Horizon PPO Plus',
+    'carrier': 'Horizon Blue Cross Blue Shield',
+    'member_id': 'HPP-8743920',
+    'group_number': 'GRP-55512',
+    'effective_date': '2026-01-01',
+    'plan_year': '2026',
+    'network_type': 'PPO',
+    
+    # Coverage details
+    'deductible_individual': 1500.00,
+    'deductible_family': 3000.00,
+    'deductible_met_individual': 450.00,
+    'deductible_met_family': 450.00,
+    
+    'out_of_pocket_max_individual': 5000.00,
+    'out_of_pocket_max_family': 10000.00,
+    'out_of_pocket_met_individual': 1250.00,
+    'out_of_pocket_met_family': 1250.00,
+    
+    # Copays and coinsurance
+    'copay_primary_care': 30.00,
+    'copay_specialist': 60.00,
+    'copay_urgent_care': 75.00,
+    'copay_emergency_room': 250.00,
+    'copay_generic_rx': 10.00,
+    'copay_brand_rx': 35.00,
+    
+    'coinsurance_in_network': 0.20,  # 20% after deductible
+    'coinsurance_out_of_network': 0.40,  # 40% after deductible
+    
+    # Eligible expenses with in/out-of-network prices
+    'eligible_services': [
+        {
+            'procedure_code': '99213',
+            'description': 'Office Visit - Established Patient (15-29 min)',
+            'in_network_allowed': 150.00,
+            'out_of_network_allowed': 120.00,
+            'typical_billed': 200.00,
+            'subject_to_deductible': True,
+            'copay_applies': True
+        },
+        {
+            'procedure_code': '99214',
+            'description': 'Office Visit - Established Patient (30-39 min)',
+            'in_network_allowed': 220.00,
+            'out_of_network_allowed': 176.00,
+            'typical_billed': 280.00,
+            'subject_to_deductible': True,
+            'copay_applies': True
+        },
+        {
+            'procedure_code': '80053',
+            'description': 'Comprehensive Metabolic Panel',
+            'in_network_allowed': 120.00,
+            'out_of_network_allowed': 96.00,
+            'typical_billed': 180.00,
+            'subject_to_deductible': True,
+            'copay_applies': False
+        },
+        {
+            'procedure_code': '45378',
+            'description': 'Colonoscopy, Diagnostic',
+            'in_network_allowed': 1400.00,
+            'out_of_network_allowed': 1120.00,
+            'typical_billed': 2500.00,
+            'subject_to_deductible': True,
+            'copay_applies': False
+        },
+        {
+            'procedure_code': '70553',
+            'description': 'MRI Brain without and with contrast',
+            'in_network_allowed': 2200.00,
+            'out_of_network_allowed': 1760.00,
+            'typical_billed': 3500.00,
+            'subject_to_deductible': True,
+            'copay_applies': False
+        },
+        {
+            'procedure_code': 'D0120',
+            'description': 'Periodic Oral Evaluation',
+            'in_network_allowed': 70.00,
+            'out_of_network_allowed': 56.00,
+            'typical_billed': 85.00,
+            'subject_to_deductible': False,
+            'copay_applies': True
+        },
+        {
+            'procedure_code': 'D0220',
+            'description': 'Intraoral Periapical X-ray - First Film',
+            'in_network_allowed': 35.00,
+            'out_of_network_allowed': 28.00,
+            'typical_billed': 50.00,
+            'subject_to_deductible': False,
+            'copay_applies': True
+        }
+    ]
+}
+
 # Sample preloaded documents
 PRELOADED_DOCUMENTS: List[ProfileDocument] = [
     # Policy Holder Documents
@@ -536,14 +637,103 @@ Line Item ID: {item.get('line_item_id', 'N/A')}""",
         return []
 
 
+def load_insurance_plan_as_document() -> Optional[ProfileDocument]:
+    """Load insurance plan document showing eligible expenses and network pricing.
+    
+    Creates a comprehensive plan document that displays coverage details,
+    copays, deductibles, and in/out-of-network allowed amounts for procedures.
+    """
+    try:
+        # Get the active profile ID from session state (default to PH-001)
+        active_profile = st.session_state.get('selected_profile_id', 'PH-001')
+        active_profile_name = st.session_state.get('selected_profile_name', 'John Sample')
+        
+        plan = SAMPLE_INSURANCE_PLAN_DOCUMENT
+        
+        # Build eligible services table
+        services_table = []
+        for svc in plan['eligible_services']:
+            services_table.append(
+                f"  {svc['procedure_code']:8} | {svc['description']:45} | "
+                f"In: ${svc['in_network_allowed']:7.2f} | Out: ${svc['out_of_network_allowed']:7.2f} | "
+                f"Typical: ${svc['typical_billed']:7.2f}"
+            )
+        
+        plan_doc: ProfileDocument = {
+            'doc_id': 'DOC-PLAN-001',
+            'profile_id': active_profile,
+            'profile_name': active_profile_name,
+            'doc_type': 'insurance_eob',
+            'provider': plan['carrier'],
+            'service_date': plan['effective_date'],
+            'amount': 0.0,  # Plan document, no amount owed
+            'flagged': False,
+            'status': 'completed',  # Reference document, already processed
+            'content': f"""INSURANCE PLAN DOCUMENT - {plan['plan_name']}
+
+Carrier: {plan['carrier']}
+Plan Type: {plan['network_type']}
+Member ID: {plan['member_id']}
+Group Number: {plan['group_number']}
+Plan Year: {plan['plan_year']}
+Effective Date: {plan['effective_date']}
+
+DEDUCTIBLE:
+Individual: ${plan['deductible_individual']:.2f} (Met: ${plan['deductible_met_individual']:.2f})
+Family:     ${plan['deductible_family']:.2f} (Met: ${plan['deductible_met_family']:.2f})
+
+OUT-OF-POCKET MAXIMUM:
+Individual: ${plan['out_of_pocket_max_individual']:.2f} (Met: ${plan['out_of_pocket_met_individual']:.2f})
+Family:     ${plan['out_of_pocket_max_family']:.2f} (Met: ${plan['out_of_pocket_met_family']:.2f})
+
+COPAYS:
+Primary Care:   ${plan['copay_primary_care']:.2f}
+Specialist:     ${plan['copay_specialist']:.2f}
+Urgent Care:    ${plan['copay_urgent_care']:.2f}
+Emergency Room: ${plan['copay_emergency_room']:.2f}
+Generic Rx:     ${plan['copay_generic_rx']:.2f}
+Brand Rx:       ${plan['copay_brand_rx']:.2f}
+
+COINSURANCE:
+In-Network:     {plan['coinsurance_in_network'] * 100:.0f}% (after deductible)
+Out-of-Network: {plan['coinsurance_out_of_network'] * 100:.0f}% (after deductible)
+
+ELIGIBLE EXPENSES - APPROVED PRICES:
+(Shows in-network vs out-of-network allowed amounts)
+
+  Code     | Description                                   | In-Network  | Out-Network | Typical Bill
+  ---------|-----------------------------------------------|-------------|-------------|-------------
+{chr(10).join(services_table)}
+
+NOTE: Charges above allowed amounts are not eligible for reimbursement.
+Out-of-network providers may balance bill the difference.""",
+            'action': None,
+            'action_notes': '',
+            'action_date': None,
+        }
+        
+        return plan_doc
+        
+    except Exception as e:
+        # Error creating plan document
+        st.warning(f"Could not load insurance plan: {e}")
+        return None
+
+
 def initialize_prod_workflow_state():
     """Initialize session state for production workflow documents.
     
-    Combines preloaded sample documents, receipts, and imported line items from the profile editor.
+    Combines preloaded sample documents, receipts, imported line items, 
+    and insurance plan document from the profile editor.
     """
     if 'prod_workflow_documents' not in st.session_state:
         # Deep copy the preloaded documents to session state
         all_docs = copy.deepcopy(PRELOADED_DOCUMENTS)
+        
+        # Add insurance plan document (reference)
+        plan_doc = load_insurance_plan_as_document()
+        if plan_doc:
+            all_docs.append(plan_doc)
         
         # Add receipts from profile editor
         receipt_docs = load_receipts_as_documents()

@@ -103,10 +103,11 @@
       "filepath": "_modules/ui/prod_workflow.py",
       "has_docstring": true,
       "num_classes": 1,
-      "num_functions": 12,
+      "num_functions": 13,
       "num_dependencies": 0,
       "constants": [
-        "SAMPLE_IMPORTED_LINE_ITEMS"
+        "SAMPLE_IMPORTED_LINE_ITEMS",
+        "SAMPLE_INSURANCE_PLAN_DOCUMENT"
       ]
     },
     {

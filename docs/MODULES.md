@@ -2474,6 +2474,7 @@ and parallel analysis capabilities.
 ### Constants
 
 - **`SAMPLE_IMPORTED_LINE_ITEMS`**: `[{'line_item_id': 'item_demo_001', 'import_job_id': 'job_demo_001', 'service_date': '2026-01-15', 'procedure_code': '99213', 'procedure_description': 'Office Visit - Established Patient', 'provider_name': 'Dr. Sarah Mitchell', 'provider_npi': '1234567890', 'billed_amount': 200.0, 'allowed_amount': 150.0, 'paid_by_insurance': 120.0, 'patient_responsibility': 30.0, 'claim_number': 'CLM-2026-001', 'created_at': '2026-01-20T10:00:00Z'}, {'line_item_id': 'item_demo_002', 'import_job_id': 'job_demo_001', 'service_date': '2026-01-18', 'procedure_code': '80053', 'procedure_description': 'Comprehensive Metabolic Panel', 'provider_name': 'Quest Diagnostics', 'provider_npi': '9876543210', 'billed_amount': 180.0, 'allowed_amount': 120.0, 'paid_by_insurance': 96.0, 'patient_responsibility': 24.0, 'claim_number': 'CLM-2026-002', 'created_at': '2026-01-20T10:00:00Z'}, {'line_item_id': 'item_demo_003', 'import_job_id': 'job_demo_002', 'service_date': '2026-01-22', 'procedure_code': 'D0120', 'procedure_description': 'Periodic Oral Evaluation', 'provider_name': 'Bright Smiles Dental', 'provider_npi': '5555555555', 'billed_amount': 85.0, 'allowed_amount': 70.0, 'paid_by_insurance': 56.0, 'patient_responsibility': 14.0, 'claim_number': 'CLM-2026-003', 'created_at': '2026-01-23T14:30:00Z'}]`
+- **`SAMPLE_INSURANCE_PLAN_DOCUMENT`**: `{'plan_id': 'PLAN-DEMO-001', 'plan_name': 'Horizon PPO Plus', 'carrier': 'Horizon Blue Cross Blue Shield', 'member_id': 'HPP-8743920', 'group_number': 'GRP-55512', 'effective_date': '2026-01-01', 'plan_year': '2026', 'network_type': 'PPO', 'deductible_individual': 1500.0, 'deductible_family': 3000.0, 'deductible_met_individual': 450.0, 'deductible_met_family': 450.0, 'out_of_pocket_max_individual': 5000.0, 'out_of_pocket_max_family': 10000.0, 'out_of_pocket_met_individual': 1250.0, 'out_of_pocket_met_family': 1250.0, 'copay_primary_care': 30.0, 'copay_specialist': 60.0, 'copay_urgent_care': 75.0, 'copay_emergency_room': 250.0, 'copay_generic_rx': 10.0, 'copay_brand_rx': 35.0, 'coinsurance_in_network': 0.2, 'coinsurance_out_of_network': 0.4, 'eligible_services': [{'procedure_code': '99213', 'description': 'Office Visit - Established Patient (15-29 min)', 'in_network_allowed': 150.0, 'out_of_network_allowed': 120.0, 'typical_billed': 200.0, 'subject_to_deductible': True, 'copay_applies': True}, {'procedure_code': '99214', 'description': 'Office Visit - Established Patient (30-39 min)', 'in_network_allowed': 220.0, 'out_of_network_allowed': 176.0, 'typical_billed': 280.0, 'subject_to_deductible': True, 'copay_applies': True}, {'procedure_code': '80053', 'description': 'Comprehensive Metabolic Panel', 'in_network_allowed': 120.0, 'out_of_network_allowed': 96.0, 'typical_billed': 180.0, 'subject_to_deductible': True, 'copay_applies': False}, {'procedure_code': '45378', 'description': 'Colonoscopy, Diagnostic', 'in_network_allowed': 1400.0, 'out_of_network_allowed': 1120.0, 'typical_billed': 2500.0, 'subject_to_deductible': True, 'copay_applies': False}, {'procedure_code': '70553', 'description': 'MRI Brain without and with contrast', 'in_network_allowed': 2200.0, 'out_of_network_allowed': 1760.0, 'typical_billed': 3500.0, 'subject_to_deductible': True, 'copay_applies': False}, {'procedure_code': 'D0120', 'description': 'Periodic Oral Evaluation', 'in_network_allowed': 70.0, 'out_of_network_allowed': 56.0, 'typical_billed': 85.0, 'subject_to_deductible': False, 'copay_applies': True}, {'procedure_code': 'D0220', 'description': 'Intraoral Periapical X-ray - First Film', 'in_network_allowed': 35.0, 'out_of_network_allowed': 28.0, 'typical_billed': 50.0, 'subject_to_deductible': False, 'copay_applies': True}]}`
 
 ### Classes
 
@@ -2566,11 +2567,19 @@ Integrates imported data from insurance EOBs and provider bills into the product
 Each line item becomes a separate document for analysis.
 If no actual imports exist, uses sample data for demonstration.
 
+#### `load_insurance_plan_as_document() -> Optional[ProfileDocument]`
+
+Load insurance plan document showing eligible expenses and network pricing.
+
+Creates a comprehensive plan document that displays coverage details,
+copays, deductibles, and in/out-of-network allowed amounts for procedures.
+
 #### `initialize_prod_workflow_state()`
 
 Initialize session state for production workflow documents.
 
-Combines preloaded sample documents, receipts, and imported line items from the profile editor.
+Combines preloaded sample documents, receipts, imported line items, 
+and insurance plan document from the profile editor.
 
 #### `get_session_documents() -> List[ProfileDocument]`
 
