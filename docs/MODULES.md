@@ -2471,6 +2471,10 @@ Provides a production-style interface where documents are preloaded based on
 the selected health profile (policy holder or dependent), with status tracking
 and parallel analysis capabilities.
 
+### Constants
+
+- **`SAMPLE_IMPORTED_LINE_ITEMS`**: `[{'line_item_id': 'item_demo_001', 'import_job_id': 'job_demo_001', 'service_date': '2026-01-15', 'procedure_code': '99213', 'procedure_description': 'Office Visit - Established Patient', 'provider_name': 'Dr. Sarah Mitchell', 'provider_npi': '1234567890', 'billed_amount': 200.0, 'allowed_amount': 150.0, 'paid_by_insurance': 120.0, 'patient_responsibility': 30.0, 'claim_number': 'CLM-2026-001', 'created_at': '2026-01-20T10:00:00Z'}, {'line_item_id': 'item_demo_002', 'import_job_id': 'job_demo_001', 'service_date': '2026-01-18', 'procedure_code': '80053', 'procedure_description': 'Comprehensive Metabolic Panel', 'provider_name': 'Quest Diagnostics', 'provider_npi': '9876543210', 'billed_amount': 180.0, 'allowed_amount': 120.0, 'paid_by_insurance': 96.0, 'patient_responsibility': 24.0, 'claim_number': 'CLM-2026-002', 'created_at': '2026-01-20T10:00:00Z'}, {'line_item_id': 'item_demo_003', 'import_job_id': 'job_demo_002', 'service_date': '2026-01-22', 'procedure_code': 'D0120', 'procedure_description': 'Periodic Oral Evaluation', 'provider_name': 'Bright Smiles Dental', 'provider_npi': '5555555555', 'billed_amount': 85.0, 'allowed_amount': 70.0, 'paid_by_insurance': 56.0, 'patient_responsibility': 14.0, 'claim_number': 'CLM-2026-003', 'created_at': '2026-01-23T14:30:00Z'}]`
+
 ### Classes
 
 #### `ProfileDocument`
@@ -2499,7 +2503,7 @@ Document associated with a health profile.
 
 #### `get_documents_for_profile(profile_id) -> List[ProfileDocument]`
 
-Get all documents for a specific profile.
+Get all documents for a specific profile from session state.
 
 Args:
     profile_id: Profile ID (e.g., 'PH-001', 'DEP-001')
@@ -2546,6 +2550,46 @@ Args:
     
 Returns:
     CSV formatted string
+
+#### `load_receipts_as_documents() -> List[ProfileDocument]`
+
+Load receipts from profile editor and convert to ProfileDocument format.
+
+Integrates receipts uploaded via the profile editor into the production workflow.
+Receipts are converted to ProfileDocument format and assigned to the active profile.
+
+#### `load_imported_line_items_as_documents() -> List[ProfileDocument]`
+
+Load imported line items from Profile Editor and convert to ProfileDocument format.
+
+Integrates imported data from insurance EOBs and provider bills into the production workflow.
+Each line item becomes a separate document for analysis.
+If no actual imports exist, uses sample data for demonstration.
+
+#### `initialize_prod_workflow_state()`
+
+Initialize session state for production workflow documents.
+
+Combines preloaded sample documents, receipts, and imported line items from the profile editor.
+
+#### `get_session_documents() -> List[ProfileDocument]`
+
+Get documents from session state, initializing if needed.
+
+#### `update_session_document(doc_id, updates)`
+
+Update a specific document in session state.
+
+Args:
+    doc_id: Document ID to update
+    updates: Dictionary of fields to update
+
+#### `reload_receipts_into_session()`
+
+Reload receipts and imported items from profile editor into session state.
+
+This function checks for new receipts and imported line items, adding them 
+to the session documents if they don't already exist (based on document ID).
 
 #### `render_prod_workflow()`
 
