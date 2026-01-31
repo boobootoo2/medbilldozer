@@ -53,6 +53,10 @@ def render_mute_button():
     tooltip = "Unmute audio" if muted else "Mute audio"
     
     # Inject CSS for floating button
+    # SECURITY: unsafe_allow_html=True is safe here because:
+    # - Contains only static CSS for styling - no executable code
+    # - No user input or dynamic content
+    # - Pure styling for floating mute button positioning
     st.markdown("""
         <style>
         .audio-mute-button {

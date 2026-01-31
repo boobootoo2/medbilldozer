@@ -282,7 +282,7 @@ def render_splash_screen():
         padding: 1.25rem 0px 1rem;
         font-family: "Source Sans", sans-serif;
         line-height: 1.2;
-        color: black;
+        color: white;
     }
     
     .splash-subtitle {
@@ -374,15 +374,25 @@ def render_splash_screen():
                 
                 .splash-widget-container .billdozer_animation img {
                     position: absolute;
-                    bottom: 0;
+                    bottom: -18px;
                     left: 50%;
                     transform: translateX(-50%);
-                    width: 90%;
+                    width: 150%;
                     opacity: 0;
                     animation: frameCycle 3s steps(1, end) 2;
                     animation-fill-mode: forwards;
                 }
-                
+                @media (max-width: 424px) and (orientation: portrait) {
+                    .splash-widget-container .inner-container {
+                        width: auto;
+                        height: auto;
+                        padding-bottom: 40px;
+                    }
+                    .splash-widget-container .billdozer_animation img {
+                        width: 100%;
+                        bottom: -60px;
+                    }
+                }
                 /* First child starts visible and ends visible */
                 .splash-widget-container .billdozer_animation img:nth-child(1) {
                     opacity: 1;
@@ -1126,6 +1136,10 @@ def render_splash_screen():
             pointer-events: auto !important;
         }
         </style>
+    # SECURITY: unsafe_allow_html=True is safe here because:
+    # - Static CSS for hiding splash screen button styling
+    # - No user input or dynamic content
+    # - Pure CSS styling rules only
     """, unsafe_allow_html=True)
     
     # Create button with clear aria-label for JavaScript to find

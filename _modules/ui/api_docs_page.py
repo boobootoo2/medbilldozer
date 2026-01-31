@@ -580,6 +580,11 @@ def render_endpoint_badge(method: str, title: str):
         "DELETE": "#F93E3E"
     }.get(method, "#999")
     
+    # SECURITY: unsafe_allow_html=True is safe here because:
+    # - method is from a predefined dict lookup (GET, POST, DELETE) - not user input
+    # - method_color is from a predefined dict - not user input
+    # - title is from function parameters (API endpoint names) - not user input
+    # - All content is developer-controlled, not user-provided
     st.markdown(f"""
     <div style="display: flex; align-items: center; margin-bottom: 1rem;">
         <span style="background: {method_color}; color: white; padding: 0.25rem 0.75rem; 

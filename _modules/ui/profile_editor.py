@@ -7,10 +7,22 @@ with structured field extraction and normalization into a consistent schema.
 import streamlit as st
 import json
 import os
+import tempfile
+import hashlib
+import base64
 from pathlib import Path
 from typing import Dict, List, Optional, TypedDict
 from datetime import datetime
-import tempfile
+import csv
+import io
+from _modules.utils.sanitize import (
+    sanitize_text,
+    sanitize_html_content,
+    sanitize_provider_name,
+    sanitize_filename,
+    sanitize_amount,
+    sanitize_date
+)
 
 
 # ==============================================================================
@@ -1151,20 +1163,23 @@ def render_receipts_manager():
             paste_provider = st.text_input("Provider", placeholder="Dr. Smith", key="paste_provider")
         
         if pasted_text and st.button("💾 Save Pasted Receipt", key="save_pasted"):
-            # Create document fingerprint (hash of text)
-            fingerprint = hashlib.md5(pasted_text.encode()).hexdigest()[:12]
+            # Sanitize pasted content before saving
+            sanitized_text = sanitize_html_content(pasted_text, max_length=10000)
+            
+            # Create document fingerprint (hash of sanitized text)
+            fingerprint = hashlib.md5(sanitized_text.encode()).hexdigest()[:12]
             
             new_receipt: Receipt = {
                 'receipt_id': f"rcpt_{datetime.utcnow().timestamp()}",
-                'file_name': f"Pasted_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.txt",
+                'file_name': sanitize_filename(f"Pasted_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.txt"),
                 'document_fingerprint': fingerprint,
                 'source_method': 'paste',
                 'file_type': 'text',
-                'raw_content': pasted_text,
+                'raw_content': sanitized_text,
                 'status': 'pending_review',
-                'amount': paste_amount if paste_amount > 0 else None,
+                'amount': sanitize_amount(paste_amount) if paste_amount > 0 else None,
                 'date': None,
-                'provider': paste_provider if paste_provider else None,
+                'provider': sanitize_provider_name(paste_provider) if paste_provider else None,
                 'notes': '',
                 'created_at': datetime.utcnow().isoformat(),
                 'updated_at': datetime.utcnow().isoformat()
@@ -1224,22 +1239,31 @@ def render_receipts_manager():
                 "reconciled": "Reconciled"
             }.get(receipt['status'], "Unknown")
             
+            # Sanitize display data
+            safe_filename = sanitize_filename(receipt['file_name'])
+            safe_fingerprint = sanitize_text(receipt.get('document_fingerprint', 'N/A'))
+            safe_source = sanitize_text(receipt.get('source_method', 'unknown'))
+            safe_filetype = sanitize_text(receipt.get('file_type', 'unknown'))
+            safe_created = sanitize_text(receipt.get('created_at', '')[:10])
+            safe_provider = sanitize_provider_name(receipt.get('provider', 'N/A'))
+            safe_date = sanitize_date(receipt.get('date', 'N/A'))
+            
             with st.expander(
-                f"{status_emoji} {receipt['file_name']} - {status_label}",
+                f"{status_emoji} {safe_filename} - {status_label}",
                 expanded=False
             ):
                 col1, col2, col3 = st.columns([2, 2, 1])
                 
                 with col1:
-                    st.write(f"**Fingerprint:** `{receipt['document_fingerprint']}`")
-                    st.write(f"**Source:** {receipt['source_method'].title()}")
-                    st.write(f"**Type:** {receipt['file_type']}")
-                    st.write(f"**Created:** {receipt.get('created_at', '')[:10]}")
+                    st.write(f"**Fingerprint:** `{safe_fingerprint}`")
+                    st.write(f"**Source:** {safe_source.title()}")
+                    st.write(f"**Type:** {safe_filetype}")
+                    st.write(f"**Created:** {safe_created}")
                 
                 with col2:
                     st.write(f"**Amount:** ${receipt.get('amount', 0.0):.2f}" if receipt.get('amount') else "**Amount:** N/A")
-                    st.write(f"**Provider:** {receipt.get('provider', 'N/A')}")
-                    st.write(f"**Date:** {receipt.get('date', 'N/A')}")
+                    st.write(f"**Provider:** {safe_provider}")
+                    st.write(f"**Date:** {safe_date}")
                 
                 with col3:
                     # Status change buttons
@@ -1292,7 +1316,9 @@ def render_receipts_manager():
                 # Show content preview for text receipts
                 if receipt['source_method'] == 'paste':
                     with st.expander("📄 View Content"):
-                        st.text(receipt.get('raw_content', '')[:500] + ('...' if len(receipt.get('raw_content', '')) > 500 else ''))
+                        raw = receipt.get('raw_content', '')
+                        safe_content = sanitize_html_content(raw, max_length=500)
+                        st.text(safe_content + ('...' if len(raw) > 500 else ''))
 
 
 # ==============================================================================
@@ -1687,14 +1713,17 @@ def render_text_paste():
     )
 
     if pasted_text and len(pasted_text.strip()) > 50:
+        # Sanitize pasted import text
+        sanitized_text = sanitize_html_content(pasted_text, max_length=50000)
+        
         st.session_state.import_data = {
             'method': 'text_paste',
             'file_type': 'text',
-            'raw_text': pasted_text,
+            'raw_text': sanitized_text,
             'status': 'ready'
         }
 
-        st.success(f"✅ Text captured ({len(pasted_text)} characters)")
+        st.success(f"✅ Text captured ({len(sanitized_text)} characters)")
 
 
 def extract_and_normalize_data():
@@ -1972,8 +2001,8 @@ def render_importer():
 
     progress_cols = st.columns(2)
     steps = [
-        ("1️⃣", "Select Entity"),
-        ("2️⃣", "View Results")
+        ("", "Select Entity"),
+        ("", "View Results")
     ]
 
     for idx, (emoji, label) in enumerate(steps, 1):

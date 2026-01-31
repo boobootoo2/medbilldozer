@@ -25,7 +25,6 @@ class TourStep:
     target: str  # Which UI element this step refers to
     position: str  # Where to display the tooltip
     
-    
 # Define the tour steps
 TOUR_STEPS = [
     TourStep(
@@ -34,12 +33,14 @@ TOUR_STEPS = [
         description=(
             "👋 Welcome to MedBillDozer. If you have ever tried to reconcile a medical bill, "
             "an insurance explanation, and a pharmacy receipt at the same time, you already "
-            "understand the problem this project is designed to solve."
+            "understand the frustration this app is designed to solve. "
+            "MedBillDozer turns that manual reconciliation process into a structured, transparent workflow."
         ),
         narration=(
             "Welcome to MedBillDozer. If you have ever tried to reconcile a medical bill, "
             "an insurance explanation, and a pharmacy receipt at the same time, you already "
-            "understand the problem this project is designed to solve."
+            "understand the frustration this app is designed to solve. "
+            "MedBillDozer turns that manual reconciliation process into a structured, transparent workflow."
         ),
         target="logo",
         position="top"
@@ -47,16 +48,16 @@ TOUR_STEPS = [
 
     TourStep(
         id=2,
-        title="Demo Documents",
+        title="Demo POC Workflow – Copy & Paste",
         description=(
-            "📋 These sample documents reflect the kinds of healthcare paperwork people deal "
-            "with every day, including hospital bills, pharmacy receipts, dental statements, "
-            "FSA summaries, and insurance claim histories."
+            "📋 This Demo POC workflow lets you lift the hood. Click Copy Document on any sample file "
+            "and paste it into the input fields below. You can add additional documents anytime using "
+            "the plus icon. This gives you a behind-the-scenes look at how documents move through the pipeline."
         ),
         narration=(
-            "These sample documents reflect the kinds of healthcare paperwork people deal "
-            "with every day, including hospital bills, pharmacy receipts, dental statements, "
-            "FSA summaries, and insurance claim histories."
+            "This Demo POC workflow lets you lift the hood. Click Copy Document on any sample file "
+            "and paste it into the input fields below. You can add additional documents anytime using "
+            "the plus icon. This gives you a behind-the-scenes look at how documents move through the pipeline."
         ),
         target="demo_section",
         position="top"
@@ -64,95 +65,99 @@ TOUR_STEPS = [
 
     TourStep(
         id=3,
-        title="Document Input",
+        title="Multi-Document Observability",
         description=(
-            "✍️ Documents are ingested exactly as they appear in the real world, as raw text "
-            "copied from portals, PDFs, or statements, without requiring predefined templates."
+            "🔍 When you analyze multiple documents together, the system compares what was billed, "
+            "what was covered, and what was paid across providers and dates of service. "
+            "You can inspect the execution graph to see exactly how each step runs in a deterministic pipeline."
         ),
         narration=(
-            "Documents are ingested exactly as they appear in the real world, as raw text "
-            "copied from portals, PDFs, or statements, without requiring predefined templates."
-        ),
-        target="text_input",
-        position="top"
-    ),
-
-    TourStep(
-        id=4,
-        title="Multi-Document Analysis",
-        description=(
-            "➕ Adding multiple documents allows the system to compare what was billed, what "
-            "was covered, and what was paid across providers and dates of service."
-        ),
-        narration=(
-            "Adding multiple documents allows the system to compare what was billed, what "
-            "was covered, and what was paid across providers and dates of service."
-        ),
-        target="add_document",
-        position="top"
-    ),
-
-    TourStep(
-        id=5,
-        title="Analysis Engine Selection",
-        description=(
-            "⚙️ Analysis is intentionally separated from ingestion, allowing deterministic "
-            "fact extraction first and healthcare-aware reasoning only where it adds value."
-        ),
-        narration=(
-            "Analysis is intentionally separated from ingestion, allowing deterministic "
-            "fact extraction first and healthcare-aware reasoning only where it adds value."
-        ),
-        target="analysis_engine",
-        position="top"
-    ),
-
-    TourStep(
-        id=6,
-        title="Deterministic Analysis Pipeline",
-        description=(
-            "🔍 When analysis begins, documents follow a predictable path: classification, "
-            "fact extraction, normalization, and validation. Because the same inputs always "
-            "produce the same outputs, data scientists and engineers refer to this property "
-            "as idempotency."
-        ),
-        narration=(
-            "When analysis begins, documents follow a predictable path: classification, "
-            "fact extraction, normalization, and validation. Because the same inputs always "
-            "produce the same outputs, data scientists and engineers refer to this property "
-            "as idempotency."
-        ),
-        target="analyze_button",
-        position="top"
-    ),
-
-    TourStep(
-        id=7,
-        title="Pipeline Observability",
-        description=(
-            "📊 You can expand the execution graph to inspect how each step ran. Data scientists "
-            "and engineers call this a DAG, or Directed Acyclic Graph, which simply means the "
-            "workflow flows forward with no hidden loops or ambiguity."
-        ),
-        narration=(
-            "You can expand the execution graph to inspect how each step ran. Data scientists "
-            "and engineers call this a DAG, or Directed Acyclic Graph, which simply means the "
-            "workflow flows forward with no hidden loops or ambiguity."
+            "When you analyze multiple documents together, the system compares what was billed, "
+            "what was covered, and what was paid across providers and dates of service. "
+            "You can inspect the execution graph to see exactly how each step runs in a deterministic pipeline."
         ),
         target="pipeline_dag",
         position="main"
     ),
 
     TourStep(
-        id=8,
-        title="Analysis Findings",
+        id=4,
+        title="Demo Production Workflow",
         description=(
-            "📌 Findings highlight potential billing errors, duplicate charges, coverage "
-            "mismatches, and anomalies that are difficult to catch through manual review."
+            "🚀 The Demo Production Workflow simulates a real-world deployment. "
+            "Documents are preloaded and structured, minimizing user input. "
+            "This reflects how providers or insurance companies could integrate the system at scale."
         ),
         narration=(
-            "Findings highlight potential billing errors, duplicate charges, coverage "
-            "mismatches, and anomalies that are difficult to catch through manual review."
+            "The Demo Production Workflow simulates a real-world deployment. "
+            "Documents are preloaded and structured, minimizing user input. "
+            "This reflects how providers or insurance companies could integrate the system at scale."
+        ),
+        target="production_workflow",
+        position="top"
+    ),
+
+    TourStep(
+        id=5,
+        title="Sidebar Navigation & AI Agent",
+        description=(
+            "💬 The left sidebar acts as your control center. You can navigate the application, "
+            "access different workflows, or ask the AI Agent questions about your documents "
+            "and flagged findings."
+        ),
+        narration=(
+            "The left sidebar acts as your control center. You can navigate the application, "
+            "access different workflows, or ask the AI Agent questions about your documents "
+            "and flagged findings."
+        ),
+        target="sidebar",
+        position="main"
+    ),
+
+    TourStep(
+        id=6,
+        title="Profile & Data Import",
+        description=(
+            "👤 In the Profile section, you can import receipts or structured transaction data "
+            "from insurance companies or providers. This allows the system to interpret new "
+            "documents with the right coverage and provider context."
+        ),
+        narration=(
+            "In the Profile section, you can import receipts or structured transaction data "
+            "from insurance companies or providers. This allows the system to interpret new "
+            "documents with the right coverage and provider context."
+        ),
+        target="profile_section",
+        position="main"
+    ),
+
+    TourStep(
+        id=7,
+        title="Re-Analyze Newly Loaded Documents",
+        description=(
+            "🔄 After importing new data, return to Home and run the Demo Production Workflow again. "
+            "The system will now analyze your newly loaded documents using the same structured pipeline."
+        ),
+        narration=(
+            "After importing new data, return to Home and run the Demo Production Workflow again. "
+            "The system will now analyze your newly loaded documents using the same structured pipeline."
+        ),
+        target="analyze_button",
+        position="top"
+    ),
+
+    TourStep(
+        id=8,
+        title="Take Action on Findings",
+        description=(
+            "📌 Once results appear, click Actions on any flagged item to decide next steps. "
+            "You can mark it for Follow-up, Ignore it, or mark it as Resolved. "
+            "This turns billing review into an actionable workflow instead of a static report."
+        ),
+        narration=(
+            "Once results appear, click Actions on any flagged item to decide next steps. "
+            "You can mark it for Follow-up, Ignore it, or mark it as Resolved. "
+            "This turns billing review into an actionable workflow instead of a static report."
         ),
         target="results_section",
         position="main"
@@ -160,64 +165,22 @@ TOUR_STEPS = [
 
     TourStep(
         id=9,
-        title="Sidebar Navigation",
+        title="Proof of Concept Vision",
         description=(
-            "💬 The sidebar acts as a control center where users can ask questions, navigate "
-            "the system, and understand why specific conclusions were reached."
+            "✨ This demonstration shows how billing error detection can be simplified. "
+            "By combining structured ingestion, deterministic workflows, and intelligent validation, "
+            "the process becomes transparent, auditable, and manageable."
         ),
         narration=(
-            "The sidebar acts as a control center where users can ask questions, navigate "
-            "the system, and understand why specific conclusions were reached."
+            "This demonstration shows how billing error detection can be simplified. "
+            "By combining structured ingestion, deterministic workflows, and intelligent validation, "
+            "the process becomes transparent, auditable, and manageable."
         ),
-        target="sidebar",
-        position="main"
-    ),
-
-    TourStep(
-        id=10,
-        title="Health Profile",
-        description=(
-            "👤 The Health Profile stores insurance coverage and provider relationships so "
-            "documents can be interpreted with the right context."
-        ),
-        narration=(
-            "The Health Profile stores insurance coverage and provider relationships so "
-            "documents can be interpreted with the right context."
-        ),
-        target="profile_button",
-        position="sidebar"
-    ),
-
-    TourStep(
-        id=11,
-        title="Profile Management",
-        description=(
-            "👤 Over time, this persistent context allows the system to validate new documents "
-            "against historical information instead of starting from scratch."
-        ),
-        narration=(
-            "Over time, this persistent context allows the system to validate new documents "
-            "against historical information instead of starting from scratch."
-        ),
-        target="profile_section",
-        position="main"
-    ),
-
-    TourStep(
-        id=12,
-        title="Healthcare-Ready API",
-        description=(
-            "🔌 Everything demonstrated here is exposed through an API, making it possible to "
-            "embed the same reconciliation and validation logic into healthcare and insurance systems."
-        ),
-        narration=(
-            "Everything demonstrated here is exposed through an API, making it possible to "
-            "embed the same reconciliation and validation logic into healthcare and insurance systems."
-        ),
-        target="api_button",
-        position="sidebar"
+        target="logo",
+        position="top"
     ),
 ]
+
 
 
 def initialize_tour_state():
@@ -410,7 +373,15 @@ def tour_step_marker(step_target: str):
     current_step = get_current_step()
     if not current_step or current_step.target != step_target:
         return
-    st.markdown(f"""<div style="border: 3px solid #667eea; border-radius: 8px; padding: 10px; margin: 10px 0; background: rgba(102, 126, 234, 0.05); box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);"><strong style="color: #667eea;">📍 {current_step.title}</strong><br/>{current_step.description}</div>""", unsafe_allow_html=True)
+    # SECURITY: unsafe_allow_html=True is safe here because:
+    # - current_step.title and current_step.description are from TOUR_STEPS (predefined constants)
+    # - Both values are HTML-escaped using html.escape() before insertion
+    # - safe_title and safe_desc cannot contain executable code after escaping
+    # - Used for styled tour step highlighting with custom CSS
+    import html
+    safe_title = html.escape(str(current_step.title))
+    safe_desc = html.escape(str(current_step.description))
+    st.markdown(f"""<div style="border: 3px solid #667eea; border-radius: 8px; padding: 10px; margin: 10px 0; background: rgba(102, 126, 234, 0.05); box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);"><strong style="color: #667eea;">📍 {safe_title}</strong><br/>{safe_desc}</div>""", unsafe_allow_html=True)
 
 
 # Compatibility functions for existing code

@@ -120,9 +120,8 @@ def main():
         return  # Page was rendered, stop here
 
     # --------------------------------------------------
-    # Home Page Specific UI
+    # Register Providers (needed for both workflows)
     # --------------------------------------------------
-    bootstrap_home_page()
     register_providers()
 
     # --------------------------------------------------
@@ -131,12 +130,6 @@ def main():
     if should_enable_guided_tour():
         initialize_tour_state()
         maybe_launch_tour()
-
-    # --------------------------------------------------
-    # Defaults (can be overridden in debug)
-    # --------------------------------------------------
-    extractor_override = None
-    analyzer_override = None
 
     # --------------------------------------------------
     # Privacy (session-scoped)
@@ -150,201 +143,226 @@ def main():
     if is_assistant_enabled():
         render_doc_assistant()
 
-    # --------------------------------------------------
-    # Document input (UI ONCE)
-    # --------------------------------------------------
-    render_contextual_help('input')
-    documents = render_document_inputs()
-
-    # Tour monitoring handled by Intro.js
-
-    # --------------------------------------------------
-    # Provider Overview (Engine + Health Profile)
-    # --------------------------------------------------
-    st.markdown("### 📊 Analysis Overview")
+    # ==================================================
+    # TAB NAVIGATION: POC vs Prod Workflow
+    # ==================================================
+    tab1, tab2 = st.tabs(["🧪 Demo POC", "🏭 Demo Prod Workflow"])
     
-    # Use config debug setting OR legacy runtime flag
-    debug_mode = is_debug_enabled() or debug_enabled()
+    # --------------------------------------------------
+    # TAB 1: DEMO POC WORKFLOW (Original)
+    # --------------------------------------------------
+    with tab1:
+        # Home Page Specific UI
+        bootstrap_home_page()
+        
+        # --------------------------------------------------
+        # Defaults (can be overridden in debug)
+        # --------------------------------------------------
+        extractor_override = None
+        analyzer_override = None
 
-    # Create columns for provider/engine and health profile
-    col1, col2 = st.columns([1, 1])
-    
-    with col1:
+        # --------------------------------------------------
+        # Document input (UI ONCE)
+        # --------------------------------------------------
+        render_contextual_help('input')
+        documents = render_document_inputs()
+
+        # Tour monitoring handled by Intro.js
+
+        # --------------------------------------------------
+        # Provider Overview (Engine + Health Profile)
+        # --------------------------------------------------
+        st.markdown("### 📊 Analysis Overview")
+        
+        # Use config debug setting OR legacy runtime flag
+        debug_mode = is_debug_enabled() or debug_enabled()
+
+        # Create columns for provider/engine and health profile
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            if debug_mode:
+                providers = ProviderRegistry.list()
+                selected_provider = render_provider_selector(providers)  # keep in debug for now
+            else:
+                engine_label = st.selectbox(
+                    "Analysis Engine",
+                    options=list(ENGINE_OPTIONS.keys()),
+                    index=0,
+                )
+                selected_provider = ENGINE_OPTIONS[engine_label]
+        
+
+        st.markdown("---")
+
+        if is_coverage_matrix_enabled():
+            coverage_rows = build_coverage_matrix(documents)
+            render_coverage_matrix(coverage_rows)
+
+        # --------------------------------------------------
+        # Debug controls (sidebar only)
+        # --------------------------------------------------
         if debug_mode:
-            providers = ProviderRegistry.list()
-            selected_provider = render_provider_selector(providers)  # keep in debug for now
-        else:
-            engine_label = st.selectbox(
-                "Analysis Engine",
-                options=list(ENGINE_OPTIONS.keys()),
-                index=0,
-            )
-            selected_provider = ENGINE_OPTIONS[engine_label]
-    
+            with st.sidebar:
+                st.markdown("## 🧪 Debug Mode")
 
-    st.markdown("---")
+                extractor_override = st.selectbox(
+                    "Fact Extraction Model",
+                    {
+                        "Agent decides": None,
+                        "gpt-4o-mini": "gpt-4o-mini",
+                        "gemini-3-flash-preview": "gemini-3-flash-preview",
+                        "Local heuristic": "heuristic",
+                    }.items(),
+                    format_func=lambda x: x[0],
+                )[1]
 
-    if is_coverage_matrix_enabled():
-        coverage_rows = build_coverage_matrix(documents)
-        render_coverage_matrix(coverage_rows)
+                analyzer_override = st.selectbox(
+                    "Analysis Model",
+                    {
+                        "Agent decides": None,
+                        "gpt-4o-mini": "gpt-4o-mini",
+                        "medgemma-4b-it": "medgemma-4b-it",
+                    }.items(),
+                    format_func=lambda x: x[0],
+                )[1]
 
-    # --------------------------------------------------
-    # Debug controls (sidebar only)
-    # --------------------------------------------------
-    if debug_mode:
-        with st.sidebar:
-            st.markdown("## 🧪 Debug Mode")
-
-            extractor_override = st.selectbox(
-                "Fact Extraction Model",
-                {
-                    "Agent decides": None,
-                    "gpt-4o-mini": "gpt-4o-mini",
-                    "gemini-3-flash-preview": "gemini-3-flash-preview",
-                    "Local heuristic": "heuristic",
-                }.items(),
-                format_func=lambda x: x[0],
-            )[1]
-
-            analyzer_override = st.selectbox(
-                "Analysis Model",
-                {
-                    "Agent decides": None,
-                    "gpt-4o-mini": "gpt-4o-mini",
-                    "medgemma-4b-it": "medgemma-4b-it",
-                }.items(),
-                format_func=lambda x: x[0],
-            )[1]
-
-    # --------------------------------------------------
-    # Resolve Smart (None) to a concrete analyzer
-    # --------------------------------------------------
-    if selected_provider is None:
-        selected_provider = "gpt-4o-mini"
+        # --------------------------------------------------
+        # Resolve Smart (None) to a concrete analyzer
+        # --------------------------------------------------
+        if selected_provider is None:
+            selected_provider = "gpt-4o-mini"
 
 
-    agent = OrchestratorAgent(
-        extractor_override=extractor_override,
-        analyzer_override=analyzer_override or selected_provider
-    )
+        agent = OrchestratorAgent(
+            extractor_override=extractor_override,
+            analyzer_override=analyzer_override or selected_provider
+        )
 
 
-    # --------------------------------------------------
-    # Analyze action
-    # --------------------------------------------------
-    col1, col2 = st.columns([3, 1])
+        # --------------------------------------------------
+        # Analyze action
+        # --------------------------------------------------
+        col1, col2 = st.columns([3, 1])
 
-    with col1:
-        analyze_clicked = render_analyze_button()
+        with col1:
+            analyze_clicked = render_analyze_button()
 
-    with col2:
-        clear_clicked = render_clear_history_button()
+        with col2:
+            clear_clicked = render_clear_history_button()
 
-    # Handle clear history action
-    if clear_clicked:
-        clear_analysis_history()
-        st.success("✓ Analysis history cleared")
-        st.rerun()
-
-    # Check if we should proceed with analysis (either button clicked or pending from tour rerun)
-    should_analyze = analyze_clicked or st.session_state.get('pending_analysis', False)
-
-    if should_analyze:
-        # Validate inputs
-        if not documents:
-            from _modules.ui.ui import show_empty_warning
-            show_empty_warning()
-            render_contextual_help('error')
-            st.session_state.pending_analysis = False
-            return
-        if selected_provider == "heuristic":
-            show_analysis_error("Local (Offline) analysis isn't wired yet. Use Smart/OpenAI for now.")
-            render_contextual_help('error')
-            st.session_state.pending_analysis = False
-            return
-
-        # If tour is active and on second_document_loaded step, advance tour and rerun to show message
-        if (analyze_clicked and
-                st.session_state.get('tour_active', False) and
-                st.session_state.get('tutorial_step') == 'second_document_loaded'):
-            st.session_state.pending_analysis = True
-            st.session_state.analyzing = True
+        # Handle clear history action
+        if clear_clicked:
+            clear_analysis_history()
+            st.success("✓ Analysis history cleared")
             st.rerun()
 
-        # Clear pending flag and proceed with analysis
-        st.session_state.pending_analysis = False
-        st.session_state.analyzing = True
+        # Check if we should proceed with analysis (either button clicked or pending from tour rerun)
+        should_analyze = analyze_clicked or st.session_state.get('pending_analysis', False)
 
-        # Wrap entire analysis in a spinner
-        with st.spinner("Analyzing your documents..."):
-            # Show analyzing context
-            render_contextual_help('analyzing')
+        if should_analyze:
+            # Validate inputs
+            if not documents:
+                from _modules.ui.ui import show_empty_warning
+                show_empty_warning()
+                render_contextual_help('error')
+                st.session_state.pending_analysis = False
+                return
+            if selected_provider == "heuristic":
+                show_analysis_error("Local (Offline) analysis isn't wired yet. Use Smart/OpenAI for now.")
+                render_contextual_help('error')
+                st.session_state.pending_analysis = False
+                return
 
-            # Run document analysis
-            analysis_result = run_document_analysis(documents, agent, analyze_clicked)
+            # If tour is active and on second_document_loaded step, advance tour and rerun to show message
+            if (analyze_clicked and
+                    st.session_state.get('tour_active', False) and
+                    st.session_state.get('tutorial_step') == 'second_document_loaded'):
+                st.session_state.pending_analysis = True
+                st.session_state.analyzing = True
+                st.rerun()
 
-            if analysis_result:
-                total_potential_savings = analysis_result["total_savings"]
-                per_document_savings = analysis_result["per_document_savings"]
-                documents = analysis_result["documents"]
+            # Clear pending flag and proceed with analysis
+            st.session_state.pending_analysis = False
+            st.session_state.analyzing = True
 
-                # Clear analyzing flag and set results for tour progression
-                st.session_state.analyzing = False
-                st.session_state.doc_results = True
+            # Wrap entire analysis in a spinner
+            with st.spinner("Analyzing your documents..."):
+                # Show analyzing context
+                render_contextual_help('analyzing')
 
-                # Advance tour step to review_issues
-                if (st.session_state.get('tour_active', False) and
-                        st.session_state.get('tutorial_step') == 'analysis_running'):
-                    st.session_state.tour_needs_refresh = True
+                # Run document analysis
+                analysis_result = run_document_analysis(documents, agent, analyze_clicked)
 
-                # Save analysis state for potential rerun
-                st.session_state.last_documents = documents
-                st.session_state.last_total_savings = total_potential_savings
-                st.session_state.last_per_doc_savings = per_document_savings
+                if analysis_result:
+                    total_potential_savings = analysis_result["total_savings"]
+                    per_document_savings = analysis_result["per_document_savings"]
+                    documents = analysis_result["documents"]
 
-    # Trigger rerun to update tour widget if needed (results will redisplay)
-    if st.session_state.get('tour_needs_refresh', False):
-        st.session_state.tour_needs_refresh = False
-        st.rerun()
+                    # Clear analyzing flag and set results for tour progression
+                    st.session_state.analyzing = False
+                    st.session_state.doc_results = True
 
-    # Display previously analyzed results if they exist (e.g., after tour rerun)
-    # Only show cached results if we're NOT currently in an analysis run
-    elif (st.session_state.get('last_documents') and 
-          st.session_state.get('doc_results', False) and 
-          not st.session_state.get('analyzing', False) and 
-          not analyze_clicked):
-        documents = st.session_state.last_documents
-        total_potential_savings = st.session_state.get('last_total_savings', 0.0)
-        per_document_savings = st.session_state.get('last_per_doc_savings', {})
+                    # Advance tour step to review_issues
+                    if (st.session_state.get('tour_active', False) and
+                            st.session_state.get('tutorial_step') == 'analysis_running'):
+                        st.session_state.tour_needs_refresh = True
 
-        # Re-render cached results
-        render_cached_results(documents, total_potential_savings, per_document_savings)
+                    # Save analysis state for potential rerun
+                    st.session_state.last_documents = documents
+                    st.session_state.last_total_savings = total_potential_savings
+                    st.session_state.last_per_doc_savings = per_document_savings
 
+        # Trigger rerun to update tour widget if needed (results will redisplay)
+        if st.session_state.get('tour_needs_refresh', False):
+            st.session_state.tour_needs_refresh = False
+            st.rerun()
+
+        # Display previously analyzed results if they exist (e.g., after tour rerun)
+        # Only show cached results if we're NOT currently in an analysis run
+        elif (st.session_state.get('last_documents') and 
+              st.session_state.get('doc_results', False) and 
+              not st.session_state.get('analyzing', False) and 
+              not analyze_clicked):
+            documents = st.session_state.last_documents
+            total_potential_savings = st.session_state.get('last_total_savings', 0.0)
+            per_document_savings = st.session_state.get('last_per_doc_savings', {})
+
+            # Re-render cached results
+            render_cached_results(documents, total_potential_savings, per_document_savings)
+
+        # --------------------------------------------------
+        # Debug output (read-only)
+        # --------------------------------------------------
+        if debug_mode:
+            with st.sidebar:
+                st.markdown("### Documents")
+                st.json(documents)
+
+                st.markdown("### Orchestration Decisions")
+                st.json({
+                    d["document_id"]: d.get("_orchestration")
+                    for d in documents
+                })
+
+                st.markdown("### Aggregate Metrics")
+                st.json(st.session_state.get("aggregate_metrics", {}))
+
+                st.markdown("### Session State")
+                st.json(dict(st.session_state))
+                
+                st.markdown("### Normalized Transactions")
+                st.json(st.session_state.get("normalized_transactions", []))
+
+                st.markdown("### Transaction Provenance")
+                st.json(st.session_state.get("transaction_provenance", {}))
+    
     # --------------------------------------------------
-    # Debug output (read-only)
+    # TAB 2: DEMO PROD WORKFLOW (Profile-based)
     # --------------------------------------------------
-    if debug_mode:
-        with st.sidebar:
-            st.markdown("### Documents")
-            st.json(documents)
-
-            st.markdown("### Orchestration Decisions")
-            st.json({
-                d["document_id"]: d.get("_orchestration")
-                for d in documents
-            })
-
-            st.markdown("### Aggregate Metrics")
-            st.json(st.session_state.get("aggregate_metrics", {}))
-
-            st.markdown("### Session State")
-            st.json(dict(st.session_state))
-            
-            st.markdown("### Normalized Transactions")
-            st.json(st.session_state.get("normalized_transactions", []))
-
-            st.markdown("### Transaction Provenance")
-            st.json(st.session_state.get("transaction_provenance", {}))
+    with tab2:
+        from _modules.ui.prod_workflow import render_prod_workflow
+        render_prod_workflow()
 
 
     # --------------------------------------------------
