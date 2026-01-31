@@ -28,6 +28,17 @@ class TestSanitizeText:
         assert "alert" not in result
         assert "Hello" in result
     
+    def test_malformed_script_tag_removal(self):
+        """Test that malformed script closing tags are handled (CodeQL security fix)."""
+        # Browsers accept </script foo="bar"> as a valid closing tag even though it's malformed
+        input_text = '<script>alert(1)</script foo="bar">Safe text'
+        result = sanitize_text(input_text)
+        # Script content should be removed
+        assert "alert" not in result.lower()
+        assert "<script>" not in result.lower()
+        # Safe text should remain (escaped)
+        assert "Safe text" in result or "Safe" in result
+    
     def test_event_handler_removal(self):
         """Test that event handlers are removed."""
         input_text = '<img onerror="alert(1)" src=x>'
