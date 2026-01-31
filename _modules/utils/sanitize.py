@@ -17,8 +17,13 @@ from typing import Any, Optional
 
 
 # Patterns for dangerous content
+# Note: These patterns are defense-in-depth. The primary protection is html.escape()
+# which safely escapes ALL HTML, including malformed tags. These patterns provide
+# an additional layer by removing dangerous content before escaping.
 SCRIPT_PATTERNS = [
-    re.compile(r'<script[^>]*>.*?</script>', re.IGNORECASE | re.DOTALL),
+    # Match <script> tags with forgiving end tag (handles </script foo="bar"> etc.)
+    # Browsers accept closing tags with attributes even though it's a parser error
+    re.compile(r'<script[^>]*>.*?</script\s*[^>]*>', re.IGNORECASE | re.DOTALL),
     re.compile(r'javascript:', re.IGNORECASE),
     re.compile(r'on\w+\s*=', re.IGNORECASE),  # onclick, onload, etc.
     re.compile(r'<iframe[^>]*>', re.IGNORECASE),
