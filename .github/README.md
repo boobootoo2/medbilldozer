@@ -2,6 +2,8 @@
 
 ![CodeQL](https://github.com/boobootoo2/medbilldozer/actions/workflows/codeql.yml/badge.svg)
 
+![Security Audit](https://github.com/boobootoo2/medbilldozer/actions/workflows/security.yml/badge.svg)
+
 
 # medBillDozer
 
