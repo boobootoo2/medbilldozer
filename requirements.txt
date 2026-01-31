@@ -78,7 +78,7 @@ nest-asyncio==1.6.0
 numpy==2.4.1
 openai==2.9.0
 packaging==25.0
-pandas==2.3.3
+pandas==3.0.0
 parso==0.8.5
 pexpect==4.9.0
 pillow==12.1.0
