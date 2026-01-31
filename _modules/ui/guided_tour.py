@@ -373,7 +373,15 @@ def tour_step_marker(step_target: str):
     current_step = get_current_step()
     if not current_step or current_step.target != step_target:
         return
-    st.markdown(f"""<div style="border: 3px solid #667eea; border-radius: 8px; padding: 10px; margin: 10px 0; background: rgba(102, 126, 234, 0.05); box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);"><strong style="color: #667eea;">📍 {current_step.title}</strong><br/>{current_step.description}</div>""", unsafe_allow_html=True)
+    # SECURITY: unsafe_allow_html=True is safe here because:
+    # - current_step.title and current_step.description are from TOUR_STEPS (predefined constants)
+    # - Both values are HTML-escaped using html.escape() before insertion
+    # - safe_title and safe_desc cannot contain executable code after escaping
+    # - Used for styled tour step highlighting with custom CSS
+    import html
+    safe_title = html.escape(str(current_step.title))
+    safe_desc = html.escape(str(current_step.description))
+    st.markdown(f"""<div style="border: 3px solid #667eea; border-radius: 8px; padding: 10px; margin: 10px 0; background: rgba(102, 126, 234, 0.05); box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);"><strong style="color: #667eea;">📍 {safe_title}</strong><br/>{safe_desc}</div>""", unsafe_allow_html=True)
 
 
 # Compatibility functions for existing code

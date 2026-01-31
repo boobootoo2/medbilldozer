@@ -9,6 +9,14 @@ from typing import Dict, List, Optional, TypedDict
 from datetime import datetime
 import time
 import copy
+from _modules.utils.sanitize import (
+    sanitize_text,
+    sanitize_html_content,
+    sanitize_provider_name,
+    sanitize_filename,
+    sanitize_amount,
+    sanitize_date
+)
 
 
 class ProfileDocument(TypedDict):
@@ -488,15 +496,15 @@ def load_receipts_as_documents() -> List[ProfileDocument]:
             elif 'medical' in receipt.get('file_name', '').lower() or 'hospital' in receipt.get('file_name', '').lower():
                 doc_type = 'medical_bill'
             
-            # Build receipt document with safe value handling
-            # Handle None/missing values safely
-            provider = receipt.get('provider') or 'Unknown Provider'
-            file_name = receipt.get('file_name') or 'Unknown'
-            source_method = receipt.get('source_method') or 'unknown'
-            date_value = receipt.get('date') or datetime.now().strftime('%Y-%m-%d')
-            amount_value = receipt.get('amount') if receipt.get('amount') is not None else 0.0
-            notes_value = receipt.get('notes') or 'No notes'
-            raw_content = receipt.get('raw_content') or ''
+            # Build receipt document with safe value handling and sanitization
+            # Handle None/missing values safely and sanitize all user input
+            provider = sanitize_provider_name(receipt.get('provider') or 'Unknown Provider')
+            file_name = sanitize_filename(receipt.get('file_name') or 'Unknown')
+            source_method = sanitize_text(receipt.get('source_method') or 'unknown')
+            date_value = sanitize_date(receipt.get('date') or datetime.now().strftime('%Y-%m-%d'))
+            amount_value = sanitize_amount(receipt.get('amount') if receipt.get('amount') is not None else 0.0)
+            notes_value = sanitize_text(receipt.get('notes') or 'No notes')
+            raw_content = sanitize_html_content(receipt.get('raw_content') or '', max_length=500)
             
             receipt_doc: ProfileDocument = {
                 'doc_id': doc_id,
@@ -510,7 +518,7 @@ def load_receipts_as_documents() -> List[ProfileDocument]:
                 'status': 'completed' if receipt.get('status') == 'reconciled' else 'pending',
                 'content': f"""RECEIPT - {file_name}
 
-Source: {source_method.title()}
+Source: {source_method}
 Provider: {provider}
 Amount: ${float(amount_value):.2f}
 Date: {date_value}
@@ -518,7 +526,7 @@ Date: {date_value}
 Notes: {notes_value}
 
 --- RAW CONTENT ---
-{raw_content[:500]}...""",
+{raw_content}...""",
                 'action': None,
                 'action_notes': '',
                 'action_date': None,
@@ -568,17 +576,17 @@ def load_imported_line_items_as_documents() -> List[ProfileDocument]:
             elif 'RX' in procedure_code or 'pharmacy' in item.get('procedure_description', '').lower():
                 doc_type = 'pharmacy_receipt'
             
-            # Handle None/missing values safely
-            provider_name = item.get('provider_name') or 'Unknown Provider'
-            service_date = item.get('service_date') or datetime.now().strftime('%Y-%m-%d')
-            procedure_code = item.get('procedure_code') or 'N/A'
-            procedure_desc = item.get('procedure_description') or 'No description'
-            billed_amount = item.get('billed_amount') if item.get('billed_amount') is not None else 0.0
-            allowed_amount = item.get('allowed_amount') if item.get('allowed_amount') is not None else 0.0
-            paid_by_insurance = item.get('paid_by_insurance') if item.get('paid_by_insurance') is not None else 0.0
-            patient_responsibility = item.get('patient_responsibility') if item.get('patient_responsibility') is not None else 0.0
-            claim_number = item.get('claim_number') or 'N/A'
-            provider_npi = item.get('provider_npi') or 'N/A'
+            # Handle None/missing values safely with sanitization
+            provider_name = sanitize_provider_name(item.get('provider_name') or 'Unknown Provider')
+            service_date = sanitize_date(item.get('service_date') or datetime.now().strftime('%Y-%m-%d'))
+            procedure_code = sanitize_text(item.get('procedure_code') or 'N/A')
+            procedure_desc = sanitize_text(item.get('procedure_description') or 'No description')
+            billed_amount = sanitize_amount(item.get('billed_amount') if item.get('billed_amount') is not None else 0.0)
+            allowed_amount = sanitize_amount(item.get('allowed_amount') if item.get('allowed_amount') is not None else 0.0)
+            paid_by_insurance = sanitize_amount(item.get('paid_by_insurance') if item.get('paid_by_insurance') is not None else 0.0)
+            patient_responsibility = sanitize_amount(item.get('patient_responsibility') if item.get('patient_responsibility') is not None else 0.0)
+            claim_number = sanitize_text(item.get('claim_number') or 'N/A')
+            provider_npi = sanitize_text(item.get('provider_npi') or 'N/A')
             
             # Flag if patient responsibility seems high or mismatched
             flagged = False

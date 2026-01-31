@@ -1,6 +1,6 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 47,
+  "total_modules": 48,
   "modules": [
     {
       "name": "_modules.ui.bootstrap",
@@ -37,7 +37,7 @@
       "has_docstring": true,
       "num_classes": 7,
       "num_functions": 35,
-      "num_dependencies": 0,
+      "num_dependencies": 1,
       "constants": []
     },
     {
@@ -104,7 +104,7 @@
       "has_docstring": true,
       "num_classes": 1,
       "num_functions": 13,
-      "num_dependencies": 0,
+      "num_dependencies": 1,
       "constants": [
         "SAMPLE_IMPORTED_LINE_ITEMS",
         "SAMPLE_INSURANCE_PLAN_DOCUMENT"
@@ -311,6 +311,17 @@
       "num_functions": 1,
       "num_dependencies": 0,
       "constants": []
+    },
+    {
+      "name": "_modules.utils.sanitize",
+      "filepath": "_modules/utils/sanitize.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 9,
+      "num_dependencies": 0,
+      "constants": [
+        "SCRIPT_PATTERNS"
+      ]
     },
     {
       "name": "_modules.utils.serialization",
