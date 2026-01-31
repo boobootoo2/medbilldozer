@@ -1972,8 +1972,8 @@ def render_importer():
 
     progress_cols = st.columns(2)
     steps = [
-        ("1️⃣", "Select Entity"),
-        ("2️⃣", "View Results")
+        ("", "Select Entity"),
+        ("", "View Results")
     ]
 
     for idx, (emoji, label) in enumerate(steps, 1):
