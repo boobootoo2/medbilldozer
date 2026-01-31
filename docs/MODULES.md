@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 40
+**Total Modules:** 46
 
 ### Application (5 modules)
 
@@ -14,8 +14,10 @@
 - **_modules.ingest.api**: Demo-Only Healthcare Data Ingestion API
 - **app**: MedBillDozer - Medical billing error detection application.
 
-### Core Business Logic (4 modules)
+### Core Business Logic (6 modules)
 
+- **_modules.core.analysis_runner**: Document analysis workflow runner and coordination.
+- **_modules.core.auth**: Authentication and access control for the application.
 - **_modules.core.coverage_matrix**: Cross-document coverage matrix builder.
 - **_modules.core.document_identity**: Document identity and labeling utilities.
 - **_modules.core.orchestrator_agent**: Main workflow orchestration for healthcare document analysis.
@@ -29,12 +31,13 @@
 - **_modules.extractors.local_heuristic_extractor**: Deterministic local heuristic fact extractor.
 - **_modules.extractors.openai_langextractor**: OpenAI-based LLM fact extractor and generic prompt runner.
 
-### LLM Providers (4 modules)
+### LLM Providers (5 modules)
 
 - **_modules.providers.gemini_analysis_provider**: Gemini-powered healthcare document analysis provider.
 - **_modules.providers.llm_interface**: Model-agnostic LLM interface for medBillDozer.
 - **_modules.providers.medgemma_hosted_provider**: MedGemma hosted model analysis provider.
 - **_modules.providers.openai_analysis_provider**: OpenAI-powered healthcare document analysis provider.
+- **_modules.providers.provider_registry**: Provider registration and management for LLM analysis providers.
 
 ### Prompt Builders (5 modules)
 
@@ -44,14 +47,17 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (13 modules)
+### UI Components (16 modules)
 
 - **_modules.ui.api_docs_page**: Interactive API Documentation Page for Streamlit
+- **_modules.ui.audio_controls**: Audio Controls - Mute/unmute button for audio narration.
 - **_modules.ui.billdozer_widget**: No description
+- **_modules.ui.bootstrap**: UI bootstrap and initialization functions.
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
 - **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial using Streamlit Session State (No JavaScript).
 - **_modules.ui.guided_tour_old**: Guided Tour - Interactive tutorial using Intro.js.
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
+- **_modules.ui.page_router**: Page navigation and routing for the application.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
 - **_modules.ui.splash_screen**: Splash Screen - Welcome screen with Billdozer introduction.
@@ -66,6 +72,78 @@
 - **_modules.utils.image_paths**: Image path utilities for handling local vs production CDN URLs.
 - **_modules.utils.runtime_flags**: Runtime flags and feature toggles.
 - **_modules.utils.serialization**: Serialization utilities for converting analysis objects to dicts.
+
+
+## Module: `_modules.core.analysis_runner`
+
+**Source:** `_modules/core/analysis_runner.py`
+
+### Description
+
+Document analysis workflow runner and coordination.
+
+### Functions
+
+#### `render_total_savings_summary(total_potential_savings, per_document_savings)`
+
+Render aggregate savings summary across all analyzed documents.
+
+Args:
+    total_potential_savings: Total potential savings amount
+    per_document_savings: Dict mapping document IDs to their savings amounts
+
+#### `run_document_analysis(documents, agent, analyze_clicked) -> Optional[Dict[str, Any]]`
+
+Run analysis on all documents and return aggregate results.
+
+Args:
+    documents: List of document dictionaries with raw_text
+    agent: Configured OrchestratorAgent instance
+    analyze_clicked: True if analysis was triggered by button click
+
+Returns:
+    Dict with total_savings, per_document_savings, and documents, or None if error
+
+#### `render_cached_results(documents, total_potential_savings, per_document_savings)`
+
+Render previously analyzed results from cache.
+
+Args:
+    documents: List of document dictionaries with analysis results
+    total_potential_savings: Total potential savings amount
+    per_document_savings: Dict mapping document IDs to their savings amounts
+
+
+### Dependencies
+
+- `_modules.core.coverage_matrix`
+- `_modules.core.document_identity`
+- `_modules.core.orchestrator_agent`
+- `_modules.core.transaction_normalization`
+- `_modules.ui.billdozer_widget`
+- `_modules.ui.doc_assistant`
+- `_modules.ui.ui`
+- `_modules.ui.ui_coverage_matrix`
+- `_modules.ui.ui_pipeline_dag`
+- `_modules.utils.config`
+- `_modules.utils.serialization`
+
+## Module: `_modules.core.auth`
+
+**Source:** `_modules/core/auth.py`
+
+### Description
+
+Authentication and access control for the application.
+
+### Functions
+
+#### `check_access_password() -> bool`
+
+Check if access password is required and validate user input.
+
+Returns:
+    bool: True if access is granted, False if password gate should be shown
 
 
 ## Module: `_modules.core.coverage_matrix`
@@ -1698,6 +1776,35 @@ OpenAI-powered analysis provider.
 
 - `_modules.providers.llm_interface`
 
+## Module: `_modules.providers.provider_registry`
+
+**Source:** `_modules/providers/provider_registry.py`
+
+### Description
+
+Provider registration and management for LLM analysis providers.
+
+### Constants
+
+- **`ENGINE_OPTIONS`**: `{'Smart (Recommended)': None, 'gpt-4o-mini': 'gpt-4o-mini', 'gemini-3-flash-preview': 'gemini-3-flash-preview', 'Local (Offline)': 'heuristic'}`
+
+### Functions
+
+#### `register_providers()`
+
+Register available LLM analysis providers.
+
+Attempts to register MedGemma, Gemini, and OpenAI providers.
+Only registers providers that pass health checks.
+
+
+### Dependencies
+
+- `_modules.providers.gemini_analysis_provider`
+- `_modules.providers.llm_interface`
+- `_modules.providers.medgemma_hosted_provider`
+- `_modules.providers.openai_analysis_provider`
+
 ## Module: `_modules.ui.api_docs_page`
 
 **Source:** `_modules/ui/api_docs_page.py`
@@ -1757,6 +1864,72 @@ Render code examples in multiple languages
 - `_modules.data.fictional_entities`
 - `_modules.ingest.api`
 
+## Module: `_modules.ui.audio_controls`
+
+**Source:** `_modules/ui/audio_controls.py`
+
+### Description
+
+Audio Controls - Mute/unmute button for audio narration.
+
+Provides a persistent mute button that controls all audio playback
+across splash screen and guided tour.
+
+### Functions
+
+#### `initialize_audio_state()`
+
+Initialize audio state in session state.
+
+#### `is_audio_muted() -> bool`
+
+Check if audio is currently muted.
+
+Returns:
+    bool: True if audio is muted or disabled in config
+
+#### `toggle_mute()`
+
+Toggle audio mute state.
+
+#### `render_mute_button()`
+
+Render a floating mute/unmute button in the top-right corner.
+
+The button appears as a small icon button that persists across pages
+and controls all audio playback.
+
+#### `render_inline_mute_button()`
+
+Render an inline mute button (for use within other components).
+
+This is a smaller, more compact version suitable for embedding
+in other UI elements.
+
+#### `get_audio_enabled_for_javascript() -> str`
+
+Get audio enabled state as JavaScript boolean.
+
+Returns:
+    str: JavaScript boolean ('true' or 'false')
+
+#### `inject_audio_state_into_html(html) -> str`
+
+Inject audio mute state into HTML/JavaScript.
+
+Replaces placeholder {{AUDIO_ENABLED}} with actual state.
+
+Args:
+    html: HTML string with {{AUDIO_ENABLED}} placeholder
+    
+Returns:
+    str: HTML with audio state injected
+
+
+### Dependencies
+
+- `_modules.utils.config`
+
 ## Module: `_modules.ui.billdozer_widget`
 
 **Source:** `_modules/ui/billdozer_widget.py`
@@ -1785,6 +1958,44 @@ Also stores message in session state transcript.
 
 Render billdozer widget in sidebar with bubble styling.
 
+
+## Module: `_modules.ui.bootstrap`
+
+**Source:** `_modules/ui/bootstrap.py`
+
+### Description
+
+UI bootstrap and initialization functions.
+
+### Functions
+
+#### `should_enable_guided_tour() -> bool`
+
+Check if guided tour should be enabled based on environment variable.
+
+Returns:
+    bool: True if tour should be enabled
+
+#### `bootstrap_ui_minimal()`
+
+Initialize minimal UI components for all pages.
+
+Sets up page configuration, CSS styles, and header.
+Should be called on all pages (home and profile).
+
+#### `bootstrap_home_page()`
+
+Initialize home page specific UI components.
+
+Renders demo documents and contextual help.
+Should only be called on the home page.
+
+
+### Dependencies
+
+- `_modules.ui.doc_assistant`
+- `_modules.ui.ui`
+- `_modules.utils.config`
 
 ## Module: `_modules.ui.doc_assistant`
 
@@ -2017,6 +2228,10 @@ Resume a paused tour.
 Check if the tour is currently paused.
 
 
+### Dependencies
+
+- `_modules.ui.audio_controls`
+
 ## Module: `_modules.ui.guided_tour_old`
 
 **Source:** `_modules/ui/guided_tour_old.py`
@@ -2117,7 +2332,7 @@ and demographic information for demo and testing purposes.
 
 ### Constants
 
-- **`SAMPLE_PROFILES`**: `{'policyholder': {'id': 'PH-001', 'name': 'John Sample', 'date_of_birth': '01/15/1975', 'age': 51, 'gender': 'Male', 'relationship': 'Policy Holder', 'insurance': {'provider': 'Horizon PPO Plus', 'member_id': 'HPP-8743920', 'group_number': 'G-1234567', 'plan_type': 'PPO', 'effective_date': '01/01/2025', 'deductible_annual': 1500.0, 'deductible_met': 1500.0, 'oop_max': 3000.0, 'oop_met': 1500.0, 'in_network_providers': ['Valley Medical Center', 'Dr. Sarah Mitchell', 'Dr. Michael Reynolds', 'HealthFirst Medical Group', 'BrightSmile Dental', 'Dr. Laura Chen, DDS'], 'out_of_network_providers': ['GreenLeaf Pharmacy', 'QuickCare Urgent Care'], 'in_network_codes': [{'code': '99213', 'description': 'Office Visit - Established Patient (15 min)', 'accepted_fee': 125.0}, {'code': '99214', 'description': 'Office Visit - Established Patient (25 min)', 'accepted_fee': 185.0}, {'code': '99215', 'description': 'Office Visit - Established Patient (40 min)', 'accepted_fee': 245.0}, {'code': '45378', 'description': 'Colonoscopy - Diagnostic', 'accepted_fee': 1200.0}, {'code': '80053', 'description': 'Comprehensive Metabolic Panel', 'accepted_fee': 45.0}, {'code': '85025', 'description': 'Complete Blood Count (CBC)', 'accepted_fee': 35.0}, {'code': '93000', 'description': 'Electrocardiogram (EKG)', 'accepted_fee': 85.0}, {'code': '71045', 'description': 'Chest X-Ray - Single View', 'accepted_fee': 120.0}], 'out_of_network_codes': [{'code': '99213', 'description': 'Office Visit - Established Patient (15 min)', 'accepted_fee': 100.0}, {'code': '99214', 'description': 'Office Visit - Established Patient (25 min)', 'accepted_fee': 148.0}, {'code': '99215', 'description': 'Office Visit - Established Patient (40 min)', 'accepted_fee': 196.0}, {'code': '45378', 'description': 'Colonoscopy - Diagnostic', 'accepted_fee': 960.0}, {'code': '80053', 'description': 'Comprehensive Metabolic Panel', 'accepted_fee': 36.0}, {'code': '85025', 'description': 'Complete Blood Count (CBC)', 'accepted_fee': 28.0}, {'code': '93000', 'description': 'Electrocardiogram (EKG)', 'accepted_fee': 68.0}, {'code': '71045', 'description': 'Chest X-Ray - Single View', 'accepted_fee': 96.0}]}, 'medical_history': {'conditions': ['Hypertension (controlled)', 'Type 2 Diabetes', 'Hyperlipidemia'], 'medications': ['Lisinopril 10mg daily', 'Metformin 500mg twice daily', 'Atorvastatin 20mg at bedtime'], 'allergies': ['Penicillin (rash)', 'Sulfa drugs (hives)'], 'recent_procedures': [{'date': '01/12/2026', 'procedure': 'Screening Colonoscopy', 'provider': 'Valley Medical Center', 'cpt_code': '45378', 'cost': 1200.0, 'out_of_pocket': 100.0}, {'date': '11/05/2025', 'procedure': 'Annual Physical Exam', 'provider': 'Dr. Sarah Mitchell', 'cpt_code': '99396', 'cost': 350.0, 'out_of_pocket': 0.0}], 'upcoming_appointments': [{'date': '03/15/2026', 'type': 'Follow-up', 'provider': 'Dr. Michael Reynolds', 'reason': 'Post-colonoscopy review'}]}, 'fsa_hsa': {'account_type': 'FSA', 'plan_year': 2026, 'annual_contribution': 2850.0, 'balance_remaining': 2247.5, 'claims_submitted': 5, 'claims_approved': 4, 'claims_pending': 0, 'claims_denied': 1, 'eligible_expenses': ['Medical copays and deductibles', 'Prescription medications', 'Dental treatments and cleanings', 'Vision exams and eyeglasses', 'Contact lenses and solution', 'Over-the-counter medications (with prescription)', 'Medical equipment (blood pressure monitors, diabetic supplies)', 'Physical therapy copays', 'Chiropractic services', 'Mental health services', 'Laboratory tests and diagnostic services', 'Hearing aids and batteries', 'Orthodontia (braces)', 'Wheelchair and mobility aids', 'First aid supplies', 'Sunscreen (SPF 15+)', 'Prenatal vitamins (with prescription)', 'Smoking cessation programs', 'Weight loss programs (for specific medical conditions)'], 'ineligible_expenses': ['Vitamins and supplements (without prescription)', 'Cosmetic procedures', 'Gym memberships (unless prescribed)', 'Health club dues', 'Cosmetic dentistry (teeth whitening)', 'Hair transplants', 'Nutritional supplements']}}, 'dependent': {'id': 'DEP-001', 'name': 'Jane Sample', 'date_of_birth': '08/22/1986', 'age': 39, 'gender': 'Female', 'relationship': 'Spouse', 'insurance': {'provider': 'Horizon PPO Plus', 'member_id': 'HPP-8743921', 'group_number': 'G-1234567', 'plan_type': 'PPO', 'effective_date': '01/01/2025', 'deductible_annual': 1500.0, 'deductible_met': 450.0, 'oop_max': 3000.0, 'oop_met': 850.0, 'in_network_providers': ['Valley Medical Center', 'Dr. Sarah Mitchell', 'Dr. Michael Reynolds', 'HealthFirst Medical Group', 'BrightSmile Dental', 'Dr. Laura Chen, DDS', 'Dr. Jennifer Adams'], 'out_of_network_providers': ['GreenLeaf Pharmacy', 'QuickCare Urgent Care'], 'in_network_codes': [{'code': '99213', 'description': 'Office Visit - Established Patient (15 min)', 'accepted_fee': 125.0}, {'code': '99214', 'description': 'Office Visit - Established Patient (25 min)', 'accepted_fee': 185.0}, {'code': '99215', 'description': 'Office Visit - Established Patient (40 min)', 'accepted_fee': 245.0}, {'code': '45378', 'description': 'Colonoscopy - Diagnostic', 'accepted_fee': 1200.0}, {'code': '80053', 'description': 'Comprehensive Metabolic Panel', 'accepted_fee': 45.0}, {'code': '85025', 'description': 'Complete Blood Count (CBC)', 'accepted_fee': 35.0}, {'code': '93000', 'description': 'Electrocardiogram (EKG)', 'accepted_fee': 85.0}, {'code': '71045', 'description': 'Chest X-Ray - Single View', 'accepted_fee': 120.0}], 'out_of_network_codes': [{'code': '99213', 'description': 'Office Visit - Established Patient (15 min)', 'accepted_fee': 100.0}, {'code': '99214', 'description': 'Office Visit - Established Patient (25 min)', 'accepted_fee': 148.0}, {'code': '99215', 'description': 'Office Visit - Established Patient (40 min)', 'accepted_fee': 196.0}, {'code': '45378', 'description': 'Colonoscopy - Diagnostic', 'accepted_fee': 960.0}, {'code': '80053', 'description': 'Comprehensive Metabolic Panel', 'accepted_fee': 36.0}, {'code': '85025', 'description': 'Complete Blood Count (CBC)', 'accepted_fee': 28.0}, {'code': '93000', 'description': 'Electrocardiogram (EKG)', 'accepted_fee': 68.0}, {'code': '71045', 'description': 'Chest X-Ray - Single View', 'accepted_fee': 96.0}]}, 'medical_history': {'conditions': ['Seasonal Allergies', 'Mild Asthma (controlled)'], 'medications': ['Cetirizine 10mg as needed', 'Albuterol inhaler as needed', 'Multivitamin daily'], 'allergies': ['Shellfish (anaphylaxis)', 'Cat dander'], 'recent_procedures': [{'date': '01/20/2026', 'procedure': 'Dental Crown (Tooth #14)', 'provider': 'BrightSmile Dental', 'cdt_code': 'D2740', 'cost': 2500.0, 'out_of_pocket': 1625.0}, {'date': '01/18/2026', 'procedure': 'Prescription Refill', 'provider': 'GreenLeaf Pharmacy', 'medication': 'Albuterol Inhaler', 'cost': 45.0, 'out_of_pocket': 15.0}, {'date': '10/12/2025', 'procedure': 'Annual Gynecological Exam', 'provider': 'Dr. Jennifer Adams', 'cpt_code': '99385', 'cost': 285.0, 'out_of_pocket': 0.0}], 'upcoming_appointments': [{'date': '02/28/2026', 'type': 'Dental Follow-up', 'provider': 'Dr. Laura Chen, DDS', 'reason': 'Crown check-up'}, {'date': '04/10/2026', 'type': 'Annual Physical', 'provider': 'Dr. Sarah Mitchell', 'reason': 'Preventive care'}]}, 'fsa_hsa': {'account_type': 'FSA', 'plan_year': 2026, 'annual_contribution': 2850.0, 'balance_remaining': 2247.5, 'claims_submitted': 5, 'claims_approved': 4, 'claims_pending': 0, 'claims_denied': 1, 'eligible_expenses': ['Medical copays and deductibles', 'Prescription medications', 'Dental treatments and cleanings', 'Vision exams and eyeglasses', 'Contact lenses and solution', 'Over-the-counter medications (with prescription)', 'Medical equipment (blood pressure monitors, diabetic supplies)', 'Physical therapy copays', 'Chiropractic services', 'Mental health services', 'Laboratory tests and diagnostic services', 'Hearing aids and batteries', 'Orthodontia (braces)', 'Wheelchair and mobility aids', 'First aid supplies', 'Sunscreen (SPF 15+)', 'Prenatal vitamins (with prescription)', 'Smoking cessation programs', 'Weight loss programs (for specific medical conditions)'], 'ineligible_expenses': ['Vitamins and supplements (without prescription)', 'Cosmetic procedures', 'Gym memberships (unless prescribed)', 'Health club dues', 'Cosmetic dentistry (teeth whitening)', 'Hair transplants', 'Nutritional supplements']}}}`
+- **`SAMPLE_PROFILES`**: `{'policyholder': {'id': 'PH-001', 'name': 'John Sample', 'date_of_birth': '01/15/1975', 'age': 51, 'gender': 'Male', 'relationship': 'Policy Holder', 'insurance': {'provider': 'Horizon PPO Plus', 'member_id': 'HPP-8743920', 'group_number': 'G-1234567', 'plan_type': 'PPO', 'effective_date': '01/01/2025', 'deductible_annual': 1500.0, 'deductible_met': 1500.0, 'oop_max': 3000.0, 'oop_met': 1500.0, 'in_network_providers': ['Valley Medical Center', 'Dr. Sarah Mitchell', 'Dr. Michael Reynolds', 'HealthFirst Medical Group', 'BrightSmile Dental', 'Dr. Laura Chen, DDS'], 'out_of_network_providers': ['GreenLeaf Pharmacy', 'QuickCare Urgent Care'], 'in_network_codes': [{'code': '99213', 'description': 'Office Visit - Established Patient (15 min)', 'accepted_fee': 125.0}, {'code': '99214', 'description': 'Office Visit - Established Patient (25 min)', 'accepted_fee': 185.0}, {'code': '99215', 'description': 'Office Visit - Established Patient (40 min)', 'accepted_fee': 245.0}, {'code': '45378', 'description': 'Colonoscopy - Diagnostic', 'accepted_fee': 1200.0}, {'code': '80053', 'description': 'Comprehensive Metabolic Panel', 'accepted_fee': 45.0}, {'code': '85025', 'description': 'Complete Blood Count (CBC)', 'accepted_fee': 35.0}, {'code': '93000', 'description': 'Electrocardiogram (EKG)', 'accepted_fee': 85.0}, {'code': '71045', 'description': 'Chest X-Ray - Single View', 'accepted_fee': 120.0}], 'out_of_network_codes': [{'code': '99213', 'description': 'Office Visit - Established Patient (15 min)', 'accepted_fee': 100.0}, {'code': '99214', 'description': 'Office Visit - Established Patient (25 min)', 'accepted_fee': 148.0}, {'code': '99215', 'description': 'Office Visit - Established Patient (40 min)', 'accepted_fee': 196.0}, {'code': '45378', 'description': 'Colonoscopy - Diagnostic', 'accepted_fee': 960.0}, {'code': '80053', 'description': 'Comprehensive Metabolic Panel', 'accepted_fee': 36.0}, {'code': '85025', 'description': 'Complete Blood Count (CBC)', 'accepted_fee': 28.0}, {'code': '93000', 'description': 'Electrocardiogram (EKG)', 'accepted_fee': 68.0}, {'code': '71045', 'description': 'Chest X-Ray - Single View', 'accepted_fee': 96.0}]}, 'medical_history': {'conditions': ['Hypertension (controlled)', 'Type 2 Diabetes', 'Hyperlipidemia'], 'medications': ['Lisinopril 10mg daily', 'Metformin 500mg twice daily', 'Atorvastatin 20mg at bedtime'], 'allergies': ['Penicillin (rash)', 'Sulfa drugs (hives)'], 'recent_procedures': [{'date': '01/12/2026', 'procedure': 'Screening Colonoscopy', 'provider': 'Valley Medical Center', 'cpt_code': '45378', 'cost': 1200.0, 'out_of_pocket': 100.0}, {'date': '11/05/2025', 'procedure': 'Annual Physical Exam', 'provider': 'Dr. Sarah Mitchell', 'cpt_code': '99396', 'cost': 350.0, 'out_of_pocket': 0.0}], 'upcoming_appointments': [{'date': '03/15/2026', 'type': 'Follow-up', 'provider': 'Dr. Michael Reynolds', 'reason': 'Post-colonoscopy review'}]}, 'fsa_hsa': {'account_type': 'FSA', 'plan_year': 2026, 'annual_contribution': 2850.0, 'balance_remaining': 2247.5, 'claims_submitted': 5, 'claims_approved': 4, 'claims_pending': 0, 'claims_denied': 1, 'eligible_expenses': ['Medical copays and deductibles', 'Prescription medications', 'Dental treatments and cleanings', 'Vision exams and eyeglasses', 'Contact lenses and solution', 'Over-the-counter medications (with prescription)', 'Medical equipment (blood pressure monitors, diabetic supplies)', 'Physical therapy copays', 'Chiropractic services', 'Mental health services', 'Laboratory tests and diagnostic services', 'Hearing aids and batteries', 'Orthodontia (braces)', 'Wheelchair and mobility aids', 'First aid supplies', 'Sunscreen (SPF 15+)', 'Prenatal vitamins (with prescription)', 'Smoking cessation programs', 'Weight loss programs (for specific medical conditions)'], 'ineligible_expenses': ['Vitamins and supplements (without prescription)', 'Cosmetic procedures', 'Gym memberships (unless prescribed)', 'Health club dues', 'Cosmetic dentistry (teeth whitening)', 'Hair transplants', 'Nutritional supplements']}, 'stored_receipts': [{'id': 'RCP-001', 'date': '01/12/2026', 'provider': 'Valley Medical Center', 'service': 'Screening Colonoscopy', 'cpt_code': '45378', 'billed_amount': 1450.0, 'insurance_paid': 1100.0, 'patient_paid': 100.0, 'status': 'Paid', 'notes': 'Billed $250 over in-network accepted fee of $1200'}, {'id': 'RCP-002', 'date': '11/05/2025', 'provider': 'Dr. Sarah Mitchell', 'service': 'Annual Physical Exam', 'cpt_code': '99396', 'billed_amount': 350.0, 'insurance_paid': 350.0, 'patient_paid': 0.0, 'status': 'Paid', 'notes': 'Preventive care - 100% covered'}, {'id': 'RCP-003', 'date': '12/15/2025', 'provider': 'GreenLeaf Pharmacy', 'service': 'Metformin 500mg (90-day supply)', 'ndc_code': '00093-7214-01', 'billed_amount': 85.0, 'insurance_paid': 68.0, 'patient_paid': 17.0, 'status': 'Paid', 'notes': 'Out-of-network pharmacy - 80% reimbursement'}, {'id': 'RCP-004', 'date': '10/22/2025', 'provider': 'Valley Medical Center Lab', 'service': 'Comprehensive Metabolic Panel', 'cpt_code': '80053', 'billed_amount': 65.0, 'insurance_paid': 45.0, 'patient_paid': 0.0, 'status': 'Paid', 'notes': 'Billed $20 over accepted fee - deductible already met'}, {'id': 'RCP-005', 'date': '09/18/2025', 'provider': 'Dr. Michael Reynolds', 'service': 'Follow-up Visit - Diabetes Management', 'cpt_code': '99214', 'billed_amount': 220.0, 'insurance_paid': 185.0, 'patient_paid': 35.0, 'status': 'Paid', 'notes': 'Overcharged $35 - accepted fee is $185'}, {'id': 'RCP-006', 'date': '08/30/2025', 'provider': 'HealthFirst Medical Group', 'service': 'Chest X-Ray - Single View', 'cpt_code': '71045', 'billed_amount': 180.0, 'insurance_paid': 120.0, 'patient_paid': 60.0, 'status': 'Paid', 'notes': 'Overcharged $60 - in-network accepted fee is $120'}, {'id': 'RCP-007', 'date': '07/14/2025', 'provider': 'QuickCare Urgent Care', 'service': 'Urgent Care Visit - Minor Injury', 'cpt_code': '99213', 'billed_amount': 175.0, 'insurance_paid': 80.0, 'patient_paid': 95.0, 'status': 'Paid', 'notes': 'Out-of-network - Patient balance billed $75 over accepted fee'}, {'id': 'RCP-008', 'date': '06/05/2025', 'provider': 'Valley Medical Center Lab', 'service': 'Complete Blood Count (CBC)', 'cpt_code': '85025', 'billed_amount': 55.0, 'insurance_paid': 35.0, 'patient_paid': 0.0, 'status': 'Paid', 'notes': 'Billed $20 over in-network accepted fee of $35'}, {'id': 'RCP-009', 'date': '05/20/2025', 'provider': 'Dr. Sarah Mitchell', 'service': 'Office Visit - Hypertension Check', 'cpt_code': '99213', 'billed_amount': 125.0, 'insurance_paid': 125.0, 'patient_paid': 0.0, 'status': 'Paid', 'notes': 'Correctly billed at in-network accepted fee'}, {'id': 'RCP-010', 'date': '04/10/2025', 'provider': 'Valley Medical Center', 'service': 'Electrocardiogram (EKG)', 'cpt_code': '93000', 'billed_amount': 135.0, 'insurance_paid': 85.0, 'patient_paid': 50.0, 'status': 'Paid', 'notes': 'Overcharged $50 - in-network accepted fee is $85'}]}, 'dependent': {'id': 'DEP-001', 'name': 'Jane Sample', 'date_of_birth': '08/22/1986', 'age': 39, 'gender': 'Female', 'relationship': 'Spouse', 'insurance': {'provider': 'Horizon PPO Plus', 'member_id': 'HPP-8743921', 'group_number': 'G-1234567', 'plan_type': 'PPO', 'effective_date': '01/01/2025', 'deductible_annual': 1500.0, 'deductible_met': 450.0, 'oop_max': 3000.0, 'oop_met': 850.0, 'in_network_providers': ['Valley Medical Center', 'Dr. Sarah Mitchell', 'Dr. Michael Reynolds', 'HealthFirst Medical Group', 'BrightSmile Dental', 'Dr. Laura Chen, DDS', 'Dr. Jennifer Adams'], 'out_of_network_providers': ['GreenLeaf Pharmacy', 'QuickCare Urgent Care'], 'in_network_codes': [{'code': '99213', 'description': 'Office Visit - Established Patient (15 min)', 'accepted_fee': 125.0}, {'code': '99214', 'description': 'Office Visit - Established Patient (25 min)', 'accepted_fee': 185.0}, {'code': '99215', 'description': 'Office Visit - Established Patient (40 min)', 'accepted_fee': 245.0}, {'code': '45378', 'description': 'Colonoscopy - Diagnostic', 'accepted_fee': 1200.0}, {'code': '80053', 'description': 'Comprehensive Metabolic Panel', 'accepted_fee': 45.0}, {'code': '85025', 'description': 'Complete Blood Count (CBC)', 'accepted_fee': 35.0}, {'code': '93000', 'description': 'Electrocardiogram (EKG)', 'accepted_fee': 85.0}, {'code': '71045', 'description': 'Chest X-Ray - Single View', 'accepted_fee': 120.0}], 'out_of_network_codes': [{'code': '99213', 'description': 'Office Visit - Established Patient (15 min)', 'accepted_fee': 100.0}, {'code': '99214', 'description': 'Office Visit - Established Patient (25 min)', 'accepted_fee': 148.0}, {'code': '99215', 'description': 'Office Visit - Established Patient (40 min)', 'accepted_fee': 196.0}, {'code': '45378', 'description': 'Colonoscopy - Diagnostic', 'accepted_fee': 960.0}, {'code': '80053', 'description': 'Comprehensive Metabolic Panel', 'accepted_fee': 36.0}, {'code': '85025', 'description': 'Complete Blood Count (CBC)', 'accepted_fee': 28.0}, {'code': '93000', 'description': 'Electrocardiogram (EKG)', 'accepted_fee': 68.0}, {'code': '71045', 'description': 'Chest X-Ray - Single View', 'accepted_fee': 96.0}]}, 'medical_history': {'conditions': ['Seasonal Allergies', 'Mild Asthma (controlled)'], 'medications': ['Cetirizine 10mg as needed', 'Albuterol inhaler as needed', 'Multivitamin daily'], 'allergies': ['Shellfish (anaphylaxis)', 'Cat dander'], 'recent_procedures': [{'date': '01/20/2026', 'procedure': 'Dental Crown (Tooth #14)', 'provider': 'BrightSmile Dental', 'cdt_code': 'D2740', 'cost': 2500.0, 'out_of_pocket': 1625.0}, {'date': '01/18/2026', 'procedure': 'Prescription Refill', 'provider': 'GreenLeaf Pharmacy', 'medication': 'Albuterol Inhaler', 'cost': 45.0, 'out_of_pocket': 15.0}, {'date': '10/12/2025', 'procedure': 'Annual Gynecological Exam', 'provider': 'Dr. Jennifer Adams', 'cpt_code': '99385', 'cost': 285.0, 'out_of_pocket': 0.0}], 'upcoming_appointments': [{'date': '02/28/2026', 'type': 'Dental Follow-up', 'provider': 'Dr. Laura Chen, DDS', 'reason': 'Crown check-up'}, {'date': '04/10/2026', 'type': 'Annual Physical', 'provider': 'Dr. Sarah Mitchell', 'reason': 'Preventive care'}]}, 'fsa_hsa': {'account_type': 'FSA', 'plan_year': 2026, 'annual_contribution': 2850.0, 'balance_remaining': 2247.5, 'claims_submitted': 5, 'claims_approved': 4, 'claims_pending': 0, 'claims_denied': 1, 'eligible_expenses': ['Medical copays and deductibles', 'Prescription medications', 'Dental treatments and cleanings', 'Vision exams and eyeglasses', 'Contact lenses and solution', 'Over-the-counter medications (with prescription)', 'Medical equipment (blood pressure monitors, diabetic supplies)', 'Physical therapy copays', 'Chiropractic services', 'Mental health services', 'Laboratory tests and diagnostic services', 'Hearing aids and batteries', 'Orthodontia (braces)', 'Wheelchair and mobility aids', 'First aid supplies', 'Sunscreen (SPF 15+)', 'Prenatal vitamins (with prescription)', 'Smoking cessation programs', 'Weight loss programs (for specific medical conditions)'], 'ineligible_expenses': ['Vitamins and supplements (without prescription)', 'Cosmetic procedures', 'Gym memberships (unless prescribed)', 'Health club dues', 'Cosmetic dentistry (teeth whitening)', 'Hair transplants', 'Nutritional supplements']}, 'stored_receipts': [{'id': 'RCP-D001', 'date': '01/20/2026', 'provider': 'BrightSmile Dental', 'service': 'Dental Crown (Tooth #14)', 'cdt_code': 'D2740', 'billed_amount': 2500.0, 'insurance_paid': 875.0, 'patient_paid': 1625.0, 'status': 'Paid', 'notes': '35% dental coverage - remaining balance paid out-of-pocket'}, {'id': 'RCP-D002', 'date': '01/18/2026', 'provider': 'GreenLeaf Pharmacy', 'service': 'Albuterol Inhaler (90mcg)', 'ndc_code': '59310-579-18', 'billed_amount': 55.0, 'insurance_paid': 40.0, 'patient_paid': 15.0, 'status': 'Paid', 'notes': 'Out-of-network pharmacy - 80% reimbursement after copay'}, {'id': 'RCP-D003', 'date': '12/28/2025', 'provider': 'Dr. Laura Chen, DDS', 'service': 'Dental Cleaning & Exam', 'cdt_code': 'D1110,D0150', 'billed_amount': 225.0, 'insurance_paid': 225.0, 'patient_paid': 0.0, 'status': 'Paid', 'notes': 'Preventive dental - 100% covered'}, {'id': 'RCP-D004', 'date': '11/15/2025', 'provider': 'Valley Medical Center Lab', 'service': 'Allergy Panel (Comprehensive)', 'cpt_code': '86003', 'billed_amount': 385.0, 'insurance_paid': 308.0, 'patient_paid': 77.0, 'status': 'Paid', 'notes': '80% coverage after deductible'}, {'id': 'RCP-D005', 'date': '10/12/2025', 'provider': 'Dr. Jennifer Adams', 'service': 'Annual Gynecological Exam', 'cpt_code': '99385', 'billed_amount': 285.0, 'insurance_paid': 285.0, 'patient_paid': 0.0, 'status': 'Paid', 'notes': 'Preventive care - 100% covered'}, {'id': 'RCP-D006', 'date': '09/08/2025', 'provider': 'HealthFirst Medical Group', 'service': 'Asthma Management Visit', 'cpt_code': '99214', 'billed_amount': 210.0, 'insurance_paid': 185.0, 'patient_paid': 25.0, 'status': 'Paid', 'notes': 'Overcharged $25 - in-network accepted fee is $185'}, {'id': 'RCP-D007', 'date': '08/14/2025', 'provider': 'QuickCare Urgent Care', 'service': 'Urgent Care Visit - Allergic Reaction', 'cpt_code': '99213', 'billed_amount': 195.0, 'insurance_paid': 80.0, 'patient_paid': 115.0, 'status': 'Paid', 'notes': 'Out-of-network - Balance billed $95 over accepted fee'}, {'id': 'RCP-D008', 'date': '07/20/2025', 'provider': 'GreenLeaf Pharmacy', 'service': 'Cetirizine 10mg (90-day supply)', 'ndc_code': '63868-0986-90', 'billed_amount': 45.0, 'insurance_paid': 36.0, 'patient_paid': 9.0, 'status': 'Paid', 'notes': 'Out-of-network - 80% reimbursement'}, {'id': 'RCP-D009', 'date': '06/10/2025', 'provider': 'Valley Medical Center', 'service': 'Pulmonary Function Test', 'cpt_code': '94060', 'billed_amount': 275.0, 'insurance_paid': 220.0, 'patient_paid': 55.0, 'status': 'Paid', 'notes': 'Overcharged - typical in-network fee is $220'}, {'id': 'RCP-D010', 'date': '05/05/2025', 'provider': 'Dr. Sarah Mitchell', 'service': 'Office Visit - Follow-up', 'cpt_code': '99213', 'billed_amount': 125.0, 'insurance_paid': 125.0, 'patient_paid': 0.0, 'status': 'Paid', 'notes': 'Correctly billed at in-network accepted fee'}]}}`
 
 ### Functions
 
@@ -2127,6 +2342,20 @@ Render profile selection dropdown.
 
 Returns:
     str: Selected profile key ('policyholder', 'dependent', or None)
+
+#### `render_receipt_uploader()`
+
+Render receipt upload interface with session storage.
+
+Allows users to upload receipt images/PDFs and stores them in session state
+for use in analysis context.
+
+#### `get_uploaded_receipts_context() -> str`
+
+Generate context string for uploaded receipts.
+
+Returns:
+    str: Formatted context string for LLM analysis
 
 #### `render_profile_details(profile_key)`
 
@@ -2155,6 +2384,45 @@ Args:
 Returns:
     str: Formatted context string
 
+
+## Module: `_modules.ui.page_router`
+
+**Source:** `_modules/ui/page_router.py`
+
+### Description
+
+Page navigation and routing for the application.
+
+### Functions
+
+#### `render_page_navigation()`
+
+Render page navigation controls in the sidebar.
+
+Shows navigation buttons for Home, Profile (if enabled), and API pages.
+Also renders audio controls and guided tour if enabled.
+
+Returns:
+    str: Current page name ('home', 'profile', or 'api')
+
+#### `route_to_page(page) -> bool`
+
+Route to the specified page and render its content.
+
+Args:
+    page: Page name ('home', 'profile', or 'api')
+
+Returns:
+    bool: True if page was rendered (app should stop), False if should continue to home page
+
+
+### Dependencies
+
+- `_modules.ui.api_docs_page`
+- `_modules.ui.audio_controls`
+- `_modules.ui.bootstrap`
+- `_modules.ui.guided_tour`
+- `_modules.ui.profile_editor`
 
 ## Module: `_modules.ui.privacy_ui`
 
@@ -2315,6 +2583,27 @@ Import job tracking.
 - `completed_at`
 - `error_message`
 
+#### `Receipt`
+
+**Inherits from:** `TypedDict`
+
+Receipt tracking and management.
+
+**Attributes:**
+- `receipt_id`
+- `file_name`
+- `document_fingerprint`
+- `source_method`
+- `file_type`
+- `raw_content`
+- `status`
+- `amount`
+- `date`
+- `provider`
+- `notes`
+- `created_at`
+- `updated_at`
+
 
 ### Functions
 
@@ -2374,6 +2663,14 @@ Load normalized line items from disk.
 
 Save normalized line items to disk with atomic write.
 
+#### `load_receipts() -> List[Receipt]`
+
+Load receipts from disk, or return sample receipts if none exist.
+
+#### `save_receipts(receipts) -> None`
+
+Save receipts to disk with atomic write.
+
 #### `initialize_profile_state()`
 
 Initialize profile editor session state variables.
@@ -2401,6 +2698,10 @@ Render healthcare provider management interface.
 #### `render_provider_form(providers)`
 
 Render provider edit/create form.
+
+#### `render_receipts_manager()`
+
+Render receipts management interface with upload/paste and status table.
 
 #### `render_importer_step1()`
 
@@ -2503,6 +2804,7 @@ User can click dismiss button to proceed to main app.
 
 ### Dependencies
 
+- `_modules.ui.audio_controls`
 - `_modules.ui.billdozer_widget`
 
 ## Module: `_modules.ui.ui`
@@ -2950,6 +3252,22 @@ Check if guided tour feature is enabled.
 
 Check if privacy UI is enabled.
 
+#### `is_audio_enabled() -> bool`
+
+Check if audio narration is enabled.
+
+#### `is_audio_autoplay_enabled() -> bool`
+
+Check if audio autoplay is enabled.
+
+#### `should_show_mute_button() -> bool`
+
+Check if mute button should be shown in UI.
+
+#### `get_default_volume() -> float`
+
+Get default audio volume (0.0 to 1.0).
+
 #### `is_coverage_matrix_enabled() -> bool`
 
 Check if coverage matrix feature is enabled.
@@ -3081,54 +3399,7 @@ MedBillDozer - Medical billing error detection application.
 Main Streamlit application that orchestrates document analysis, provider registration,
 and UI rendering for detecting billing, pharmacy, dental, and insurance claim issues.
 
-### Constants
-
-- **`ENGINE_OPTIONS`**: `{'Smart (Recommended)': None, 'gpt-4o-mini': 'gpt-4o-mini', 'gemini-3-flash-preview': 'gemini-3-flash-preview', 'Local (Offline)': 'heuristic'}`
-
 ### Functions
-
-#### `check_access_password() -> bool`
-
-Check if access password is required and validate user input.
-
-Returns:
-    bool: True if access is granted, False if password gate should be shown
-
-#### `should_enable_guided_tour() -> bool`
-
-Check if guided tour should be enabled based on environment variable.
-
-Returns:
-    bool: True if tour should be enabled
-
-#### `render_total_savings_summary(total_potential_savings, per_document_savings)`
-
-Render aggregate savings summary across all analyzed documents.
-
-Args:
-    total_potential_savings: Total potential savings amount
-    per_document_savings: Dict mapping document IDs to their savings amounts
-
-#### `bootstrap_ui_minimal()`
-
-Initialize minimal UI components for all pages.
-
-Sets up page configuration, CSS styles, and header.
-Should be called on all pages (home and profile).
-
-#### `bootstrap_home_page()`
-
-Initialize home page specific UI components.
-
-Renders demo documents and contextual help.
-Should only be called on the home page.
-
-#### `register_providers()`
-
-Register available LLM analysis providers.
-
-Attempts to register MedGemma, Gemini, and OpenAI providers.
-Only registers providers that pass health checks.
 
 #### `main()`
 
@@ -3146,26 +3417,22 @@ Orchestrates the complete workflow:
 
 ### Dependencies
 
+- `_modules.core.analysis_runner`
+- `_modules.core.auth`
 - `_modules.core.coverage_matrix`
-- `_modules.core.document_identity`
 - `_modules.core.orchestrator_agent`
-- `_modules.core.transaction_normalization`
-- `_modules.providers.gemini_analysis_provider`
 - `_modules.providers.llm_interface`
-- `_modules.providers.medgemma_hosted_provider`
-- `_modules.providers.openai_analysis_provider`
-- `_modules.ui.api_docs_page`
-- `_modules.ui.billdozer_widget`
+- `_modules.providers.provider_registry`
+- `_modules.ui.audio_controls`
+- `_modules.ui.bootstrap`
 - `_modules.ui.doc_assistant`
 - `_modules.ui.guided_tour`
 - `_modules.ui.health_profile`
+- `_modules.ui.page_router`
 - `_modules.ui.privacy_ui`
-- `_modules.ui.profile_editor`
 - `_modules.ui.splash_screen`
 - `_modules.ui.ui`
 - `_modules.ui.ui_coverage_matrix`
 - `_modules.ui.ui_documents`
-- `_modules.ui.ui_pipeline_dag`
 - `_modules.utils.config`
 - `_modules.utils.runtime_flags`
-- `_modules.utils.serialization`

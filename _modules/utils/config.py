@@ -43,6 +43,12 @@ class AppConfig:
                 "default_narrator": "billie",
                 "widget_position": "top",
                 "show_skip_button": True
+            },
+            "audio": {
+                "enabled": True,
+                "autoplay": True,
+                "show_mute_button": True,
+                "default_volume": 1.0
             }
         },
         "ui": {
@@ -245,6 +251,29 @@ def is_guided_tour_enabled() -> bool:
 def is_privacy_ui_enabled() -> bool:
     """Check if privacy UI is enabled."""
     return get_config().is_feature_enabled("privacy_ui")
+
+
+def is_audio_enabled() -> bool:
+    """Check if audio narration is enabled."""
+    return get_config().is_feature_enabled("audio")
+
+
+def is_audio_autoplay_enabled() -> bool:
+    """Check if audio autoplay is enabled."""
+    config = get_config()
+    return config.get("features.audio.autoplay", True)
+
+
+def should_show_mute_button() -> bool:
+    """Check if mute button should be shown in UI."""
+    config = get_config()
+    return config.get("features.audio.show_mute_button", True)
+
+
+def get_default_volume() -> float:
+    """Get default audio volume (0.0 to 1.0)."""
+    config = get_config()
+    return config.get("features.audio.default_volume", 1.0)
 
 
 def is_coverage_matrix_enabled() -> bool:

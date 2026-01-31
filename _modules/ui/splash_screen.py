@@ -14,6 +14,7 @@ from _modules.ui.billdozer_widget import (
     install_billdozer_bridge,
     dispatch_widget_message,
 )
+from _modules.ui.audio_controls import is_audio_muted
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +112,9 @@ def render_splash_screen():
     """
     # Pre-generate audio files (will use cache if already exist)
     prepare_splash_audio()
+    
+    # Check if audio is muted
+    audio_muted = is_audio_muted()
     
     # Check which audio files are available and convert to base64 data URIs
     import json
@@ -320,6 +324,9 @@ def render_splash_screen():
     <button class="audio-enable-btn" id="audio-enable-btn">
         🔊 Enable Audio
     </button>
+    <button class="get-started-btn" id="get-started-btn">
+        Get Started 🚀
+    </button>
     <div class="splash-content">
         <div class="splash-title">
         <img src="https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/avatars/transparent/billy__eyes_open__billdozer_up.png" alt="Billy character with eyes open looking up" style="
@@ -345,8 +352,24 @@ def render_splash_screen():
                 
                 .splash-widget-container .billdozer_animation {
                     position: relative;
-                    width: 33.3333%;
                     height: 140px;
+                }
+                
+                .splash-widget-container .billdozer_animation:first-of-type {
+                    width: 20%;
+                }
+                
+                .splash-widget-container .billdozer_animation:nth-of-type(2) {
+                    width: 60%;
+                }
+                
+                .splash-widget-container .billdozer_animation:nth-of-type(2) img {
+                    width: 100px;
+                    height: auto;
+                }
+                
+                .splash-widget-container .billdozer_animation:nth-of-type(3) {
+                    width: 20%;
                 }
                 
                 .splash-widget-container .billdozer_animation img {
@@ -413,7 +436,7 @@ def render_splash_screen():
                     background: white;
                     border-radius: 10px;
                     padding: 8px 12px;
-                    font-size: 14px;
+                    font-size: 18px;
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
                     margin-bottom: 60px;
                     position: relative;
@@ -481,28 +504,77 @@ def render_splash_screen():
                 background: rgba(255, 255, 255, 0.7);
                 }
                 
+                /* Transcript Accordion */
+                .transcript-accordion {
+                    margin-top: 12px;
+                    text-align: center;
+                }
+                
+                .transcript-accordion summary {
+                    cursor: pointer;
+                    padding: 8px 16px;
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 8px;
+                    color: white;
+                    font-size: 14px;
+                    font-weight: 600;
+                    list-style: none;
+                    display: inline-block;
+                    transition: all 0.2s ease;
+                    user-select: none;
+                }
+                
+                .transcript-accordion summary::-webkit-details-marker {
+                    display: none;
+                }
+                
+                .transcript-accordion summary::before {
+                    content: '▶ ';
+                    display: inline-block;
+                    transition: transform 0.2s ease;
+                    margin-right: 8px;
+                }
+                
+                .transcript-accordion[open] summary::before {
+                    transform: rotate(90deg);
+                }
+                
+                .transcript-accordion summary:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-color: rgba(255, 255, 255, 0.5);
+                }
+                
+                .transcript-accordion .transcript-content {
+                    margin-top: 12px;
+                    max-height: 70px;
+                    overflow-y: auto;
+                    text-align: center;
+                }
+                
                 /* Audio Enable Button */
                 .audio-enable-btn {
                     position: absolute;
                     top: 20px;
-                    right: 20px;
+                    right: 30px;
                     background: rgba(255, 255, 255, 0.2);
-                    border: 2px solid white;
+                    border: 3px solid white;
                     color: white;
-                    padding: 10px 20px;
-                    border-radius: 25px;
+                    border-radius: 50px;
                     cursor: pointer;
-                    font-size: 14px;
-                    font-weight: 600;
+                    font-size: 16px;
+                    font-weight: 700;
                     backdrop-filter: blur(10px);
                     transition: all 0.3s ease;
                     z-index: 10000;
                     display: none;
+                    height: 48px;
+                    box-sizing: border-box;
                 }
                 
                 .audio-enable-btn:hover {
                     background: rgba(255, 255, 255, 0.3);
-                    transform: scale(1.05);
+                    transform: translateY(-2px);
                 }
                 
                 .audio-enable-btn.show {
@@ -513,6 +585,99 @@ def render_splash_screen():
                 @keyframes pulse {
                     0%, 100% { opacity: 1; }
                     50% { opacity: 0.7; }
+                }
+                
+                /* Get Started Button */
+                .get-started-btn {
+                    position: absolute;
+                    top: 20px;
+                    left: 30px;
+                    background: white;
+                    border: 3px solid white;
+                    color: #667eea;
+                    border-radius: 50px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 700;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                    backdrop-filter: blur(10px);
+                    transition: all 0.3s ease;
+                    z-index: 10000;
+                    height: 48px;
+                    box-sizing: border-box;
+                }
+                
+                .get-started-btn:hover {
+                    background: #f0f0f0;
+                    transform: translateY(-2px);
+                    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+                }
+                
+                @media (max-width: 932px) and (orientation: landscape) {
+                    .get-started-btn {
+                        font-size: 14px;
+                        height: 40px;
+                    }
+                    .audio-enable-btn {
+                        font-size: 14px;
+                        height: 40px;
+                    }
+                }
+                
+                @media (max-width: 1024px) {
+                    .get-started-btn {
+                        top: 50px;
+                    }
+                    .audio-enable-btn {
+                        top: 50px;
+                    }
+                }
+                /* Transcript Accordion */
+                .transcript-accordion {
+                    margin-top: 12px;
+                    text-align: center;
+                }
+                
+                .transcript-accordion summary {
+                    cursor: pointer;
+                    padding: 8px 16px;
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 8px;
+                    color: white;
+                    font-size: 14px;
+                    font-weight: 600;
+                    list-style: none;
+                    display: inline-block;
+                    transition: all 0.2s ease;
+                    user-select: none;
+                }
+                
+                .transcript-accordion summary::-webkit-details-marker {
+                    display: none;
+                }
+                
+                .transcript-accordion summary::before {
+                    content: '▶ ';
+                    display: inline-block;
+                    transition: transform 0.2s ease;
+                    margin-right: 8px;
+                }
+                
+                .transcript-accordion[open] summary::before {
+                    transform: rotate(90deg);
+                }
+                
+                .transcript-accordion summary:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-color: rgba(255, 255, 255, 0.5);
+                }
+                
+                .transcript-accordion .transcript-content {
+                    margin-top: 12px;
+                    max-height: 70px;
+                    overflow-y: auto;
+                    text-align: center;
                 }
 
 
@@ -549,8 +714,11 @@ def render_splash_screen():
             </div>
         </div>
 
-<div
-  id="splash-transcript"
+<details class="transcript-accordion">
+  <summary>Transcript</summary>
+  <div class="transcript-content">
+    <div
+      id="splash-transcript"
   role="region"
   aria-label="Billdozer spoken messages"
   style="
@@ -582,8 +750,9 @@ def render_splash_screen():
     <p class="transcript-line" data-index="2">
     Ready to see how easy it is to double-check your bills?
     </p>
-
     </div>
+  </div>
+</details>
 
     </div>
     </div>
@@ -606,8 +775,11 @@ def render_splash_screen():
         const audioFiles = """ + audio_files_json + """;
         console.log("[Splash Widget] Audio files:", audioFiles);
         
-        // Track if audio has been enabled
-        let audioEnabled = false;
+        // Track if audio has been enabled or muted (from Python config)
+        const audioMuted = """ + ("true" if audio_muted else "false") + """;
+        console.log("[Splash Widget] Audio muted:", audioMuted);
+        
+        let audioEnabled = !audioMuted;
         let audioBlockedDetected = false;
         const audioEnableBtn = document.getElementById('audio-enable-btn');
         
@@ -692,7 +864,7 @@ def render_splash_screen():
         console.log("[Splash Widget] Total audio elements created:", audioElements.filter(a => a !== null).length);
         
         const queue = [];
-        const maxChars = 40;
+        const maxChars = 70;
         
         rawMessages.forEach(({ character, message }, msgIndex) => {
             // Split message into words
@@ -764,8 +936,8 @@ def render_splash_screen():
                 });
             }
             
-            // Play audio only on first chunk of each message
-            if (isFirstChunk) {
+            // Play audio only on first chunk of each message (and if not muted)
+            if (isFirstChunk && !audioMuted) {
                 console.log(`[Splash Widget] First chunk of message ${audioIndex}`);
                 console.log(`[Splash Widget] Audio element exists?`, !!audioElements[audioIndex]);
                 console.log(`[Splash Widget] Audio element:`, audioElements[audioIndex]);
@@ -833,7 +1005,7 @@ def render_splash_screen():
                 speechLayer.style.display = "none";
                 container.classList.remove("talking-left", "talking-right");
                 console.log("[Splash Widget] Message complete, waiting before next");
-                setTimeout(playNext, 300);
+                setTimeout(playNext, 1200);
             }, 3000);
         }
         
@@ -861,6 +1033,71 @@ def render_splash_screen():
             });
         }
         
+        // Get Started button click handler
+        const getStartedBtn = document.getElementById('get-started-btn');
+        if (getStartedBtn) {
+            getStartedBtn.addEventListener('click', function() {
+                console.log('[Splash Widget] 🚀 User clicked Get Started button');
+                
+                // Find and click the Streamlit button in parent document
+                if (window.parent && window.parent.document) {
+                    const parentDoc = window.parent.document;
+                    
+                    // Try multiple selectors to find the button
+                    let hiddenButton = null;
+                    
+                    // Try 1: By aria-label
+                    hiddenButton = parentDoc.querySelector('button[aria-label="Get Started"]');
+                    if (hiddenButton) {
+                        console.log('[Splash Widget] ✅ Found button by aria-label');
+                    }
+                    
+                    // Try 2: By help text
+                    if (!hiddenButton) {
+                        hiddenButton = parentDoc.querySelector('button[title="Get Started"]');
+                        if (hiddenButton) {
+                            console.log('[Splash Widget] ✅ Found button by title');
+                        }
+                    }
+                    
+                    // Try 3: Find any button with the arrow icon text
+                    if (!hiddenButton) {
+                        const buttons = parentDoc.querySelectorAll('button[data-testid*="baseButton"]');
+                        for (let btn of buttons) {
+                            if (btn.textContent.trim() === '▶' || btn.textContent.includes('▶')) {
+                                hiddenButton = btn;
+                                console.log('[Splash Widget] ✅ Found button by icon text');
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Try 4: Find by class structure (column with button)
+                    if (!hiddenButton) {
+                        const buttons = parentDoc.querySelectorAll('button');
+                        console.log('[Splash Widget] 🔍 Searching through', buttons.length, 'buttons...');
+                        for (let btn of buttons) {
+                            const text = btn.textContent.trim();
+                            console.log('[Splash Widget] 🔍 Button text:', text);
+                            if (text === '▶') {
+                                hiddenButton = btn;
+                                console.log('[Splash Widget] ✅ Found button by exact match');
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (hiddenButton) {
+                        console.log('[Splash Widget] ✅ Clicking button...');
+                        hiddenButton.click();
+                        console.log('[Splash Widget] ✅ Button clicked successfully');
+                    } else {
+                        console.error('[Splash Widget] ❌ Could not find hidden button after all attempts');
+                    }
+                }
+            });
+        }
+        
         // Start showing messages after a brief delay
         setTimeout(() => {
             console.log("[Splash Widget] Starting welcome message sequence");
@@ -872,44 +1109,26 @@ def render_splash_screen():
     </script>
     """, height=1000, scrolling=False)
 
-    # Style and render dismiss button positioned over splash screen
+    # Actual Streamlit button (positioned off-screen but functional)
+    # Using custom CSS to hide it visually but keep it in DOM for JavaScript
     st.markdown("""
         <style>
-        div[data-testid="stButton"] > button[kind="primary"] {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10000;
-            background: white !important;
-            color: #667eea !important;
-            font-size: 18px;
-            font-weight: 700;
-            padding: 16px 48px;
-            border-radius: 50px;
-            border: 3px solid white !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: auto;
+        /* Hide the dismiss button container visually but keep in DOM */
+        div[data-testid="column"]:has(button[aria-label="Get Started"]) {
+            position: fixed !important;
+            left: -9999px !important;
+            top: -9999px !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
         }
-        div[data-testid="stButton"] > button[kind="primary"]:hover {
-            transform: translateX(-50%) translateY(-2px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-            background: #f0f0f0 !important;
-            width: auto;
+        /* Make sure button itself is still clickable via JavaScript */
+        button[aria-label="Get Started"] {
+            pointer-events: auto !important;
         }
-        
-
-        @media (max-width: 932px) and (orientation: landscape) {
-        div[data-testid="stButton"] > button[kind="primary"] {
-            bottom: 10px;
-        }
-        }
-
         </style>
     """, unsafe_allow_html=True)
     
-    if st.button("Get Started 🚀", key="dismiss_splash_btn", type="primary"):
+    # Create button with clear aria-label for JavaScript to find
+    if st.button("▶", key="dismiss_splash_btn", type="secondary", help="Get Started", use_container_width=False):
         dismiss_splash_screen()
         st.rerun()

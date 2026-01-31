@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 40
+**Total Modules:** 46
 
 ### Application (5 modules)
 
@@ -14,8 +14,10 @@
 - **_modules.ingest.api**: Demo-Only Healthcare Data Ingestion API
 - **app**: MedBillDozer - Medical billing error detection application.
 
-### Core Business Logic (4 modules)
+### Core Business Logic (6 modules)
 
+- **_modules.core.analysis_runner**: Document analysis workflow runner and coordination.
+- **_modules.core.auth**: Authentication and access control for the application.
 - **_modules.core.coverage_matrix**: Cross-document coverage matrix builder.
 - **_modules.core.document_identity**: Document identity and labeling utilities.
 - **_modules.core.orchestrator_agent**: Main workflow orchestration for healthcare document analysis.
@@ -29,12 +31,13 @@
 - **_modules.extractors.local_heuristic_extractor**: Deterministic local heuristic fact extractor.
 - **_modules.extractors.openai_langextractor**: OpenAI-based LLM fact extractor and generic prompt runner.
 
-### LLM Providers (4 modules)
+### LLM Providers (5 modules)
 
 - **_modules.providers.gemini_analysis_provider**: Gemini-powered healthcare document analysis provider.
 - **_modules.providers.llm_interface**: Model-agnostic LLM interface for medBillDozer.
 - **_modules.providers.medgemma_hosted_provider**: MedGemma hosted model analysis provider.
 - **_modules.providers.openai_analysis_provider**: OpenAI-powered healthcare document analysis provider.
+- **_modules.providers.provider_registry**: Provider registration and management for LLM analysis providers.
 
 ### Prompt Builders (5 modules)
 
@@ -44,14 +47,17 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (13 modules)
+### UI Components (16 modules)
 
 - **_modules.ui.api_docs_page**: Interactive API Documentation Page for Streamlit
+- **_modules.ui.audio_controls**: Audio Controls - Mute/unmute button for audio narration.
 - **_modules.ui.billdozer_widget**: No description
+- **_modules.ui.bootstrap**: UI bootstrap and initialization functions.
 - **_modules.ui.doc_assistant**: Documentation Assistant - AI-powered help sidebar.
 - **_modules.ui.guided_tour**: Guided Tour - Interactive tutorial using Streamlit Session State (No JavaScript).
 - **_modules.ui.guided_tour_old**: Guided Tour - Interactive tutorial using Intro.js.
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
+- **_modules.ui.page_router**: Page navigation and routing for the application.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
 - **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
 - **_modules.ui.splash_screen**: Splash Screen - Welcome screen with Billdozer introduction.
