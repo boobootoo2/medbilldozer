@@ -10,6 +10,7 @@ from dataclasses import dataclass
 import os
 from pathlib import Path
 import logging
+from _modules.ui.audio_controls import is_audio_muted
 
 logger = logging.getLogger(__name__)
 
@@ -31,193 +32,187 @@ TOUR_STEPS = [
         id=1,
         title="Welcome to MedBillDozer",
         description=(
-            "👋 Welcome to MedBillDozer. This project demonstrates an end-to-end healthcare "
-            "document analysis system that combines deterministic data pipelines with "
-            "MedGemma, an open-weight healthcare model from Google’s Health AI Developer Foundations, "
-            "for medical reasoning and validation."
+            "👋 Welcome to MedBillDozer. If you have ever tried to reconcile a medical bill, "
+            "an insurance explanation, and a pharmacy receipt at the same time, you already "
+            "understand the problem this project is designed to solve."
         ),
         narration=(
-            "Welcome to MedBillDozer. This project demonstrates an end-to-end healthcare "
-            "document analysis system that combines deterministic data pipelines with "
-            "MedGemma, an open-weight healthcare model from Google’s Health AI Developer Foundations, "
-            "for medical reasoning and validation."
+            "Welcome to MedBillDozer. If you have ever tried to reconcile a medical bill, "
+            "an insurance explanation, and a pharmacy receipt at the same time, you already "
+            "understand the problem this project is designed to solve."
         ),
         target="logo",
         position="top"
     ),
+
     TourStep(
         id=2,
         title="Demo Documents",
         description=(
-            "📋 These sample documents represent common healthcare artifacts used in claims "
-            "and audit workflows, including hospital procedure bills, pharmacy receipts, "
-            "dental statements, FSA statements, and insurance claim histories. Each example "
-            "demonstrates copy-and-paste ingestion of real-world data."
+            "📋 These sample documents reflect the kinds of healthcare paperwork people deal "
+            "with every day, including hospital bills, pharmacy receipts, dental statements, "
+            "FSA summaries, and insurance claim histories."
         ),
         narration=(
-            "These sample documents represent common healthcare artifacts used in claims "
-            "and audit workflows, including hospital procedure bills, pharmacy receipts, "
-            "dental statements, FSA statements, and insurance claim histories."
+            "These sample documents reflect the kinds of healthcare paperwork people deal "
+            "with every day, including hospital bills, pharmacy receipts, dental statements, "
+            "FSA summaries, and insurance claim histories."
         ),
         target="demo_section",
         position="top"
     ),
+
     TourStep(
         id=3,
         title="Document Input",
         description=(
-            "✍️ Documents are ingested as raw text. The system supports multiple documents "
-            "per session to enable cross-document comparison, normalization, and validation."
+            "✍️ Documents are ingested exactly as they appear in the real world, as raw text "
+            "copied from portals, PDFs, or statements, without requiring predefined templates."
         ),
         narration=(
-            "Documents are ingested as raw text. The system supports multiple documents "
-            "per session to enable cross-document comparison, normalization, and validation."
+            "Documents are ingested exactly as they appear in the real world, as raw text "
+            "copied from portals, PDFs, or statements, without requiring predefined templates."
         ),
         target="text_input",
         position="top"
     ),
+
     TourStep(
         id=4,
         title="Multi-Document Analysis",
         description=(
-            "➕ Adding multiple documents allows the system to correlate transactions, "
-            "coverage, and line items across providers, dates of service, and claims."
+            "➕ Adding multiple documents allows the system to compare what was billed, what "
+            "was covered, and what was paid across providers and dates of service."
         ),
         narration=(
-            "Adding multiple documents allows the system to correlate transactions, "
-            "coverage, and line items across providers, dates of service, and claims."
+            "Adding multiple documents allows the system to compare what was billed, what "
+            "was covered, and what was paid across providers and dates of service."
         ),
         target="add_document",
         position="top"
     ),
+
     TourStep(
         id=5,
         title="Analysis Engine Selection",
         description=(
-            "⚙️ The analysis engine is configurable. Reviewers can select which AI model is "
-            "used for downstream medical analysis and validation, including MedGemma from "
-            "Google’s Health AI Developer Foundations, as well as alternative general-purpose models. "
-            "Extraction remains decoupled from analysis to preserve deterministic ingestion."
+            "⚙️ Analysis is intentionally separated from ingestion, allowing deterministic "
+            "fact extraction first and healthcare-aware reasoning only where it adds value."
         ),
         narration=(
-            "The analysis engine is configurable. Reviewers can select which AI model is "
-            "used for downstream medical analysis and validation, including MedGemma from "
-            "Google’s Health AI Developer Foundations, as well as alternative general-purpose models. "
-            "Extraction remains decoupled from analysis to preserve deterministic ingestion."
+            "Analysis is intentionally separated from ingestion, allowing deterministic "
+            "fact extraction first and healthcare-aware reasoning only where it adds value."
         ),
         target="analysis_engine",
         position="top"
     ),
+
     TourStep(
         id=6,
         title="Deterministic Analysis Pipeline",
         description=(
-            "🔍 When analysis begins, documents are first classified using local heuristics, "
-            "then passed through configurable extractors to produce structured facts. "
-            "MedGemma is subsequently used to analyze, validate, and reason over these facts "
-            "in a healthcare-specific context. Fact fingerprints generate stable document IDs, "
-            "ensuring deterministic and idempotent processing across repeated runs."
+            "🔍 When analysis begins, documents follow a predictable path: classification, "
+            "fact extraction, normalization, and validation. Because the same inputs always "
+            "produce the same outputs, data scientists and engineers refer to this property "
+            "as idempotency."
         ),
         narration=(
-            "When analysis begins, documents are first classified using local heuristics, "
-            "then passed through configurable extractors to produce structured facts. "
-            "MedGemma is subsequently used to analyze, validate, and reason over these facts "
-            "in a healthcare-specific context. Fact fingerprints generate stable document IDs, "
-            "ensuring deterministic and idempotent processing across repeated runs."
+            "When analysis begins, documents follow a predictable path: classification, "
+            "fact extraction, normalization, and validation. Because the same inputs always "
+            "produce the same outputs, data scientists and engineers refer to this property "
+            "as idempotency."
         ),
         target="analyze_button",
         position="top"
     ),
+
     TourStep(
         id=7,
         title="Pipeline Observability",
         description=(
-            "📊 Expand the accordion after Document 1 to inspect the execution DAG. "
-            "This provides observability into classification, extraction, normalization, "
-            "and validation stages of the pipeline."
+            "📊 You can expand the execution graph to inspect how each step ran. Data scientists "
+            "and engineers call this a DAG, or Directed Acyclic Graph, which simply means the "
+            "workflow flows forward with no hidden loops or ambiguity."
         ),
         narration=(
-            "You can expand the accordion after Document 1 to inspect the execution DAG. "
-            "This provides observability into classification, extraction, normalization, "
-            "and validation stages of the pipeline."
+            "You can expand the execution graph to inspect how each step ran. Data scientists "
+            "and engineers call this a DAG, or Directed Acyclic Graph, which simply means the "
+            "workflow flows forward with no hidden loops or ambiguity."
         ),
         target="pipeline_dag",
         position="main"
     ),
+
     TourStep(
         id=8,
         title="Analysis Findings",
         description=(
-            "📌 Once processing completes, findings are displayed below, including potential "
-            "billing errors, duplicate charges, coverage inconsistencies, and detected anomalies."
+            "📌 Findings highlight potential billing errors, duplicate charges, coverage "
+            "mismatches, and anomalies that are difficult to catch through manual review."
         ),
         narration=(
-            "Once processing completes, findings are displayed below, including potential "
-            "billing errors, duplicate charges, coverage inconsistencies, and detected anomalies."
+            "Findings highlight potential billing errors, duplicate charges, coverage "
+            "mismatches, and anomalies that are difficult to catch through manual review."
         ),
         target="results_section",
         position="main"
     ),
+
     TourStep(
         id=9,
         title="Sidebar Navigation",
         description=(
-            "💬 The sidebar provides access to system interactions, including querying Billy "
-            "or Billie for explanations, navigating the application, viewing the health profile, "
-            "and importing data from external providers."
+            "💬 The sidebar acts as a control center where users can ask questions, navigate "
+            "the system, and understand why specific conclusions were reached."
         ),
         narration=(
-            "The sidebar provides access to system interactions, including querying Billy "
-            "or Billie for explanations, navigating the application, viewing the health profile, "
-            "and importing data from external providers."
+            "The sidebar acts as a control center where users can ask questions, navigate "
+            "the system, and understand why specific conclusions were reached."
         ),
         target="sidebar",
         position="main"
     ),
+
     TourStep(
         id=10,
         title="Health Profile",
         description=(
-            "👤 The Health Profile stores persistent user context such as insurance coverage "
-            "and provider information, which is used to enrich downstream analysis."
+            "👤 The Health Profile stores insurance coverage and provider relationships so "
+            "documents can be interpreted with the right context."
         ),
         narration=(
-            "The Health Profile stores persistent user context such as insurance coverage "
-            "and provider information, which is used to enrich downstream analysis."
+            "The Health Profile stores insurance coverage and provider relationships so "
+            "documents can be interpreted with the right context."
         ),
         target="profile_button",
         position="sidebar"
     ),
+
     TourStep(
         id=11,
         title="Profile Management",
         description=(
-            "👤 Within the Profile view, users can manage insurance details, provider data, "
-            "and historical medical information. This persistent context enables faster, "
-            "more accurate analysis and supports longitudinal validation across documents."
+            "👤 Over time, this persistent context allows the system to validate new documents "
+            "against historical information instead of starting from scratch."
         ),
         narration=(
-            "Within the Profile view, users can manage insurance details, provider data, "
-            "and historical medical information. This persistent context enables faster, "
-            "more accurate analysis and supports longitudinal validation across documents."
+            "Over time, this persistent context allows the system to validate new documents "
+            "against historical information instead of starting from scratch."
         ),
         target="profile_section",
         position="main"
     ),
+
     TourStep(
         id=12,
         title="Healthcare-Ready API",
         description=(
-            "🔌 MedBillDozer exposes an API for healthcare and insurance systems, enabling "
-            "programmatic ingestion of medical documents and MedGemma-powered analysis "
-            "for validation, anomaly detection, and quality review. This architecture "
-            "supports deployment in privacy-sensitive or offline environments."
+            "🔌 Everything demonstrated here is exposed through an API, making it possible to "
+            "embed the same reconciliation and validation logic into healthcare and insurance systems."
         ),
         narration=(
-            "MedBillDozer exposes an API for healthcare and insurance systems, enabling "
-            "programmatic ingestion of medical documents and MedGemma-powered analysis "
-            "for validation, anomaly detection, and quality review. This architecture "
-            "supports deployment in privacy-sensitive or offline environments."
+            "Everything demonstrated here is exposed through an API, making it possible to "
+            "embed the same reconciliation and validation logic into healthcare and insurance systems."
         ),
         target="api_button",
         position="sidebar"
@@ -357,15 +352,17 @@ def run_guided_tour_runtime():
     # Show tour (already in sidebar context from caller)
     st.markdown("---")
     
-    # Audio narration (generate on-demand with caching)
-    audio_file = generate_audio_narration(current_step.id, current_step.narration)
-    if audio_file and audio_file.exists():
-        try:
-            st.audio(str(audio_file), format="audio/mp3", autoplay=True)
-        except Exception as e:
-            # Silently skip if audio playback fails - don't break the tour
-            logger.debug(f"Audio playback failed: {e}")
-            pass
+    # Audio narration (generate on-demand with caching, only if not muted)
+    audio_file = None
+    if not is_audio_muted():
+        audio_file = generate_audio_narration(current_step.id, current_step.narration)
+        if audio_file and audio_file.exists():
+            try:
+                st.audio(str(audio_file), format="audio/mp3", autoplay=True)
+            except Exception as e:
+                # Silently skip if audio playback fails - don't break the tour
+                logger.debug(f"Audio playback failed: {e}")
+                pass
     
     st.info(f"""
 **Step {current_step.id} of {len(TOUR_STEPS)}: {current_step.title}**

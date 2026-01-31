@@ -1,7 +1,16 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 40,
+  "total_modules": 46,
   "modules": [
+    {
+      "name": "_modules.ui.bootstrap",
+      "filepath": "_modules/ui/bootstrap.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 3,
+      "num_dependencies": 3,
+      "constants": []
+    },
     {
       "name": "_modules.ui.doc_assistant",
       "filepath": "_modules/ui/doc_assistant.py",
@@ -26,8 +35,8 @@
       "name": "_modules.ui.profile_editor",
       "filepath": "_modules/ui/profile_editor.py",
       "has_docstring": true,
-      "num_classes": 6,
-      "num_functions": 32,
+      "num_classes": 7,
+      "num_functions": 35,
       "num_dependencies": 0,
       "constants": []
     },
@@ -36,7 +45,7 @@
       "filepath": "_modules/ui/health_profile.py",
       "has_docstring": true,
       "num_classes": 0,
-      "num_functions": 4,
+      "num_functions": 6,
       "num_dependencies": 0,
       "constants": [
         "SAMPLE_PROFILES"
@@ -66,7 +75,7 @@
       "has_docstring": true,
       "num_classes": 1,
       "num_functions": 28,
-      "num_dependencies": 0,
+      "num_dependencies": 1,
       "constants": [
         "TOUR_STEPS"
       ]
@@ -77,7 +86,7 @@
       "has_docstring": true,
       "num_classes": 0,
       "num_functions": 5,
-      "num_dependencies": 1,
+      "num_dependencies": 2,
       "constants": []
     },
     {
@@ -87,6 +96,15 @@
       "num_classes": 0,
       "num_functions": 10,
       "num_dependencies": 2,
+      "constants": []
+    },
+    {
+      "name": "_modules.ui.page_router",
+      "filepath": "_modules/ui/page_router.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 2,
+      "num_dependencies": 5,
       "constants": []
     },
     {
@@ -129,6 +147,24 @@
       "constants": []
     },
     {
+      "name": "_modules.ui.audio_controls",
+      "filepath": "_modules/ui/audio_controls.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 7,
+      "num_dependencies": 1,
+      "constants": []
+    },
+    {
+      "name": "_modules.core.auth",
+      "filepath": "_modules/core/auth.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 1,
+      "num_dependencies": 0,
+      "constants": []
+    },
+    {
       "name": "_modules.core.coverage_matrix",
       "filepath": "_modules/core/coverage_matrix.py",
       "has_docstring": true,
@@ -144,6 +180,15 @@
       "num_classes": 1,
       "num_functions": 5,
       "num_dependencies": 0,
+      "constants": []
+    },
+    {
+      "name": "_modules.core.analysis_runner",
+      "filepath": "_modules/core/analysis_runner.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 3,
+      "num_dependencies": 11,
       "constants": []
     },
     {
@@ -200,6 +245,17 @@
       "constants": []
     },
     {
+      "name": "_modules.providers.provider_registry",
+      "filepath": "_modules/providers/provider_registry.py",
+      "has_docstring": true,
+      "num_classes": 0,
+      "num_functions": 1,
+      "num_dependencies": 4,
+      "constants": [
+        "ENGINE_OPTIONS"
+      ]
+    },
+    {
       "name": "_modules.providers.openai_analysis_provider",
       "filepath": "_modules/providers/openai_analysis_provider.py",
       "has_docstring": true,
@@ -222,7 +278,7 @@
       "filepath": "_modules/utils/config.py",
       "has_docstring": true,
       "num_classes": 1,
-      "num_functions": 8,
+      "num_functions": 12,
       "num_dependencies": 0,
       "constants": []
     },
@@ -398,11 +454,9 @@
       "filepath": "app.py",
       "has_docstring": true,
       "num_classes": 0,
-      "num_functions": 7,
-      "num_dependencies": 23,
-      "constants": [
-        "ENGINE_OPTIONS"
-      ]
+      "num_functions": 1,
+      "num_dependencies": 19,
+      "constants": []
     }
   ]
 }
