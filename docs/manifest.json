@@ -1,6 +1,6 @@
 {
   "generated_at": "/Users/jgs/Documents/GitHub/medbilldozer",
-  "total_modules": 46,
+  "total_modules": 47,
   "modules": [
     {
       "name": "_modules.ui.bootstrap",
@@ -96,6 +96,15 @@
       "num_classes": 0,
       "num_functions": 10,
       "num_dependencies": 2,
+      "constants": []
+    },
+    {
+      "name": "_modules.ui.prod_workflow",
+      "filepath": "_modules/ui/prod_workflow.py",
+      "has_docstring": true,
+      "num_classes": 1,
+      "num_functions": 6,
+      "num_dependencies": 0,
       "constants": []
     },
     {

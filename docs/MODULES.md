@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 46
+**Total Modules:** 47
 
 ### Application (5 modules)
 
@@ -47,7 +47,7 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (16 modules)
+### UI Components (17 modules)
 
 - **_modules.ui.api_docs_page**: Interactive API Documentation Page for Streamlit
 - **_modules.ui.audio_controls**: Audio Controls - Mute/unmute button for audio narration.
@@ -59,6 +59,7 @@
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
 - **_modules.ui.page_router**: Page navigation and routing for the application.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
+- **_modules.ui.prod_workflow**: Production workflow with profile-based preloaded documents.
 - **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
 - **_modules.ui.splash_screen**: Splash Screen - Welcome screen with Billdozer introduction.
 - **_modules.ui.ui**: No description
@@ -1987,7 +1988,7 @@ Should be called on all pages (home and profile).
 
 Initialize home page specific UI components.
 
-Renders demo documents and contextual help.
+Renders demo documents and contextual help for POC workflow.
 Should only be called on the home page.
 
 
@@ -2456,6 +2457,99 @@ Render privacy dialog if not already acknowledged.
 
 Shows the privacy dialog on first visit. Subsequent visits skip the dialog
 based on session state.
+
+
+## Module: `_modules.ui.prod_workflow`
+
+**Source:** `_modules/ui/prod_workflow.py`
+
+### Description
+
+Production workflow with profile-based preloaded documents.
+
+Provides a production-style interface where documents are preloaded based on
+the selected health profile (policy holder or dependent), with status tracking
+and parallel analysis capabilities.
+
+### Classes
+
+#### `ProfileDocument`
+
+**Inherits from:** `TypedDict`
+
+Document associated with a health profile.
+
+**Attributes:**
+- `doc_id`
+- `profile_id`
+- `profile_name`
+- `doc_type`
+- `provider`
+- `service_date`
+- `amount`
+- `flagged`
+- `status`
+- `content`
+- `action`
+- `action_notes`
+- `action_date`
+
+
+### Functions
+
+#### `get_documents_for_profile(profile_id) -> List[ProfileDocument]`
+
+Get all documents for a specific profile.
+
+Args:
+    profile_id: Profile ID (e.g., 'PH-001', 'DEP-001')
+    
+Returns:
+    List of documents for the profile
+
+#### `get_flagged_documents(profile_id) -> List[ProfileDocument]`
+
+Get all flagged documents, optionally filtered by profile.
+
+Args:
+    profile_id: Optional profile ID to filter by
+    
+Returns:
+    List of flagged documents
+
+#### `get_pending_documents(profile_id) -> List[ProfileDocument]`
+
+Get all pending documents (not yet analyzed).
+
+Args:
+    profile_id: Optional profile ID to filter by
+    
+Returns:
+    List of pending documents
+
+#### `get_actioned_documents(profile_id) -> List[ProfileDocument]`
+
+Get all documents with actions (ignored, followup, resolved).
+
+Args:
+    profile_id: Optional profile ID to filter by
+    
+Returns:
+    List of actioned documents
+
+#### `export_actioned_items_csv(docs) -> str`
+
+Generate CSV content for actioned items.
+
+Args:
+    docs: List of actioned documents
+    
+Returns:
+    CSV formatted string
+
+#### `render_prod_workflow()`
+
+Render production workflow interface with preloaded documents.
 
 
 ## Module: `_modules.ui.profile_editor`

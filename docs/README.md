@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 46
+**Total Modules:** 47
 
 ### Application (5 modules)
 
@@ -47,7 +47,7 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (16 modules)
+### UI Components (17 modules)
 
 - **_modules.ui.api_docs_page**: Interactive API Documentation Page for Streamlit
 - **_modules.ui.audio_controls**: Audio Controls - Mute/unmute button for audio narration.
@@ -59,6 +59,7 @@
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
 - **_modules.ui.page_router**: Page navigation and routing for the application.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
+- **_modules.ui.prod_workflow**: Production workflow with profile-based preloaded documents.
 - **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
 - **_modules.ui.splash_screen**: Splash Screen - Welcome screen with Billdozer introduction.
 - **_modules.ui.ui**: No description
