@@ -1,5 +1,8 @@
 [![Run Tests](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml/badge.svg)](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml)
 
+![CodeQL](https://github.com/boobootoo2/medbilldozer/actions/workflows/codeql.yml/badge.svg)
+
+
 # medBillDozer
 
 **medBillDozer** is an AI-powered assistant that helps patients audit medical bills
