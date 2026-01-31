@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 46
+**Total Modules:** 48
 
 ### Application (5 modules)
 
@@ -47,7 +47,7 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (16 modules)
+### UI Components (17 modules)
 
 - **_modules.ui.api_docs_page**: Interactive API Documentation Page for Streamlit
 - **_modules.ui.audio_controls**: Audio Controls - Mute/unmute button for audio narration.
@@ -59,6 +59,7 @@
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
 - **_modules.ui.page_router**: Page navigation and routing for the application.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
+- **_modules.ui.prod_workflow**: Production workflow with profile-based preloaded documents.
 - **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
 - **_modules.ui.splash_screen**: Splash Screen - Welcome screen with Billdozer introduction.
 - **_modules.ui.ui**: No description
@@ -66,11 +67,12 @@
 - **_modules.ui.ui_documents**: Document input and management UI.
 - **_modules.ui.ui_pipeline_dag**: Pipeline DAG Visualization - Visual representation of document analysis workflow.
 
-### Utilities (4 modules)
+### Utilities (5 modules)
 
 - **_modules.utils.config**: Application Configuration Manager.
 - **_modules.utils.image_paths**: Image path utilities for handling local vs production CDN URLs.
 - **_modules.utils.runtime_flags**: Runtime flags and feature toggles.
+- **_modules.utils.sanitize**: Sanitization utilities for user input to prevent XSS attacks.
 - **_modules.utils.serialization**: Serialization utilities for converting analysis objects to dicts.
 
 
@@ -1987,7 +1989,7 @@ Should be called on all pages (home and profile).
 
 Initialize home page specific UI components.
 
-Renders demo documents and contextual help.
+Renders demo documents and contextual help for POC workflow.
 Should only be called on the home page.
 
 
@@ -2458,6 +2460,156 @@ Shows the privacy dialog on first visit. Subsequent visits skip the dialog
 based on session state.
 
 
+## Module: `_modules.ui.prod_workflow`
+
+**Source:** `_modules/ui/prod_workflow.py`
+
+### Description
+
+Production workflow with profile-based preloaded documents.
+
+Provides a production-style interface where documents are preloaded based on
+the selected health profile (policy holder or dependent), with status tracking
+and parallel analysis capabilities.
+
+### Constants
+
+- **`SAMPLE_IMPORTED_LINE_ITEMS`**: `[{'line_item_id': 'item_demo_001', 'import_job_id': 'job_demo_001', 'service_date': '2026-01-15', 'procedure_code': '99213', 'procedure_description': 'Office Visit - Established Patient', 'provider_name': 'Dr. Sarah Mitchell', 'provider_npi': '1234567890', 'billed_amount': 200.0, 'allowed_amount': 150.0, 'paid_by_insurance': 120.0, 'patient_responsibility': 30.0, 'claim_number': 'CLM-2026-001', 'created_at': '2026-01-20T10:00:00Z'}, {'line_item_id': 'item_demo_002', 'import_job_id': 'job_demo_001', 'service_date': '2026-01-18', 'procedure_code': '80053', 'procedure_description': 'Comprehensive Metabolic Panel', 'provider_name': 'Quest Diagnostics', 'provider_npi': '9876543210', 'billed_amount': 180.0, 'allowed_amount': 120.0, 'paid_by_insurance': 96.0, 'patient_responsibility': 24.0, 'claim_number': 'CLM-2026-002', 'created_at': '2026-01-20T10:00:00Z'}, {'line_item_id': 'item_demo_003', 'import_job_id': 'job_demo_002', 'service_date': '2026-01-22', 'procedure_code': 'D0120', 'procedure_description': 'Periodic Oral Evaluation', 'provider_name': 'Bright Smiles Dental', 'provider_npi': '5555555555', 'billed_amount': 85.0, 'allowed_amount': 70.0, 'paid_by_insurance': 56.0, 'patient_responsibility': 14.0, 'claim_number': 'CLM-2026-003', 'created_at': '2026-01-23T14:30:00Z'}]`
+- **`SAMPLE_INSURANCE_PLAN_DOCUMENT`**: `{'plan_id': 'PLAN-DEMO-001', 'plan_name': 'Horizon PPO Plus', 'carrier': 'Horizon Blue Cross Blue Shield', 'member_id': 'HPP-8743920', 'group_number': 'GRP-55512', 'effective_date': '2026-01-01', 'plan_year': '2026', 'network_type': 'PPO', 'deductible_individual': 1500.0, 'deductible_family': 3000.0, 'deductible_met_individual': 450.0, 'deductible_met_family': 450.0, 'out_of_pocket_max_individual': 5000.0, 'out_of_pocket_max_family': 10000.0, 'out_of_pocket_met_individual': 1250.0, 'out_of_pocket_met_family': 1250.0, 'copay_primary_care': 30.0, 'copay_specialist': 60.0, 'copay_urgent_care': 75.0, 'copay_emergency_room': 250.0, 'copay_generic_rx': 10.0, 'copay_brand_rx': 35.0, 'coinsurance_in_network': 0.2, 'coinsurance_out_of_network': 0.4, 'eligible_services': [{'procedure_code': '99213', 'description': 'Office Visit - Established Patient (15-29 min)', 'in_network_allowed': 150.0, 'out_of_network_allowed': 120.0, 'typical_billed': 200.0, 'subject_to_deductible': True, 'copay_applies': True}, {'procedure_code': '99214', 'description': 'Office Visit - Established Patient (30-39 min)', 'in_network_allowed': 220.0, 'out_of_network_allowed': 176.0, 'typical_billed': 280.0, 'subject_to_deductible': True, 'copay_applies': True}, {'procedure_code': '80053', 'description': 'Comprehensive Metabolic Panel', 'in_network_allowed': 120.0, 'out_of_network_allowed': 96.0, 'typical_billed': 180.0, 'subject_to_deductible': True, 'copay_applies': False}, {'procedure_code': '45378', 'description': 'Colonoscopy, Diagnostic', 'in_network_allowed': 1400.0, 'out_of_network_allowed': 1120.0, 'typical_billed': 2500.0, 'subject_to_deductible': True, 'copay_applies': False}, {'procedure_code': '70553', 'description': 'MRI Brain without and with contrast', 'in_network_allowed': 2200.0, 'out_of_network_allowed': 1760.0, 'typical_billed': 3500.0, 'subject_to_deductible': True, 'copay_applies': False}, {'procedure_code': 'D0120', 'description': 'Periodic Oral Evaluation', 'in_network_allowed': 70.0, 'out_of_network_allowed': 56.0, 'typical_billed': 85.0, 'subject_to_deductible': False, 'copay_applies': True}, {'procedure_code': 'D0220', 'description': 'Intraoral Periapical X-ray - First Film', 'in_network_allowed': 35.0, 'out_of_network_allowed': 28.0, 'typical_billed': 50.0, 'subject_to_deductible': False, 'copay_applies': True}]}`
+
+### Classes
+
+#### `ProfileDocument`
+
+**Inherits from:** `TypedDict`
+
+Document associated with a health profile.
+
+**Attributes:**
+- `doc_id`
+- `profile_id`
+- `profile_name`
+- `doc_type`
+- `provider`
+- `service_date`
+- `amount`
+- `flagged`
+- `status`
+- `content`
+- `action`
+- `action_notes`
+- `action_date`
+
+
+### Functions
+
+#### `get_documents_for_profile(profile_id) -> List[ProfileDocument]`
+
+Get all documents for a specific profile from session state.
+
+Args:
+    profile_id: Profile ID (e.g., 'PH-001', 'DEP-001')
+    
+Returns:
+    List of documents for the profile
+
+#### `get_flagged_documents(profile_id) -> List[ProfileDocument]`
+
+Get all flagged documents, optionally filtered by profile.
+
+Args:
+    profile_id: Optional profile ID to filter by
+    
+Returns:
+    List of flagged documents
+
+#### `get_pending_documents(profile_id) -> List[ProfileDocument]`
+
+Get all pending documents (not yet analyzed).
+
+Args:
+    profile_id: Optional profile ID to filter by
+    
+Returns:
+    List of pending documents
+
+#### `get_actioned_documents(profile_id) -> List[ProfileDocument]`
+
+Get all documents with actions (ignored, followup, resolved).
+
+Args:
+    profile_id: Optional profile ID to filter by
+    
+Returns:
+    List of actioned documents
+
+#### `export_actioned_items_csv(docs) -> str`
+
+Generate CSV content for actioned items.
+
+Args:
+    docs: List of actioned documents
+    
+Returns:
+    CSV formatted string
+
+#### `load_receipts_as_documents() -> List[ProfileDocument]`
+
+Load receipts from profile editor and convert to ProfileDocument format.
+
+Integrates receipts uploaded via the profile editor into the production workflow.
+Receipts are converted to ProfileDocument format and assigned to the active profile.
+
+#### `load_imported_line_items_as_documents() -> List[ProfileDocument]`
+
+Load imported line items from Profile Editor and convert to ProfileDocument format.
+
+Integrates imported data from insurance EOBs and provider bills into the production workflow.
+Each line item becomes a separate document for analysis.
+If no actual imports exist, uses sample data for demonstration.
+
+#### `load_insurance_plan_as_document() -> Optional[ProfileDocument]`
+
+Load insurance plan document showing eligible expenses and network pricing.
+
+Creates a comprehensive plan document that displays coverage details,
+copays, deductibles, and in/out-of-network allowed amounts for procedures.
+
+#### `initialize_prod_workflow_state()`
+
+Initialize session state for production workflow documents.
+
+Combines preloaded sample documents, receipts, imported line items, 
+and insurance plan document from the profile editor.
+
+#### `get_session_documents() -> List[ProfileDocument]`
+
+Get documents from session state, initializing if needed.
+
+#### `update_session_document(doc_id, updates)`
+
+Update a specific document in session state.
+
+Args:
+    doc_id: Document ID to update
+    updates: Dictionary of fields to update
+
+#### `reload_receipts_into_session()`
+
+Reload receipts and imported items from profile editor into session state.
+
+This function checks for new receipts and imported line items, adding them 
+to the session documents if they don't already exist (based on document ID).
+
+#### `render_prod_workflow()`
+
+Render production workflow interface with preloaded documents.
+
+
+### Dependencies
+
+- `_modules.utils.sanitize`
+
 ## Module: `_modules.ui.profile_editor`
 
 **Source:** `_modules/ui/profile_editor.py`
@@ -2753,6 +2905,10 @@ Main entry point for profile editor interface.
 Provides navigation between different profile sections and
 the data importer wizard.
 
+
+### Dependencies
+
+- `_modules.utils.sanitize`
 
 ## Module: `_modules.ui.splash_screen`
 
@@ -3348,6 +3504,151 @@ Debug mode can be activated by adding ?debug=1 to the URL.
 
 Returns:
     bool: True if debug mode is enabled, False otherwise
+
+
+## Module: `_modules.utils.sanitize`
+
+**Source:** `_modules/utils/sanitize.py`
+
+### Description
+
+Sanitization utilities for user input to prevent XSS attacks.
+
+This module provides comprehensive input sanitization to protect against:
+- JavaScript injection
+- HTML injection
+- Script tag injection
+- Event handler injection
+- Data URI schemes
+- Other XSS attack vectors
+
+Use these functions before rendering any user-provided content in the UI.
+
+### Constants
+
+- **`SCRIPT_PATTERNS`**: `<complex value>`
+
+### Functions
+
+#### `sanitize_text(text, allow_newlines) -> str`
+
+Sanitize text input by removing dangerous patterns and escaping HTML.
+
+Args:
+    text: Input text to sanitize (will be converted to string)
+    allow_newlines: If True, preserves newline characters
+    
+Returns:
+    Sanitized text safe for display
+    
+Examples:
+    >>> sanitize_text("<script>alert('xss')</script>Hello")
+    "Hello"
+    >>> sanitize_text("Normal text with <b>tags</b>")
+    "Normal text with &lt;b&gt;tags&lt;/b&gt;"
+
+#### `sanitize_filename(filename) -> str`
+
+Sanitize filename to prevent path traversal and injection.
+
+Args:
+    filename: Filename to sanitize
+    
+Returns:
+    Safe filename with dangerous characters removed
+    
+Examples:
+    >>> sanitize_filename("../../etc/passwd")
+    "passwd"
+    >>> sanitize_filename("file<script>.txt")
+    "file.txt"
+
+#### `sanitize_html_content(content, max_length) -> str`
+
+Sanitize HTML content for safe display in text areas or code blocks.
+
+This is more aggressive than sanitize_text and suitable for
+displaying user-provided content that might contain HTML/code.
+
+Args:
+    content: Content to sanitize
+    max_length: Optional maximum length to truncate to
+    
+Returns:
+    Sanitized content safe for display
+
+#### `sanitize_dict(data, keys_to_sanitize) -> dict`
+
+Recursively sanitize dictionary values.
+
+Args:
+    data: Dictionary to sanitize
+    keys_to_sanitize: Optional list of keys to sanitize. If None, sanitizes all string values.
+    
+Returns:
+    Dictionary with sanitized values
+    
+Examples:
+    >>> sanitize_dict({"name": "<script>alert(1)</script>John", "age": 30})
+    {"name": "John", "age": 30}
+
+#### `sanitize_for_markdown(text) -> str`
+
+Sanitize text for safe use in Streamlit markdown with unsafe_allow_html=True.
+
+This is the most restrictive sanitization and should be used when
+rendering user content in markdown with HTML enabled.
+
+Args:
+    text: Text to sanitize
+    
+Returns:
+    Sanitized text safe for markdown with HTML
+
+#### `sanitize_provider_name(name) -> str`
+
+Sanitize provider/user names for display.
+
+Args:
+    name: Name to sanitize
+    
+Returns:
+    Sanitized name
+
+#### `sanitize_amount(amount) -> float`
+
+Sanitize and validate amount values.
+
+Args:
+    amount: Amount to sanitize
+    
+Returns:
+    Float value, 0.0 if invalid
+
+#### `sanitize_date(date) -> str`
+
+Sanitize date strings.
+
+Args:
+    date: Date to sanitize
+    
+Returns:
+    Sanitized date string or "N/A"
+
+#### `safe_format(template) -> str`
+
+Safely format a string template with sanitized user inputs.
+
+Args:
+    template: Format string
+    **kwargs: Values to format (will be sanitized)
+    
+Returns:
+    Formatted string with sanitized values
+    
+Examples:
+    >>> safe_format("Hello {name}!", name="<script>alert(1)</script>John")
+    "Hello John!"
 
 
 ## Module: `_modules.utils.serialization`

@@ -168,6 +168,10 @@ def render_billdozer_sidebar_widget():
                 </div>
             </div>
         </div>
+        # SECURITY: unsafe_allow_html=True is safe here because:
+        # - Static HTML header for widget styling
+        # - No user input or dynamic content
+        # - Fixed text "BillDozer Status" with styling only
         """, unsafe_allow_html=True)
 
         # Render the actual widget iframe

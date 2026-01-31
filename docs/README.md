@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-**Total Modules:** 46
+**Total Modules:** 48
 
 ### Application (5 modules)
 
@@ -47,7 +47,7 @@
 - **_modules.prompts.medical_line_item_prompt**: Prompt builder for medical bill line item extraction.
 - **_modules.prompts.receipt_line_item_prompt**: No description
 
-### UI Components (16 modules)
+### UI Components (17 modules)
 
 - **_modules.ui.api_docs_page**: Interactive API Documentation Page for Streamlit
 - **_modules.ui.audio_controls**: Audio Controls - Mute/unmute button for audio narration.
@@ -59,6 +59,7 @@
 - **_modules.ui.health_profile**: Health profile management for policy holder and dependents.
 - **_modules.ui.page_router**: Page navigation and routing for the application.
 - **_modules.ui.privacy_ui**: Privacy dialog and cookie preferences UI.
+- **_modules.ui.prod_workflow**: Production workflow with profile-based preloaded documents.
 - **_modules.ui.profile_editor**: Profile Editor - User identity, insurance, and provider management with importer.
 - **_modules.ui.splash_screen**: Splash Screen - Welcome screen with Billdozer introduction.
 - **_modules.ui.ui**: No description
@@ -66,9 +67,10 @@
 - **_modules.ui.ui_documents**: Document input and management UI.
 - **_modules.ui.ui_pipeline_dag**: Pipeline DAG Visualization - Visual representation of document analysis workflow.
 
-### Utilities (4 modules)
+### Utilities (5 modules)
 
 - **_modules.utils.config**: Application Configuration Manager.
 - **_modules.utils.image_paths**: Image path utilities for handling local vs production CDN URLs.
 - **_modules.utils.runtime_flags**: Runtime flags and feature toggles.
+- **_modules.utils.sanitize**: Sanitization utilities for user input to prevent XSS attacks.
 - **_modules.utils.serialization**: Serialization utilities for converting analysis objects to dicts.

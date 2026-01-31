@@ -26,6 +26,10 @@ def check_access_password() -> bool:
         return True
 
     # Show password gate
+    # SECURITY: unsafe_allow_html=True is safe here because:
+    # - Contains only static HTML with no user input
+    # - Used for styling the centered login layout
+    # - No dynamic content or variables in the HTML
     st.markdown("""
     <div style="text-align: center; padding: 50px 20px;">
         <h1>medBillDozer</h1>
