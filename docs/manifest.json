@@ -103,9 +103,11 @@
       "filepath": "_modules/ui/prod_workflow.py",
       "has_docstring": true,
       "num_classes": 1,
-      "num_functions": 6,
+      "num_functions": 12,
       "num_dependencies": 0,
-      "constants": []
+      "constants": [
+        "SAMPLE_IMPORTED_LINE_ITEMS"
+      ]
     },
     {
       "name": "_modules.ui.page_router",
