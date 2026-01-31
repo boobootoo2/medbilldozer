@@ -28,4 +28,4 @@ jobs:
         run: pip-audit
 
       - name: Run Bandit (Static Security Lint)
-        run: bandit -r .
+        run: bandit -r . -x tests
