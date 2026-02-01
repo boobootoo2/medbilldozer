@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 from pathlib import Path
 
-BILLDOZER_TOKEN = "BILLDOZER_v1"
+BILLDOZER_TOKEN = "BILLDOZER_v1"  # nosec B105 - Not a password, just a widget version identifier
 
 _WIDGET_HTML_CACHE = None
 
