@@ -1116,7 +1116,7 @@ def render_receipts_manager():
                 file_bytes = uploaded_file.read()
                 
                 # Create document fingerprint (hash)
-                fingerprint = hashlib.md5(file_bytes).hexdigest()[:12]
+                fingerprint = hashlib.sha256(file_bytes).hexdigest()[:12]
                 
                 # Encode to base64 for storage
                 file_content = base64.b64encode(file_bytes).decode('utf-8')
@@ -1167,7 +1167,7 @@ def render_receipts_manager():
             sanitized_text = sanitize_html_content(pasted_text, max_length=10000)
             
             # Create document fingerprint (hash of sanitized text)
-            fingerprint = hashlib.md5(sanitized_text.encode()).hexdigest()[:12]
+            fingerprint = hashlib.sha256(sanitized_text.encode()).hexdigest()[:12]
             
             new_receipt: Receipt = {
                 'receipt_id': f"rcpt_{datetime.utcnow().timestamp()}",

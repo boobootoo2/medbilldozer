@@ -21,8 +21,12 @@ def is_local_environment() -> bool:
     # Combine all server indicators
     all_addresses = f"{hostname} {streamlit_server} {server_address}".lower()
 
-    # Local indicators - localhost, 127.0.0.1, or any IP address pattern
-    is_localhost = 'localhost' in all_addresses or '127.0.0.1' in all_addresses or '0.0.0.0' in all_addresses
+    # nosec B104 - checking string indicators only, not binding to interfaces
+    is_localhost = (
+        'localhost' in all_addresses
+        or '127.0.0.1' in all_addresses
+        or '0.0.0.0' in all_addresses
+    )
 
     # Check if it's an IP address pattern (e.g., 192.168.x.x, 10.x.x.x)
     ip_pattern = r'\b(?:\d{1,3}\.){3}\d{1,3}\b'
