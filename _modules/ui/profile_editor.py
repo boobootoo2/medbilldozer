@@ -534,6 +534,10 @@ def render_profile_overview():
         if st.button("🏥 Manage Insurance", use_container_width=True):
             st.session_state.profile_page = 'insurance'
             st.rerun()
+        
+        if st.button("🧾 Manage Receipts", use_container_width=True):
+            st.session_state.profile_page = 'receipts'
+            st.rerun()
 
     with col2:
         if st.button("👨‍⚕️ Manage Providers", use_container_width=True):
