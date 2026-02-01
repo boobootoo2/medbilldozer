@@ -80,22 +80,40 @@ TOUR_STEPS = [
         position="main"
     ),
 
-    TourStep(
+   TourStep(
         id=4,
         title="Demo Production Workflow",
         description=(
-            "🚀 The Demo Production Workflow simulates a real-world deployment. "
-            "Documents are preloaded and structured, minimizing user input. "
-            "This reflects how providers or insurance companies could integrate the system at scale."
+            "🚀 The Demo Production Workflow simulates how a healthcare consumer could use "
+            "the system in a structured, real-world scenario. Documents are preloaded and "
+            "persist state across sessions, minimizing repetitive input. Each document can "
+            "carry workflow states such as ignored, resolved, or follow-up, helping consumers "
+            "track which billing issues still need attention. During analysis, potential "
+            "errors are flagged automatically. If a document already has a defined state, "
+            "it is excluded from re-analysis to preserve deterministic processing—what data "
+            "scientists and engineers call idempotency. After analysis, states can be updated "
+            "through the action dropdown, and follow-up issues can be downloaded, making it "
+            "simple for an individual to organize, document, and act on billing disputes "
+            "with confidence."
         ),
         narration=(
-            "The Demo Production Workflow simulates a real-world deployment. "
-            "Documents are preloaded and structured, minimizing user input. "
-            "This reflects how providers or insurance companies could integrate the system at scale."
+            "The Demo Production Workflow simulates how a healthcare consumer could use "
+            "the system in a structured, real-world scenario. Documents are preloaded and "
+            "persist state across sessions, minimizing repetitive input. Each document can "
+            "carry workflow states such as ignored, resolved, or follow-up, helping consumers "
+            "track which billing issues still need attention. During analysis, potential "
+            "errors are flagged automatically. If a document already has a defined state, "
+            "it is excluded from re-analysis to preserve deterministic processing—what data "
+            "scientists and engineers call idempotency. After analysis, states can be updated "
+            "through the action dropdown, and follow-up issues can be downloaded, making it "
+            "simple for an individual to organize, document, and act on billing disputes "
+            "with confidence."
         ),
         target="production_workflow",
         position="top"
     ),
+
+
 
     TourStep(
         id=5,
