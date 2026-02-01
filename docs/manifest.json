@@ -127,7 +127,6 @@
       "num_functions": 4,
       "num_dependencies": 0,
       "constants": [
-        "BILLDOZER_TOKEN",
         "_WIDGET_HTML_CACHE"
       ]
     },
@@ -463,11 +462,6 @@
         "PROVIDER_PRACTICE_TYPES",
         "US_STATES",
         "CITIES",
-        "DEFAULT_INSURANCE_COUNT",
-        "DEFAULT_PROVIDER_COUNT",
-        "DEFAULT_SEED",
-        "ENTITY_TYPE_INSURANCE",
-        "ENTITY_TYPE_PROVIDER",
         "AVAILABLE_SPECIALTIES",
         "AVAILABLE_STATES"
       ]
