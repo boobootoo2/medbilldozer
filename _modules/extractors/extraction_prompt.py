@@ -63,7 +63,7 @@ def _load_contextual_docs() -> str:
                 with open(filepath, 'r', encoding='utf-8') as f:
                     content = f.read()
                     context_parts.append(f"# {filename}\n\n{content}")
-            except Exception:
+            except Exception:  # nosec B110 - Intentionally skip unreadable docs files
                 # Silently skip if file can't be read
                 pass
 

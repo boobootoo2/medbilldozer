@@ -58,7 +58,7 @@ except Exception as e:
     try:
         import traceback
         traceback.print_exc()
-    except Exception:
+    except Exception:  # nosec B110 - Best-effort traceback printing in test script
         pass
     sys.exit(1)
 
