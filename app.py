@@ -165,7 +165,22 @@ def main():
         # Document input (UI ONCE)
         # --------------------------------------------------
         render_contextual_help('input')
-        documents = render_document_inputs()
+        
+        # Preserve documents during tour navigation to prevent clearing analysis state
+        # This includes: completed analysis (doc_results), ongoing analysis (analyzing), 
+        # and pending analysis (pending_analysis)
+        if (st.session_state.get('tour_active', False) and 
+            st.session_state.get('last_documents') and 
+            (st.session_state.get('doc_results', False) or 
+             st.session_state.get('analyzing', False) or 
+             st.session_state.get('pending_analysis', False))):
+            # During active tour with results/analysis, preserve the documents
+            documents = st.session_state.last_documents
+            # Still render the inputs for display, but don't use their output
+            render_document_inputs()
+        else:
+            # Normal flow: get documents from input widgets
+            documents = render_document_inputs()
 
         # Tour monitoring handled by Intro.js
 
@@ -257,8 +272,12 @@ def main():
             st.success("✓ Analysis history cleared")
             st.rerun()
 
-        # Check if we should proceed with analysis (either button clicked or pending from tour rerun)
-        should_analyze = analyze_clicked or st.session_state.get('pending_analysis', False)
+        # Check if we should proceed with analysis (either button clicked, pending, or interrupted)
+        # If analyzing flag is still True, it means analysis was interrupted by a rerun (e.g., tour navigation)
+        # and should be restarted
+        should_analyze = (analyze_clicked or
+                          st.session_state.get('pending_analysis', False) or
+                          st.session_state.get('analyzing', False))
 
         if should_analyze:
             # Validate inputs
@@ -280,11 +299,16 @@ def main():
                     st.session_state.get('tutorial_step') == 'second_document_loaded'):
                 st.session_state.pending_analysis = True
                 st.session_state.analyzing = True
+                # Save documents immediately so they persist during tour navigation
+                st.session_state.last_documents = documents
                 st.rerun()
 
             # Clear pending flag and proceed with analysis
             st.session_state.pending_analysis = False
             st.session_state.analyzing = True
+            
+            # Save documents at start of analysis so they persist during tour navigation
+            st.session_state.last_documents = documents
 
             # Wrap entire analysis in a spinner
             with st.spinner("Analyzing your documents..."):
