@@ -4,6 +4,14 @@ This package contains modules for generating fictional healthcare data
 for demo and educational purposes.
 """
 
+from config import (
+    DEFAULT_INSURANCE_COUNT,
+    DEFAULT_PROVIDER_COUNT,
+    DEFAULT_SEED,
+    ENTITY_TYPE_INSURANCE,
+    ENTITY_TYPE_PROVIDER,
+)
+
 from .fictional_entities import (
     # Type definitions
     HealthcareEntity,
@@ -26,11 +34,6 @@ from .fictional_entities import (
     validate_entity_structure,
 
     # Constants
-    DEFAULT_INSURANCE_COUNT,
-    DEFAULT_PROVIDER_COUNT,
-    DEFAULT_SEED,
-    ENTITY_TYPE_INSURANCE,
-    ENTITY_TYPE_PROVIDER,
     AVAILABLE_SPECIALTIES,
     AVAILABLE_STATES,
 )
