@@ -10,6 +10,14 @@ import random
 from typing import List, TypedDict
 import streamlit as st
 
+from config import (
+    DEFAULT_INSURANCE_COUNT,
+    DEFAULT_PROVIDER_COUNT,
+    DEFAULT_SEED,
+    ENTITY_TYPE_INSURANCE,
+    ENTITY_TYPE_PROVIDER,
+)
+
 
 # ==============================================================================
 # Type Definitions
@@ -498,15 +506,6 @@ def validate_entity_structure(entity: HealthcareEntity) -> bool:
 # ==============================================================================
 # Constants for External Use
 # ==============================================================================
-
-# Default generation parameters
-DEFAULT_INSURANCE_COUNT = 30
-DEFAULT_PROVIDER_COUNT = 10000
-DEFAULT_SEED = 42
-
-# Entity type constants
-ENTITY_TYPE_INSURANCE = "insurance"
-ENTITY_TYPE_PROVIDER = "provider"
 
 # Available specialties (for UI filters)
 AVAILABLE_SPECIALTIES = sorted(PROVIDER_SPECIALTIES)
