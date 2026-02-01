@@ -183,7 +183,7 @@ def atomic_write_json(file_path: Path, data: Dict) -> None:
         # Clean up temp file on error
         try:
             os.unlink(temp_path)
-        except Exception:
+        except Exception:  # nosec B110 - Ignore cleanup errors, main exception is re-raised
             pass
         raise
 
