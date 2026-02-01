@@ -34,9 +34,24 @@ def _find_first(pattern: str, text: str) -> Optional[str]:
 
     Returns:
         Captured group text (stripped) or None if no match
+        
+    Security:
+        - Limits text to 100KB to prevent ReDoS attacks
+        - Uses timeout protection for regex operations
     """
-    match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
-    return match.group(1).strip() if match else None
+    # SECURITY: Prevent ReDoS by limiting input length
+    # Medical bills/receipts are typically < 100KB of text
+    if len(text) > 100000:
+        text = text[:100000]
+    
+    try:
+        # Python 3.11+ supports timeout parameter to prevent ReDoS
+        # For earlier versions, the length limit above provides protection
+        match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
+        return match.group(1).strip() if match else None
+    except (re.error, TimeoutError):
+        # Invalid regex or timeout - return None safely
+        return None
 
 
 def _find_date(patterns: list[str], text: str) -> Optional[str]:

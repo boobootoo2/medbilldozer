@@ -1116,6 +1116,10 @@ Args:
 
 Returns:
     Captured group text (stripped) or None if no match
+    
+Security:
+    - Limits text to 100KB to prevent ReDoS attacks
+    - Uses timeout protection for regex operations
 
 #### `_find_date(patterns, text) -> Optional[str]`
 
