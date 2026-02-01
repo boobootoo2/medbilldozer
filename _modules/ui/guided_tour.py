@@ -151,6 +151,31 @@ TOUR_STEPS = [
 
     TourStep(
         id=7,
+        title="Interactive API Documentation",
+        description=(
+            "🔌 The API Documentation page provides a Swagger-like interactive explorer "
+            "built entirely in Streamlit. You can browse available endpoints, inspect "
+            "request and response schemas, and execute live calls directly in the browser. "
+            "This includes listing entities, ingesting documents, retrieving normalized data, "
+            "checking import status, and reviewing import history. The interface mirrors "
+            "production-style API documentation while allowing hands-on testing without "
+            "requiring authentication in demo mode."
+        ),
+        narration=(
+            "The API Documentation page provides a Swagger-like interactive explorer "
+            "built entirely in Streamlit. You can browse available endpoints, inspect "
+            "request and response schemas, and execute live calls directly in the browser. "
+            "This includes listing entities, ingesting documents, retrieving normalized data, "
+            "checking import status, and reviewing import history. The interface mirrors "
+            "production-style API documentation while allowing hands-on testing without "
+            "requiring authentication in demo mode."
+        ),
+        target="api_docs_page",
+        position="main"
+    ),
+
+    TourStep(
+        id=8,
         title="Re-Analyze Newly Loaded Documents",
         description=(
             "🔄 After importing new data, return to Home and run the Demo Production Workflow again. "
@@ -165,7 +190,7 @@ TOUR_STEPS = [
     ),
 
     TourStep(
-        id=8,
+        id=9,
         title="Take Action on Findings",
         description=(
             "📌 Once results appear, click Actions on any flagged item to decide next steps. "
@@ -182,7 +207,7 @@ TOUR_STEPS = [
     ),
 
     TourStep(
-        id=9,
+        id=10,
         title="Proof of Concept Vision",
         description=(
             "✨ This demonstration shows how billing error detection can be simplified. "
