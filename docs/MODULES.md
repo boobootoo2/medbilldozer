@@ -520,11 +520,6 @@ Uses seeded randomness to ensure consistent data generation across sessions.
 - **`AVAILABLE_SPECIALTIES`**: `<complex value>`
 - **`AVAILABLE_STATES`**: `<complex value>`
 - **`CITIES`**: `['Springfield', 'Riverside', 'Greenville', 'Fairview', 'Madison', 'Georgetown', 'Arlington', 'Franklin', 'Clinton', 'Salem', 'Oxford', 'Manchester', 'Bristol', 'Clayton', 'Milton', 'Newport', 'Ashland', 'Richmond', 'Brookfield', 'Chester']`
-- **`DEFAULT_INSURANCE_COUNT`**: `30`
-- **`DEFAULT_PROVIDER_COUNT`**: `10000`
-- **`DEFAULT_SEED`**: `42`
-- **`ENTITY_TYPE_INSURANCE`**: `insurance`
-- **`ENTITY_TYPE_PROVIDER`**: `provider`
 - **`INSURANCE_PREFIXES`**: `['American', 'United', 'National', 'Pacific', 'Atlantic', 'Mountain', 'Great Lakes', 'Sunshine', 'Liberty', 'Eagle', 'Guardian', 'Premier', 'Mutual', 'Federal', 'State', 'Regional', 'Metropolitan', 'Capital', 'Commonwealth', 'Horizon', 'Beacon', 'Summit', 'Alliance', 'Trust', 'Heritage', 'Advantage', 'Choice', 'First', 'Primary', 'Select']`
 - **`INSURANCE_ROOTS`**: `['Health', 'Medical', 'Care', 'Life', 'Shield', 'Cross', 'Star', 'Benefit', 'Assurance', 'Security', 'Wellness', 'Family', 'Community', 'Partner', 'Plus', 'Pro', 'Elite', 'Prime', 'Standard', 'Classic']`
 - **`INSURANCE_SUFFIXES`**: `['Group', 'Corp', 'Inc', 'LLC', 'Plan', 'Network', 'System', 'Association', 'Fund', 'Cooperative', 'Alliance', 'Partners']`
@@ -1942,7 +1937,6 @@ Returns:
 
 ### Constants
 
-- **`BILLDOZER_TOKEN`**: `BILLDOZER_v1`
 - **`_WIDGET_HTML_CACHE`**: `None`
 
 ### Functions
