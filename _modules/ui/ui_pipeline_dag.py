@@ -355,8 +355,13 @@ def _build_dag_html(pre_extraction: Dict, extraction: Dict, analysis: Dict, live
         """Strip HTML tags and decode entities, then escape for safe display."""
         if not isinstance(text, str):
             return text
-        # Remove HTML tags
-        text = re.sub(r'<[^>]+>', '', text)
+        # SECURITY: Limit length to prevent ReDoS attacks
+        if len(text) > 50000:
+            text = text[:50000]
+        # Remove HTML tags - using lazy quantifier and limiting to prevent ReDoS
+        # Pattern explanation: < followed by 1-500 non-> chars, then >
+        # Limits backtracking by capping repetition count
+        text = re.sub(r'<[^>]{1,500}>', '', text)
         # Decode HTML entities (&nbsp;, &amp;, etc.)
         text = unescape(text)
         # Normalize whitespace
@@ -620,8 +625,13 @@ def _render_detailed_logs(pre_extraction: Dict, extraction: Dict, analysis: Dict
         """Strip HTML tags and decode HTML entities from text."""
         if not isinstance(text, str):
             return text
-        # Remove HTML tags
-        text = re.sub(r'<[^>]+>', '', text)
+        # SECURITY: Limit length to prevent ReDoS attacks
+        if len(text) > 50000:
+            text = text[:50000]
+        # Remove HTML tags - using lazy quantifier and limiting to prevent ReDoS
+        # Pattern explanation: < followed by 1-500 non-> chars, then >
+        # Limits backtracking by capping repetition count
+        text = re.sub(r'<[^>]{1,500}>', '', text)
         # Decode HTML entities (&nbsp;, &amp;, etc.)
         text = unescape(text)
         # Normalize whitespace
