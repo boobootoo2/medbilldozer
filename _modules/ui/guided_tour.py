@@ -48,20 +48,33 @@ TOUR_STEPS = [
 
     TourStep(
         id=2,
-        title="Demo POC Workflow – Copy & Paste",
+        title="Demo Workflow – Copy & Paste",
         description=(
-            "📋 This Demo POC workflow lets you lift the hood. Click Copy Document on any sample file "
-            "and paste it into the input fields below. You can add additional documents anytime using "
-            "the plus icon. This gives you a behind-the-scenes look at how documents move through the pipeline."
+            "🧠 This demo workflow shows exactly how documents move through the system. "
+            "Click Copy Document on any sample file and paste it into the input fields below. "
+            "You can add additional documents anytime using the plus icon. "
+            "Behind the scenes, the system extracts structured data from raw text, "
+            "applies a lightweight local heuristic model for pre-fact extraction, "
+            "classifies the document, and routes it to the appropriate large language model "
+            "for full fact and line-item extraction. "
+            "Issue analysis is then performed using either OpenAI or MedGemma models."
         ),
         narration=(
-            "This Demo POC workflow lets you lift the hood. Click Copy Document on any sample file "
-            "and paste it into the input fields below. You can add additional documents anytime using "
-            "the plus icon. This gives you a behind-the-scenes look at how documents move through the pipeline."
+            "This demo workflow shows exactly how documents move through the system. "
+            "Click Copy Document on any sample file and paste it into the input fields below. "
+            "You can add additional documents anytime using the plus icon. "
+            "Behind the scenes, the system extracts structured data from raw text, "
+            "applies a lightweight local heuristic model for pre-fact extraction, "
+            "classifies the document, and routes it to the appropriate large language model "
+            "for full fact and line-item extraction. "
+            "Issue analysis is then performed using either OpenAI or MedGemma models."
         ),
         target="demo_section",
-        position="top"
+        position="top",
     ),
+
+
+
 
     TourStep(
         id=3,
