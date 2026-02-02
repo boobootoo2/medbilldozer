@@ -48,20 +48,33 @@ TOUR_STEPS = [
 
     TourStep(
         id=2,
-        title="Demo POC Workflow – Copy & Paste",
+        title="Demo Workflow – Copy & Paste",
         description=(
-            "📋 This Demo POC workflow lets you lift the hood. Click Copy Document on any sample file "
-            "and paste it into the input fields below. You can add additional documents anytime using "
-            "the plus icon. This gives you a behind-the-scenes look at how documents move through the pipeline."
+            "🧠 This demo workflow shows exactly how documents move through the system. "
+            "Click Copy Document on any sample file and paste it into the input fields below. "
+            "You can add additional documents anytime using the plus icon. "
+            "Behind the scenes, the system extracts structured data from raw text, "
+            "applies a lightweight local heuristic model for pre-fact extraction, "
+            "classifies the document, and routes it to the appropriate large language model "
+            "for full fact and line-item extraction. "
+            "Issue analysis is then performed using either OpenAI or MedGemma models."
         ),
         narration=(
-            "This Demo POC workflow lets you lift the hood. Click Copy Document on any sample file "
-            "and paste it into the input fields below. You can add additional documents anytime using "
-            "the plus icon. This gives you a behind-the-scenes look at how documents move through the pipeline."
+            "This demo workflow shows exactly how documents move through the system. "
+            "Click Copy Document on any sample file and paste it into the input fields below. "
+            "You can add additional documents anytime using the plus icon. "
+            "Behind the scenes, the system extracts structured data from raw text, "
+            "applies a lightweight local heuristic model for pre-fact extraction, "
+            "classifies the document, and routes it to the appropriate large language model "
+            "for full fact and line-item extraction. "
+            "Issue analysis is then performed using either OpenAI or MedGemma models."
         ),
         target="demo_section",
-        position="top"
+        position="top",
     ),
+
+
+
 
     TourStep(
         id=3,
@@ -80,22 +93,40 @@ TOUR_STEPS = [
         position="main"
     ),
 
-    TourStep(
+   TourStep(
         id=4,
         title="Demo Production Workflow",
         description=(
-            "🚀 The Demo Production Workflow simulates a real-world deployment. "
-            "Documents are preloaded and structured, minimizing user input. "
-            "This reflects how providers or insurance companies could integrate the system at scale."
+            "🚀 The Demo Production Workflow simulates how a healthcare consumer could use "
+            "the system in a structured, real-world scenario. Documents are preloaded and "
+            "persist state across sessions, minimizing repetitive input. Each document can "
+            "carry workflow states such as ignored, resolved, or follow-up, helping consumers "
+            "track which billing issues still need attention. During analysis, potential "
+            "errors are flagged automatically. If a document already has a defined state, "
+            "it is excluded from re-analysis to preserve deterministic processing—what data "
+            "scientists and engineers call idempotency. After analysis, states can be updated "
+            "through the action dropdown, and follow-up issues can be downloaded, making it "
+            "simple for an individual to organize, document, and act on billing disputes "
+            "with confidence."
         ),
         narration=(
-            "The Demo Production Workflow simulates a real-world deployment. "
-            "Documents are preloaded and structured, minimizing user input. "
-            "This reflects how providers or insurance companies could integrate the system at scale."
+            "The Demo Production Workflow simulates how a healthcare consumer could use "
+            "the system in a structured, real-world scenario. Documents are preloaded and "
+            "persist state across sessions, minimizing repetitive input. Each document can "
+            "carry workflow states such as ignored, resolved, or follow-up, helping consumers "
+            "track which billing issues still need attention. During analysis, potential "
+            "errors are flagged automatically. If a document already has a defined state, "
+            "it is excluded from re-analysis to preserve deterministic processing—what data "
+            "scientists and engineers call idempotency. After analysis, states can be updated "
+            "through the action dropdown, and follow-up issues can be downloaded, making it "
+            "simple for an individual to organize, document, and act on billing disputes "
+            "with confidence."
         ),
         target="production_workflow",
         position="top"
     ),
+
+
 
     TourStep(
         id=5,
@@ -133,6 +164,31 @@ TOUR_STEPS = [
 
     TourStep(
         id=7,
+        title="Interactive API Documentation",
+        description=(
+            "🔌 The API Documentation page provides a Swagger-like interactive explorer "
+            "built entirely in Streamlit. You can browse available endpoints, inspect "
+            "request and response schemas, and execute live calls directly in the browser. "
+            "This includes listing entities, ingesting documents, retrieving normalized data, "
+            "checking import status, and reviewing import history. The interface mirrors "
+            "production-style API documentation while allowing hands-on testing without "
+            "requiring authentication in demo mode."
+        ),
+        narration=(
+            "The API Documentation page provides a Swagger-like interactive explorer "
+            "built entirely in Streamlit. You can browse available endpoints, inspect "
+            "request and response schemas, and execute live calls directly in the browser. "
+            "This includes listing entities, ingesting documents, retrieving normalized data, "
+            "checking import status, and reviewing import history. The interface mirrors "
+            "production-style API documentation while allowing hands-on testing without "
+            "requiring authentication in demo mode."
+        ),
+        target="api_docs_page",
+        position="main"
+    ),
+
+    TourStep(
+        id=8,
         title="Re-Analyze Newly Loaded Documents",
         description=(
             "🔄 After importing new data, return to Home and run the Demo Production Workflow again. "
@@ -147,7 +203,7 @@ TOUR_STEPS = [
     ),
 
     TourStep(
-        id=8,
+        id=9,
         title="Take Action on Findings",
         description=(
             "📌 Once results appear, click Actions on any flagged item to decide next steps. "
@@ -164,7 +220,7 @@ TOUR_STEPS = [
     ),
 
     TourStep(
-        id=9,
+        id=10,
         title="Proof of Concept Vision",
         description=(
             "✨ This demonstration shows how billing error detection can be simplified. "
