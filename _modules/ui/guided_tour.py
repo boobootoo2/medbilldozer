@@ -24,23 +24,21 @@ class TourStep:
     narration: str  # Spoken version for audio playback
     target: str  # Which UI element this step refers to
     position: str  # Where to display the tooltip
-    
+ 
 # Define the tour steps
 TOUR_STEPS = [
     TourStep(
         id=1,
-        title="Welcome to MedBillDozer",
+        title="What MedBillDozer Does",
         description=(
-            "👋 Welcome to MedBillDozer. If you have ever tried to reconcile a medical bill, "
-            "an insurance explanation, and a pharmacy receipt at the same time, you already "
-            "understand the frustration this app is designed to solve. "
-            "MedBillDozer turns that manual reconciliation process into a structured, transparent workflow."
+            "👋 If you’ve ever tried to reconcile a medical bill and an insurance explanation "
+            "at the same time, you understand the frustration. "
+            "MedBillDozer turns that manual reconciliation into a structured, transparent workflow."
         ),
         narration=(
-            "Welcome to MedBillDozer. If you have ever tried to reconcile a medical bill, "
-            "an insurance explanation, and a pharmacy receipt at the same time, you already "
-            "understand the frustration this app is designed to solve. "
-            "MedBillDozer turns that manual reconciliation process into a structured, transparent workflow."
+            "If you’ve ever tried to reconcile a medical bill and an insurance explanation "
+            "at the same time, you understand the frustration. "
+            "MedBillDozer turns that manual reconciliation into a structured, transparent workflow."
         ),
         target="logo",
         position="top"
@@ -48,194 +46,79 @@ TOUR_STEPS = [
 
     TourStep(
         id=2,
-        title="Demo Workflow – Copy & Paste",
+        title="Multi-Document Analysis",
         description=(
-            "🧠 This demo workflow shows exactly how documents move through the system. "
-            "Click Copy Document on any sample file and paste it into the input fields below. "
-            "You can add additional documents anytime using the plus icon. "
-            "Behind the scenes, the system extracts structured data from raw text, "
-            "applies a lightweight local heuristic model for pre-fact extraction, "
-            "classifies the document, and routes it to the appropriate large language model "
-            "for full fact and line-item extraction. "
-            "Issue analysis is then performed using either OpenAI or MedGemma models."
+            "📄 You can load multiple documents at once. The system compares what was billed, "
+            "what was covered, and what was paid across providers and dates of service. "
+            "All processing runs through a deterministic pipeline — meaning the same input "
+            "always produces the same result."
         ),
         narration=(
-            "This demo workflow shows exactly how documents move through the system. "
-            "Click Copy Document on any sample file and paste it into the input fields below. "
-            "You can add additional documents anytime using the plus icon. "
-            "Behind the scenes, the system extracts structured data from raw text, "
-            "applies a lightweight local heuristic model for pre-fact extraction, "
-            "classifies the document, and routes it to the appropriate large language model "
-            "for full fact and line-item extraction. "
-            "Issue analysis is then performed using either OpenAI or MedGemma models."
+            "You can load multiple documents at once. The system compares what was billed, "
+            "what was covered, and what was paid across providers and dates of service. "
+            "All processing runs through a deterministic pipeline — meaning the same input "
+            "always produces the same result."
         ),
         target="demo_section",
         position="top",
     ),
 
-
-
-
     TourStep(
         id=3,
-        title="Multi-Document Observability",
+        title="Intelligent Validation",
         description=(
-            "🔍 When you analyze multiple documents together, the system compares what was billed, "
-            "what was covered, and what was paid across providers and dates of service. "
-            "You can inspect the execution graph to see exactly how each step runs in a deterministic pipeline."
+            "🧠 During analysis, the system flags potential inconsistencies, duplicate charges, "
+            "and reimbursement gaps. An AI model evaluates the medical and billing context "
+            "to validate findings and surface issues that would be difficult to detect manually."
         ),
         narration=(
-            "When you analyze multiple documents together, the system compares what was billed, "
-            "what was covered, and what was paid across providers and dates of service. "
-            "You can inspect the execution graph to see exactly how each step runs in a deterministic pipeline."
-        ),
-        target="pipeline_dag",
-        position="main"
-    ),
-
-   TourStep(
-        id=4,
-        title="Demo Production Workflow",
-        description=(
-            "🚀 The Demo Production Workflow simulates how a healthcare consumer could use "
-            "the system in a structured, real-world scenario. Documents are preloaded and "
-            "persist state across sessions, minimizing repetitive input. Each document can "
-            "carry workflow states such as ignored, resolved, or follow-up, helping consumers "
-            "track which billing issues still need attention. During analysis, potential "
-            "errors are flagged automatically. If a document already has a defined state, "
-            "it is excluded from re-analysis to preserve deterministic processing—what data "
-            "scientists and engineers call idempotency. After analysis, states can be updated "
-            "through the action dropdown, and follow-up issues can be downloaded, making it "
-            "simple for an individual to organize, document, and act on billing disputes "
-            "with confidence."
-        ),
-        narration=(
-            "The Demo Production Workflow simulates how a healthcare consumer could use "
-            "the system in a structured, real-world scenario. Documents are preloaded and "
-            "persist state across sessions, minimizing repetitive input. Each document can "
-            "carry workflow states such as ignored, resolved, or follow-up, helping consumers "
-            "track which billing issues still need attention. During analysis, potential "
-            "errors are flagged automatically. If a document already has a defined state, "
-            "it is excluded from re-analysis to preserve deterministic processing—what data "
-            "scientists and engineers call idempotency. After analysis, states can be updated "
-            "through the action dropdown, and follow-up issues can be downloaded, making it "
-            "simple for an individual to organize, document, and act on billing disputes "
-            "with confidence."
-        ),
-        target="production_workflow",
-        position="top"
-    ),
-
-
-
-    TourStep(
-        id=5,
-        title="Sidebar Navigation & AI Agent",
-        description=(
-            "💬 The left sidebar acts as your control center. You can navigate the application, "
-            "access different workflows, or ask the AI Agent questions about your documents "
-            "and flagged findings."
-        ),
-        narration=(
-            "The left sidebar acts as your control center. You can navigate the application, "
-            "access different workflows, or ask the AI Agent questions about your documents "
-            "and flagged findings."
-        ),
-        target="sidebar",
-        position="main"
-    ),
-
-    TourStep(
-        id=6,
-        title="Profile & Data Import",
-        description=(
-            "👤 In the Profile section, you can import receipts or structured transaction data "
-            "from insurance companies or providers. This allows the system to interpret new "
-            "documents with the right coverage and provider context."
-        ),
-        narration=(
-            "In the Profile section, you can import receipts or structured transaction data "
-            "from insurance companies or providers. This allows the system to interpret new "
-            "documents with the right coverage and provider context."
-        ),
-        target="profile_section",
-        position="main"
-    ),
-
-    TourStep(
-        id=7,
-        title="Interactive API Documentation",
-        description=(
-            "🔌 The API Documentation page provides a Swagger-like interactive explorer "
-            "built entirely in Streamlit. You can browse available endpoints, inspect "
-            "request and response schemas, and execute live calls directly in the browser. "
-            "This includes listing entities, ingesting documents, retrieving normalized data, "
-            "checking import status, and reviewing import history. The interface mirrors "
-            "production-style API documentation while allowing hands-on testing without "
-            "requiring authentication in demo mode."
-        ),
-        narration=(
-            "The API Documentation page provides a Swagger-like interactive explorer "
-            "built entirely in Streamlit. You can browse available endpoints, inspect "
-            "request and response schemas, and execute live calls directly in the browser. "
-            "This includes listing entities, ingesting documents, retrieving normalized data, "
-            "checking import status, and reviewing import history. The interface mirrors "
-            "production-style API documentation while allowing hands-on testing without "
-            "requiring authentication in demo mode."
-        ),
-        target="api_docs_page",
-        position="main"
-    ),
-
-    TourStep(
-        id=8,
-        title="Re-Analyze Newly Loaded Documents",
-        description=(
-            "🔄 After importing new data, return to Home and run the Demo Production Workflow again. "
-            "The system will now analyze your newly loaded documents using the same structured pipeline."
-        ),
-        narration=(
-            "After importing new data, return to Home and run the Demo Production Workflow again. "
-            "The system will now analyze your newly loaded documents using the same structured pipeline."
-        ),
-        target="analyze_button",
-        position="top"
-    ),
-
-    TourStep(
-        id=9,
-        title="Take Action on Findings",
-        description=(
-            "📌 Once results appear, click Actions on any flagged item to decide next steps. "
-            "You can mark it for Follow-up, Ignore it, or mark it as Resolved. "
-            "This turns billing review into an actionable workflow instead of a static report."
-        ),
-        narration=(
-            "Once results appear, click Actions on any flagged item to decide next steps. "
-            "You can mark it for Follow-up, Ignore it, or mark it as Resolved. "
-            "This turns billing review into an actionable workflow instead of a static report."
+            "During analysis, the system flags potential inconsistencies, duplicate charges, "
+            "and reimbursement gaps. An AI model evaluates the medical and billing context "
+            "to validate findings and surface issues that would be difficult to detect manually."
         ),
         target="results_section",
         position="main"
     ),
 
     TourStep(
-        id=10,
-        title="Proof of Concept Vision",
+        id=4,
+        title="Actionable Workflow",
         description=(
-            "✨ This demonstration shows how billing error detection can be simplified. "
-            "By combining structured ingestion, deterministic workflows, and intelligent validation, "
-            "the process becomes transparent, auditable, and manageable."
+            "📌 Flagged issues are not just displayed — they become actionable. Users can mark "
+            "findings as Follow-up, Ignore, or Resolved. This transforms billing review from "
+            "a static report into an organized workflow. Documents persist state across "
+            "sessions so users can track what still needs attention."
         ),
         narration=(
-            "This demonstration shows how billing error detection can be simplified. "
-            "By combining structured ingestion, deterministic workflows, and intelligent validation, "
-            "the process becomes transparent, auditable, and manageable."
+            "Flagged issues are not just displayed — they become actionable. Users can mark "
+            "findings as Follow-up, Ignore, or Resolved. This transforms billing review from "
+            "a static report into an organized workflow. Documents persist state across "
+            "sessions so users can track what still needs attention."
+        ),
+        target="production_workflow",
+        position="top"
+    ),
+
+    TourStep(
+        id=5,
+        title="Vision",
+        description=(
+            "✨ This proof of concept demonstrates how billing error detection can become "
+            "transparent, auditable, and consumer-controlled. By combining structured ingestion, "
+            "deterministic processing, and intelligent validation, billing review becomes "
+            "manageable instead of overwhelming."
+        ),
+        narration=(
+            "This proof of concept demonstrates how billing error detection can become "
+            "transparent, auditable, and consumer-controlled. By combining structured ingestion, "
+            "deterministic processing, and intelligent validation, billing review becomes "
+            "manageable instead of overwhelming."
         ),
         target="logo",
         position="top"
     ),
 ]
+
 
 
 
