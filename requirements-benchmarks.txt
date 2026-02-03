@@ -6,6 +6,9 @@ openai>=1.0.0
 requests>=2.31.0
 python-dotenv>=1.0.0
 
+# Provider dependencies
+google-genai>=1.0.0
+
 # For JSON handling (usually built-in, but explicit is better)
 # Standard library modules don't need to be listed
 
