@@ -27,7 +27,6 @@ from _modules.providers.medgemma_hosted_provider import MedGemmaHostedProvider
 from _modules.providers.openai_analysis_provider import OpenAIAnalysisProvider
 from _modules.providers.gemini_analysis_provider import GeminiAnalysisProvider
 from _modules.extractors.local_heuristic_extractor import extract_facts_local
-from _modules.core.orchestrator_agent import deterministic_issues_from_facts
 import os
 
 
