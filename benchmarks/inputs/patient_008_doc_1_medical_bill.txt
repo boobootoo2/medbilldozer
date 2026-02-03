@@ -1,28 +1,25 @@
 CHILDREN'S MEDICAL GROUP
-Statement #: CMG-2026-447
+Stmt CMG-2026-447
+Date: 02/03/2026
 
-Patient: Lisa Rodriguez
-DOB: 05/20/2022 (Age 3 years)
-Gender: Female
-ID: P008
+Lisa Rodriguez
+DOB: 05/20/2022  Age 3  F
 
-Visit Date: February 3, 2026
-Provider: Dr. James Martinez, Pediatrician
+Visit Date: 02/03/2026
+Dr J Martinez, Pediatrician
 
-PROCEDURES:
------------
-CPT 99213 - Office Visit, Established Patient
-Charge: $135.00
+Office Visit (99213)            $135
+Stress Test - Cardio (93015)    $875
+Earwax Removal (69210)           $65
+Facility Charge                  $25
 
-CPT 93015 - Cardiovascular Stress Test, Complete
-Charge: $875.00
+---
+Total:                        $1,100
+Insurance:                     -$950
+You Pay:                        $150
 
-CPT 69210 - Removal of Impacted Cerumen (Ear Wax)
-Charge: $65.00
+Due: 03/03/2026
 
-SUMMARY:
-Total Charges: $1,075.00
-Insurance Payment: $950.00
-Your Balance: $125.00
-
-Please pay by March 3, 2026
+Questions?
+childhealth@cmg.com
+(555) 666-7777

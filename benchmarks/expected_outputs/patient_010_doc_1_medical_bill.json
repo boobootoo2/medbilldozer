@@ -1,0 +1,37 @@
+{
+    "document_type": "medical_bill",
+    "expected_facts": {
+        "patient_name": "Amanda Lee",
+        "patient_dob": "1996-10-25",
+        "date_of_service": "2026-02-03",
+        "facility_name": "METROPOLITAN SURGICAL CENTER",
+        "medical_line_items": [{
+                "cpt_code": "99215",
+                "date_of_service": "2026-02-03",
+                "description": "Complex Office Visit",
+                "billed_amount": 240.00,
+                "patient_responsibility": 140.00
+            },
+            {
+                "cpt_code": "55250",
+                "date_of_service": "2026-02-03",
+                "description": "Vasectomy",
+                "billed_amount": 950.00,
+                "patient_responsibility": 400.00
+            },
+            {
+                "cpt_code": "99152",
+                "date_of_service": "2026-02-03",
+                "description": "Moderate Sedation, First 15 Minutes",
+                "billed_amount": 175.00,
+                "patient_responsibility": 87.50
+            }
+        ]
+    },
+    "expected_issues": [{
+        "type": "overbilling",
+        "description": "Facility fee ($850) is excessive - typical facility fees are $100-200",
+        "should_detect": true
+    }],
+    "expected_savings": 650.00
+}

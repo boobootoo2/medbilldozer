@@ -1,0 +1,12 @@
+{
+    "document_type": "medical_bill",
+    "expected_facts": {
+        "patient_name": "Patient 004",
+        "patient_dob": null,
+        "date_of_service": null,
+        "facility_name": null,
+        "medical_line_items": []
+    },
+    "expected_issues": [],
+    "expected_savings": 0.0
+}

@@ -1,27 +1,40 @@
-MEDICARE - EXPLANATION OF BENEFITS
+MEDICARE EOB
 Beneficiary: James Williams
-Medicare Number: 1EG4-TE5-MK73
-Claim Number: 2026-0234-JW
+Medicare #: 1EG4-TE5-MK73
+Claim: 2026-0234-JW
 
-Date of Service: February 3, 2026
-Provider: Senior Care Medical Practice
+Service Date: 02/03/2026
+Provider: Senior Care Medical
 
 CLAIM DETAILS:
---------------
-Service: Office Visit (CPT 99214)
-Amount Charged: $190.00
-Medicare Approved: $145.00
-Medicare Paid (80%): $116.00
-You May Be Billed: $29.00
 
-Service: ECG Rhythm Strip (CPT 93040)
-Amount Charged: $45.00
-Medicare Approved: $35.00
-Medicare Paid (80%): $28.00
-You May Be Billed: $7.00
+Office Visit (99214)
+  Charged:      $190
+  Allowed:      $145
+  Medicare Pd:  $116 (80%)
+  You Owe:      $29
 
-TOTAL MEDICARE PAID: $144.00
-YOUR RESPONSIBILITY: $36.00
+Pregnancy Test (81025)
+  Charged:      $25
+  Allowed:      $25
+  Medicare Pd:  $0 (NOT COVERED)
+  You Owe:      $25
 
-This is not a bill. Save for your records.
-Questions? Call 1-800-MEDICARE
+Sports Phys (99455)
+  Charged:      $125
+  Allowed:      $125
+  Medicare Pd:  $0 (NOT COVERED)
+  You Owe:      $125
+
+EKG (93040)
+  Charged:      $45
+  Allowed:      $35
+  Medicare Pd:  $28 (80%)
+  You Owe:      $7
+
+---
+TOTAL MEDICARE PAID:    $144
+YOUR RESPONSIBILITY:    $186
+
+NOT A BILL - KEEP FOR RECORDS
+Questions: 1-800-MEDICARE

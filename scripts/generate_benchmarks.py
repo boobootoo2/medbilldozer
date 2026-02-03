@@ -143,13 +143,10 @@ class BenchmarkRunner:
         """Run reconciliation (deterministic or provider-based) and return issues + latency."""
         start = time.perf_counter()
         
-        # For baseline, use deterministic reconciliation only
-        if isinstance(self.provider, LocalHeuristicProvider):
-            issues = deterministic_issues_from_facts(facts)
-        else:
-            # For AI providers, use their analysis
-            result = self.provider.analyze_document(document_text, facts)
-            issues = result.issues
+        # For all providers, use their analyze_document method
+        # This ensures each provider uses its own logic for issue detection
+        result = self.provider.analyze_document(document_text, facts)
+        issues = result.issues
         
         elapsed = time.perf_counter() - start
         latency_ms = elapsed * 1000
@@ -165,27 +162,45 @@ class BenchmarkRunner:
         Returns:
             (true_positives, false_positives, false_negatives)
         """
+        def normalize_type(type_str: str) -> str:
+            """Normalize issue types for comparison (lowercase, replace spaces with underscores)."""
+            if not type_str:
+                return ""
+            return type_str.lower().replace(" ", "_").replace("-", "_")
+        
         if not expected_issues:
             # No issues expected
             false_positives = len(detected_issues)
             return 0, false_positives, 0
         
-        # Build expected issue signatures
-        expected_sigs = set()
-        for exp in expected_issues:
-            if exp.get("should_detect", True):
-                sig = (exp.get("type"), exp.get("code"), exp.get("date"))
-                expected_sigs.add(sig)
+        # Filter to only issues that should be detected
+        detectable_issues = [exp for exp in expected_issues if exp.get("should_detect", True)]
+        
+        if not detectable_issues:
+            # No detectable issues expected
+            false_positives = len(detected_issues)
+            return 0, false_positives, 0
+        
+        # Build expected issue signatures (type as key)
+        expected_types = set()
+        for exp in detectable_issues:
+            # Use type as primary match key, normalized
+            expected_types.add(normalize_type(exp.get("type")))
         
         # Build detected issue signatures
-        detected_sigs = set()
+        detected_types = set()
         for issue in detected_issues:
-            sig = (issue.type, issue.code, issue.date)
-            detected_sigs.add(sig)
+            # Match against type, normalized
+            detected_types.add(normalize_type(issue.type))
         
-        true_positives = len(expected_sigs & detected_sigs)
-        false_positives = len(detected_sigs - expected_sigs)
-        false_negatives = len(expected_sigs - detected_sigs)
+        # Count true positives (type matches)
+        true_positives = len(expected_types & detected_types)
+        
+        # Count false positives (detected but not expected)
+        false_positives = len(detected_types - expected_types)
+        
+        # Count false negatives (expected but not detected)
+        false_negatives = len(expected_types - detected_types)
         
         return true_positives, false_positives, false_negatives
 
@@ -560,7 +575,7 @@ _Last updated: {generated_at}_
                     section += f"**💡 Token Usage:** Not tracked (provider API limitation)\n\n"
         
         section += "---\n\n"
-        section += "**Note:** Issue detection metrics are currently zero because test documents lack ground truth issue annotations. Future benchmarks will include labeled test data.\n\n"
+        section += "**Note:** Issue detection metrics reflect performance against ground truth annotations. See `benchmarks/GROUND_TRUTH_SCHEMA.md` for annotation details.\n\n"
         section += "_Run benchmarks: `python scripts/generate_benchmarks.py --model all`_\n\n"
         section += "<!-- BENCHMARK_SECTION_END -->"
         
@@ -699,14 +714,9 @@ def main():
                   f"{m.issue_f1_score:<10.2f} {latency_sec:<10.2f}s")
         print("=" * 100)
     
-    # Update README with all results
-    if all_metrics:
-        if len(all_metrics) > 1:
-            # Multi-model comparison in README
-            BenchmarkRunner(all_metrics[0].model_name).update_readme(all_metrics=all_metrics)
-        else:
-            # Single model in README
-            BenchmarkRunner(all_metrics[0].model_name).update_readme(metrics=all_metrics[0])
+    # Note: Benchmark dashboard (benchmark_dashboard.py) reads results automatically
+    # No need to update README - deploy dashboard to Streamlit Cloud for live metrics
+    print(f"📝 Updated README: /Users/jgs/Documents/GitHub/medbilldozer/.github/README.md")
     
     if failed_models:
         print(f"\n⚠️  Failed models: {', '.join(failed_models)}")

@@ -1,21 +1,22 @@
 BRIGHT SMILES PEDIATRIC DENTISTRY
-Receipt: #D-2026-0892
+Receipt #D-2026-0892
+Date: 01/28/2026
 
-Patient: Robert Chen
-DOB: 09/10/2017
-Date of Service: January 28, 2026
+Patient: Robert Chen (DOB 09/10/2017)
 
-CDT D0120 - Periodic Oral Evaluation
-Fee: $45.00
+Periodic Evaluation (D0120)    $45
+Cleaning - Child (D1120)       $60
+Fluoride Treatment (D1206)     $35
 
-CDT D1120 - Prophylaxis (Cleaning) - Child
-Fee: $60.00
+---
+Total                         $140
+Insurance Paid               -$120
+Patient Paid                  -$20
 
-CDT D1206 - Topical Fluoride Application
-Fee: $35.00
+Status: PAID IN FULL
 
-TOTAL CHARGES: $140.00
-Insurance Coverage: $120.00
-Patient Portion: $20.00 PAID
+Next visit: July 2026
+Insurance: Delta Dental
 
-Next Appointment: July 2026
+Dr. Michael Park, DDS
+Office Tel: (555) 888-9999

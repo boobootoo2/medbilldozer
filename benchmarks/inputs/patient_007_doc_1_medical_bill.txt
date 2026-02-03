@@ -1,30 +1,23 @@
 UNIVERSITY MEDICAL CENTER
-Patient Billing Statement
+Stmt# P007-2026-0203
+Date: 02/03/2026
 
-Name: David Thompson
-DOB: 12/03/1970
-Sex: Male
-Patient Number: P007
+David Thompson
+DOB: 12/03/1970 | MALE
 
-Date of Service: February 3, 2026
+Services 02/03/2026:
+Office Visit (99213)             $150
+Cervical Biopsy (57500)          $385
+Urinalysis (81000)                $20
+Facility/Tech Fee                $100
 
-SERVICES PROVIDED:
-------------------
-CPT 99213 - Office Visit, Established Patient
-Physician: Dr. Robert Kim
-Charge: $150.00
+Subtotal:                        $655
+Claim Status: SUBMITTED
+Ins Est Coverage:               -$500
+Est Balance:                     $155
 
-CPT 57500 - Biopsy of Cervix, Single or Multiple
-Physician: Dr. Robert Kim
-Charge: $385.00
+Due: 03/03/2026
 
-CPT 81000 - Urinalysis, Manual
-Charge: $20.00
-
-BILLING DETAILS:
-Subtotal: $555.00
-Facility Fee: $100.00
-Total Amount Due: $655.00
-
-Insurance Status: Claim Submitted
-Estimated Patient Portion: $155.00
+Dr. Robert Kim, Urology
+UNIV MEDICAL
+(555) 444-5555
