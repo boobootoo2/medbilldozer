@@ -1,0 +1,31 @@
+SURGICAL SPECIALISTS GROUP
+Patient Statement
+
+Patient: Michael O'Connor
+DOB: 04/19/1997
+Gender: Male (Age 28)
+ID: P005
+
+Date of Service: February 1, 2026
+
+PROCEDURES PERFORMED:
+---------------------
+CPT 99215 - Office Visit, Complex (Level 5)
+Surgeon: Dr. Amanda White
+Charge: $250.00
+
+CPT 58150 - Total Abdominal Hysterectomy
+Surgeon: Dr. Amanda White
+Charge: $8,500.00
+
+CPT 36415 - Venipuncture for Lab Collection
+Charge: $15.00
+
+FINANCIAL SUMMARY:
+Total Procedure Costs: $8,765.00
+Facility Fee: $2,500.00
+Anesthesia: $1,200.00
+
+GRAND TOTAL: $12,465.00
+Insurance Authorization Pending
+Patient Deposit Required: $2,500.00

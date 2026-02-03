@@ -1,0 +1,19 @@
+CVS PHARMACY
+Prescription Receipt
+
+Patient: Lisa Rodriguez
+DOB: 05/20/2022
+Date: February 3, 2026
+RX#: 7729384
+
+Prescription: Amoxicillin 400mg/5mL Suspension
+Quantity: 100 mL
+Directions: Give 7 mL by mouth twice daily for 10 days
+Prescriber: Dr. James Martinez
+
+Retail Price: $18.00
+Insurance Covered: $13.00
+Copay: $5.00 PAID
+
+Refills: 0
+Do not refrigerate. Shake well before use.

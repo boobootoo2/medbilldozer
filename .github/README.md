@@ -97,3 +97,22 @@ This project is a **prototype for educational purposes only**.
 
 **Always verify findings** with your insurance company and consult qualified professionals for billing disputes.
 
+<!-- BENCHMARK_SECTION_START -->
+
+## Benchmark Analysis
+
+_Evaluated on 6 synthetic healthcare billing documents._
+
+### MedGemma Results
+
+- **Extraction Accuracy**: 100.0%
+- **Issue Detection Precision**: 0.00
+- **Issue Detection Recall**: 0.00
+- **Issue Detection F1 Score**: 0.00
+- **JSON Validity Rate**: 100.0%
+- **Avg Extraction Time**: 0.00s
+- **Avg Full Pipeline Time**: 2.26s
+
+_Generated: 2026-02-03 11:00:43_
+
+<!-- BENCHMARK_SECTION_END -->

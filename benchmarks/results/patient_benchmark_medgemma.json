@@ -1,0 +1,341 @@
+{
+  "model_name": "medgemma",
+  "total_patients": 10,
+  "successful_analyses": 10,
+  "avg_precision": 0.85,
+  "avg_recall": 0.95,
+  "avg_f1_score": 0.8833333333333332,
+  "domain_knowledge_detection_rate": 95.0,
+  "avg_latency_ms": 4154.091462297947,
+  "individual_results": [
+    {
+      "patient_id": "P001",
+      "patient_name": "John Doe",
+      "model_name": "medgemma",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 3589.8415409901645,
+      "expected_issues": [
+        {
+          "type": "gender_mismatch",
+          "severity": "critical",
+          "description": "Male patient billed for obstetric ultrasound (CPT 76805) - anatomically impossible",
+          "requires_domain_knowledge": true,
+          "cpt_code": "76805"
+        }
+      ],
+      "detected_issues": [
+        {
+          "type": "Gender-Specific Procedure",
+          "summary": "The patient is male but received an obstetric ultrasound (CPT 76805). This procedure is not medically appropriate for a male patient.",
+          "evidence": "Document 1 lists CPT 76805 - Obstetric Ultrasound, Single/First Gestation. Patient profile indicates the patient is male.",
+          "code": null,
+          "max_savings": 285.0
+        }
+      ],
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "domain_knowledge_score": 100.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P002",
+      "patient_name": "Mary Smith",
+      "model_name": "medgemma",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 3451.281540998025,
+      "expected_issues": [
+        {
+          "type": "age_inappropriate_procedure",
+          "severity": "high",
+          "description": "72-year-old post-menopausal female billed for IUD insertion (CPT 58300) - clinically inappropriate",
+          "requires_domain_knowledge": true,
+          "cpt_code": "58300"
+        }
+      ],
+      "detected_issues": [
+        {
+          "type": "Gender-Specific Procedure",
+          "summary": "IUD insertion performed on a 72-year-old female. IUDs are typically used for contraception and are less common in post-menopausal women.",
+          "evidence": "CPT 58300 - Insertion of Intrauterine Device (IUD) on a 72-year-old female patient.",
+          "code": null,
+          "max_savings": null
+        }
+      ],
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "domain_knowledge_score": 100.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P003",
+      "patient_name": "Robert Chen",
+      "model_name": "medgemma",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 6214.39683297649,
+      "expected_issues": [
+        {
+          "type": "age_inappropriate_screening",
+          "severity": "high",
+          "description": "8-year-old child billed for colonoscopy (CPT 45378) - not age-appropriate screening",
+          "requires_domain_knowledge": true,
+          "cpt_code": "45378"
+        }
+      ],
+      "detected_issues": [
+        {
+          "type": "Potentially Inappropriate Procedure",
+          "summary": "Colonoscopy on a child.",
+          "evidence": "Document 1 includes CPT 45378 - Colonoscopy, Diagnostic, performed on an 8-year-old male patient. Colonoscopies are not routinely performed on children unless there are specific medical indications, which are not mentioned in the provided medical history.",
+          "code": null,
+          "max_savings": null
+        },
+        {
+          "type": "Potential Coding Issue",
+          "summary": "Preventive visit and diagnostic colonoscopy on the same day.",
+          "evidence": "Document 1 includes CPT 99392 (Preventive Visit) and CPT 45378 (Colonoscopy, Diagnostic) with the same date of service (01/22/2026). The combination of a routine preventive visit and a diagnostic colonoscopy on the same day is unusual for a child and warrants further investigation.",
+          "code": null,
+          "max_savings": null
+        }
+      ],
+      "true_positives": 1,
+      "false_positives": 1,
+      "false_negatives": 0,
+      "domain_knowledge_score": 100.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P004",
+      "patient_name": "Jennifer Garcia",
+      "model_name": "medgemma",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 5629.073832998984,
+      "expected_issues": [
+        {
+          "type": "gender_mismatch",
+          "severity": "critical",
+          "description": "Female patient billed for prostate exam (CPT 55700) - anatomically impossible",
+          "requires_domain_knowledge": true,
+          "cpt_code": "55700"
+        }
+      ],
+      "detected_issues": [
+        {
+          "type": "Gender-specific procedure",
+          "summary": "Prostate biopsy (CPT 55700) billed for a female patient.",
+          "evidence": "Document 1 lists CPT 55700 - Biopsy, Prostate; Needle or Punch. Patient is female.",
+          "code": null,
+          "max_savings": 425.0
+        },
+        {
+          "type": "Billing Inconsistency",
+          "summary": "Discrepancy in amount due for Office Visit (CPT 99214).",
+          "evidence": "Document 1 shows $185.00 due for CPT 99214. Document 2 shows a patient responsibility of $28.00 for the same service.",
+          "code": null,
+          "max_savings": 157.0
+        }
+      ],
+      "true_positives": 1,
+      "false_positives": 1,
+      "false_negatives": 0,
+      "domain_knowledge_score": 100.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P005",
+      "patient_name": "Michael O'Connor",
+      "model_name": "medgemma",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 3511.6882089932915,
+      "expected_issues": [
+        {
+          "type": "gender_mismatch",
+          "severity": "critical",
+          "description": "Male patient billed for hysterectomy (CPT 58150) - anatomically impossible",
+          "requires_domain_knowledge": true,
+          "cpt_code": "58150"
+        }
+      ],
+      "detected_issues": [
+        {
+          "type": "Gender-specific procedure mismatch",
+          "summary": "Patient is male, but received a Total Abdominal Hysterectomy (CPT 58150). Hysterectomies are performed on females.",
+          "evidence": "Patient profile indicates male gender. Document 1 lists CPT 58150 - Total Abdominal Hysterectomy.",
+          "code": null,
+          "max_savings": 8500.0
+        }
+      ],
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "domain_knowledge_score": 100.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P006",
+      "patient_name": "Sarah Patel",
+      "model_name": "medgemma",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 3377.853625017451,
+      "expected_issues": [
+        {
+          "type": "age_inappropriate_screening",
+          "severity": "high",
+          "description": "15-year-old billed for screening mammogram (CPT 77067) - not recommended before age 40",
+          "requires_domain_knowledge": true,
+          "cpt_code": "77067"
+        }
+      ],
+      "detected_issues": [
+        {
+          "type": "Potentially Inappropriate Procedure",
+          "summary": "Screening mammography performed on a 15-year-old female.",
+          "evidence": "Document 1 lists CPT 77067 - Screening Mammography, Bilateral - for a 15-year-old female. Screening mammography is generally not recommended for patients under 40 without specific risk factors.",
+          "code": null,
+          "max_savings": null
+        }
+      ],
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "domain_knowledge_score": 100.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P007",
+      "patient_name": "David Thompson",
+      "model_name": "medgemma",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 3389.5457909966353,
+      "expected_issues": [
+        {
+          "type": "gender_mismatch",
+          "severity": "critical",
+          "description": "Male patient billed for cervical biopsy (CPT 57500) - anatomically impossible",
+          "requires_domain_knowledge": true,
+          "cpt_code": "57500"
+        }
+      ],
+      "detected_issues": [
+        {
+          "type": "Gender-specific procedure mismatch",
+          "summary": "CPT 57500 (Biopsy of Cervix) was billed for a male patient.",
+          "evidence": "The patient is male (Sex: M) and CPT 57500 is a procedure performed on the cervix, a female anatomical structure.",
+          "code": null,
+          "max_savings": 385.0
+        }
+      ],
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "domain_knowledge_score": 100.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P008",
+      "patient_name": "Lisa Rodriguez",
+      "model_name": "medgemma",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 3764.8564999981318,
+      "expected_issues": [
+        {
+          "type": "age_inappropriate_screening",
+          "severity": "high",
+          "description": "3-year-old toddler billed for stress cardiac test (CPT 93015) - not age-appropriate",
+          "requires_domain_knowledge": true,
+          "cpt_code": "93015"
+        }
+      ],
+      "detected_issues": [
+        {
+          "type": "Potentially Inappropriate Procedure",
+          "summary": "Cardiovascular Stress Test for a 3-year-old.",
+          "evidence": "Document 1 lists CPT 93015 - Cardiovascular Stress Test, Complete - for a 3-year-old patient (DOB 2022-05-20). Cardiovascular stress tests are not routinely performed on young children unless there is a very specific and unusual medical indication, which is not mentioned in the provided medical history.",
+          "code": null,
+          "max_savings": null
+        }
+      ],
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "domain_knowledge_score": 100.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P009",
+      "patient_name": "James Williams",
+      "model_name": "medgemma",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 5330.672375013819,
+      "expected_issues": [
+        {
+          "type": "gender_mismatch",
+          "severity": "critical",
+          "description": "Male patient billed for pregnancy test (CPT 81025) - anatomically impossible",
+          "requires_domain_knowledge": true,
+          "cpt_code": "81025"
+        },
+        {
+          "type": "age_inappropriate_screening",
+          "severity": "medium",
+          "description": "82-year-old billed for sports physical (CPT 99455) - age-inappropriate",
+          "requires_domain_knowledge": true,
+          "cpt_code": "99455"
+        }
+      ],
+      "detected_issues": [
+        {
+          "type": "Potential Inappropriate Procedure",
+          "summary": "Urine pregnancy test billed to an 82-year-old male.",
+          "evidence": "Document 1 lists CPT 81025 - Urine Pregnancy Test. Patient is male and 82 years old, making a pregnancy test medically inappropriate.",
+          "code": null,
+          "max_savings": 25.0
+        },
+        {
+          "type": "Billing Inconsistency",
+          "summary": "Discrepancy in total patient responsibility between documents.",
+          "evidence": "Document 1 states a current amount due of $385.00. Document 2 (Medicare EOB) states patient responsibility is $36.00.",
+          "code": null,
+          "max_savings": 349.0
+        }
+      ],
+      "true_positives": 1,
+      "false_positives": 1,
+      "false_negatives": 1,
+      "domain_knowledge_score": 50.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P010",
+      "patient_name": "Amanda Lee",
+      "model_name": "medgemma",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 3281.7043749964796,
+      "expected_issues": [
+        {
+          "type": "gender_mismatch",
+          "severity": "critical",
+          "description": "Female patient billed for vasectomy (CPT 55250) - anatomically impossible",
+          "requires_domain_knowledge": true,
+          "cpt_code": "55250"
+        }
+      ],
+      "detected_issues": [
+        {
+          "type": "Gender Mismatch",
+          "summary": "Patient is female, but received a vasectomy (CPT 55250). Vasectomies are male procedures.",
+          "evidence": "Document 1 lists CPT 55250 - Vasectomy, Unilateral or Bilateral. Patient profile indicates female gender.",
+          "code": null,
+          "max_savings": 950.0
+        }
+      ],
+      "true_positives": 1,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "domain_knowledge_score": 100.0,
+      "error_message": null
+    }
+  ],
+  "generated_at": "2026-02-03 10:56:19"
+}

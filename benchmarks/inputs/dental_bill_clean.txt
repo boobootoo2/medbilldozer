@@ -1,0 +1,16 @@
+BRIGHT SMILE DENTAL CLINIC
+Statement of Services
+
+Patient: Jane Smith
+Date of Visit: 2024-02-10
+Provider: Dr. Lisa Chen, DDS
+
+TREATMENT PROVIDED:
+CDT D1110 - Prophylaxis (Cleaning)              $120.00
+CDT D0150 - Comprehensive Oral Evaluation        $85.00
+
+Total Charges: $205.00
+Insurance Coverage: $164.00
+Patient Balance: $41.00
+
+Thank you for your visit!

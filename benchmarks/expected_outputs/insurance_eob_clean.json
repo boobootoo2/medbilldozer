@@ -1,0 +1,28 @@
+{
+    "document_type": "insurance_eob",
+    "expected_issues": [],
+    "expected_facts": {
+        "patient_name": "Sarah Thompson",
+        "date_of_service": "2024-05-01",
+        "provider_name": "Downtown Medical Center",
+        "insurance_company": "BLUECARE INSURANCE COMPANY",
+        "claim_line_items": [{
+                "description": "Office Visit - Level 3",
+                "date_of_service": "2024-05-01",
+                "billed_amount": 180.00,
+                "allowed_amount": 150.00,
+                "plan_paid": 120.00,
+                "patient_responsibility": 30.00
+            },
+            {
+                "description": "Lab Work - Basic Panel",
+                "date_of_service": "2024-05-01",
+                "billed_amount": 95.00,
+                "allowed_amount": 75.00,
+                "plan_paid": 60.00,
+                "patient_responsibility": 15.00
+            }
+        ]
+    },
+    "expected_savings": 0.0
+}

@@ -1,0 +1,32 @@
+SENIOR CARE MEDICAL PRACTICE
+Billing Statement
+
+Patient: James Williams
+DOB: 08/30/1943 (Age 82)
+Sex: Male
+Account: P009
+
+Service Date: February 3, 2026
+Attending: Dr. Susan Park, Geriatrics
+
+ITEMIZED CHARGES:
+-----------------
+CPT 99214 - Office Visit, Established (Level 4)
+Charge: $190.00
+
+CPT 81025 - Urine Pregnancy Test
+Charge: $25.00
+
+CPT 99455 - Work-Related or Sports Physical Exam
+Charge: $125.00
+
+CPT 93040 - Electrocardiogram (ECG), Rhythm Strip
+Charge: $45.00
+
+TOTAL BALANCE:
+Charges: $385.00
+Previous Balance: $0.00
+Insurance Pending: Yes
+Current Amount Due: $385.00
+
+Payment Options: Online, Phone, Mail

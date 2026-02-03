@@ -1,0 +1,32 @@
+{
+    "document_type": "medical_bill",
+    "expected_issues": [],
+    "expected_facts": {
+        "patient_name": "Emily Chen",
+        "date_of_service": "2024-06-20",
+        "facility_name": "RIVERSIDE FAMILY PRACTICE",
+        "medical_line_items": [{
+                "cpt_code": "99214",
+                "date_of_service": "2024-06-20",
+                "description": "Office Visit, Detailed",
+                "billed_amount": 200.00,
+                "patient_responsibility": 15.00
+            },
+            {
+                "cpt_code": "80053",
+                "date_of_service": "2024-06-20",
+                "description": "Comprehensive Metabolic Panel",
+                "billed_amount": 65.00,
+                "patient_responsibility": 15.00
+            },
+            {
+                "cpt_code": "85025",
+                "date_of_service": "2024-06-20",
+                "description": "Complete Blood Count",
+                "billed_amount": 35.00,
+                "patient_responsibility": 15.00
+            }
+        ]
+    },
+    "expected_savings": 0.0
+}

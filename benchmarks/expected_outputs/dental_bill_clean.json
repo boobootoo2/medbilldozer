@@ -1,0 +1,26 @@
+{
+    "document_type": "dental_bill",
+    "expected_issues": [],
+    "expected_facts": {
+        "patient_name": "Jane Smith",
+        "date_of_service": "2024-02-10",
+        "provider_name": "Dr. Lisa Chen",
+        "facility_name": "BRIGHT SMILE DENTAL CLINIC",
+        "dental_line_items": [{
+                "cdt_code": "D1110",
+                "date_of_service": "2024-02-10",
+                "description": "Prophylaxis (Cleaning)",
+                "billed_amount": 120.00,
+                "patient_responsibility": 20.0
+            },
+            {
+                "cdt_code": "D0150",
+                "date_of_service": "2024-02-10",
+                "description": "Comprehensive Oral Evaluation",
+                "billed_amount": 85.00,
+                "patient_responsibility": 21.0
+            }
+        ]
+    },
+    "expected_savings": 0.0
+}

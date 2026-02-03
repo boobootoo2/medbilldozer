@@ -1,0 +1,28 @@
+CENTRAL MEDICAL ASSOCIATES
+Bill Date: January 30, 2026
+
+Patient Name: Jennifer Garcia
+DOB: 11/08/1991
+Sex: Female
+Patient ID: P004
+
+CHARGE DETAILS:
+---------------
+CPT 99214 - Office Visit, Level 4
+Date of Service: 01/28/2026
+Amount: $185.00
+
+CPT 55700 - Biopsy, Prostate; Needle or Punch
+Date of Service: 01/28/2026
+Amount: $425.00
+
+CPT 84443 - Thyroid Stimulating Hormone (TSH)
+Date of Service: 01/28/2026
+Amount: $55.00
+
+BALANCE SUMMARY:
+Total Charges: $665.00
+Insurance Pending: $0.00
+Amount Due: $665.00
+
+Please remit payment within 30 days.

@@ -1,0 +1,17 @@
+WALGREENS PHARMACY
+Receipt #: WG-784521
+
+Patient: Michael O'Connor
+Date: February 1, 2026
+RX Number: 3849273
+
+Medication: Ibuprofen 800mg
+Quantity: 20 tablets
+Sig: Take 1 tablet every 6 hours as needed for pain
+Prescriber: Dr. Amanda White
+
+Price: $12.00
+Insurance: Not Used
+Paid: $12.00 Cash
+
+Pharmacist: RPh. Lisa Chen

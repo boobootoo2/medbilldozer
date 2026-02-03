@@ -1,0 +1,17 @@
+CENTRAL MEDICAL CENTER
+Patient Billing Statement
+
+Patient: John Doe
+Date of Service: 2024-01-15
+Account #: 12345678
+
+SERVICES RENDERED:
+CPT 99213 - Office Visit, Established Patient    $150.00
+CPT 99213 - Office Visit, Established Patient    $150.00
+CPT 36415 - Blood Collection                      $25.00
+
+Total Billed: $325.00
+Insurance Paid: $200.00
+Patient Responsibility: $125.00
+
+Please remit payment within 30 days.

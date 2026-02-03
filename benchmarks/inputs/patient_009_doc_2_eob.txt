@@ -1,0 +1,27 @@
+MEDICARE - EXPLANATION OF BENEFITS
+Beneficiary: James Williams
+Medicare Number: 1EG4-TE5-MK73
+Claim Number: 2026-0234-JW
+
+Date of Service: February 3, 2026
+Provider: Senior Care Medical Practice
+
+CLAIM DETAILS:
+--------------
+Service: Office Visit (CPT 99214)
+Amount Charged: $190.00
+Medicare Approved: $145.00
+Medicare Paid (80%): $116.00
+You May Be Billed: $29.00
+
+Service: ECG Rhythm Strip (CPT 93040)
+Amount Charged: $45.00
+Medicare Approved: $35.00
+Medicare Paid (80%): $28.00
+You May Be Billed: $7.00
+
+TOTAL MEDICARE PAID: $144.00
+YOUR RESPONSIBILITY: $36.00
+
+This is not a bill. Save for your records.
+Questions? Call 1-800-MEDICARE

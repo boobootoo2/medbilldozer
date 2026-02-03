@@ -1,0 +1,23 @@
+BLUE CROSS BLUE SHIELD
+Explanation of Benefits
+
+Member: Jennifer Garcia
+Member ID: BCB-P004-2026
+Date of Service: January 28, 2026
+
+CLAIM PROCESSING DETAILS:
+--------------------------
+Service: Office Visit (CPT 99214)
+Billed: $185.00
+Allowed: $140.00
+Plan Pays: $112.00
+Your Responsibility: $28.00 (Copay)
+
+Service: TSH Test (CPT 84443)
+Billed: $55.00
+Allowed: $45.00
+Plan Pays: $45.00
+Your Responsibility: $0.00
+
+CLAIM STATUS: Processed
+This is not a bill. Your provider will bill you separately.

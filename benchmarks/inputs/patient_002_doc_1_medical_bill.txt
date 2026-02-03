@@ -1,0 +1,26 @@
+WOMEN'S HEALTH SPECIALISTS
+Statement Date: January 20, 2026
+
+Patient: Mary Smith
+DOB: 03/22/1953
+Gender: Female (Age 72)
+Patient ID: P002
+
+PROCEDURE DETAILS:
+------------------
+CPT 99214 - Office Visit, Established Patient (Level 4)
+Date: 01/18/2026
+Provider: Dr. Rebecca Martinez
+Charge: $200.00
+
+CPT 58300 - Insertion of Intrauterine Device (IUD)
+Date: 01/18/2026
+Provider: Dr. Rebecca Martinez
+Charge: $450.00
+
+BILLING SUMMARY:
+Total Charges: $650.00
+Insurance Applied: $500.00
+Patient Owes: $150.00
+
+Payment due by: February 18, 2026

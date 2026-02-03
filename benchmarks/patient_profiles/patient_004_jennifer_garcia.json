@@ -1,0 +1,25 @@
+{
+    "patient_id": "P004",
+    "name": "Jennifer Garcia",
+    "demographics": {
+        "age": 34,
+        "sex": "F",
+        "date_of_birth": "1991-11-08"
+    },
+    "medical_history": {
+        "conditions": ["Hypothyroidism"],
+        "allergies": [],
+        "surgeries": ["Appendectomy (2015)"]
+    },
+    "documents": [
+        "patient_004_doc_1_medical_bill.txt",
+        "patient_004_doc_2_eob.txt"
+    ],
+    "expected_issues": [{
+        "type": "gender_mismatch",
+        "severity": "critical",
+        "description": "Female patient billed for prostate exam (CPT 55700) - anatomically impossible",
+        "requires_domain_knowledge": true,
+        "cpt_code": "55700"
+    }]
+}

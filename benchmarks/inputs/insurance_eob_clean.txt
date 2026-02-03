@@ -1,0 +1,22 @@
+BLUECARE INSURANCE COMPANY
+Explanation of Benefits
+
+Member: Sarah Thompson
+Member ID: BC123456789
+Date Processed: 2024-05-15
+
+CLAIM DETAILS:
+Provider: Downtown Medical Center
+Date of Service: 2024-05-01
+
+Service Description          Billed    Allowed    Plan Paid  You Owe
+Office Visit - Level 3       $180.00   $150.00    $120.00    $30.00
+Lab Work - Basic Panel       $95.00    $75.00     $60.00     $15.00
+
+CLAIM TOTALS:
+Total Billed: $275.00
+Total Allowed: $225.00
+Plan Paid: $180.00
+Your Responsibility: $45.00
+
+This is not a bill. Keep for your records.

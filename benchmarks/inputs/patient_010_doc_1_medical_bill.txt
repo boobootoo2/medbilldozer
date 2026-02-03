@@ -1,0 +1,32 @@
+METROPOLITAN SURGICAL CENTER
+Patient Invoice
+
+Name: Amanda Lee
+DOB: 10/25/1996
+Gender: Female
+Patient ID: P010
+
+Procedure Date: February 3, 2026
+Surgeon: Dr. Michael Brown
+
+SURGICAL SERVICES:
+------------------
+CPT 99215 - Office Visit, High Complexity
+Charge: $240.00
+
+CPT 55250 - Vasectomy, Unilateral or Bilateral
+Charge: $950.00
+
+CPT 99152 - Moderate Sedation, First 15 Minutes
+Charge: $175.00
+
+FINANCIAL BREAKDOWN:
+Procedure Total: $1,365.00
+Facility Fee: $850.00
+Anesthesia: $325.00
+
+GRAND TOTAL: $2,540.00
+Insurance Estimate: $2,100.00
+Estimated Patient Portion: $440.00
+
+Pre-authorization #: AUTH-2026-8837
