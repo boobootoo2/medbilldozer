@@ -4,6 +4,7 @@
 
 ![Security Audit](https://github.com/boobootoo2/medbilldozer/actions/workflows/security.yml/badge.svg)
 
+[![Run Benchmarks](https://github.com/boobootoo2/medbilldozer/actions/workflows/run_benchmarks.yml/badge.svg)](https://github.com/boobootoo2/medbilldozer/actions/workflows/run_benchmarks.yml)
 
 # medBillDozer
 
