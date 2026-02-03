@@ -21,9 +21,13 @@ on:
 jobs:
   benchmark:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Allow workflow to push commits
     
     steps:
       - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}  # Use built-in token for auth
       
       - name: Set up Python
         uses: actions/setup-python@v4
