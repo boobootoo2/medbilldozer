@@ -236,10 +236,80 @@ with col2:
 # CROSS-DOCUMENT ANALYSIS
 # ============================================================================
 
-st.header("📋 Cross-Document Analysis Results")
-st.markdown(
-    "Performance breakdown by document type showing how each model handles different billing scenarios."
+st.header("📋 Cross-Document Analysis Results 🏥")
+
+# Overall summary table
+st.subheader("📊 Model Performance Summary")
+
+summary_data = []
+for model_name, data in filtered_results.items():
+    full_name = get_full_model_name(model_name)
+    
+    # Calculate domain knowledge detection rate (documents with at least 1 TP)
+    docs_with_detection = 0
+    total_docs = 0
+    for doc_result in data.get("individual_results", []):
+        if doc_result.get("issues_expected", 0) > 0:
+            total_docs += 1
+            if doc_result.get("true_positives", 0) > 0:
+                docs_with_detection += 1
+    
+    domain_detection_rate = (docs_with_detection / total_docs * 100) if total_docs > 0 else 0
+    
+    # Get average token usage
+    avg_input_tokens = data.get("avg_input_tokens", 0)
+    avg_output_tokens = data.get("avg_output_tokens", 0)
+    avg_total_tokens = data.get("avg_total_tokens", 0)
+    
+    # Format token display
+    if avg_total_tokens > 0:
+        token_display = f"{avg_total_tokens:.0f}"
+        token_detail = f"(In: {avg_input_tokens:.0f}, Out: {avg_output_tokens:.0f})"
+    else:
+        token_display = "N/A"
+        token_detail = "(No API calls)"
+    
+    summary_data.append({
+        "Model": full_name,
+        "Precision": data.get("issue_precision", 0),
+        "Recall": data.get("issue_recall", 0),
+        "F1": data.get("issue_f1_score", 0),
+        "Domain Detection": f"{domain_detection_rate:.1f}%",
+        "Avg Tokens/Request": token_display,
+        "Token Breakdown": token_detail
+    })
+
+summary_df = pd.DataFrame(summary_data)
+
+# Format percentages for display
+display_df = summary_df.copy()
+for col in ["Precision", "Recall", "F1"]:
+    display_df[col] = display_df[col].apply(lambda x: f"{x:.2f}" if x > 0 else "0.00")
+
+st.dataframe(
+    display_df,
+    width='stretch',
+    hide_index=True,
+    column_config={
+        "Model": st.column_config.TextColumn("Model", width="large"),
+        "Precision": st.column_config.TextColumn("Precision", width="small"),
+        "Recall": st.column_config.TextColumn("Recall", width="small"),
+        "F1": st.column_config.TextColumn("F1 Score", width="small"),
+        "Domain Detection": st.column_config.TextColumn("Domain Knowledge Detection", width="medium"),
+        "Avg Tokens/Request": st.column_config.TextColumn("Avg Tokens", width="small"),
+        "Token Breakdown": st.column_config.TextColumn("Token Details", width="medium")
+    }
 )
+
+st.markdown("---")
+st.markdown(
+    "**Domain Knowledge Detection**: Percentage of documents with billing issues where the model detected at least one issue correctly."
+)
+st.markdown(
+    "**Token Usage**: Average tokens per request (Input: prompt tokens, Output: response tokens). Baseline uses no API."
+)
+
+st.markdown("---")
 
 # Collect per-document results across all models
 document_performance = {}
