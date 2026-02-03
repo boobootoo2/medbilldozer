@@ -139,7 +139,7 @@ git push
 
 ### Change Port (if needed)
 ```bash
-# Use any available port
+# Use any available port (example with 8503)
 python3 -m streamlit run benchmark_dashboard.py --server.port 8503
 ```
 
