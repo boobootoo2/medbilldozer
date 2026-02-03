@@ -79,10 +79,12 @@ def render_savings_breakdown(title: str, total: float, breakdown: list[dict]):
                 ${total:,.2f}
             </span>
         </div>
+        <!--
         # SECURITY: unsafe_allow_html=True is safe here because:
         # - total is a float (number) from calculations, not user input
         # - HTML structure is static with only numeric interpolation
         # - Used for styled savings display banner
+        !-->
         """,
         unsafe_allow_html=True,
     )
@@ -541,11 +543,11 @@ def render_header():
                 </div>
               </div>
             </div>
-            # SECURITY: unsafe_allow_html=True is safe here because:
+            <!--# SECURITY: unsafe_allow_html=True is safe here because:
             # - Static header HTML with logo and title
             # - img src is hardcoded GitHub URL (not user input)
             # - All text is static, no dynamic content
-            # - Used for custom header styling
+            # - Used for custom header styling-->
             """,
             unsafe_allow_html=True,
         )
