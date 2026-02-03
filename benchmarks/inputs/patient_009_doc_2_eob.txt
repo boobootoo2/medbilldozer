@@ -1,0 +1,40 @@
+MEDICARE EOB
+Beneficiary: James Williams
+Medicare #: 1EG4-TE5-MK73
+Claim: 2026-0234-JW
+
+Service Date: 02/03/2026
+Provider: Senior Care Medical
+
+CLAIM DETAILS:
+
+Office Visit (99214)
+  Charged:      $190
+  Allowed:      $145
+  Medicare Pd:  $116 (80%)
+  You Owe:      $29
+
+Pregnancy Test (81025)
+  Charged:      $25
+  Allowed:      $25
+  Medicare Pd:  $0 (NOT COVERED)
+  You Owe:      $25
+
+Sports Phys (99455)
+  Charged:      $125
+  Allowed:      $125
+  Medicare Pd:  $0 (NOT COVERED)
+  You Owe:      $125
+
+EKG (93040)
+  Charged:      $45
+  Allowed:      $35
+  Medicare Pd:  $28 (80%)
+  You Owe:      $7
+
+---
+TOTAL MEDICARE PAID:    $144
+YOUR RESPONSIBILITY:    $186
+
+NOT A BILL - KEEP FOR RECORDS
+Questions: 1-800-MEDICARE

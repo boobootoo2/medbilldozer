@@ -1,0 +1,25 @@
+{
+    "patient_id": "P003",
+    "name": "Robert Chen",
+    "demographics": {
+        "age": 8,
+        "sex": "M",
+        "date_of_birth": "2017-09-10"
+    },
+    "medical_history": {
+        "conditions": ["Asthma"],
+        "allergies": ["Peanuts"],
+        "surgeries": []
+    },
+    "documents": [
+        "patient_003_doc_1_medical_bill.txt",
+        "patient_003_doc_2_dental.txt"
+    ],
+    "expected_issues": [{
+        "type": "age_inappropriate_screening",
+        "severity": "high",
+        "description": "8-year-old child billed for colonoscopy (CPT 45378) - not age-appropriate screening",
+        "requires_domain_knowledge": true,
+        "cpt_code": "45378"
+    }]
+}

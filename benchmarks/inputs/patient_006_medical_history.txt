@@ -1,0 +1,53 @@
+PATIENT MEDICAL RECORD
+Primary Care Physician: Dr. Amanda White, MD
+Patient: Sarah Patel
+DOB: 07/14/2010
+Patient ID: P006
+Date of Record: January 20, 2026
+
+MEDICAL HISTORY SUMMARY
+=======================
+Active Diagnoses:
+- Scoliosis (mild, under monitoring)
+
+Medication List:
+- None regular
+
+Allergies:
+- None documented
+
+Social History:
+- Active adolescent
+- Plays school sports
+- No smoking/alcohol
+
+Past Surgical History:
+- None
+
+Age Consideration:
+- Age: 15 years old
+- ADOLESCENT (NOT ADULT)
+- No breast cancer risk factors
+- No family history of early-onset breast cancer
+
+CLINICAL NOTES
+==============
+Patient is a 15-YEAR-OLD FEMALE adolescent presenting for scoliosis monitoring.
+INAPPROPRIATE SCREENING: Screening mammography (CPT 77067) is NOT indicated at this age.
+Current Medical Guidelines:
+- Average-risk women: Screening mammography starts at age 40-50
+- High-risk women: May start earlier, but rarely before age 25-30
+- Routine screening at age 15 is NOT recommended by any major medical organization
+
+There is NO CLINICAL INDICATION for bilateral screening mammography in a healthy 15-year-old.
+Adolescent breasts are dense and mammography is not an appropriate screening tool.
+
+This charge appears to be medically inappropriate and should be reviewed for:
+1. Correct patient identification
+2. Correct procedure indication
+3. Whether mammography was actually performed
+
+Recommend reviewing billing records and clinical justification for this charge.
+Continue routine monitoring of scoliosis.
+
+Next Visit: March 2026

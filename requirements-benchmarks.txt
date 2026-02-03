@@ -1,0 +1,17 @@
+# Minimal requirements for running benchmarks
+# Use this in CI/CD to avoid dependency conflicts
+
+# Core dependencies
+openai>=1.0.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Provider dependencies
+google-genai>=1.0.0
+
+# For JSON handling (usually built-in, but explicit is better)
+# Standard library modules don't need to be listed
+
+# Optional: If using other providers
+# google-generativeai>=0.3.0  # For Gemini
+# anthropic>=0.7.0  # For Claude

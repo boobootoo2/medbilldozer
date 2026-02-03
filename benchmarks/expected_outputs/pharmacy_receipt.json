@@ -1,0 +1,32 @@
+{
+    "document_type": "pharmacy_receipt",
+    "expected_issues": [],
+    "expected_facts": {
+        "patient_name": "Michael Johnson",
+        "date_of_service": "2024-03-05",
+        "facility_name": "HEALTHPLUS PHARMACY",
+        "receipt_number": "RX-789456",
+        "pharmacy_line_items": [{
+                "description": "Lisinopril 10mg (30 tablets)",
+                "amount": 15.99,
+                "fsa_eligible": false
+            },
+            {
+                "description": "Atorvastatin 20mg (30 tablets)",
+                "amount": 12.99,
+                "fsa_eligible": false
+            },
+            {
+                "description": "Vitamin D3 1000IU",
+                "amount": 8.99,
+                "fsa_eligible": true
+            },
+            {
+                "description": "Band-Aids Variety Pack",
+                "amount": 5.99,
+                "fsa_eligible": true
+            }
+        ]
+    },
+    "expected_savings": 0.0
+}

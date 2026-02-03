@@ -109,34 +109,88 @@ class LocalHeuristicProvider(LLMProvider):
         issues: List[Issue] = []
 
         # --- Duplicate CPT heuristic ---
-        line_items = re.findall(
-            r"(?P<date>\d{2}/\d{2}/\d{4}).*?(?P<cpt>\b\d{4,5}\b).*?\$(?P<patient>\d+\.\d{2})",
-            raw_text
-        )
+        # Extract date from document (look for "Date of Service:" pattern)
+        dos_match = re.search(r"Date of Service:?\s*(\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4})", raw_text)
+        dos = dos_match.group(1) if dos_match else "unknown"
+        
+        # Extract line items with CPT codes and amounts
+        # Pattern: CPT XXXX - description $amount.00
+        line_items_pattern = r"CPT\s+(\d{4,5})\s*[-–]\s*([^$]+?)\s*\$\s*(\d+\.\d{2})"
+        line_items = re.findall(line_items_pattern, raw_text)
 
-        seen: Dict[tuple, int] = {}
-        for date, cpt, patient_amt in line_items:
-            key = (date, cpt, patient_amt)
-            seen[key] = seen.get(key, 0) + 1
+        # Track duplicates
+        seen: Dict[tuple, list] = {}
+        for cpt, desc, amount in line_items:
+            key = (cpt.strip(), amount.strip())
+            if key not in seen:
+                seen[key] = []
+            seen[key].append((cpt, desc, amount))
 
-        for (date, cpt, patient_amt), count in seen.items():
-            if count > 1:
-                amt = float(patient_amt)
+        # Report duplicates
+        for (cpt, amount), items in seen.items():
+            if len(items) > 1:
+                amt = float(amount)
                 issues.append(Issue(
                     type="duplicate_charge",
-                    summary=f"Duplicate billing for CPT {cpt} on {date}",
+                    summary=f"Duplicate CPT {cpt} on {dos}",
                     evidence=(
-                        f"The same CPT {cpt} appears {count} times on {date}, "
-                        f"each with a patient responsibility of ${amt:.2f}."
+                        f"CPT code {cpt} ({items[0][1].strip()}) appears {len(items)} times "
+                        f"on {dos}, each at ${amount}. "
+                        f"This suggests duplicate billing."
                     ),
                     code=cpt,
-                    date=date,
+                    date=dos,
                     recommended_action=(
                         "Ask the provider to confirm whether one of the duplicate "
-                        "charges can be removed."
+                        "charges should be removed."
                     ),
                     max_savings=amt
                 ))
+
+        # --- Overbilling heuristic: detect unusually high facility fees ---
+        # Look for facility fee patterns (common pattern in medical bills)
+        facility_fee_pattern = r"(?:facility|surgical suite|operating room|OR|anesthesia|room)\s*fee.*?\$\s*(\d+\.\d{2})"
+        facility_fees = re.findall(facility_fee_pattern, raw_text, re.IGNORECASE)
+        
+        if facility_fees:
+            for fee_str in facility_fees:
+                fee_amt = float(fee_str)
+                # Flag facility fees over $500 as potentially excessive
+                if fee_amt > 500:
+                    issues.append(Issue(
+                        type="overbilling",
+                        summary=f"Facility fee of ${fee_amt:.2f} appears excessive",
+                        evidence=(
+                            f"Facility or room fee of ${fee_amt:.2f} found. "
+                            f"Typical facility fees range from $100-300. This may be worth negotiating."
+                        ),
+                        recommended_action="Review facility fee with the provider. Request itemization.",
+                        max_savings=fee_amt * 0.5  # Estimate 50% potential savings
+                    ))
+
+        # --- Overbilling heuristic: detect repeated amounts suggesting duplicates ---
+        # Extract all dollar amounts to check for patterns
+        all_amounts = re.findall(r"\$\s*(\d+\.\d{2})", raw_text)
+        amount_counts: Dict[str, int] = {}
+        for amt in all_amounts:
+            amount_counts[amt] = amount_counts.get(amt, 0) + 1
+        
+        # If same amount appears 3+ times in line items, might be overbilling
+        for amt_str, count in amount_counts.items():
+            if count >= 3:
+                amt = float(amt_str)
+                # Skip very small amounts (likely copays) and very large amounts
+                if 50 < amt < 1000:
+                    issues.append(Issue(
+                        type="overbilling",
+                        summary=f"Charge of ${amt:.2f} appears {count} times",
+                        evidence=(
+                            f"The charge of ${amt:.2f} appears {count} times in this bill. "
+                            f"Verify that these are all necessary distinct charges."
+                        ),
+                        recommended_action="Request itemized explanation of each charge.",
+                        max_savings=amt * (count - 1)  # Conservative: assume 1 is correct
+                    ))
 
         meta = {
             "provider": self.name(),

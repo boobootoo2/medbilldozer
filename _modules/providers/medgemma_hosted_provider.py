@@ -7,6 +7,7 @@ for specialized medical billing analysis.
 import os
 import json
 import requests
+from typing import Optional, Dict
 from _modules.providers.llm_interface import LLMProvider, AnalysisResult, Issue
 
 HF_MODEL_ID = os.getenv("HF_MODEL_ID", "google/medgemma-4b-it")
@@ -108,7 +109,11 @@ class MedGemmaHostedProvider(LLMProvider):
     def health_check(self) -> bool:
         return bool(self.token)
 
-    def analyze_document(self, text: str) -> AnalysisResult:
+    def analyze_document(
+        self,
+        raw_text: str,
+        facts: Optional[Dict] = None
+    ) -> AnalysisResult:
         if not self.token:
             raise RuntimeError("HF_API_TOKEN not set")
 
@@ -117,7 +122,8 @@ class MedGemmaHostedProvider(LLMProvider):
             "Content-Type": "application/json",
         }
 
-        prompt = f"{SYSTEM_PROMPT}\n{TASK_PROMPT}\n{text}"
+        # Use the raw_text as-is (may already contain patient context from orchestrator)
+        prompt = f"{SYSTEM_PROMPT}\n{TASK_PROMPT}\n{raw_text}"
 
         payload = {
             "model": HF_MODEL_ID,

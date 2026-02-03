@@ -1,0 +1,20 @@
+CVS PHARMACY
+Rcpt 02/03/2026
+
+Lisa Rodriguez
+DOB: 05/20/2022
+Rx: 7729384
+
+Amoxicillin 400mg/5mL
+Qty: 100mL
+Take 7mL BID x 10 days
+Dr J Martinez
+
+List:     $18.00
+Ins:      -$13.00
+Copay:     $5.00 ✓
+
+No refills
+Shake well
+
+Store 4521

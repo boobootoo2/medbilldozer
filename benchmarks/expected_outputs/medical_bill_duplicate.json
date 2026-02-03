@@ -1,0 +1,36 @@
+{
+    "document_type": "medical_bill",
+    "expected_issues": [{
+        "type": "duplicate_charge",
+        "description": "Office visit billed twice on 2024-01-15",
+        "should_detect": true
+    }],
+    "expected_facts": {
+        "patient_name": "John Doe",
+        "date_of_service": "2024-01-15",
+        "facility_name": "CENTRAL MEDICAL CENTER",
+        "medical_line_items": [{
+                "cpt_code": "99213",
+                "date_of_service": "2024-01-15",
+                "description": "Office Visit, Established Patient",
+                "billed_amount": 150.00,
+                "patient_responsibility": 75.00
+            },
+            {
+                "cpt_code": "99213",
+                "date_of_service": "2024-01-15",
+                "description": "Office Visit, Established Patient",
+                "billed_amount": 150.00,
+                "patient_responsibility": 75.00
+            },
+            {
+                "cpt_code": "36415",
+                "date_of_service": "2024-01-15",
+                "description": "Blood Collection",
+                "billed_amount": 25.00,
+                "patient_responsibility": 25.00
+            }
+        ]
+    },
+    "expected_savings": 75.00
+}

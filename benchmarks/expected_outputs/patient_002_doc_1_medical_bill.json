@@ -1,0 +1,34 @@
+{
+    "document_type": "medical_bill",
+    "expected_facts": {
+        "patient_name": "Mary Smith",
+        "patient_dob": "1953-03-22",
+        "date_of_service": "2026-01-20",
+        "facility_name": "WOMEN'S HEALTH ASSOC",
+        "medical_line_items": [{
+                "cpt_code": "99214",
+                "date_of_service": "2026-01-20",
+                "description": "Office Visit",
+                "billed_amount": 200.00,
+                "patient_responsibility": 100.00
+            },
+            {
+                "cpt_code": "58300",
+                "date_of_service": "2026-01-20",
+                "description": "Intrauterine Device - IUD",
+                "billed_amount": 450.00,
+                "patient_responsibility": 225.00
+            }
+        ]
+    },
+    "expected_issues": [{
+        "type": "unbundling",
+        "severity": "low",
+        "cpt_code": "58300",
+        "line_item_index": 1,
+        "description": "Insertion/Setup Fee should be bundled with IUD procedure",
+        "expected_savings": 75.00,
+        "should_detect": false
+    }],
+    "expected_savings": 75.00
+}

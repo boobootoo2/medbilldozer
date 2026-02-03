@@ -1,0 +1,24 @@
+QUEST DIAGNOSTICS
+Lab Rpt
+
+David Thompson
+DOB: 12/03/1970  M
+Specimen: 02/03/2026
+
+URINALYSIS (81000)
+Color        Yellow
+Clarity      Clear
+SpGr         1.018 (OK)
+pH           6.5 (OK)
+Protein      NEG
+Glucose      NEG
+Blood        NEG
+Esterase     NEG
+Nitrites     NEG
+
+Results: NORMAL
+
+Dr Patricia Wong MD
+Medical Director
+
+Report: 02/03/2026
