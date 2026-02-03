@@ -28,29 +28,36 @@ class OpenAIAnalysisProvider(LLMProvider):
         raw_text: str,
         facts: Optional[Dict] = None
     ) -> AnalysisResult:
-        prompt = f"""
-You are a healthcare billing analysis assistant.
+        prompt = f"""You are a healthcare billing expert. Analyze this medical bill for billing errors.
 
-Analyze the document and return a JSON array of issues.
+ISSUE TYPES TO DETECT:
+1. duplicate_charge: Same CPT code on same date with identical amounts (clear sign of duplicate billing)
+2. overbilling: Charges that are unusually high, facility fees that exceed norms, or math errors
+3. coding_error: Procedure coded as higher complexity/cost than appropriate
+4. unbundling: Related services billed separately instead of as one bundled code
+5. cross_bill_discrepancy: Same service appears on multiple bills with different amounts
+6. excessive_charge: Single charge much higher than reasonable for that service
+7. facility_fee_error: Facility/room fees that appear incorrect or excessive
 
-For each issue:
-- type: one of duplicate_charge, billing_error, non_covered_service,
-        overbilling, insurance_issue, fsa_issue, other
-- summary: short description
-- evidence: brief supporting explanation
-- max_savings: numeric dollar amount representing the MAXIMUM
-  patient responsibility that could be removed if the issue
-  were resolved favorably, using ONLY amounts explicitly stated
-  in the document. If no amount can be determined with certainty,
-  set this to null.
+IMPORTANT RULES:
+- If you see the SAME CPT code listed multiple times on the SAME date with the SAME patient responsibility amount, THIS IS A DUPLICATE
+- If a facility fee exceeds $500, flag as potentially excessive
+- If charges are clearly repeated, flag as potential overbilling
+- Use only dollar amounts explicitly shown in the document for max_savings
+- Be thorough - this is for patient advocacy, not insurance approval
 
-Be conservative. Do not guess or infer missing numbers.
-
-If no issues are found, return an empty JSON array.
+RESPONSE FORMAT - Return ONLY a valid JSON array, no other text:
+[
+  {{
+    "type": "issue_type",
+    "summary": "Brief description",
+    "evidence": "Specific facts and amounts",
+    "max_savings": 150.00
+  }}
+]
 
 DOCUMENT:
-{raw_text}
-"""
+{raw_text}"""
 
         response = self.client.chat.completions.create(
             model=self.model,

@@ -1,25 +1,24 @@
 PEDIATRIC CARE CENTER
-Invoice Date: January 25, 2026
+Acct P003 | DOB: 09/10/2017
 
-Patient: Robert Chen
-DOB: 09/10/2017 (Age: 8 years)
-Gender: Male
-Account: P003
+Robert Chen - Age 8
 
-SERVICES:
----------
-CPT 99392 - Preventive Visit, Age 5-11
-Date: 01/22/2026
-Charge: $175.00
+Service Date: 01/22/2026
 
-CPT 45378 - Colonoscopy, Diagnostic
-Date: 01/22/2026
-Charge: $1,850.00
+ITEMIZED CHARGES:
+------------------
+Preventive Visit (99392)      $175.00
+Colonoscopy Procedure (45378) $1,850.00
+Immunization (90471)          $25.00
+Facility Charge              $50.00
 
-CPT 90471 - Immunization Administration
-Date: 01/22/2026
-Charge: $25.00
+SUBTOTAL:              $2,100.00
+Insurance (Aetna):     -$1,800.00
+Copay/Deductible:      -$25.00
 
-TOTAL: $2,050.00
-Insurance Paid: $1,800.00
-Patient Balance: $250.00
+BALANCE DUE:           $275.00
+
+Provider: Dr. Lisa Rodriguez, MD
+
+For questions: pediatriccare@email.com
+(555) 777-1234 ext 5

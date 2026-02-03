@@ -1,23 +1,24 @@
 QUEST DIAGNOSTICS
-Laboratory Report
+Lab Rpt
 
-Patient: David Thompson
-DOB: 12/03/1970 | Gender: Male
-Specimen Collected: February 3, 2026
+David Thompson
+DOB: 12/03/1970  M
+Specimen: 02/03/2026
 
-TEST: Urinalysis, Complete (CPT 81000)
------------------------------------------
-Color: Yellow
-Clarity: Clear
-Specific Gravity: 1.018 (Normal: 1.005-1.030)
-pH: 6.5 (Normal: 4.5-8.0)
-Protein: Negative
-Glucose: Negative
-Blood: Negative
-Leukocyte Esterase: Negative
-Nitrites: Negative
+URINALYSIS (81000)
+Color        Yellow
+Clarity      Clear
+SpGr         1.018 (OK)
+pH           6.5 (OK)
+Protein      NEG
+Glucose      NEG
+Blood        NEG
+Esterase     NEG
+Nitrites     NEG
 
-INTERPRETATION: Within normal limits
+Results: NORMAL
 
-Reviewed by: Dr. Patricia Wong, Medical Director
-Report Date: February 3, 2026
+Dr Patricia Wong MD
+Medical Director
+
+Report: 02/03/2026

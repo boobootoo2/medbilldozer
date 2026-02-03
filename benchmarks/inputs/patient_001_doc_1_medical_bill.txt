@@ -1,30 +1,26 @@
-MEDICAL CENTER OF EXCELLENCE
-Invoice #MB-2026-001
-Date of Service: January 15, 2026
+STATEMENT FROM RIVERSIDE MEDICAL CENTER
+Acct: P001-2026-001 | DOB: 06/15/1980 | JOHN DOE
 
-Patient: John Doe
-DOB: 06/15/1980
-Gender: Male
-Account #: P001
+========================================
+Service Dates: Jan 10-15, 2026
+========================================
 
-SERVICES RENDERED:
-------------------
-CPT 99213 - Office Visit, Established Patient (Level 3)
-Date: 01/15/2026
-Charge: $150.00
+CHARGES:
+Office Visit - 99213                           $150.00
+  15 min w Dr Williams
 
-CPT 76805 - Obstetric Ultrasound, Single/First Gestation
-Date: 01/15/2026
-Charge: $285.00
+Obstetric Ultrasound 76805                     $285.00
+  Single/First Gestation
 
-CPT 80053 - Comprehensive Metabolic Panel
-Date: 01/15/2026
-Charge: $45.00
+Metabolic Panel 80053                           $45.00
 
-TOTAL CHARGES: $480.00
-Insurance Payment: $0.00
-Patient Responsibility: $480.00
+Facility Fee                                    $20.00
 
-DUE NOW: $480.00
+SUBTOTAL: $500.00
+Insurance Applied: -$280.00
+Deductible Met: NO
 
-Questions? Call (555) 123-4567
+Amount Due: $220.00
+
+Pay by: 02/15/2026
+Processing Questions? 555-MEDCTR

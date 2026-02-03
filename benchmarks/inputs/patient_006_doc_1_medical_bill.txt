@@ -1,25 +1,24 @@
 ADOLESCENT HEALTH CENTER
-Invoice #: AHC-2026-156
+Invoice AHC-2026-156
+Date: 02/02/2026
 
-Patient: Sarah Patel
-DOB: 07/14/2010 (Age 15)
-Gender: Female
-Account: P006
+Sarah Patel
+DOB: 07/14/2010  Age: 15  F
 
-Services Rendered: February 2, 2026
-Provider: Dr. Emily Rodriguez
+VISIT 02/02/2026
+Dr Emily Rodriguez
 
-CPT 99394 - Preventive Visit, Adolescent (12-17)
-Charge: $165.00
+Preventive Visit (99394)        $165
+Screening Mammography (77067)   $320
+Flu Shot (87804)                 $30
 
-CPT 77067 - Screening Mammography, Bilateral
-Charge: $320.00
+---
+Subtotal                        $515
+Insurance:                      -$450
+Your Cost                        $65
 
-CPT 87804 - Influenza Immunization
-Charge: $30.00
+Due: 03/02/2026
 
-TOTAL CHARGES: $515.00
-Insurance Coverage: $450.00
-Patient Responsibility: $65.00
-
-Due Date: March 2, 2026
+Teenage/Adolescent Care
+Confidential Health Services
+(555) 222-1111

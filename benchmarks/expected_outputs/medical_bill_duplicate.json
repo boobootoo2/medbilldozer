@@ -2,8 +2,7 @@
     "document_type": "medical_bill",
     "expected_issues": [{
         "type": "duplicate_charge",
-        "code": "99213",
-        "date": "2024-01-15",
+        "description": "Office visit billed twice on 2024-01-15",
         "should_detect": true
     }],
     "expected_facts": {

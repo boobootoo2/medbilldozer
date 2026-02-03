@@ -1,0 +1,37 @@
+{
+    "document_type": "medical_bill",
+    "expected_facts": {
+        "patient_name": "John Doe",
+        "patient_dob": "1980-06-15",
+        "date_of_service": "2026-01-10",
+        "facility_name": "RIVERSIDE MEDICAL CENTER",
+        "medical_line_items": [{
+                "cpt_code": "99213",
+                "date_of_service": "2026-01-10",
+                "description": "Office Visit, Detailed",
+                "billed_amount": 150.00,
+                "patient_responsibility": 70.00
+            },
+            {
+                "cpt_code": "76805",
+                "date_of_service": "2026-01-10",
+                "description": "Obstetric Ultrasound, Single/First Gestation",
+                "billed_amount": 285.00,
+                "patient_responsibility": 142.50
+            },
+            {
+                "cpt_code": "80053",
+                "date_of_service": "2026-01-10",
+                "description": "Metabolic Panel",
+                "billed_amount": 45.00,
+                "patient_responsibility": 22.50
+            }
+        ]
+    },
+    "expected_issues": [{
+        "type": "overbilling",
+        "description": "Facility fee ($20) appears excessive for simple office visit",
+        "should_detect": true
+    }],
+    "expected_savings": 15.00
+}
