@@ -502,7 +502,7 @@ for tab, model_name in zip(tabs, selected_models):
         with col3:
             st.metric(
                 "JSON Validity",
-                f"{data.get('json_validity_rate', 0):.1%}",
+                f"{data.get('json_validity_rate', 0):.1f}%",
                 help="Percentage of valid JSON outputs"
             )
         
