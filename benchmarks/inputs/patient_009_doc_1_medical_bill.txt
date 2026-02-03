@@ -1,0 +1,24 @@
+SENIOR CARE MEDICAL PRACTICE
+Bill P009 | 02/03/2026
+
+James Williams
+DOB: 08/30/1943 | M | Age 82
+
+CHARGES:
+Office Visit 99214              $190
+Pregnancy Test 81025            $25
+Sports Physical 99455           $125
+ECG/EKG 93040                   $45
+Facility Fee                    $20
+
+---
+TOTAL:                         $405
+Insurance: PENDING
+Amount Due Now:                $405
+
+Due Date: 03/03/2026
+
+Dr Susan Park, MD
+Geriatric Medicine
+
+(555) 888-2222

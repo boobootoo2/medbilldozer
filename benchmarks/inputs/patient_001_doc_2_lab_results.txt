@@ -1,0 +1,24 @@
+LAB RESULTS
+Name: John Doe  |  DOB: 06/15/80
+
+Specimen collected: 01/15
+Received: 01/16
+Reported: 01/17
+
+COMPREHENSIVE METABOLIC PANEL
+Glucose              145 mg/dL       (High)
+BUN                  18 mg/dL        (OK)
+Creatinine           1.0 mg/dL       (OK)
+Sodium               140 mEq/L       (OK)
+Potassium            4.2 mEq/L       (OK)
+
+CPT CODE: 80053
+STATUS: Completed
+
+Dr Sarah Johnson - Ordering Physician
+Test referred by - Riverside Medical
+
+NOTES: Glucose elevated. Known Diabetes Type 2. Recommend
+       medication review with prescribing physician.
+
+Specimen ID: LAB-001-2026-5847

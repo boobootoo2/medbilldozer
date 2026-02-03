@@ -1,0 +1,27 @@
+CENTRAL MEDICAL ASSOCIATES
+Date: 01/30/2026
+Acct: P004
+
+Patient: Jennifer Garcia
+DOB: 11/08/1991
+Sex: FEMALE
+
+Services Provided - 01/28/2026
+===================================
+
+Office Visit 99214              185.00
+Prostate Biopsy 55700           425.00
+TSH Lab Work 84443               55.00
+Equipment/Supplies               15.00
+
+TOTAL CHARGES:                  680.00
+Insurance Status: PENDING
+AMOUNT DUE NOW:                 680.00
+
+Bill Due: 02/28/2026
+
+For billing questions:
+billing@centralmedical.com
+(555) 333-4444
+
+Account Mgr: Robert Johnson

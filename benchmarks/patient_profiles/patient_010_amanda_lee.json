@@ -1,0 +1,25 @@
+{
+    "patient_id": "P010",
+    "name": "Amanda Lee",
+    "demographics": {
+        "age": 29,
+        "sex": "F",
+        "date_of_birth": "1996-10-25"
+    },
+    "medical_history": {
+        "conditions": ["Polycystic Ovary Syndrome (PCOS)"],
+        "allergies": ["Latex"],
+        "surgeries": ["Laparoscopic Ovarian Cystectomy (2023)"]
+    },
+    "documents": [
+        "patient_010_doc_1_medical_bill.txt",
+        "patient_010_doc_2_lab.txt"
+    ],
+    "expected_issues": [{
+        "type": "gender_mismatch",
+        "severity": "critical",
+        "description": "Female patient billed for vasectomy (CPT 55250) - anatomically impossible",
+        "requires_domain_knowledge": true,
+        "cpt_code": "55250"
+    }]
+}

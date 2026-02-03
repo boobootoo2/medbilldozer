@@ -1,0 +1,38 @@
+{
+    "document_type": "dental_bill",
+    "expected_issues": [{
+        "type": "duplicate_charge",
+        "code": "D2740",
+        "date": "2024-04-12",
+        "should_detect": true
+    }],
+    "expected_facts": {
+        "patient_name": "Robert Martinez",
+        "date_of_service": "2024-04-12",
+        "provider_name": "Dr. Sarah Johnson",
+        "facility_name": "SMILE CARE DENTAL",
+        "dental_line_items": [{
+                "cdt_code": "D2740",
+                "date_of_service": "2024-04-12",
+                "description": "Crown - Porcelain/Ceramic",
+                "billed_amount": 1200.00,
+                "patient_responsibility": 300.00
+            },
+            {
+                "cdt_code": "D2740",
+                "date_of_service": "2024-04-12",
+                "description": "Crown - Porcelain/Ceramic",
+                "billed_amount": 1200.00,
+                "patient_responsibility": 300.00
+            },
+            {
+                "cdt_code": "D0220",
+                "date_of_service": "2024-04-12",
+                "description": "Periapical X-ray",
+                "billed_amount": 45.00,
+                "patient_responsibility": 45.00
+            }
+        ]
+    },
+    "expected_savings": 300.00
+}

@@ -1,0 +1,24 @@
+ADOLESCENT HEALTH CENTER
+Invoice AHC-2026-156
+Date: 02/02/2026
+
+Sarah Patel
+DOB: 07/14/2010  Age: 15  F
+
+VISIT 02/02/2026
+Dr Emily Rodriguez
+
+Preventive Visit (99394)        $165
+Screening Mammography (77067)   $320
+Flu Shot (87804)                 $30
+
+---
+Subtotal                        $515
+Insurance:                      -$450
+Your Cost                        $65
+
+Due: 03/02/2026
+
+Teenage/Adolescent Care
+Confidential Health Services
+(555) 222-1111

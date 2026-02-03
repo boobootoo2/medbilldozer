@@ -1,0 +1,92 @@
+name: Run Benchmarks
+
+on:
+  # Run on schedule (daily at 2am UTC)
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Run manually
+  workflow_dispatch:
+  
+  # Run on pushes to develop
+  push:
+    branches:
+      - develop
+    paths:
+      - '_modules/providers/**'
+      - 'scripts/generate_benchmarks.py'
+      - 'benchmarks/inputs/**'
+      - '.github/workflows/run_benchmarks.yml'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Allow workflow to push commits
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}  # Use built-in token for auth
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Use minimal requirements for benchmarks only
+          pip install -r requirements-benchmarks.txt
+      
+      - name: Run benchmarks
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: |
+          # Run each provider separately to handle failures gracefully
+          # Skip MedGemma for now - HF Inference API is unreliable
+          python3 scripts/generate_benchmarks.py --model baseline || echo "⚠️ Baseline failed"
+          python3 scripts/generate_benchmarks.py --model openai || echo "⚠️ OpenAI failed"
+          python3 scripts/generate_benchmarks.py --model gemini || echo "⚠️ Gemini failed"
+          # python3 scripts/generate_benchmarks.py --model medgemma || echo "⚠️ MedGemma failed"
+      
+      - name: Commit benchmark results
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add benchmarks/results/
+          git diff --quiet && git diff --staged --quiet || (git commit -m "📊 Update benchmark results" && git push)
+      
+      - name: Comment on PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const metrics = JSON.parse(fs.readFileSync('benchmarks/results/aggregated_metrics.json'));
+            
+            let comment = '## 📊 Benchmark Results\n\n';
+            comment += '| Model | Precision | Recall | F1 Score | Latency |\n';
+            comment += '|-------|-----------|--------|----------|----------|\n';
+            
+            for (const result of metrics.individual_results || []) {
+              const model = result.model_name || 'Unknown';
+              const precision = (metrics.issue_precision * 100).toFixed(1);
+              const recall = (metrics.issue_recall * 100).toFixed(1);
+              const f1 = (metrics.issue_f1_score * 100).toFixed(1);
+              const latency = (metrics.avg_pipeline_latency_ms / 1000).toFixed(2);
+              
+              comment += `| ${model} | ${precision}% | ${recall}% | ${f1}% | ${latency}s |\n`;
+            }
+            
+            comment += '\n[View full results →](https://github.com/boobootoo2/medbilldozer/tree/develop/benchmarks/results)\n';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

@@ -1,0 +1,15 @@
+SMILE CARE DENTAL
+Patient Statement
+
+Patient: Robert Martinez
+DOS: 2024-04-12
+Provider: Dr. Sarah Johnson, DDS
+
+PROCEDURES:
+D2740 - Crown - Porcelain/Ceramic                $1,200.00
+D2740 - Crown - Porcelain/Ceramic                $1,200.00
+D0220 - Periapical X-ray                           $45.00
+
+Total: $2,445.00
+Insurance Payment: $1,800.00
+Patient Portion: $645.00

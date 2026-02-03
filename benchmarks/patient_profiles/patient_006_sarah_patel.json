@@ -1,0 +1,25 @@
+{
+    "patient_id": "P006",
+    "name": "Sarah Patel",
+    "demographics": {
+        "age": 15,
+        "sex": "F",
+        "date_of_birth": "2010-07-14"
+    },
+    "medical_history": {
+        "conditions": ["Scoliosis"],
+        "allergies": [],
+        "surgeries": []
+    },
+    "documents": [
+        "patient_006_doc_1_medical_bill.txt",
+        "patient_006_doc_2_imaging.txt"
+    ],
+    "expected_issues": [{
+        "type": "age_inappropriate_screening",
+        "severity": "high",
+        "description": "15-year-old billed for screening mammogram (CPT 77067) - not recommended before age 40",
+        "requires_domain_knowledge": true,
+        "cpt_code": "77067"
+    }]
+}

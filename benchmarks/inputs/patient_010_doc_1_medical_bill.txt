@@ -1,0 +1,26 @@
+METROPOLITAN SURGICAL CENTER
+Invoice P010 | 02/03/2026
+
+Amanda Lee
+DOB: 10/25/1996 | F
+
+Procedure Date: 02/03/2026
+Dr Michael Brown, Surgeon
+
+CHARGES:
+Complex Office Visit (99215)    $240
+Vasectomy (55250)               $950
+Moderate Sedation (99152)       $175
+Facility Fee                    $850
+Anesthesia Services             $325
+
+---
+TOTAL:                        $2,540
+Insurance Est:               -$2,100
+Est Patient Resp:              $440
+
+Pre-Auth: AUTH-2026-8837
+Due Date: 03/03/2026
+
+Contact: surgery@metrosurgical.org
+(555) 777-8888

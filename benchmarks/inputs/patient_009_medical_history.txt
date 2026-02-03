@@ -1,0 +1,64 @@
+PATIENT MEDICAL RECORD
+Primary Care Physician: Dr. Susan Park, MD
+Patient: James Williams
+DOB: 08/30/1943
+Patient ID: P009
+Date of Record: January 28, 2026
+
+MEDICAL HISTORY SUMMARY
+=======================
+Active Diagnoses:
+- Atrial Fibrillation (on warfarin)
+- Chronic Kidney Disease Stage 3 (stable)
+- Osteoporosis (being treated)
+
+Medication List:
+- Warfarin 5mg daily
+- Lisinopril 10mg daily
+- Calcium + Vitamin D supplement
+- Alendronate 70mg weekly
+
+Allergies:
+- Codeine (severe reaction)
+
+Social History:
+- Retired (widowed)
+- Non-smoker
+- Limited activity due to age
+
+Past Surgical History:
+- Pacemaker insertion (2018)
+- Cataract surgery bilateral (2021)
+
+Gender/Anatomical Status:
+- MALE (XY chromosomes)
+- Age 82 (very elderly)
+- No female reproductive organs
+- No uterus, ovaries, or female anatomy
+
+CLINICAL NOTES
+==============
+Patient is an 82-YEAR-OLD ELDERLY MALE with multiple comorbidities.
+
+CRITICAL ERROR #1: Urine pregnancy test (CPT 81025) is ANATOMICALLY IMPOSSIBLE and MEDICALLY NONSENSICAL in this patient.
+- Patient is MALE (no reproductive capacity for pregnancy)
+- Patient is 82 years old (far beyond reproductive age)
+- Pregnancy test in males serves NO clinical purpose
+This represents either:
+1. Serious billing error
+2. Wrong patient identification
+3. System malfunction
+
+CRITICAL ERROR #2: Sports physical examination (CPT 99455) is MEDICALLY INAPPROPRIATE at age 82.
+- Sports physicals are for athletes engaged in competitive sports
+- Patient is 82 with significant comorbidities (AFib, CKD, osteoporosis)
+- Patient is NOT a candidate for competitive athletics
+- This procedure is not clinically appropriate for this elderly patient
+
+IMMEDIATE INVESTIGATION REQUIRED:
+Both charges should be reviewed for billing errors or wrong patient assignment.
+
+Continue appropriate geriatric management of AFib, CKD, and osteoporosis.
+Monitor for drug interactions with warfarin.
+
+Next Visit: February 2026

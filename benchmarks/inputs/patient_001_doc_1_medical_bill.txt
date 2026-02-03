@@ -1,0 +1,26 @@
+STATEMENT FROM RIVERSIDE MEDICAL CENTER
+Acct: P001-2026-001 | DOB: 06/15/1980 | JOHN DOE
+
+========================================
+Service Dates: Jan 10-15, 2026
+========================================
+
+CHARGES:
+Office Visit - 99213                           $150.00
+  15 min w Dr Williams
+
+Obstetric Ultrasound 76805                     $285.00
+  Single/First Gestation
+
+Metabolic Panel 80053                           $45.00
+
+Facility Fee                                    $20.00
+
+SUBTOTAL: $500.00
+Insurance Applied: -$280.00
+Deductible Met: NO
+
+Amount Due: $220.00
+
+Pay by: 02/15/2026
+Processing Questions? 555-MEDCTR

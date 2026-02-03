@@ -1,0 +1,25 @@
+{
+    "patient_id": "P005",
+    "name": "Michael O'Connor",
+    "demographics": {
+        "age": 28,
+        "sex": "M",
+        "date_of_birth": "1997-04-19"
+    },
+    "medical_history": {
+        "conditions": [],
+        "allergies": ["Shellfish"],
+        "surgeries": []
+    },
+    "documents": [
+        "patient_005_doc_1_medical_bill.txt",
+        "patient_005_doc_2_pharmacy.txt"
+    ],
+    "expected_issues": [{
+        "type": "gender_mismatch",
+        "severity": "critical",
+        "description": "Male patient billed for hysterectomy (CPT 58150) - anatomically impossible",
+        "requires_domain_knowledge": true,
+        "cpt_code": "58150"
+    }]
+}

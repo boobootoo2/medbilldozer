@@ -1,0 +1,57 @@
+PATIENT MEDICAL RECORD
+Primary Care Physician: Dr. James Martinez, MD
+Patient: Lisa Rodriguez
+DOB: 05/20/2022
+Patient ID: P008
+Date of Record: January 25, 2026
+
+MEDICAL HISTORY SUMMARY
+=======================
+Active Diagnoses:
+- Recurrent Otitis Media (ear infections, under treatment)
+- Otherwise healthy
+
+Medication List:
+- Amoxicillin (as needed for ear infections)
+
+Allergies:
+- None documented
+
+Social History:
+- Toddler in preschool
+- Plays with peers
+- Normal development
+
+Past Surgical History:
+- None
+
+Age Consideration:
+- Age: 3 years old
+- TODDLER (NOT ADULT)
+- No cardiac complaints or symptoms
+- No family history of cardiac disease
+- No indication for stress testing
+
+CLINICAL NOTES
+==============
+Patient is a 3-YEAR-OLD FEMALE toddler with history of ear infections under treatment.
+INAPPROPRIATE PROCEDURE: Cardiovascular stress test (CPT 93015) is NOT indicated in this patient.
+Clinical Evidence:
+- Patient is asymptomatic
+- No cardiac complaints reported
+- No family history of premature heart disease
+- No exertional symptoms
+- Age 3 is far too young for stress testing
+
+Stress testing is typically performed in adults (typically 40+) with cardiac risk factors or symptoms.
+There is NO CLINICAL INDICATION for this test in a healthy 3-year-old child.
+This procedure would be:
+1. Medically inappropriate
+2. Potentially harmful to the child
+3. Not supported by any pediatric guidelines
+
+This charge should be reviewed immediately for billing error or wrong patient.
+Continue appropriate management of recurrent ear infections.
+Routine pediatric preventive care as needed.
+
+Next Visit: February 2026

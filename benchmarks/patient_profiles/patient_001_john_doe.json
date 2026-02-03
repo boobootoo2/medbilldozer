@@ -1,0 +1,25 @@
+{
+    "patient_id": "P001",
+    "name": "John Doe",
+    "demographics": {
+        "age": 45,
+        "sex": "M",
+        "date_of_birth": "1980-06-15"
+    },
+    "medical_history": {
+        "conditions": ["Type 2 Diabetes", "Hypertension"],
+        "allergies": ["Penicillin"],
+        "surgeries": []
+    },
+    "documents": [
+        "patient_001_doc_1_medical_bill.txt",
+        "patient_001_doc_2_lab_results.txt"
+    ],
+    "expected_issues": [{
+        "type": "gender_mismatch",
+        "severity": "critical",
+        "description": "Male patient billed for obstetric ultrasound (CPT 76805) - anatomically impossible",
+        "requires_domain_knowledge": true,
+        "cpt_code": "76805"
+    }]
+}

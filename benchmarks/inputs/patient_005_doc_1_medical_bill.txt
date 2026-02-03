@@ -1,0 +1,26 @@
+SURGICAL SPECIALISTS GROUP
+Statement - P005
+Date: 02/01/2026
+
+Michael O'Connor
+DOB: 04/19/1997 | MALE | Age 28
+
+SURGICAL PROCEDURES:
+Complex Office Consult (99215)    $250
+Hysterectomy Total Abdom (58150)  $8,500
+Lab Draw (36415)                  $15
+Facility Charge                   $2,500
+Anesthesia Services              $1,200
+Supplies/Equip                    $500
+
+SUBTOTAL:                        $12,965
+Insurance: PENDING APPROVAL
+Deposit Due:                     $3,000
+
+Expected Insurance Coverage:      -$8,000
+Est. Balance After Insurance:     $4,965
+
+DUE DATE: 02/28/2026
+
+Dr. Amanda White, Surgeon
+(555) 999-0001

@@ -1,0 +1,19 @@
+HEALTHPLUS PHARMACY
+Receipt #: RX-789456
+
+Date: 2024-03-05
+Customer: Michael Johnson
+
+PRESCRIPTION ITEMS:
+Lisinopril 10mg (30 tablets)    $15.99  (Rx)
+Atorvastatin 20mg (30 tablets)  $12.99  (Rx)
+
+OTC ITEMS:
+Vitamin D3 1000IU               $8.99   (FSA)
+Band-Aids Variety Pack          $5.99   (FSA)
+
+Subtotal: $43.96
+Tax: $0.00
+Total: $43.96
+
+FSA Eligible Items: $14.98

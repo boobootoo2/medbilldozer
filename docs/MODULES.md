@@ -1730,7 +1730,7 @@ Analyze the following medical billing document...`
 
 - **`health_check(self) -> bool`**
 
-- **`analyze_document(self, text) -> AnalysisResult`**
+- **`analyze_document(self, raw_text, facts) -> AnalysisResult`**
 
 
 ### Functions

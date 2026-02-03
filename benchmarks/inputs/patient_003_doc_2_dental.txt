@@ -1,0 +1,22 @@
+BRIGHT SMILES PEDIATRIC DENTISTRY
+Receipt #D-2026-0892
+Date: 01/28/2026
+
+Patient: Robert Chen (DOB 09/10/2017)
+
+Periodic Evaluation (D0120)    $45
+Cleaning - Child (D1120)       $60
+Fluoride Treatment (D1206)     $35
+
+---
+Total                         $140
+Insurance Paid               -$120
+Patient Paid                  -$20
+
+Status: PAID IN FULL
+
+Next visit: July 2026
+Insurance: Delta Dental
+
+Dr. Michael Park, DDS
+Office Tel: (555) 888-9999

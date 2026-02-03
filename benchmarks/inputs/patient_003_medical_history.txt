@@ -1,0 +1,44 @@
+PATIENT MEDICAL RECORD
+Primary Care Physician: Dr. Lisa Rodriguez, MD
+Patient: Robert Chen
+DOB: 09/10/2017
+Patient ID: P003
+Date of Record: January 12, 2026
+
+MEDICAL HISTORY SUMMARY
+=======================
+Active Diagnoses:
+- Mild Persistent Asthma (well-controlled)
+
+Medication List:
+- Albuterol inhaler (PRN)
+- Fluticasone/Salmeterol inhaler (daily)
+
+Allergies:
+- Peanuts (anaphylaxis risk - carries EpiPen)
+- Tree nuts
+
+Social History:
+- Active child, plays soccer
+- Attends school regularly
+
+Past Surgical History:
+- None documented
+
+Age Consideration:
+- Age: 8 years old
+- Normal child development
+- No GI symptoms
+- No family history of IBD or colon disease
+
+CLINICAL NOTES
+==============
+Patient is an 8-YEAR-OLD MALE child with well-controlled asthma.
+IMPORTANT: Colonoscopy is NOT age-appropriate screening for this patient.
+Colonoscopy is typically recommended starting at age 45-50 for average-risk adults.
+There is NO CLINICAL INDICATION for colonoscopy in an 8-year-old child without severe GI symptoms or documented IBD.
+This procedure would be medically inappropriate and contraindicated.
+
+Recommend continued asthma management and preventive health monitoring appropriate for age.
+
+Next Visit: February 2026

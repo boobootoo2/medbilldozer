@@ -1,0 +1,25 @@
+CHILDREN'S MEDICAL GROUP
+Stmt CMG-2026-447
+Date: 02/03/2026
+
+Lisa Rodriguez
+DOB: 05/20/2022  Age 3  F
+
+Visit Date: 02/03/2026
+Dr J Martinez, Pediatrician
+
+Office Visit (99213)            $135
+Stress Test - Cardio (93015)    $875
+Earwax Removal (69210)           $65
+Facility Charge                  $25
+
+---
+Total:                        $1,100
+Insurance:                     -$950
+You Pay:                        $150
+
+Due: 03/03/2026
+
+Questions?
+childhealth@cmg.com
+(555) 666-7777

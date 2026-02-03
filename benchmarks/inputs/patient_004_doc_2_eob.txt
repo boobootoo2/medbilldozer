@@ -1,0 +1,32 @@
+BLUE CROSS BLUE SHIELD
+EOB - Explanation of Benefits
+
+Member: Jennifer Garcia
+ID: BCB-P004-2026
+Claim Date: 01/28/2026
+
+PROCESSING SUMMARY:
+Office Visit (99214)
+  Billed:      $185
+  Allowed:     $140
+  We Pay:      $112
+  You Owe:     $28 (copay)
+
+TSH Test (84443)
+  Billed:      $55
+  Allowed:     $45
+  We Pay:      $45
+  You Owe:     $0
+
+Prostate Biopsy (55700)
+  Billed:      $425
+  Status:      DENIED
+  Reason:      Not covered per plan
+  You Owe:     $425
+
+Status: PROCESSED
+
+This is NOT a bill. Your provider
+will bill you for amounts due.
+
+Questions? Call 1-800-BCBS-NOW
