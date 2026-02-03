@@ -1,0 +1,40 @@
+PATIENT MEDICAL RECORD
+Primary Care Physician: Dr. Sarah Johnson, MD
+Patient: John Doe
+DOB: 06/15/1980
+Patient ID: P001
+Date of Record: January 10, 2026
+
+MEDICAL HISTORY SUMMARY
+=======================
+Active Diagnoses:
+- Type 2 Diabetes Mellitus (diagnosed 2015)
+- Essential Hypertension (diagnosed 2010)
+
+Medication List:
+- Metformin 1000mg BID
+- Lisinopril 10mg daily
+- Atorvastatin 20mg daily
+
+Allergies:
+- Penicillin (rash)
+
+Social History:
+- Non-smoker
+- Alcohol: occasional
+
+Past Surgical History:
+- None documented
+
+Recent Labs (January 2026):
+- Glucose: 145 mg/dL (slightly elevated)
+- HbA1c: 7.2%
+- Creatinine: 1.0 mg/dL (normal)
+
+CLINICAL NOTES
+==============
+Patient is a 45-year-old MALE with well-controlled Type 2 Diabetes and Hypertension.
+Recent metabolic panel shows adequate control. Patient denies any obstetric or gynecological symptoms.
+No indication for obstetric procedures. Recommend continued monitoring of diabetes control.
+
+Next Visit: February 2026

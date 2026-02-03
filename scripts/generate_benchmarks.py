@@ -622,8 +622,17 @@ def main():
     
     for model in models_to_run:
         try:
+            # Create mapping of model keys to precise names
+            model_name_map = {
+                "medgemma": "Google MedGemma-4B-IT",
+                "openai": "OpenAI GPT-4",
+                "gemini": "Google Gemini 1.5 Pro",
+                "baseline": "Heuristic Baseline"
+            }
+            precise_name = model_name_map.get(model, model)
+            
             print(f"\n{'='*70}")
-            print(f"Running: {model.upper()}")
+            print(f"Running: {precise_name}")
             print('='*70)
             
             # Initialize runner
@@ -643,7 +652,7 @@ def main():
             
             # Print summary
             print("\n" + "=" * 70)
-            print(f"SUMMARY: {model.upper()}")
+            print(f"SUMMARY: {precise_name}")
             print("=" * 70)
             print(f"Documents: {metrics.total_documents}")
             print(f"Successful: {metrics.successful_extractions}")
@@ -669,16 +678,26 @@ def main():
     
     # Print comparison if multiple models ran
     if len(all_metrics) > 1:
-        print("\n" + "=" * 70)
+        print("\n" + "=" * 100)
         print("MODEL COMPARISON")
-        print("=" * 70)
-        print(f"{'Model':<15} {'Precision':<12} {'Recall':<10} {'F1':<10} {'Latency':<10}")
-        print("-" * 70)
+        print("=" * 100)
+        
+        # Create mapping of model keys to precise names
+        model_name_map = {
+            "medgemma": "Google MedGemma-4B-IT",
+            "openai": "OpenAI GPT-4",
+            "gemini": "Google Gemini 1.5 Pro",
+            "baseline": "Heuristic Baseline"
+        }
+        
+        print(f"{'Model':<30} {'Precision':<12} {'Recall':<10} {'F1':<10} {'Latency':<10}")
+        print("-" * 100)
         for m in all_metrics:
+            precise_name = model_name_map.get(m.model_name, m.model_name)
             latency_sec = m.avg_pipeline_latency_ms / 1000
-            print(f"{m.model_name:<15} {m.issue_precision:<12.2f} {m.issue_recall:<10.2f} "
+            print(f"{precise_name:<30} {m.issue_precision:<12.2f} {m.issue_recall:<10.2f} "
                   f"{m.issue_f1_score:<10.2f} {latency_sec:<10.2f}s")
-        print("=" * 70)
+        print("=" * 100)
     
     # Update README with all results
     if all_metrics:

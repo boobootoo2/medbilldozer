@@ -1,0 +1,50 @@
+PATIENT MEDICAL RECORD
+Primary Care Physician: Dr. Michael Chen, MD
+Patient: Mary Smith
+DOB: 03/22/1953
+Patient ID: P002
+Date of Record: January 8, 2026
+
+MEDICAL HISTORY SUMMARY
+=======================
+Active Diagnoses:
+- Osteoarthritis (widespread, multiple joints)
+- Coronary Artery Disease (stable)
+- Hypertension (controlled)
+
+Medication List:
+- Aspirin 81mg daily
+- Lisinopril 10mg daily
+- Atorvastatin 40mg daily
+- Metoprolol 50mg daily
+
+Allergies:
+- NSAIDs (GI upset)
+
+Social History:
+- Non-smoker
+- Widowed (husband deceased 2010)
+
+Past Surgical History:
+- Right Total Hip Replacement (2020)
+- Cholecystectomy (1985)
+
+Gynecological History:
+- Menopause: age 51 (natural, 1983)
+- Post-menopausal for 43 years
+- No active reproductive function
+- Previous tubal ligation (1975)
+
+Recent Labs (January 2026):
+- Estradiol: 8 pg/mL (post-menopausal range <15)
+- FSH: 78 mIU/mL (post-menopausal, high)
+- Calcium: 8.2 mg/dL (normal)
+
+CLINICAL NOTES
+==============
+Patient is a 72-year-old POST-MENOPAUSAL FEMALE with multiple comorbidities.
+Hormonal status indicates complete menopause for 4+ decades. 
+NO INDICATION for intrauterine device (IUD) placement - patient is post-menopausal and has had tubal ligation.
+IUD placement would be clinically inappropriate and contraindicated in this patient.
+
+Next Visit: March 2026
