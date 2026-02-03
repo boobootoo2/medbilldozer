@@ -1,0 +1,25 @@
+{
+    "patient_id": "P007",
+    "name": "David Thompson",
+    "demographics": {
+        "age": 55,
+        "sex": "M",
+        "date_of_birth": "1970-12-03"
+    },
+    "medical_history": {
+        "conditions": ["Benign Prostatic Hyperplasia (BPH)"],
+        "allergies": ["Sulfa drugs"],
+        "surgeries": ["Vasectomy (1998)"]
+    },
+    "documents": [
+        "patient_007_doc_1_medical_bill.txt",
+        "patient_007_doc_2_lab.txt"
+    ],
+    "expected_issues": [{
+        "type": "gender_mismatch",
+        "severity": "critical",
+        "description": "Male patient billed for cervical biopsy (CPT 57500) - anatomically impossible",
+        "requires_domain_knowledge": true,
+        "cpt_code": "57500"
+    }]
+}

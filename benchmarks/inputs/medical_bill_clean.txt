@@ -1,0 +1,18 @@
+RIVERSIDE FAMILY PRACTICE
+Patient Billing Statement
+
+Patient Name: Emily Chen
+Account Number: RFP-789012
+Date of Service: 2024-06-20
+
+SERVICES PROVIDED:
+CPT 99214 - Office Visit, Detailed           $200.00
+CPT 80053 - Comprehensive Metabolic Panel     $65.00
+CPT 85025 - Complete Blood Count              $35.00
+
+Subtotal: $300.00
+Insurance Adjustment: -$75.00
+Insurance Payment: -$180.00
+Patient Balance Due: $45.00
+
+Payment due upon receipt.

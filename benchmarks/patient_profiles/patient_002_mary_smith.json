@@ -1,0 +1,25 @@
+{
+    "patient_id": "P002",
+    "name": "Mary Smith",
+    "demographics": {
+        "age": 72,
+        "sex": "F",
+        "date_of_birth": "1953-03-22"
+    },
+    "medical_history": {
+        "conditions": ["Osteoarthritis", "Coronary Artery Disease"],
+        "allergies": [],
+        "surgeries": ["Hip Replacement (2020)"]
+    },
+    "documents": [
+        "patient_002_doc_1_medical_bill.txt",
+        "patient_002_doc_2_pharmacy.txt"
+    ],
+    "expected_issues": [{
+        "type": "age_inappropriate_procedure",
+        "severity": "high",
+        "description": "72-year-old post-menopausal female billed for IUD insertion (CPT 58300) - clinically inappropriate",
+        "requires_domain_knowledge": true,
+        "cpt_code": "58300"
+    }]
+}

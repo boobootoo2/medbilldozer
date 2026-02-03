@@ -1,0 +1,30 @@
+MEDICAL CENTER OF EXCELLENCE
+Invoice #MB-2026-001
+Date of Service: January 15, 2026
+
+Patient: John Doe
+DOB: 06/15/1980
+Gender: Male
+Account #: P001
+
+SERVICES RENDERED:
+------------------
+CPT 99213 - Office Visit, Established Patient (Level 3)
+Date: 01/15/2026
+Charge: $150.00
+
+CPT 76805 - Obstetric Ultrasound, Single/First Gestation
+Date: 01/15/2026
+Charge: $285.00
+
+CPT 80053 - Comprehensive Metabolic Panel
+Date: 01/15/2026
+Charge: $45.00
+
+TOTAL CHARGES: $480.00
+Insurance Payment: $0.00
+Patient Responsibility: $480.00
+
+DUE NOW: $480.00
+
+Questions? Call (555) 123-4567

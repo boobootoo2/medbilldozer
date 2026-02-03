@@ -1,0 +1,17 @@
+COMMUNITY PHARMACY RECEIPT
+Transaction Date: January 18, 2026
+
+Patient: Mary Smith
+DOB: 03/22/1953
+RX#: 892347
+
+Prescription: Atorvastatin 40mg
+Quantity: 30 tablets
+Directions: Take 1 tablet by mouth daily
+Prescriber: Dr. Sarah Johnson
+
+Retail Price: $45.00
+Insurance Coverage: $30.00
+Your Copay: $15.00
+
+Refills Remaining: 3

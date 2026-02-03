@@ -1,0 +1,20 @@
+LABCORP - LABORATORY RESULTS
+Patient: Amanda Lee
+DOB: 10/25/1996 | Sex: Female
+Account: P010
+
+Collection Date: February 3, 2026
+Ordered By: Dr. Michael Brown
+
+HORMONE PANEL:
+--------------
+Testosterone, Total: 58 ng/dL (High - Female Ref: 8-48)
+LH (Luteinizing Hormone): 14.2 mIU/mL (High - Ref: 1.0-12.0)
+FSH (Follicle Stimulating Hormone): 6.8 mIU/mL (Normal - Ref: 2.5-10.0)
+Estradiol: 45 pg/mL (Normal - Ref: 30-400)
+
+NOTES: Elevated testosterone and LH consistent with known PCOS diagnosis.
+Consider continued hormonal management.
+
+Report Authorized: Dr. Rachel Foster, MD
+Lab Director

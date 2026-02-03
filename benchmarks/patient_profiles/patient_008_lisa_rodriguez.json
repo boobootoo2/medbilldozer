@@ -1,0 +1,25 @@
+{
+    "patient_id": "P008",
+    "name": "Lisa Rodriguez",
+    "demographics": {
+        "age": 3,
+        "sex": "F",
+        "date_of_birth": "2022-05-20"
+    },
+    "medical_history": {
+        "conditions": ["Recurrent Ear Infections"],
+        "allergies": [],
+        "surgeries": []
+    },
+    "documents": [
+        "patient_008_doc_1_medical_bill.txt",
+        "patient_008_doc_2_pharmacy.txt"
+    ],
+    "expected_issues": [{
+        "type": "age_inappropriate_screening",
+        "severity": "high",
+        "description": "3-year-old toddler billed for stress cardiac test (CPT 93015) - not age-appropriate",
+        "requires_domain_knowledge": true,
+        "cpt_code": "93015"
+    }]
+}

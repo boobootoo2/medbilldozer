@@ -1,0 +1,240 @@
+{
+  "model_name": "openai",
+  "total_patients": 10,
+  "successful_analyses": 10,
+  "avg_precision": 0.0,
+  "avg_recall": 0.0,
+  "avg_f1_score": 0.0,
+  "domain_knowledge_detection_rate": 0.0,
+  "avg_latency_ms": 2035.3947706986219,
+  "individual_results": [
+    {
+      "patient_id": "P001",
+      "patient_name": "John Doe",
+      "model_name": "openai",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 3840.9844579873607,
+      "expected_issues": [
+        {
+          "type": "gender_mismatch",
+          "severity": "critical",
+          "description": "Male patient billed for obstetric ultrasound (CPT 76805) - anatomically impossible",
+          "requires_domain_knowledge": true,
+          "cpt_code": "76805"
+        }
+      ],
+      "detected_issues": [],
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "domain_knowledge_score": 0.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P002",
+      "patient_name": "Mary Smith",
+      "model_name": "openai",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 683.5747500008438,
+      "expected_issues": [
+        {
+          "type": "age_inappropriate_procedure",
+          "severity": "high",
+          "description": "72-year-old post-menopausal female billed for IUD insertion (CPT 58300) - clinically inappropriate",
+          "requires_domain_knowledge": true,
+          "cpt_code": "58300"
+        }
+      ],
+      "detected_issues": [],
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "domain_knowledge_score": 0.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P003",
+      "patient_name": "Robert Chen",
+      "model_name": "openai",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 2291.12145799445,
+      "expected_issues": [
+        {
+          "type": "age_inappropriate_screening",
+          "severity": "high",
+          "description": "8-year-old child billed for colonoscopy (CPT 45378) - not age-appropriate screening",
+          "requires_domain_knowledge": true,
+          "cpt_code": "45378"
+        }
+      ],
+      "detected_issues": [],
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "domain_knowledge_score": 0.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P004",
+      "patient_name": "Jennifer Garcia",
+      "model_name": "openai",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 2764.4524579809513,
+      "expected_issues": [
+        {
+          "type": "gender_mismatch",
+          "severity": "critical",
+          "description": "Female patient billed for prostate exam (CPT 55700) - anatomically impossible",
+          "requires_domain_knowledge": true,
+          "cpt_code": "55700"
+        }
+      ],
+      "detected_issues": [],
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "domain_knowledge_score": 0.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P005",
+      "patient_name": "Michael O'Connor",
+      "model_name": "openai",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 2663.424041005783,
+      "expected_issues": [
+        {
+          "type": "gender_mismatch",
+          "severity": "critical",
+          "description": "Male patient billed for hysterectomy (CPT 58150) - anatomically impossible",
+          "requires_domain_knowledge": true,
+          "cpt_code": "58150"
+        }
+      ],
+      "detected_issues": [],
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "domain_knowledge_score": 0.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P006",
+      "patient_name": "Sarah Patel",
+      "model_name": "openai",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 2181.4159160130657,
+      "expected_issues": [
+        {
+          "type": "age_inappropriate_screening",
+          "severity": "high",
+          "description": "15-year-old billed for screening mammogram (CPT 77067) - not recommended before age 40",
+          "requires_domain_knowledge": true,
+          "cpt_code": "77067"
+        }
+      ],
+      "detected_issues": [],
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "domain_knowledge_score": 0.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P007",
+      "patient_name": "David Thompson",
+      "model_name": "openai",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 690.8051670179702,
+      "expected_issues": [
+        {
+          "type": "gender_mismatch",
+          "severity": "critical",
+          "description": "Male patient billed for cervical biopsy (CPT 57500) - anatomically impossible",
+          "requires_domain_knowledge": true,
+          "cpt_code": "57500"
+        }
+      ],
+      "detected_issues": [],
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "domain_knowledge_score": 0.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P008",
+      "patient_name": "Lisa Rodriguez",
+      "model_name": "openai",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 707.048209005734,
+      "expected_issues": [
+        {
+          "type": "age_inappropriate_screening",
+          "severity": "high",
+          "description": "3-year-old toddler billed for stress cardiac test (CPT 93015) - not age-appropriate",
+          "requires_domain_knowledge": true,
+          "cpt_code": "93015"
+        }
+      ],
+      "detected_issues": [],
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "domain_knowledge_score": 0.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P009",
+      "patient_name": "James Williams",
+      "model_name": "openai",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 2112.3317499877885,
+      "expected_issues": [
+        {
+          "type": "gender_mismatch",
+          "severity": "critical",
+          "description": "Male patient billed for pregnancy test (CPT 81025) - anatomically impossible",
+          "requires_domain_knowledge": true,
+          "cpt_code": "81025"
+        },
+        {
+          "type": "age_inappropriate_screening",
+          "severity": "medium",
+          "description": "82-year-old billed for sports physical (CPT 99455) - age-inappropriate",
+          "requires_domain_knowledge": true,
+          "cpt_code": "99455"
+        }
+      ],
+      "detected_issues": [],
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 2,
+      "domain_knowledge_score": 0.0,
+      "error_message": null
+    },
+    {
+      "patient_id": "P010",
+      "patient_name": "Amanda Lee",
+      "model_name": "openai",
+      "documents_analyzed": 2,
+      "analysis_latency_ms": 2418.789499992272,
+      "expected_issues": [
+        {
+          "type": "gender_mismatch",
+          "severity": "critical",
+          "description": "Female patient billed for vasectomy (CPT 55250) - anatomically impossible",
+          "requires_domain_knowledge": true,
+          "cpt_code": "55250"
+        }
+      ],
+      "detected_issues": [],
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 1,
+      "domain_knowledge_score": 0.0,
+      "error_message": null
+    }
+  ],
+  "generated_at": "2026-02-03 10:56:39"
+}

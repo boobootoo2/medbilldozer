@@ -1,0 +1,33 @@
+{
+    "patient_id": "P009",
+    "name": "James Williams",
+    "demographics": {
+        "age": 82,
+        "sex": "M",
+        "date_of_birth": "1943-08-30"
+    },
+    "medical_history": {
+        "conditions": ["Atrial Fibrillation", "Chronic Kidney Disease Stage 3", "Osteoporosis"],
+        "allergies": ["Codeine"],
+        "surgeries": ["Pacemaker Insertion (2018)", "Cataract Surgery (2021)"]
+    },
+    "documents": [
+        "patient_009_doc_1_medical_bill.txt",
+        "patient_009_doc_2_eob.txt"
+    ],
+    "expected_issues": [{
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for pregnancy test (CPT 81025) - anatomically impossible",
+            "requires_domain_knowledge": true,
+            "cpt_code": "81025"
+        },
+        {
+            "type": "age_inappropriate_screening",
+            "severity": "medium",
+            "description": "82-year-old billed for sports physical (CPT 99455) - age-inappropriate",
+            "requires_domain_knowledge": true,
+            "cpt_code": "99455"
+        }
+    ]
+}
