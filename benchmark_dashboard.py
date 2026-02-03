@@ -26,6 +26,17 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Model name mapping
+def get_full_model_name(model_key: str) -> str:
+    """Convert model key to full display name."""
+    name_map = {
+        "baseline": "Heuristic Baseline",
+        "openai": "OpenAI GPT-4o-mini",
+        "gemini": "Google Gemini 1.5 Flash",
+        "medgemma": "Google MedGemma 4B-IT"
+    }
+    return name_map.get(model_key, model_key.replace("_", " ").title())
+
 # Title
 st.title("📊 medBillDozer Benchmark Metrics")
 st.markdown("Real-time performance comparison of medical billing analysis providers")
@@ -84,7 +95,7 @@ st.header("🎯 Overall Metrics Comparison")
 comparison_data = []
 for model_name, data in filtered_results.items():
     comparison_data.append({
-        "Model": model_name.replace("_", " ").title(),
+        "Model": get_full_model_name(model_name),
         "Precision": data.get("issue_precision", 0),
         "Recall": data.get("issue_recall", 0),
         "F1 Score": data.get("issue_f1_score", 0),
@@ -222,17 +233,219 @@ with col2:
     st.plotly_chart(fig, width='stretch')
 
 # ============================================================================
+# CROSS-DOCUMENT ANALYSIS
+# ============================================================================
+
+st.header("📋 Cross-Document Analysis Results 🏥")
+
+# Overall summary table
+st.subheader("📊 Model Performance Summary")
+
+summary_data = []
+for model_name, data in filtered_results.items():
+    full_name = get_full_model_name(model_name)
+    
+    # Calculate domain knowledge detection rate (documents with at least 1 TP)
+    docs_with_detection = 0
+    total_docs = 0
+    for doc_result in data.get("individual_results", []):
+        if doc_result.get("issues_expected", 0) > 0:
+            total_docs += 1
+            if doc_result.get("true_positives", 0) > 0:
+                docs_with_detection += 1
+    
+    domain_detection_rate = (docs_with_detection / total_docs * 100) if total_docs > 0 else 0
+    
+    # Get average token usage
+    avg_input_tokens = data.get("avg_input_tokens", 0)
+    avg_output_tokens = data.get("avg_output_tokens", 0)
+    avg_total_tokens = data.get("avg_total_tokens", 0)
+    
+    # Format token display
+    if avg_total_tokens > 0:
+        token_display = f"{avg_total_tokens:.0f}"
+        token_detail = f"(In: {avg_input_tokens:.0f}, Out: {avg_output_tokens:.0f})"
+    else:
+        token_display = "N/A"
+        token_detail = "(No API calls)"
+    
+    summary_data.append({
+        "Model": full_name,
+        "Precision": data.get("issue_precision", 0),
+        "Recall": data.get("issue_recall", 0),
+        "F1": data.get("issue_f1_score", 0),
+        "Domain Detection": f"{domain_detection_rate:.1f}%",
+        "Avg Tokens/Request": token_display,
+        "Token Breakdown": token_detail
+    })
+
+summary_df = pd.DataFrame(summary_data)
+
+# Format percentages for display
+display_df = summary_df.copy()
+for col in ["Precision", "Recall", "F1"]:
+    display_df[col] = display_df[col].apply(lambda x: f"{x:.2f}" if x > 0 else "0.00")
+
+st.dataframe(
+    display_df,
+    width='stretch',
+    hide_index=True,
+    column_config={
+        "Model": st.column_config.TextColumn("Model", width="large"),
+        "Precision": st.column_config.TextColumn("Precision", width="small"),
+        "Recall": st.column_config.TextColumn("Recall", width="small"),
+        "F1": st.column_config.TextColumn("F1 Score", width="small"),
+        "Domain Detection": st.column_config.TextColumn("Domain Knowledge Detection", width="medium"),
+        "Avg Tokens/Request": st.column_config.TextColumn("Avg Tokens", width="small"),
+        "Token Breakdown": st.column_config.TextColumn("Token Details", width="medium")
+    }
+)
+
+st.markdown("---")
+st.markdown(
+    "**Domain Knowledge Detection**: Percentage of documents with billing issues where the model detected at least one issue correctly."
+)
+st.markdown(
+    "**Token Usage**: Average tokens per request (Input: prompt tokens, Output: response tokens). Baseline uses no API."
+)
+
+st.markdown("---")
+
+# Collect per-document results across all models
+document_performance = {}
+for model_name, data in filtered_results.items():
+    full_name = get_full_model_name(model_name)
+    for doc_result in data.get("individual_results", []):
+        doc_name = doc_result.get("document_name", "Unknown")
+        if doc_name not in document_performance:
+            document_performance[doc_name] = {
+                "document": doc_name,
+                "type": doc_result.get("document_type", "Unknown"),
+                "expected_issues": doc_result.get("issues_expected", 0)
+            }
+        
+        # Add model-specific metrics
+        document_performance[doc_name][f"{full_name}_detected"] = doc_result.get("issues_detected", 0)
+        document_performance[doc_name][f"{full_name}_tp"] = doc_result.get("true_positives", 0)
+        document_performance[doc_name][f"{full_name}_fp"] = doc_result.get("false_positives", 0)
+        document_performance[doc_name][f"{full_name}_fn"] = doc_result.get("false_negatives", 0)
+
+# Convert to DataFrame
+doc_df = pd.DataFrame(list(document_performance.values()))
+
+if not doc_df.empty:
+    # Group by document type
+    doc_types = doc_df["type"].unique()
+    
+    # Summary by document type
+    st.subheader("📊 Performance by Document Type")
+    
+    type_summary = []
+    for doc_type in sorted(doc_types):
+        type_docs = doc_df[doc_df["type"] == doc_type]
+        summary = {
+            "Document Type": doc_type.replace("_", " ").title(),
+            "# Documents": len(type_docs),
+            "Total Expected Issues": type_docs["expected_issues"].sum()
+        }
+        
+        # Add per-model detection rates
+        for model_key in filtered_results.keys():
+            full_name = get_full_model_name(model_key)
+            tp_col = f"{full_name}_tp"
+            if tp_col in type_docs.columns:
+                total_tp = type_docs[tp_col].sum()
+                total_expected = type_docs["expected_issues"].sum()
+                detection_rate = (total_tp / total_expected * 100) if total_expected > 0 else 0
+                summary[f"{full_name} Detection"] = f"{detection_rate:.0f}%"
+        
+        type_summary.append(summary)
+    
+    type_df = pd.DataFrame(type_summary)
+    st.dataframe(type_df, width='stretch', hide_index=True)
+    
+    # Detailed per-document results
+    st.subheader("📄 Detailed Document Results")
+    
+    # Create display columns
+    display_cols = ["document", "type", "expected_issues"]
+    for model_key in filtered_results.keys():
+        full_name = get_full_model_name(model_key)
+        if f"{full_name}_detected" in doc_df.columns:
+            display_cols.extend([
+                f"{full_name}_detected",
+                f"{full_name}_tp",
+                f"{full_name}_fp",
+                f"{full_name}_fn"
+            ])
+    
+    # Filter to existing columns
+    available_cols = [col for col in display_cols if col in doc_df.columns]
+    detail_df = doc_df[available_cols].copy()
+    
+    # Rename for clarity
+    rename_map = {"document": "Document", "type": "Type", "expected_issues": "Expected"}
+    for model_key in filtered_results.keys():
+        full_name = get_full_model_name(model_key)
+        rename_map.update({
+            f"{full_name}_detected": f"{full_name} Detected",
+            f"{full_name}_tp": f"{full_name} TP",
+            f"{full_name}_fp": f"{full_name} FP",
+            f"{full_name}_fn": f"{full_name} FN"
+        })
+    
+    detail_df = detail_df.rename(columns=rename_map)
+    st.dataframe(detail_df, width='stretch', hide_index=True)
+    
+    # Visualization: Detection heatmap
+    st.subheader("🔥 Issue Detection Heatmap")
+    
+    # Prepare heatmap data
+    heatmap_data = []
+    for _, row in doc_df.iterrows():
+        for model_key in filtered_results.keys():
+            full_name = get_full_model_name(model_key)
+            tp_col = f"{full_name}_tp"
+            if tp_col in row:
+                expected = row["expected_issues"]
+                detected = row.get(f"{full_name}_tp", 0)
+                accuracy = (detected / expected * 100) if expected > 0 else 100 if detected == 0 else 0
+                heatmap_data.append({
+                    "Document": row["document"],
+                    "Model": full_name,
+                    "Detection Rate %": accuracy
+                })
+    
+    if heatmap_data:
+        heatmap_df = pd.DataFrame(heatmap_data)
+        pivot_df = heatmap_df.pivot(index="Document", columns="Model", values="Detection Rate %")
+        
+        fig_heatmap = px.imshow(
+            pivot_df,
+            labels=dict(x="Model", y="Document", color="Detection Rate %"),
+            color_continuous_scale="RdYlGn",
+            aspect="auto",
+            title="Issue Detection Rate by Document and Model"
+        )
+        fig_heatmap.update_xaxes(side="top")
+        st.plotly_chart(fig_heatmap, width='stretch')
+else:
+    st.info("No per-document results available in current benchmark data.")
+
+# ============================================================================
 # DETAILED BREAKDOWN
 # ============================================================================
 
 st.header("🔍 Detailed Breakdown")
 
-# Tabs for each model
-tabs = st.tabs([model for model in selected_models])
+# Tabs for each model  
+tabs = st.tabs([get_full_model_name(model) for model in selected_models])
 
 for tab, model_name in zip(tabs, selected_models):
     with tab:
         data = filtered_results[model_name]
+        full_name = get_full_model_name(model_name)
+        st.subheader(f"📊 {full_name}")
         
         # Header
         col1, col2, col3, col4 = st.columns(4)
@@ -289,7 +502,7 @@ for tab, model_name in zip(tabs, selected_models):
         with col3:
             st.metric(
                 "JSON Validity",
-                f"{data.get('json_validity_rate', 0):.1%}",
+                f"{data.get('json_validity_rate', 0):.1f}%",
                 help="Percentage of valid JSON outputs"
             )
         
