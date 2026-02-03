@@ -94,6 +94,46 @@ See the video demo submitted to the MedGemma Impact Challenge.
 ✅ Insurance Explanation of Benefits (EOB)  
 ✅ FSA/HSA claim statements  
 
+## 📊 Benchmarks & Performance
+
+We continuously benchmark medBillDozer's AI providers against real-world test cases to ensure accuracy and reliability.
+
+**📈 [View Live Benchmark Dashboard](https://medbilldozer-benchmark.streamlit.app/)**
+
+### Current Performance
+
+Our benchmark suite tests 3 AI providers on 16+ medical billing scenarios:
+
+- **Baseline (Heuristic)** - Rule-based detection, no API required
+- **OpenAI GPT-4** - Advanced language model for complex cases  
+- **Google Gemini 1.5 Pro** - Medical-domain optimized analysis
+
+Benchmarks measure:
+- ✅ **Precision** - How often detected issues are real problems
+- ✅ **Recall** - How many actual issues are caught
+- ✅ **F1 Score** - Overall accuracy metric
+- ✅ **Latency** - Response time for analysis
+
+### Automated Testing
+
+Our GitHub Actions workflow runs benchmarks:
+- 🔄 Daily at 2:00 AM UTC
+- 🔄 On every provider code change
+- 🔄 Manual triggers for testing
+
+Results are automatically committed and the dashboard updates in real-time.
+
+### Test Coverage
+
+Benchmark documents include:
+- ✅ Clean bills (no errors - testing false positives)
+- ✅ Duplicate charges
+- ✅ Coding mismatches (preventive vs diagnostic)
+- ✅ Math errors and reconciliation issues
+- ✅ Real patient scenarios with complex billing
+
+**→ [Explore the benchmark data and methodology](https://medbilldozer-benchmark.streamlit.app/)**
+
 ## Privacy & Security
 
 Your data never leaves your control:
