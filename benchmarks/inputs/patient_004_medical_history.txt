@@ -1,0 +1,46 @@
+PATIENT MEDICAL RECORD
+Primary Care Physician: Dr. James Wilson, MD
+Patient: Jennifer Garcia
+DOB: 11/08/1991
+Patient ID: P004
+Date of Record: January 15, 2026
+
+MEDICAL HISTORY SUMMARY
+=======================
+Active Diagnoses:
+- Hypothyroidism (well-controlled on levothyroxine)
+
+Medication List:
+- Levothyroxine 75mcg daily
+
+Allergies:
+- None documented
+
+Social History:
+- Non-smoker
+- Exercises regularly
+
+Past Surgical History:
+- Appendectomy (2015)
+
+Gender/Anatomical Status:
+- FEMALE (XX chromosomes)
+- Reproductive tract intact
+- Normal female anatomy
+
+CLINICAL NOTES
+==============
+Patient is a 34-year-old FEMALE with no genitourinary complaints.
+CRITICAL FINDING: Prostate biopsy (CPT 55700) is ANATOMICALLY IMPOSSIBLE in this patient.
+The prostate gland is a MALE-ONLY organ. Females do not have a prostate.
+This charge represents either:
+1. A billing error (wrong procedure code)
+2. A clinical error (wrong patient)
+3. Potential fraud
+
+This procedure should be IMMEDIATELY REVIEWED and likely REVERSED.
+Recommend contacting billing department for urgent clarification.
+
+TSH level monitoring continues as appropriate for hypothyroidism management.
+
+Next Visit: February 2026

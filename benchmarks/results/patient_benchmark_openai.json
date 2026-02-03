@@ -6,14 +6,14 @@
   "avg_recall": 0.0,
   "avg_f1_score": 0.0,
   "domain_knowledge_detection_rate": 0.0,
-  "avg_latency_ms": 2035.3947706986219,
+  "avg_latency_ms": 3247.020770900417,
   "individual_results": [
     {
       "patient_id": "P001",
       "patient_name": "John Doe",
       "model_name": "openai",
       "documents_analyzed": 2,
-      "analysis_latency_ms": 3840.9844579873607,
+      "analysis_latency_ms": 4069.3458339956123,
       "expected_issues": [
         {
           "type": "gender_mismatch",
@@ -35,7 +35,7 @@
       "patient_name": "Mary Smith",
       "model_name": "openai",
       "documents_analyzed": 2,
-      "analysis_latency_ms": 683.5747500008438,
+      "analysis_latency_ms": 1081.7712499992922,
       "expected_issues": [
         {
           "type": "age_inappropriate_procedure",
@@ -57,7 +57,7 @@
       "patient_name": "Robert Chen",
       "model_name": "openai",
       "documents_analyzed": 2,
-      "analysis_latency_ms": 2291.12145799445,
+      "analysis_latency_ms": 3365.609542001039,
       "expected_issues": [
         {
           "type": "age_inappropriate_screening",
@@ -79,7 +79,7 @@
       "patient_name": "Jennifer Garcia",
       "model_name": "openai",
       "documents_analyzed": 2,
-      "analysis_latency_ms": 2764.4524579809513,
+      "analysis_latency_ms": 2647.705416980898,
       "expected_issues": [
         {
           "type": "gender_mismatch",
@@ -101,7 +101,7 @@
       "patient_name": "Michael O'Connor",
       "model_name": "openai",
       "documents_analyzed": 2,
-      "analysis_latency_ms": 2663.424041005783,
+      "analysis_latency_ms": 2324.8367909982335,
       "expected_issues": [
         {
           "type": "gender_mismatch",
@@ -123,7 +123,7 @@
       "patient_name": "Sarah Patel",
       "model_name": "openai",
       "documents_analyzed": 2,
-      "analysis_latency_ms": 2181.4159160130657,
+      "analysis_latency_ms": 2205.228208011249,
       "expected_issues": [
         {
           "type": "age_inappropriate_screening",
@@ -145,7 +145,7 @@
       "patient_name": "David Thompson",
       "model_name": "openai",
       "documents_analyzed": 2,
-      "analysis_latency_ms": 690.8051670179702,
+      "analysis_latency_ms": 4081.3442500075325,
       "expected_issues": [
         {
           "type": "gender_mismatch",
@@ -167,7 +167,7 @@
       "patient_name": "Lisa Rodriguez",
       "model_name": "openai",
       "documents_analyzed": 2,
-      "analysis_latency_ms": 707.048209005734,
+      "analysis_latency_ms": 582.2713749948889,
       "expected_issues": [
         {
           "type": "age_inappropriate_screening",
@@ -189,7 +189,7 @@
       "patient_name": "James Williams",
       "model_name": "openai",
       "documents_analyzed": 2,
-      "analysis_latency_ms": 2112.3317499877885,
+      "analysis_latency_ms": 8174.539500003448,
       "expected_issues": [
         {
           "type": "gender_mismatch",
@@ -218,7 +218,7 @@
       "patient_name": "Amanda Lee",
       "model_name": "openai",
       "documents_analyzed": 2,
-      "analysis_latency_ms": 2418.789499992272,
+      "analysis_latency_ms": 3937.555542011978,
       "expected_issues": [
         {
           "type": "gender_mismatch",
@@ -236,5 +236,5 @@
       "error_message": null
     }
   ],
-  "generated_at": "2026-02-03 10:56:39"
+  "generated_at": "2026-02-03 11:21:43"
 }

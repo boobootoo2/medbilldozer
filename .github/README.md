@@ -97,13 +97,26 @@ This project is a **prototype for educational purposes only**.
 
 **Always verify findings** with your insurance company and consult qualified professionals for billing disputes.
 
-<!-- BENCHMARK_SECTION_START -->
+## Cross-Document Analysis Results 🏥
+
+_Patient-level domain knowledge detection across multiple documents._
+
+### Model Comparison
+
+| Model | Precision | Recall | F1 | Domain Knowledge Detection |
+|-------|-----------|--------|----|---------:|
+| Google MedGemma-4B-IT | 0.78 | 0.95 | 0.83 | 95.0% ✅ |
+| OpenAI GPT-4 | 0.00 | 0.00 | 0.00 | 0.0%  |
+| Google Gemini 1.5 Pro | 0.00 | 0.00 | 0.00 | 0.0%  |
+| Heuristic Baseline | 0.00 | 0.00 | 0.00 | 0.0%  |
+
+_Generated: 2026-02-03 11:27:53_
 
 ## Benchmark Analysis
 
 _Evaluated on 6 synthetic healthcare billing documents._
 
-### MedGemma Results
+### MedGemma Single-Document Results
 
 - **Extraction Accuracy**: 100.0%
 - **Issue Detection Precision**: 0.00
@@ -111,8 +124,8 @@ _Evaluated on 6 synthetic healthcare billing documents._
 - **Issue Detection F1 Score**: 0.00
 - **JSON Validity Rate**: 100.0%
 - **Avg Extraction Time**: 0.00s
-- **Avg Full Pipeline Time**: 2.26s
+- **Avg Full Pipeline Time**: 2.19s
 
-_Generated: 2026-02-03 11:00:43_
+_Generated: 2026-02-03 11:12:17_
 
 <!-- BENCHMARK_SECTION_END -->

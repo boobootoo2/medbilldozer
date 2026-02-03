@@ -1,0 +1,58 @@
+PATIENT MEDICAL RECORD
+Primary Care Physician: Dr. Michael Brown, MD
+Patient: Amanda Lee
+DOB: 10/25/1996
+Patient ID: P010
+Date of Record: February 1, 2026
+
+MEDICAL HISTORY SUMMARY
+=======================
+Active Diagnoses:
+- Polycystic Ovary Syndrome (PCOS) - being managed
+- Mild Hypertension (controlled)
+
+Medication List:
+- Metformin 1500mg daily (for PCOS)
+- Lisinopril 10mg daily
+- Spironolactone 25mg daily (for PCOS management)
+
+Allergies:
+- Latex (urticaria)
+
+Social History:
+- Non-smoker
+- Works in healthcare
+
+Past Surgical History:
+- Laparoscopic Ovarian Cystectomy (2023)
+
+Gender/Anatomical Status:
+- FEMALE (XX chromosomes)
+- Has female reproductive organs (uterus, ovaries, fallopian tubes)
+- No male reproductive organs
+- Normal female anatomy
+
+CLINICAL NOTES
+==============
+Patient is a 29-year-old FEMALE with PCOS and mild hypertension.
+CRITICAL ERROR: Vasectomy (CPT 55250) is ANATOMICALLY IMPOSSIBLE in this patient.
+Vasectomy is a MALE-ONLY surgical procedure involving the vas deferens (male anatomical structure).
+Females do not have a vas deferens and cannot undergo vasectomy.
+
+This charge represents a serious error:
+1. ANATOMICALLY IMPOSSIBLE for female patient
+2. Suggests major billing/clinical error or fraud
+3. Wrong patient identification likely
+
+IMMEDIATE ACTION REQUIRED:
+- Verify patient identity immediately
+- Review entire medical record for discrepancies
+- Contact billing department urgently
+- Investigate clinical documentation
+
+This charge should be immediately removed pending investigation.
+
+Patient's PCOS management should continue with appropriate medications and follow-up.
+Recommend referral to reproductive endocrinology if planning pregnancy in future.
+
+Next Visit: March 2026 - defer until billing issue resolved

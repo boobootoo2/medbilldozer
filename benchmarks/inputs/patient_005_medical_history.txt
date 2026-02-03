@@ -1,0 +1,50 @@
+PATIENT MEDICAL RECORD
+Primary Care Physician: Dr. Robert Martinez, MD
+Patient: Michael O'Connor
+DOB: 04/19/1997
+Patient ID: P005
+Date of Record: January 18, 2026
+
+MEDICAL HISTORY SUMMARY
+=======================
+Active Diagnoses:
+- No chronic conditions
+- Overall excellent health
+
+Medication List:
+- None regular
+- Allergy: Shellfish (mild reaction)
+
+Allergies:
+- Shellfish
+
+Social History:
+- Non-smoker
+- Regular exercise
+- No significant medical history
+
+Past Surgical History:
+- None
+
+Gender/Anatomical Status:
+- MALE (XY chromosomes)
+- No female reproductive organs
+- Normal male anatomy
+
+CLINICAL NOTES
+==============
+Patient is a healthy 28-year-old MALE with no medical comorbidities.
+CRITICAL FINDING: Total Abdominal Hysterectomy (CPT 58150) is ANATOMICALLY IMPOSSIBLE in this patient.
+The uterus is a FEMALE-ONLY organ. Males do not have a uterus.
+This charge represents a serious error:
+1. This is an anatomically impossible procedure for a male patient
+2. This suggests either wrong patient identification or major billing/clinical error
+3. Potential fraud or identity mix-up
+
+IMMEDIATE ACTION REQUIRED: This charge must be investigated urgently.
+Patient's medical record should be reviewed for identity verification.
+Recommend contacting medical records and billing immediately.
+
+No indication for any gynecological procedures. Continue routine preventive care.
+
+Next Visit: Urgent review recommended

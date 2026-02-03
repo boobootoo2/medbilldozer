@@ -14,6 +14,7 @@ MedGemma should excel at these benchmarks due to its healthcare-specific trainin
 import json
 import sys
 import time
+import re
 from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from pathlib import Path
@@ -112,6 +113,16 @@ class PatientBenchmarkRunner:
         else:
             raise ValueError(f"Unknown model: {self.model}")
     
+    def _get_precise_model_name(self) -> str:
+        """Get the precise model name for display."""
+        model_names = {
+            "medgemma": "Google MedGemma-4B-IT",
+            "openai": "OpenAI GPT-4",
+            "gemini": "Google Gemini 1.5 Pro",
+            "baseline": "Heuristic Baseline"
+        }
+        return model_names.get(self.model, self.model)
+    
     def load_patient_profile(self, profile_path: Path) -> tuple:
         """Load patient profile and expected issues."""
         with open(profile_path, 'r', encoding='utf-8') as f:
@@ -145,6 +156,23 @@ class PatientBenchmarkRunner:
         with open(doc_path, 'r', encoding='utf-8') as f:
             return f.read()
     
+    def load_medical_history(self, patient_id: str) -> Optional[str]:
+        """Load medical history document for a patient if it exists."""
+        # Try different filename patterns
+        patterns = [
+            f"{patient_id}_medical_history.txt",
+            f"patient_{patient_id}_medical_history.txt",
+            f"patient_{patient_id.split('_')[-1]}_medical_history.txt"
+        ]
+        
+        for pattern in patterns:
+            history_path = self.inputs_dir / pattern
+            if history_path.exists():
+                with open(history_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+        
+        return None
+    
     def analyze_patient_documents(self, profile: PatientProfile, documents: List[str]) -> tuple:
         """
         Analyze all documents for a patient with cross-document context.
@@ -172,7 +200,17 @@ Medical History:
 - Allergies: {', '.join(profile.allergies) if profile.allergies else 'None'}
 - Prior Surgeries: {', '.join(profile.surgeries) if profile.surgeries else 'None'}
 
-DOCUMENTS TO ANALYZE:
+"""
+            
+            # Load medical history document if available
+            medical_history = self.load_medical_history(profile.patient_id)
+            if medical_history:
+                patient_context += f"""PRIMARY CARE PHYSICIAN MEDICAL HISTORY:
+{medical_history}
+
+"""
+            
+            patient_context += """DOCUMENTS TO ANALYZE:
 -------------------
 """
             
@@ -183,12 +221,14 @@ DOCUMENTS TO ANALYZE:
 -------------------
 
 INSTRUCTIONS FOR ANALYSIS:
-Please analyze ALL documents together for this patient. Look for:
+Please analyze ALL documents together for this patient, using the medical history for context.
+Look for:
 1. Procedures that don't match the patient's gender (e.g., male receiving obstetric care)
 2. Procedures that don't match the patient's age (e.g., child receiving adult screening)
 3. Procedures that are medically inappropriate given patient demographics
-4. Any duplicate charges across documents
-5. Any billing inconsistencies across the patient's documents
+4. Any procedures that contradict the patient's medical history
+5. Any duplicate charges across documents
+6. Any billing inconsistencies across the patient's documents
 
 Focus especially on gender-specific and age-specific procedures that require medical domain knowledge.
 """
@@ -289,7 +329,8 @@ Focus especially on gender-specific and age-specific procedures that require med
     
     def run_benchmarks(self) -> PatientBenchmarkMetrics:
         """Run benchmarks on all patient profiles."""
-        print(f"\n🏥 Running patient-level benchmarks for: {self.model.upper()}")
+        precise_name = self._get_precise_model_name()
+        print(f"\n🏥 Running patient-level benchmarks for: {precise_name}")
         print("=" * 70)
         
         # Load all patient profiles
@@ -391,8 +432,9 @@ Focus especially on gender-specific and age-specific procedures that require med
     
     def print_summary(self, metrics: PatientBenchmarkMetrics):
         """Print benchmark summary."""
+        precise_name = self._get_precise_model_name()
         print("\n" + "=" * 70)
-        print(f"PATIENT BENCHMARK SUMMARY: {self.model.upper()}")
+        print(f"PATIENT BENCHMARK SUMMARY: {precise_name}")
         print("=" * 70)
         print(f"Patients Analyzed: {metrics.successful_analyses}/{metrics.total_patients}")
         print(f"Avg Precision: {metrics.avg_precision:.2f}")
@@ -413,6 +455,71 @@ Focus especially on gender-specific and age-specific procedures that require med
             json.dump(results_dict, f, indent=2)
         
         print(f"\n💾 Results saved to: {output_file}")
+
+
+def update_readme(all_metrics: List[PatientBenchmarkMetrics]):
+    """Update README with cross-document benchmark results."""
+    readme_path = PROJECT_ROOT / ".github" / "README.md"
+    
+    if not readme_path.exists():
+        print(f"⚠️  README not found at {readme_path}")
+        return
+    
+    # Create model name mapping
+    model_name_map = {
+        "medgemma": "Google MedGemma-4B-IT",
+        "openai": "OpenAI GPT-4",
+        "gemini": "Google Gemini 1.5 Pro",
+        "baseline": "Heuristic Baseline"
+    }
+    
+    # Build the benchmark section
+    benchmark_section = """## Cross-Document Analysis Results 🏥
+
+_Patient-level domain knowledge detection across multiple documents._
+
+### Model Comparison
+
+"""
+    
+    # Add table header
+    benchmark_section += "| Model | Precision | Recall | F1 | Domain Knowledge Detection |\n"
+    benchmark_section += "|-------|-----------|--------|----|-----------|\n"
+    
+    # Add rows for each model
+    for m in all_metrics:
+        precise_name = model_name_map.get(m.model_name, m.model_name)
+        status = "✅" if m.domain_knowledge_detection_rate > 0 else ""
+        benchmark_section += f"| {precise_name} | {m.avg_precision:.2f} | {m.avg_recall:.2f} | {m.avg_f1_score:.2f} | {m.domain_knowledge_detection_rate:.1f}% {status} |\n"
+    
+    benchmark_section += f"\n_Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}_\n\n"
+    
+    # Read the current README
+    with open(readme_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # Find and replace the cross-document benchmark section
+    # Look for the section between "Cross-Document Analysis" and "## Benchmark Analysis"
+    pattern = r"## Cross-Document Analysis Results.*?\n\n(?=## Benchmark Analysis)"
+    
+    if re.search(pattern, content, re.DOTALL):
+        # Section exists, replace it
+        content = re.sub(pattern, benchmark_section, content, flags=re.DOTALL)
+    else:
+        # Section doesn't exist, insert it before the Benchmark Analysis section
+        pattern = r"(## Benchmark Analysis)"
+        if re.search(pattern, content):
+            content = re.sub(pattern, benchmark_section + r"\1", content)
+        else:
+            # Insert before "## " headings or at end
+            print("⚠️  Could not find insertion point in README")
+            return
+    
+    # Write the updated README
+    with open(readme_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    
+    print(f"\n📝 Updated README: {readme_path}")
 
 
 def main():
@@ -460,20 +567,34 @@ def main():
     
     # Print comparison if multiple models
     if len(all_metrics) > 1:
-        print("\n" + "=" * 70)
+        print("\n" + "=" * 100)
         print("MODEL COMPARISON - DOMAIN KNOWLEDGE DETECTION")
-        print("=" * 70)
-        print(f"{'Model':<15} {'Precision':<12} {'Recall':<10} {'F1':<10} {'Domain %':<12} {'Latency':<10}")
-        print("-" * 70)
+        print("=" * 100)
+        
+        # Create mapping of model keys to precise names
+        model_name_map = {
+            "medgemma": "Google MedGemma-4B-IT",
+            "openai": "OpenAI GPT-4",
+            "gemini": "Google Gemini 1.5 Pro",
+            "baseline": "Heuristic Baseline"
+        }
+        
+        print(f"{'Model':<30} {'Precision':<12} {'Recall':<10} {'F1':<10} {'Domain %':<12} {'Latency':<10}")
+        print("-" * 100)
         for m in all_metrics:
+            precise_name = model_name_map.get(m.model_name, m.model_name)
             latency_sec = m.avg_latency_ms / 1000
-            print(f"{m.model_name:<15} {m.avg_precision:<12.2f} {m.avg_recall:<10.2f} "
+            print(f"{precise_name:<30} {m.avg_precision:<12.2f} {m.avg_recall:<10.2f} "
                   f"{m.avg_f1_score:<10.2f} {m.domain_knowledge_detection_rate:<12.1f} {latency_sec:<10.2f}s")
-        print("=" * 70)
+        print("=" * 100)
     
     print("\n✅ Patient benchmarks complete!")
     print("\n💡 TIP: MedGemma should excel at detecting gender/age-inappropriate procedures")
     print("   due to its healthcare-specific training and medical domain knowledge.")
+    
+    # Update README with results
+    if len(all_metrics) > 1:
+        update_readme(all_metrics)
     
     return 0
 
