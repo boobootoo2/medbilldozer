@@ -613,7 +613,7 @@ with tab5:
                 st.markdown("### Actions")
                 if st.button("🔄 Checkout This Version", type="primary", key="checkout_btn"):
                     try:
-                        success = data_access.checkout_snapshot_version(
+                        success = data_access.checkout_snapshot(
                             model_version=selected_model_history,
                             dataset_version="benchmark-set-v1",
                             prompt_version="v1",
