@@ -1,0 +1,22 @@
+# Benchmark Monitoring System Dependencies
+# =========================================
+# Install with: pip install -r requirements-monitoring.txt
+
+# Supabase client for database operations
+supabase>=2.3.0,<3.0.0
+
+# Dashboard and visualization
+streamlit>=1.31.0,<2.0.0
+plotly>=5.18.0,<6.0.0
+
+# Data processing
+pandas>=2.2.0,<3.0.0
+
+# Environment management
+python-dotenv>=1.0.0,<2.0.0
+
+# HTTP requests (dependency of supabase)
+requests>=2.31.0,<3.0.0
+
+# Type hints support
+typing-extensions>=4.9.0

@@ -266,8 +266,8 @@ for model_name, data in filtered_results.items():
         token_display = f"{avg_total_tokens:.0f}"
         token_detail = f"(In: {avg_input_tokens:.0f}, Out: {avg_output_tokens:.0f})"
     else:
-        token_display = "N/A"
-        token_detail = "(No API calls)"
+        token_display = "N/A"  # nosec B105 - Display string, not a password
+        token_detail = "(No API calls)"  # nosec B105 - Display string, not a password
     
     summary_data.append({
         "Model": full_name,

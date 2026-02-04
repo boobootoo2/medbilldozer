@@ -53,6 +53,28 @@ jobs:
           python3 scripts/generate_benchmarks.py --model gemini || echo "⚠️ Gemini failed"
           # python3 scripts/generate_benchmarks.py --model medgemma || echo "⚠️ MedGemma failed"
       
+      - name: Convert results to monitoring format
+        if: always()
+        run: |
+          mkdir -p benchmark-artifacts
+          # Convert each model's results
+          for model in openai gemini baseline; do
+            if [ -f "benchmarks/results/aggregated_metrics_${model}.json" ]; then
+              python3 scripts/convert_benchmark_to_monitoring.py \
+                --input "benchmarks/results/aggregated_metrics_${model}.json" \
+                --output "benchmark-artifacts/${model}_benchmark_results.json" \
+                --model "${model}"
+            fi
+          done
+      
+      - name: Upload benchmark results as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark-artifacts/*.json
+          retention-days: 90
+      
       - name: Commit benchmark results
         run: |
           git config --local user.email "action@github.com"
