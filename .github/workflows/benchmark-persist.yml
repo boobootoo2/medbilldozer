@@ -35,13 +35,15 @@ jobs:
       - name: Download benchmark results
         id: download-artifact
         continue-on-error: true
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: run_benchmarks.yml
           name: benchmark-results
           path: ./benchmark-artifacts
           # Download from the workflow run that triggered this
           run_id: ${{ github.event.workflow_run.id }}
+          # Security: Do not search forks for artifacts (v6+ default, explicit for clarity)
+          allow_forks: false
       
       - name: Verify benchmark results exist
         run: |
