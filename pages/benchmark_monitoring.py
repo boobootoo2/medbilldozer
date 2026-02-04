@@ -785,11 +785,12 @@ with tab6:
             )
         
         with col3:
-            avg_f1 = latest_results['f1_score'].mean()
+            # Use same functional models filter for consistency
+            avg_f1 = functional_models['f1_score'].mean() if not functional_models.empty else 0
             st.metric(
-                "Average F1 Score",
+                f"Avg F1 Score ({model_count} models)",
                 f"{avg_f1:.3f}",
-                help="Average F1 across all models"
+                help="Average F1 across functional models (excludes 0% scores)"
             )
         
         with col4:
