@@ -733,10 +733,15 @@ with tab6:
             return pd.DataFrame()
         
         # Create clean dataset with required columns
+        # Handle both decimal (0.667) and percentage (66.7) formats for backwards compatibility
+        domain_rates = patient_df.get('domain_knowledge_detection_rate', 0)
+        # If values are > 1, they're already percentages; if <= 1, they're decimals needing conversion
+        domain_detection = domain_rates.apply(lambda x: x if x > 1 else x * 100)
+        
         result_df = pd.DataFrame({
             'model_version': patient_df['model_version'],
             'created_at': patient_df['created_at'],
-            'domain_detection': patient_df.get('domain_knowledge_detection_rate', 0) * 100,
+            'domain_detection': domain_detection,
             'f1_score': patient_df.get('f1', 0),
             'precision': patient_df.get('precision', 0),
             'recall': patient_df.get('recall', 0),
