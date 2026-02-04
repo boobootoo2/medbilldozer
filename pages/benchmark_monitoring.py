@@ -121,12 +121,13 @@ st.sidebar.markdown("**Last Updated:** " + datetime.now().strftime("%Y-%m-%d %H:
 # Tab Layout
 # ============================================================================
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📊 Current Snapshot",
     "📈 Performance Trends",
     "🔄 Model Comparison",
     "⚠️ Regression Detection",
-    "🕐 Snapshot History"
+    "🕐 Snapshot History",
+    "🏥 Patient Benchmarks"
 ])
 
 # ============================================================================
@@ -697,6 +698,214 @@ with tab5:
 
 # Footer
 # ============================================================================
+
+# ============================================================================
+# TAB 6: Patient Benchmarks (Cross-Document Domain Knowledge)
+# ============================================================================
+
+with tab6:
+    st.header("🏥 Patient Cross-Document Benchmarks")
+    st.markdown("""
+    **Domain Knowledge Detection:** Testing models' ability to identify gender/age-inappropriate 
+    medical procedures that require healthcare domain knowledge (e.g., male patient billed for 
+    pregnancy ultrasound, 8-year-old billed for colonoscopy).
+    """)
+    
+    @st.cache_data(ttl=300)
+    def load_patient_benchmarks():
+        """Load patient benchmark results from transactions table."""
+        # Calculate start_date from days_back
+        start_date = datetime.now() - timedelta(days=days_back)
+        
+        # Get all transactions (metrics are already expanded into columns)
+        df = data_access.get_transactions(start_date=start_date, environment=env_filter)
+        
+        if df.empty:
+            return pd.DataFrame()
+        
+        # Filter to only patient benchmarks (have total_patients column)
+        if 'total_patients' not in df.columns:
+            return pd.DataFrame()
+        
+        patient_df = df[df['total_patients'].notna()].copy()
+        
+        if patient_df.empty:
+            return pd.DataFrame()
+        
+        # Create clean dataset with required columns
+        result_df = pd.DataFrame({
+            'model_version': patient_df['model_version'],
+            'created_at': patient_df['created_at'],
+            'domain_detection': patient_df.get('domain_knowledge_detection_rate', 0) * 100,
+            'f1_score': patient_df.get('f1', 0),
+            'precision': patient_df.get('precision', 0),
+            'recall': patient_df.get('recall', 0),
+            'latency_ms': patient_df.get('latency_ms', 0),
+            'total_patients': patient_df.get('total_patients', 0),
+            'successful': patient_df.get('successful_analyses', 0)
+        })
+        
+        return result_df
+    
+    patient_df = load_patient_benchmarks()
+    
+    if patient_df.empty:
+        st.warning("No patient benchmark data available. Run patient benchmarks with: `python3 scripts/generate_patient_benchmarks.py --model all --push-to-supabase`")
+    else:
+        # Get latest result per model
+        latest_results = patient_df.sort_values('created_at').groupby('model_version').last().reset_index()
+        latest_results = latest_results.sort_values('domain_detection', ascending=False)
+        
+        # Key metrics row
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            best_model = latest_results.iloc[0]['model_version'] if not latest_results.empty else "N/A"
+            best_score = latest_results.iloc[0]['domain_detection'] if not latest_results.empty else 0
+            st.metric(
+                "🏆 Top Model",
+                best_model,
+                f"{best_score:.1f}% domain detection"
+            )
+        
+        with col2:
+            avg_domain = latest_results['domain_detection'].mean()
+            st.metric(
+                "Average Domain Detection",
+                f"{avg_domain:.1f}%"
+            )
+        
+        with col3:
+            avg_f1 = latest_results['f1_score'].mean()
+            st.metric(
+                "Average F1 Score",
+                f"{avg_f1:.3f}"
+            )
+        
+        with col4:
+            total_runs = len(patient_df)
+            st.metric(
+                "Total Benchmark Runs",
+                f"{total_runs}"
+            )
+        
+        st.markdown("---")
+        
+        # Leaderboard
+        st.subheader("📊 Domain Knowledge Leaderboard (Latest Run)")
+        
+        display_df = latest_results[[
+            'model_version', 'domain_detection', 'f1_score', 
+            'precision', 'recall', 'total_patients', 'successful'
+        ]].copy()
+        
+        display_df.columns = [
+            'Model', 'Domain Detection %', 'F1 Score', 
+            'Precision', 'Recall', 'Total Patients', 'Successful'
+        ]
+        
+        # Format percentages and decimals
+        display_df['Domain Detection %'] = display_df['Domain Detection %'].apply(lambda x: f"{x:.1f}%")
+        display_df['F1 Score'] = display_df['F1 Score'].apply(lambda x: f"{x:.3f}")
+        display_df['Precision'] = display_df['Precision'].apply(lambda x: f"{x:.3f}")
+        display_df['Recall'] = display_df['Recall'].apply(lambda x: f"{x:.3f}")
+        
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        
+        st.markdown("---")
+        
+        # Historical trends
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("📈 Domain Detection Over Time")
+            
+            if len(patient_df) > 1:
+                fig = px.line(
+                    patient_df,
+                    x='created_at',
+                    y='domain_detection',
+                    color='model_version',
+                    markers=True,
+                    labels={
+                        'created_at': 'Date',
+                        'domain_detection': 'Domain Detection Rate (%)',
+                        'model_version': 'Model'
+                    }
+                )
+                fig.update_layout(height=400, hovermode='x unified')
+                st.plotly_chart(fig, use_container_width=True, key="patient_domain_trend")
+            else:
+                st.info("Run multiple benchmarks over time to see trends")
+        
+        with col2:
+            st.subheader("📊 F1 Score Comparison")
+            
+            fig = go.Figure()
+            for model in latest_results['model_version'].unique():
+                model_data = latest_results[latest_results['model_version'] == model]
+                fig.add_trace(go.Bar(
+                    name=model,
+                    x=['F1 Score'],
+                    y=[model_data['f1_score'].values[0]],
+                    text=[f"{model_data['f1_score'].values[0]:.3f}"],
+                    textposition='auto'
+                ))
+            
+            fig.update_layout(
+                height=400,
+                yaxis_title="F1 Score",
+                showlegend=True,
+                barmode='group'
+            )
+            st.plotly_chart(fig, use_container_width=True, key="patient_f1_comparison")
+        
+        # Detailed metrics
+        st.markdown("---")
+        st.subheader("🔍 Detailed Performance Metrics")
+        
+        # Heatmap of performance across models
+        heatmap_df = latest_results[['model_version', 'domain_detection', 'f1_score', 'precision', 'recall']].set_index('model_version')
+        heatmap_df.columns = ['Domain Detection %', 'F1', 'Precision', 'Recall']
+        
+        fig = px.imshow(
+            heatmap_df.T,
+            labels=dict(x="Model", y="Metric", color="Score"),
+            x=heatmap_df.index,
+            y=heatmap_df.columns,
+            color_continuous_scale='RdYlGn',
+            aspect='auto',
+            text_auto='.2f'
+        )
+        fig.update_layout(height=300)
+        st.plotly_chart(fig, use_container_width=True, key="patient_heatmap")
+        
+        # Insights
+        st.markdown("---")
+        st.subheader("💡 Key Insights")
+        
+        if not latest_results.empty:
+            best = latest_results.iloc[0]
+            worst = latest_results.iloc[-1]
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.success(f"""
+                **Best Performer: {best['model_version']}**
+                - Domain Detection: {best['domain_detection']:.1f}%
+                - F1 Score: {best['f1_score']:.3f}
+                - Successfully analyzed {best['successful']}/{best['total_patients']} patients
+                """)
+            
+            with col2:
+                if worst['domain_detection'] < best['domain_detection']:
+                    gap = best['domain_detection'] - worst['domain_detection']
+                    st.warning(f"""
+                    **Performance Gap**
+                    - {best['model_version']} outperforms {worst['model_version']} by {gap:.1f}% in domain detection
+                    - Medical domain knowledge is critical for accurate billing issue detection
+                    """)
 
 st.markdown("---")
 st.markdown("""
