@@ -1,0 +1,136 @@
+name: Benchmark Persistence
+
+on:
+  workflow_run:
+    workflows: ["Run Benchmarks"]  # Replace with your actual benchmark workflow name
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  persist-results:
+    name: Persist Benchmark Results to Supabase
+    runs-on: ubuntu-latest
+    
+    # Only run if benchmark workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better context
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install supabase python-dotenv requests
+      
+      - name: Download benchmark results
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-results
+          path: ./benchmark-artifacts
+      
+      - name: Verify benchmark results exist
+        run: |
+          echo "Benchmark results found:"
+          ls -la ./benchmark-artifacts/
+          if [ -z "$(ls -A ./benchmark-artifacts/*.json 2>/dev/null)" ]; then
+            echo "Error: No benchmark result files found"
+            exit 1
+          fi
+          echo "Files to process:"
+          ls ./benchmark-artifacts/*.json
+      
+      - name: Push to Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: |
+          # Process each benchmark result file
+          for result_file in ./benchmark-artifacts/*_benchmark_results.json; do
+            if [ -f "$result_file" ]; then
+              echo "Processing: $result_file"
+              python scripts/push_to_supabase.py \
+                --input "$result_file" \
+                --environment github-actions \
+                --commit-sha "$GITHUB_SHA" \
+                --branch-name "$GITHUB_REF" \
+                --run-id "$GITHUB_RUN_ID" \
+                --triggered-by "$GITHUB_ACTOR" || echo "⚠️  Failed to push $result_file"
+            fi
+          done
+      
+      - name: Post summary
+        if: always()
+        run: |
+          echo "## Benchmark Persistence Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run ID:** \`${{ github.run_id }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Persisted Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          for result_file in ./benchmark-artifacts/*_benchmark_results.json; do
+            if [ -f "$result_file" ]; then
+              model=$(basename "$result_file" | cut -d'_' -f1)
+              f1=$(jq -r '.metrics.f1' "$result_file")
+              precision=$(jq -r '.metrics.precision' "$result_file")
+              recall=$(jq -r '.metrics.recall' "$result_file")
+              echo "**${model}**: F1=${f1}, Precision=${precision}, Recall=${recall}" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+      
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('./benchmark-artifacts/benchmark_results.json', 'utf8'));
+            
+            const body = `## 📊 Benchmark Results Persisted
+            
+            Your benchmark results have been saved to the monitoring database.
+            
+            **Model:** \`${results.model_version}\`
+            **Dataset:** \`${results.dataset_version}\`
+            **Prompt:** \`${results.prompt_version}\`
+            
+            ### Key Metrics
+            - **F1 Score:** ${(results.metrics.f1 * 100).toFixed(2)}%
+            - **Precision:** ${(results.metrics.precision * 100).toFixed(2)}%
+            - **Recall:** ${(results.metrics.recall * 100).toFixed(2)}%
+            - **Latency:** ${results.metrics.latency_ms}ms
+            - **Cost:** $${results.metrics.analysis_cost.toFixed(4)}
+            
+            [View Dashboard](https://your-dashboard-url.streamlit.app) | [View History](https://your-dashboard-url.streamlit.app?view=history)
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+      
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed('Failed to persist benchmark results to Supabase. Check logs for details.');
