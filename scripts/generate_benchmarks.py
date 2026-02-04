@@ -430,7 +430,7 @@ class BenchmarkRunner:
         pipeline_sec = metrics.avg_pipeline_latency_ms / 1000
         
         # Token display (only if available)
-        token_info = ""
+        token_info = ""  # nosec B105 - Empty string initialization, not a password
         if metrics.avg_total_tokens > 0:
             token_info = f"""- Avg Tokens per Doc: {metrics.avg_total_tokens:.0f}
   - Input: {metrics.avg_input_tokens:.0f}
