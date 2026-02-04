@@ -1,0 +1,54 @@
+{
+    "patient_id": "P028",
+    "patient_name": "Victoria Nguyen",
+    "age": 19,
+    "sex": "F",
+    "known_conditions": [
+        "Healthy college student"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Student health center",
+    "expected_issues": [{
+            "type": "age_inappropriate",
+            "severity": "high",
+            "description": "19-year-old billed for geriatric depression screening - assessment designed for elderly",
+            "requires_domain_knowledge": true,
+            "cpt_code": "99483"
+        },
+        {
+            "type": "temporal_violation",
+            "severity": "high",
+            "description": "Same-day duplicate chest X-ray of identical area without clinical justification",
+            "requires_domain_knowledge": true,
+            "cpt_code": "71046"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P028_001",
+            "document_type": "student_health_note",
+            "content": "19-year-old healthy female college student for routine visit. No depression symptoms. Vital signs normal. No respiratory complaints."
+        },
+        {
+            "document_id": "DOC_P028_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99483",
+                    "description": "Assessment of cognitive impairment and care planning",
+                    "charge": 420.00
+                },
+                {
+                    "cpt_code": "71046",
+                    "description": "Chest X-ray, 2 views",
+                    "charge": 145.00,
+                    "date": "2026-02-04 09:00"
+                },
+                {
+                    "cpt_code": "71046",
+                    "description": "Chest X-ray, 2 views - DUPLICATE",
+                    "charge": 145.00,
+                    "date": "2026-02-04 14:30"
+                }
+            ]
+        }
+    ]
+}

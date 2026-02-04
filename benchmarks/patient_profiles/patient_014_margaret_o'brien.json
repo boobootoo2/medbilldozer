@@ -1,0 +1,57 @@
+{
+    "patient_id": "P014",
+    "patient_name": "Margaret O'Brien",
+    "age": 78,
+    "sex": "F",
+    "known_conditions": [
+        "Hypertension",
+        "Osteoarthritis",
+        "Mild cognitive impairment"
+    ],
+    "prior_surgical_history": [{
+        "procedure": "Left hip replacement",
+        "year": 2020
+    }],
+    "visit_type": "Primary care follow-up",
+    "expected_issues": [{
+            "type": "age_inappropriate",
+            "severity": "high",
+            "description": "78-year-old elderly patient billed for pediatric vaccines (DTaP is for children, not adults)",
+            "requires_domain_knowledge": true,
+            "cpt_code": "90700"
+        },
+        {
+            "type": "diagnosis_procedure_mismatch",
+            "severity": "critical",
+            "description": "Dialysis billed without any documented kidney disease diagnosis",
+            "requires_domain_knowledge": true,
+            "cpt_code": "90935"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P014_001",
+            "document_type": "primary_care_note",
+            "content": "78-year-old female with hypertension, osteoarthritis. Mild cognitive impairment stable. Blood pressure 135/82. Creatinine 0.9 (normal kidney function). Continue current medications."
+        },
+        {
+            "document_id": "DOC_P014_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "90700",
+                    "description": "DTaP vaccine (pediatric diphtheria, tetanus, pertussis)",
+                    "charge": 45.00
+                },
+                {
+                    "cpt_code": "90935",
+                    "description": "Hemodialysis procedure with single evaluation",
+                    "charge": 385.00
+                },
+                {
+                    "cpt_code": "99213",
+                    "description": "Office visit level 3",
+                    "charge": 150.00
+                }
+            ]
+        }
+    ]
+}

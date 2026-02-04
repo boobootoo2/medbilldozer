@@ -1,0 +1,55 @@
+{
+    "patient_id": "P021",
+    "patient_name": "William Taylor",
+    "age": 62,
+    "sex": "M",
+    "known_conditions": [
+        "Coronary artery disease"
+    ],
+    "prior_surgical_history": [{
+        "procedure": "Coronary artery bypass graft (CABG)",
+        "year": 2025,
+        "date": "2025-12-10"
+    }],
+    "visit_type": "Cardiology follow-up",
+    "expected_issues": [{
+            "type": "temporal_violation",
+            "severity": "critical",
+            "description": "Coronary bypass billed twice within 2 months (12/2025 and 02/2026) - repeat CABG this soon is extremely rare",
+            "requires_domain_knowledge": true,
+            "cpt_code": "33533"
+        },
+        {
+            "type": "temporal_violation",
+            "severity": "high",
+            "description": "Overlapping hospital stays at different facilities (dates conflict)",
+            "requires_domain_knowledge": true,
+            "cpt_code": "99223"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P021_001",
+            "document_type": "cardiology_note",
+            "content": "62-year-old male s/p CABG on 12/10/2025. Doing well post-operatively. Recovering at home. No complications. Sternal wound healing well."
+        },
+        {
+            "document_id": "DOC_P021_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "33533",
+                    "description": "Coronary artery bypass, arterial graft",
+                    "charge": 45000.00,
+                    "date": "2026-02-04",
+                    "facility": "General Hospital"
+                },
+                {
+                    "cpt_code": "99223",
+                    "description": "Initial hospital inpatient care",
+                    "charge": 420.00,
+                    "date": "2026-02-04",
+                    "facility": "St. Mary's Hospital"
+                }
+            ]
+        }
+    ]
+}

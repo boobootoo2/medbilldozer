@@ -1,0 +1,52 @@
+{
+    "patient_id": "P016",
+    "patient_name": "Sophia Patel",
+    "age": 3,
+    "sex": "F",
+    "known_conditions": [
+        "Healthy child"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Pediatric wellness visit",
+    "expected_issues": [{
+            "type": "age_inappropriate",
+            "severity": "critical",
+            "description": "3-year-old child billed for geriatric cognitive screening - assessment designed for elderly patients",
+            "requires_domain_knowledge": true,
+            "cpt_code": "99483"
+        },
+        {
+            "type": "age_inappropriate",
+            "severity": "high",
+            "description": "Neonatal intensive care charges billed to 3-year-old child - NICU is for newborns only",
+            "requires_domain_knowledge": true,
+            "cpt_code": "99469"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P016_001",
+            "document_type": "pediatric_note",
+            "content": "3-year-old healthy female for routine well-child visit. Developmental milestones appropriate. No concerns."
+        },
+        {
+            "document_id": "DOC_P016_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99483",
+                    "description": "Cognitive assessment and care planning for dementia",
+                    "charge": 420.00
+                },
+                {
+                    "cpt_code": "99469",
+                    "description": "Neonatal critical care, subsequent day",
+                    "charge": 850.00
+                },
+                {
+                    "cpt_code": "99392",
+                    "description": "Preventive visit age 1-4",
+                    "charge": 165.00
+                }
+            ]
+        }
+    ]
+}

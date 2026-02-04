@@ -1,0 +1,56 @@
+{
+    "patient_id": "P011",
+    "patient_name": "Thomas Rivera",
+    "age": 35,
+    "sex": "M",
+    "known_conditions": [
+        "Type 2 Diabetes",
+        "Obesity"
+    ],
+    "prior_surgical_history": [{
+        "procedure": "Appendectomy",
+        "year": 2015
+    }],
+    "visit_type": "Emergency department visit",
+    "expected_issues": [{
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for labor and delivery charges - anatomically impossible",
+            "requires_domain_knowledge": true,
+            "cpt_code": "59400"
+        },
+        {
+            "type": "surgical_history_contradiction",
+            "severity": "critical",
+            "description": "Appendectomy billed after documented prior appendectomy in 2015",
+            "requires_domain_knowledge": true,
+            "cpt_code": "44970"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P011_001",
+            "document_type": "emergency_visit_note",
+            "content": "35-year-old male with history of appendectomy (2015) presents with abdominal pain. Vital signs stable. Assessment: Acute gastritis. Discharged home with PPI."
+        },
+        {
+            "document_id": "DOC_P011_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "59400",
+                    "description": "Routine obstetric care including delivery",
+                    "charge": 3500.00
+                },
+                {
+                    "cpt_code": "44970",
+                    "description": "Laparoscopic appendectomy",
+                    "charge": 8200.00
+                },
+                {
+                    "cpt_code": "99284",
+                    "description": "Emergency department visit level 4",
+                    "charge": 450.00
+                }
+            ]
+        }
+    ]
+}

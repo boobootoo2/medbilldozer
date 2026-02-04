@@ -1,0 +1,56 @@
+{
+    "patient_id": "P025",
+    "patient_name": "Christopher Lee",
+    "age": 44,
+    "sex": "M",
+    "known_conditions": [
+        "Type 2 Diabetes"
+    ],
+    "prior_surgical_history": [{
+        "procedure": "Coronary artery bypass graft",
+        "year": 2024,
+        "date": "2024-03-15"
+    }],
+    "visit_type": "Cardiology follow-up",
+    "expected_issues": [{
+            "type": "surgical_history_contradiction",
+            "severity": "critical",
+            "description": "Third coronary bypass within 2 years - highly unusual repeated CABG",
+            "requires_domain_knowledge": true,
+            "cpt_code": "33533"
+        },
+        {
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for prenatal care visit - only applicable to pregnant females",
+            "requires_domain_knowledge": true,
+            "cpt_code": "59400"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P025_001",
+            "document_type": "cardiology_note",
+            "content": "44-year-old male s/p CABG (03/2024). Doing well. Cardiac rehab completed. No angina. Continue medical management."
+        },
+        {
+            "document_id": "DOC_P025_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "33533",
+                    "description": "Coronary artery bypass",
+                    "charge": 45000.00
+                },
+                {
+                    "cpt_code": "59400",
+                    "description": "Routine obstetric care",
+                    "charge": 3500.00
+                },
+                {
+                    "cpt_code": "99213",
+                    "description": "Office visit level 3",
+                    "charge": 150.00
+                }
+            ]
+        }
+    ]
+}
