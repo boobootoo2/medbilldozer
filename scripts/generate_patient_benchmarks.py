@@ -650,13 +650,14 @@ def main():
     if args.push_to_supabase and all_metrics:
         print("\n📤 Pushing results to Supabase...")
         try:
-            import subprocess
+            import subprocess  # nosec B404 - needed for git commands
             import os
             
             # Get git info if not provided
             commit_sha = args.commit_sha
             if not commit_sha:
                 try:
+                    # nosec B603 B607 - safe git command with hardcoded args
                     result = subprocess.run(
                         ['git', 'rev-parse', 'HEAD'],
                         capture_output=True,
@@ -669,6 +670,7 @@ def main():
             
             branch_name = None
             try:
+                # nosec B603 B607 - safe git command with hardcoded args
                 result = subprocess.run(
                     ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
                     capture_output=True,
@@ -676,7 +678,7 @@ def main():
                     check=True
                 )
                 branch_name = result.stdout.strip()
-            except Exception:
+            except Exception:  # nosec B110 - acceptable to ignore git errors
                 pass
             
             # Push each model's results
@@ -694,7 +696,7 @@ def main():
                     if branch_name:
                         cmd.extend(['--branch-name', branch_name])
                     
-                    subprocess.run(cmd, check=True)
+                    subprocess.run(cmd, check=True)  # nosec B603 - safe, controlled script execution
             
             print("✅ All results pushed to Supabase successfully!")
             
