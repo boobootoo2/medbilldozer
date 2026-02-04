@@ -774,17 +774,22 @@ with tab6:
             )
         
         with col2:
-            avg_domain = latest_results['domain_detection'].mean()
+            # Calculate average excluding models with 0% (non-functional models)
+            functional_models = latest_results[latest_results['domain_detection'] > 0]
+            avg_domain = functional_models['domain_detection'].mean() if not functional_models.empty else 0
+            model_count = len(functional_models)
             st.metric(
-                "Average Domain Detection",
-                f"{avg_domain:.1f}%"
+                f"Avg Domain Detection ({model_count} models)",
+                f"{avg_domain:.1f}%",
+                help="Average across models that detect domain issues (excludes 0% scores)"
             )
         
         with col3:
             avg_f1 = latest_results['f1_score'].mean()
             st.metric(
                 "Average F1 Score",
-                f"{avg_f1:.3f}"
+                f"{avg_f1:.3f}",
+                help="Average F1 across all models"
             )
         
         with col4:
