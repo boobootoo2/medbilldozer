@@ -534,6 +534,22 @@ def main():
         choices=['medgemma', 'openai', 'gemini', 'baseline', 'all'],
         help='Which model to benchmark (default: all)'
     )
+    parser.add_argument(
+        '--push-to-supabase',
+        action='store_true',
+        help='Push results to Supabase for historical tracking'
+    )
+    parser.add_argument(
+        '--environment',
+        type=str,
+        default='local',
+        help='Execution environment (local, github-actions, etc.)'
+    )
+    parser.add_argument(
+        '--commit-sha',
+        type=str,
+        help='Git commit SHA'
+    )
     
     args = parser.parse_args()
     
@@ -595,6 +611,62 @@ def main():
     # Update README with results
     if len(all_metrics) > 1:
         update_readme(all_metrics)
+    
+    # Push to Supabase if requested
+    if args.push_to_supabase and all_metrics:
+        print("\n📤 Pushing results to Supabase...")
+        try:
+            import subprocess
+            import os
+            
+            # Get git info if not provided
+            commit_sha = args.commit_sha
+            if not commit_sha:
+                try:
+                    result = subprocess.run(
+                        ['git', 'rev-parse', 'HEAD'],
+                        capture_output=True,
+                        text=True,
+                        check=True
+                    )
+                    commit_sha = result.stdout.strip()
+                except Exception:
+                    commit_sha = None
+            
+            branch_name = None
+            try:
+                result = subprocess.run(
+                    ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                branch_name = result.stdout.strip()
+            except Exception:
+                pass
+            
+            # Push each model's results
+            for metrics in all_metrics:
+                results_file = PROJECT_ROOT / 'benchmarks' / 'results' / f'patient_benchmark_{metrics.model_name}.json'
+                if results_file.exists():
+                    cmd = [
+                        'python3',
+                        str(PROJECT_ROOT / 'scripts' / 'push_patient_benchmarks.py'),
+                        '--input', str(results_file),
+                        '--environment', args.environment
+                    ]
+                    if commit_sha:
+                        cmd.extend(['--commit-sha', commit_sha])
+                    if branch_name:
+                        cmd.extend(['--branch-name', branch_name])
+                    
+                    subprocess.run(cmd, check=True)
+            
+            print("✅ All results pushed to Supabase successfully!")
+            
+        except Exception as e:
+            print(f"⚠️  Warning: Failed to push to Supabase: {e}")
+            print("   Results are still saved locally in benchmarks/results/")
     
     return 0
 
