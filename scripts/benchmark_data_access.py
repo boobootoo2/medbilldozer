@@ -337,6 +337,10 @@ class BenchmarkDataAccess:
         
         # Expand metrics JSONB into columns
         if 'metrics' in df.columns:
+            # Parse JSON strings if needed
+            import json
+            if df['metrics'].dtype == 'object' and isinstance(df['metrics'].iloc[0], str):
+                df['metrics'] = df['metrics'].apply(json.loads)
             metrics_df = pd.json_normalize(df['metrics'])
             df = pd.concat([df.drop('metrics', axis=1), metrics_df], axis=1)
         
