@@ -12,20 +12,22 @@ This benchmark suite tests **medical domain knowledge** across multiple document
 
 ## Test Scenarios
 
-10 patient profiles with intentional medical billing errors:
+10 patient profiles with varying complexity (1-4 issues each):
 
-| Patient | Age | Sex | Issue Type | Example Error |
-|---------|-----|-----|------------|---------------|
-| John Doe | 45 | M | Gender Mismatch | Obstetric ultrasound (CPT 76805) |
-| Mary Smith | 72 | F | Age Inappropriate | IUD insertion |
-| Robert Chen | 8 | M | Age Inappropriate | Colonoscopy screening |
-| Jennifer Garcia | 34 | F | Gender Mismatch | Prostate biopsy |
-| Michael O'Connor | 28 | M | Gender Mismatch | Hysterectomy |
-| Sarah Patel | 15 | F | Age Inappropriate | Mammogram screening |
-| David Thompson | 55 | M | Gender Mismatch | Cervical biopsy |
-| Lisa Rodriguez | 3 | F | Age Inappropriate | Cardiac stress test |
-| James Williams | 82 | M | Multiple Issues | Pregnancy test + sports physical |
-| Amanda Lee | 29 | F | Gender Mismatch | Vasectomy |
+| Patient | Age | Sex | Issues | Primary Error Types |
+|---------|-----|-----|--------|---------------------|
+| John Doe | 45 | M | 1 | Gender mismatch (obstetric ultrasound) |
+| Mary Smith | 72 | F | 2 | Age inappropriate IUD + duplicate charge |
+| Robert Chen | 8 | M | **3** | Colonoscopy + PSA screening + geriatric assessment |
+| Jennifer Garcia | 34 | F | 2 | Prostate biopsy + upcoding |
+| Michael O'Connor | 28 | M | **4** | Hysterectomy + Pap smear + mammogram + duplicate |
+| Sarah Patel | 15 | F | 2 | Mammogram + DEXA scan (both age-inappropriate) |
+| David Thompson | 55 | M | **3** | Cervical biopsy + transvaginal ultrasound + unnecessary counseling |
+| Lisa Rodriguez | 3 | F | 2 | Cardiac stress test + adult colonoscopy |
+| James Williams | 82 | M | 2 | Pregnancy test + sports physical |
+| Amanda Lee | 29 | F | 2 | Vasectomy + duplicate lab charge |
+
+**Total: 23 issues** (18 require domain knowledge = 78.3%)
 
 ## Quick Start
 

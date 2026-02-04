@@ -16,10 +16,32 @@
         "patient_005_doc_2_pharmacy.txt"
     ],
     "expected_issues": [{
-        "type": "gender_mismatch",
-        "severity": "critical",
-        "description": "Male patient billed for hysterectomy (CPT 58150) - anatomically impossible",
-        "requires_domain_knowledge": true,
-        "cpt_code": "58150"
-    }]
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for hysterectomy (CPT 58150) - anatomically impossible",
+            "requires_domain_knowledge": true,
+            "cpt_code": "58150"
+        },
+        {
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for cervical cancer screening (Pap smear, CPT 88175) - anatomically impossible",
+            "requires_domain_knowledge": true,
+            "cpt_code": "88175"
+        },
+        {
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for mammogram (CPT 77065) - inappropriate for demographic",
+            "requires_domain_knowledge": true,
+            "cpt_code": "77065"
+        },
+        {
+            "type": "duplicate_charge",
+            "severity": "medium",
+            "description": "Same prescription charged twice on different dates but filled only once",
+            "requires_domain_knowledge": false,
+            "cpt_code": "N/A"
+        }
+    ]
 }

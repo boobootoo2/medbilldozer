@@ -16,10 +16,25 @@
         "patient_003_doc_2_dental.txt"
     ],
     "expected_issues": [{
-        "type": "age_inappropriate_screening",
-        "severity": "high",
-        "description": "8-year-old child billed for colonoscopy (CPT 45378) - not age-appropriate screening",
-        "requires_domain_knowledge": true,
-        "cpt_code": "45378"
-    }]
+            "type": "age_inappropriate_screening",
+            "severity": "high",
+            "description": "8-year-old child billed for colonoscopy (CPT 45378) - not age-appropriate screening",
+            "requires_domain_knowledge": true,
+            "cpt_code": "45378"
+        },
+        {
+            "type": "age_inappropriate_screening",
+            "severity": "high",
+            "description": "8-year-old billed for prostate cancer screening (PSA test, CPT 84153) - not clinically indicated",
+            "requires_domain_knowledge": true,
+            "cpt_code": "84153"
+        },
+        {
+            "type": "medical_necessity",
+            "severity": "medium",
+            "description": "Pediatric patient charged for geriatric assessment (CPT 99483) - age mismatch",
+            "requires_domain_knowledge": true,
+            "cpt_code": "99483"
+        }
+    ]
 }

@@ -20,18 +20,26 @@ Each patient has:
 - 2+ documents to analyze together
 - Expected issues requiring domain knowledge
 
-| Patient | Age | Sex | Issue Type | Example |
-|---------|-----|-----|------------|---------|
-| John Doe | 45 | M | Gender Mismatch | Obstetric ultrasound billed to male |
-| Mary Smith | 72 | F | Age Inappropriate | IUD insertion in 72-year-old |
-| Robert Chen | 8 | M | Age Inappropriate | Colonoscopy for 8-year-old |
-| Jennifer Garcia | 34 | F | Gender Mismatch | Prostate biopsy billed to female |
-| Michael O'Connor | 28 | M | Gender Mismatch | Hysterectomy billed to male |
-| Sarah Patel | 15 | F | Age Inappropriate | Mammogram for 15-year-old |
-| David Thompson | 55 | M | Gender Mismatch | Cervical biopsy billed to male |
-| Lisa Rodriguez | 3 | F | Age Inappropriate | Cardiac stress test for 3-year-old |
-| James Williams | 82 | M | Multiple Issues | Pregnancy test + sports physical for 82-year-old male |
-| Amanda Lee | 29 | F | Gender Mismatch | Vasectomy billed to female |
+| Patient | Age | Sex | # Issues | Issue Types |
+|---------|-----|-----|----------|-------------|
+| John Doe | 45 | M | 1 | Gender mismatch |
+| Mary Smith | 72 | F | 2 | Age inappropriate + duplicate charge |
+| Robert Chen | 8 | M | **3** | Age inappropriate (multiple) |
+| Jennifer Garcia | 34 | F | 2 | Gender mismatch + upcoding |
+| Michael O'Connor | 28 | M | **4** | Multiple gender mismatches + duplicate |
+| Sarah Patel | 15 | F | 2 | Multiple age-inappropriate screenings |
+| David Thompson | 55 | M | **3** | Gender mismatches + medical necessity |
+| Lisa Rodriguez | 3 | F | 2 | Multiple age-inappropriate procedures |
+| James Williams | 82 | M | 2 | Gender mismatch + age inappropriate |
+| Amanda Lee | 29 | F | 2 | Gender mismatch + duplicate |
+
+**Complexity Distribution:**
+- 1 issue: 1 patient (simple)
+- 2 issues: 6 patients (medium)  
+- 3 issues: 2 patients (complex)
+- 4 issues: 1 patient (very complex)
+
+**Total: 23 issues** (78% require medical domain knowledge)
 
 ## Running Benchmarks
 

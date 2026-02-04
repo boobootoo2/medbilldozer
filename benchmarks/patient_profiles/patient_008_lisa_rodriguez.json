@@ -16,10 +16,18 @@
         "patient_008_doc_2_pharmacy.txt"
     ],
     "expected_issues": [{
-        "type": "age_inappropriate_screening",
-        "severity": "high",
-        "description": "3-year-old toddler billed for stress cardiac test (CPT 93015) - not age-appropriate",
-        "requires_domain_knowledge": true,
-        "cpt_code": "93015"
-    }]
+            "type": "age_inappropriate_screening",
+            "severity": "high",
+            "description": "3-year-old toddler billed for stress cardiac test (CPT 93015) - not age-appropriate",
+            "requires_domain_knowledge": true,
+            "cpt_code": "93015"
+        },
+        {
+            "type": "age_inappropriate_procedure",
+            "severity": "high",
+            "description": "3-year-old billed for adult colonoscopy (CPT 45378) - pediatric procedure would use different code",
+            "requires_domain_knowledge": true,
+            "cpt_code": "45378"
+        }
+    ]
 }
