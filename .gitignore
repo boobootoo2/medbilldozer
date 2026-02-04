@@ -28,3 +28,7 @@ Thumbs.db
 
 # Profile Editor data files (privacy)
 data/*.json
+
+# Benchmark results (stored in database, not needed in git)
+benchmarks/results/*.json
+!benchmarks/results/.gitkeep

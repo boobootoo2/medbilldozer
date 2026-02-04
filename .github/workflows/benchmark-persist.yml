@@ -45,23 +45,15 @@ jobs:
         run: |
           echo "Benchmark results found:"
           ls -la ./benchmark-artifacts/ || echo "No artifacts directory"
+          
           if [ ! -d "./benchmark-artifacts" ] || [ -z "$(ls -A ./benchmark-artifacts/*.json 2>/dev/null)" ]; then
-            echo "⚠️  No benchmark result files found - this may be expected if benchmarks didn't run"
-            echo "Checking if benchmark results were committed instead..."
-            # Try to convert committed results as fallback
-            mkdir -p ./benchmark-artifacts
-            for model in openai gemini baseline medgemma; do
-              if [ -f "benchmarks/results/aggregated_metrics_${model}.json" ]; then
-                echo "Found committed results for ${model}, converting..."
-                python3 scripts/convert_benchmark_to_monitoring.py \
-                  --input "benchmarks/results/aggregated_metrics_${model}.json" \
-                  --output "benchmark-artifacts/${model}_benchmark_results.json" \
-                  --model "${model}" || echo "⚠️  Conversion failed for ${model}"
-              fi
-            done
+            echo "⚠️  No benchmark result files found"
+            echo "This workflow requires artifacts from run_benchmarks.yml"
+            exit 1
           fi
+          
           echo "Files to process:"
-          ls ./benchmark-artifacts/*.json 2>/dev/null || echo "No JSON files found"
+          ls ./benchmark-artifacts/*.json
       
       - name: Push to Supabase
         env:
