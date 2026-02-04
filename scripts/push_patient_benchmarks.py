@@ -91,6 +91,8 @@ def push_patient_benchmark(
     # Add individual patient results for detailed analysis
     if 'individual_results' in results:
         patient_results = []
+        error_type_stats = {}  # Track performance by error type
+        
         for patient in results['individual_results']:
             patient_results.append({
                 'patient_id': patient.get('patient_id'),
@@ -103,7 +105,31 @@ def push_patient_benchmark(
                 'domain_knowledge_score': patient.get('domain_knowledge_score', 0.0),
                 'latency_ms': patient.get('analysis_latency_ms', 0.0)
             })
+            
+            # Track error type performance
+            for expected_issue in patient.get('expected_issues', []):
+                error_type = expected_issue.get('type', 'unknown')
+                if error_type not in error_type_stats:
+                    error_type_stats[error_type] = {'detected': 0, 'total': 0}
+                error_type_stats[error_type]['total'] += 1
+                
+                # Check if this error was detected (in true positives)
+                # Simple heuristic: if TP > 0 for this patient, assume error was detected
+                if patient.get('true_positives', 0) > 0:
+                    error_type_stats[error_type]['detected'] += 1
+        
         metrics['patient_results'] = patient_results
+        
+        # Add error type performance summary
+        error_type_performance = {}
+        for error_type, stats in error_type_stats.items():
+            detection_rate = stats['detected'] / stats['total'] if stats['total'] > 0 else 0.0
+            error_type_performance[error_type] = {
+                'detection_rate': round(detection_rate, 4),
+                'detected': stats['detected'],
+                'total': stats['total']
+            }
+        metrics['error_type_performance'] = error_type_performance
     
     print(f"📤 Pushing patient benchmark to Supabase...")
     print(f"   Model: {model_version}")

@@ -121,13 +121,13 @@ st.sidebar.markdown("**Last Updated:** " + datetime.now().strftime("%Y-%m-%d %H:
 # Tab Layout
 # ============================================================================
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "🏥 Patient Benchmarks",
     "📊 Current Snapshot",
     "📈 Performance Trends",
     "🔄 Model Comparison",
     "⚠️ Regression Detection",
-    "🕐 Snapshot History",
-    "🏥 Patient Benchmarks"
+    "🕐 Snapshot History"
 ])
 
 # ============================================================================
@@ -732,6 +732,15 @@ with tab6:
         if patient_df.empty:
             return pd.DataFrame()
         
+        # Filter out old short-name models (keep only full model names with version numbers)
+        # Old names: medgemma, openai, gemini, baseline
+        # New names: Google MedGemma-4B-IT, OpenAI GPT-4, Google Gemini 1.5 Pro, Heuristic Baseline
+        short_names = ['medgemma', 'openai', 'gemini', 'baseline', 'medgemma-v1.0', 'openai-v1.0', 'baseline-v1.0']
+        patient_df = patient_df[~patient_df['model_version'].isin(short_names)].copy()
+        
+        if patient_df.empty:
+            return pd.DataFrame()
+        
         # Create clean dataset with required columns
         # Handle both decimal (0.667) and percentage (66.7) formats for backwards compatibility
         domain_rates = patient_df.get('domain_knowledge_detection_rate', 0)
@@ -890,6 +899,118 @@ with tab6:
         )
         fig.update_layout(height=300)
         st.plotly_chart(fig, use_container_width=True, key="patient_heatmap")
+        
+        # Error Type Performance Heatmap
+        st.markdown("---")
+        st.subheader("🎯 Performance by Error Type")
+        st.markdown("Detection accuracy for different types of billing errors that require medical domain knowledge.")
+        
+        # Load detailed patient results from transactions to analyze error types
+        try:
+            from supabase import create_client
+            import os
+            import numpy as np
+            
+            supabase = create_client(os.getenv('SUPABASE_URL'), os.getenv('SUPABASE_SERVICE_ROLE_KEY'))
+            
+            # Get latest transaction for each model with error_type_performance data
+            query = supabase.table('benchmark_transactions').select('model_version, metrics, created_at').eq('environment', env_filter or 'local').order('created_at', desc=True).limit(100)
+            response = query.execute()
+            
+            if response.data:
+                # Build error type performance matrix - use latest result per model
+                model_error_performance = {}
+                
+                for transaction in response.data:
+                    model = transaction['model_version']
+                    
+                    # Skip old short-name models
+                    if model in ['medgemma', 'openai', 'gemini', 'baseline', 'medgemma-v1.0', 'openai-v1.0', 'baseline-v1.0']:
+                        continue
+                    
+                    # Only take the first (latest) result for each model
+                    if model in model_error_performance:
+                        continue
+                    
+                    metrics = transaction.get('metrics', {})
+                    error_type_perf = metrics.get('error_type_performance', {})
+                    
+                    if error_type_perf:
+                        model_error_performance[model] = error_type_perf
+                
+                if model_error_performance:
+                    # Build heatmap dataframe
+                    # Get all unique error types
+                    all_error_types = set()
+                    for model_data in model_error_performance.values():
+                        all_error_types.update(model_data.keys())
+                    
+                    # Create matrix
+                    heatmap_data = []
+                    models_list = sorted(model_error_performance.keys())
+                    error_types_list = sorted(all_error_types)
+                    
+                    for error_type in error_types_list:
+                        row = []
+                        for model in models_list:
+                            perf = model_error_performance[model].get(error_type, {})
+                            detection_rate = perf.get('detection_rate', 0.0) * 100  # Convert to percentage
+                            row.append(detection_rate)
+                        heatmap_data.append(row)
+                    
+                    # Create heatmap
+                    heatmap_array = np.array(heatmap_data)
+                    
+                    # Format error type names for display
+                    formatted_error_types = [et.replace('_', ' ').title() for et in error_types_list]
+                    
+                    fig = px.imshow(
+                        heatmap_array,
+                        labels=dict(x="Model", y="Error Type", color="Detection Rate (%)"),
+                        x=models_list,
+                        y=formatted_error_types,
+                        color_continuous_scale='RdYlGn',
+                        aspect='auto',
+                        text_auto='.1f'
+                    )
+                    fig.update_layout(
+                        height=max(400, len(error_types_list) * 30),
+                        xaxis={'side': 'bottom'},
+                        yaxis={'side': 'left'}
+                    )
+                    fig.update_xaxes(tickangle=-45)
+                    st.plotly_chart(fig, use_container_width=True, key="error_type_heatmap")
+                    
+                    # Summary statistics
+                    st.markdown("**Summary:**")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        # Best performing error type
+                        avg_by_error = heatmap_array.mean(axis=1)
+                        best_error_idx = avg_by_error.argmax()
+                        st.metric(
+                            "Easiest to Detect",
+                            formatted_error_types[best_error_idx],
+                            f"{avg_by_error[best_error_idx]:.1f}% avg detection"
+                        )
+                    
+                    with col2:
+                        # Most challenging error type
+                        worst_error_idx = avg_by_error.argmin()
+                        st.metric(
+                            "Most Challenging",
+                            formatted_error_types[worst_error_idx],
+                            f"{avg_by_error[worst_error_idx]:.1f}% avg detection"
+                        )
+                else:
+                    st.info("No error-type performance data available yet. Re-push benchmark results to collect this data.")
+            else:
+                st.warning("No transaction data available for error type analysis.")
+        except Exception as e:
+            st.error(f"Error loading error type performance: {str(e)}")
+            import traceback
+            st.code(traceback.format_exc())
         
         # Insights
         st.markdown("---")

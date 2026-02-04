@@ -1,0 +1,31 @@
+{
+    "patient_id": "P043",
+    "patient_name": "William Clark",
+    "age": 32,
+    "sex": "M",
+    "known_conditions": [],
+    "prior_surgical_history": [],
+    "visit_type": "Routine follow-up for minor issue",
+    "expected_issues": [{
+        "type": "upcoding",
+        "severity": "high",
+        "description": "High complexity visit billed for routine visit without multiple comorbidities or extensive management",
+        "requires_domain_knowledge": true,
+        "cpt_code": "99215"
+    }],
+    "documents": [{
+            "document_id": "DOC_P043_001",
+            "document_type": "office_visit_note",
+            "content": "32-year-old male presents for follow-up of minor rash on forearm. Patient is otherwise healthy, no chronic medical conditions. The rash has improved with OTC hydrocortisone cream. Physical exam: Small area of mild erythema on left forearm, no scaling, no vesicles. Assessment: Contact dermatitis, resolving. Plan: Continue hydrocortisone cream for another week. No further follow-up needed unless symptoms worsen. Visit duration: 8 minutes."
+        },
+        {
+            "document_id": "DOC_P043_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                "cpt_code": "99215",
+                "description": "Office visit, established patient, level 5 (high complexity, typically 40-54 minutes)",
+                "charge": 285.00
+            }]
+        }
+    ]
+}

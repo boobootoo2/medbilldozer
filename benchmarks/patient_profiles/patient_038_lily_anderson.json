@@ -1,0 +1,39 @@
+{
+    "patient_id": "P038",
+    "patient_name": "Lily Anderson",
+    "age": 8,
+    "sex": "F",
+    "known_conditions": [
+        "Well child"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Pediatric wellness visit",
+    "expected_issues": [{
+        "type": "age_inappropriate",
+        "severity": "critical",
+        "description": "Screening colonoscopy billed for 8-year-old without qualifying diagnosis",
+        "requires_domain_knowledge": true,
+        "cpt_code": "45378"
+    }],
+    "documents": [{
+            "document_id": "DOC_P038_001",
+            "document_type": "well_child_visit_note",
+            "content": "8-year-old female presents for annual well-child check. Patient is healthy, active, doing well in school. No chronic illnesses. Growth and development appropriate for age. Height 50th percentile, weight 45th percentile. No abdominal pain, no GI symptoms, no blood in stool. No family history of colon cancer or inflammatory bowel disease. Physical exam normal. Immunizations up to date. Patient is thriving."
+        },
+        {
+            "document_id": "DOC_P038_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99393",
+                    "description": "Periodic comprehensive preventive medicine evaluation, established patient, age 5-11",
+                    "charge": 185.00
+                },
+                {
+                    "cpt_code": "45378",
+                    "description": "Colonoscopy, flexible; diagnostic, including collection of specimen(s)",
+                    "charge": 2800.00
+                }
+            ]
+        }
+    ]
+}

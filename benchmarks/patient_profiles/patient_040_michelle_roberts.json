@@ -1,0 +1,51 @@
+{
+    "patient_id": "P040",
+    "patient_name": "Michelle Roberts",
+    "age": 34,
+    "sex": "F",
+    "known_conditions": [],
+    "prior_surgical_history": [],
+    "dental_history": "Excellent oral health, no periodontal disease. Last dental exam 2 months ago showed healthy gums.",
+    "visit_type": "Routine dental cleaning",
+    "expected_issues": [{
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Scaling and root planing billed for patient without periodontal disease",
+            "requires_domain_knowledge": true,
+            "cpt_code": "D4341"
+        },
+        {
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Periodontal maintenance billed for patient with no history of periodontal disease",
+            "requires_domain_knowledge": true,
+            "cpt_code": "D4910"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P040_001",
+            "document_type": "dental_examination_note",
+            "content": "34-year-old female presents for routine dental cleaning. Patient maintains excellent oral hygiene, brushes twice daily, flosses regularly. Clinical examination: No periodontal pockets detected, all measurements 1-2mm. No bleeding on probing. No gingival inflammation. No bone loss on radiographs. Excellent oral health overall. Performed routine prophylaxis. Continue current home care regimen."
+        },
+        {
+            "document_id": "DOC_P040_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "D0120",
+                    "description": "Periodic oral evaluation - established patient",
+                    "charge": 75.00
+                },
+                {
+                    "cpt_code": "D4341",
+                    "description": "Periodontal scaling and root planing - four or more teeth per quadrant",
+                    "charge": 650.00
+                },
+                {
+                    "cpt_code": "D4910",
+                    "description": "Periodontal maintenance",
+                    "charge": 195.00
+                }
+            ]
+        }
+    ]
+}
