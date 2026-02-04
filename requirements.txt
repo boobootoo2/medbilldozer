@@ -139,6 +139,7 @@ streamlit-notify==0.3.1
 streamlit-toggle-switch==1.0.2
 streamlit-vertical-slider==2.5.5
 streamlit_faker==0.0.4
+supabase==2.3.0
 tenacity==9.1.2
 toml==0.10.2
 tomlkit==0.14.0
