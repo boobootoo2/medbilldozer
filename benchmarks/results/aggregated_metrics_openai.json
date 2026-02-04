@@ -3,23 +3,40 @@
   "total_documents": 16,
   "successful_extractions": 16,
   "extraction_accuracy": 100.0,
+<<<<<<< HEAD
   "issue_precision": 0.13333333333333333,
   "issue_recall": 0.5,
   "issue_f1_score": 0.2105263157894737,
+=======
+  "issue_precision": 0.125,
+  "issue_recall": 0.5,
+  "issue_f1_score": 0.2,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
   "json_validity_rate": 100.0,
   "avg_input_tokens": 0.0,
   "avg_output_tokens": 0.0,
   "avg_total_tokens": 0.0,
+<<<<<<< HEAD
   "avg_extraction_latency_ms": 0.4075718749998458,
   "avg_pipeline_latency_ms": 1649.4586983124993,
   "generated_at": "2026-02-04 00:15:41",
+=======
+  "avg_extraction_latency_ms": 0.5323156874990076,
+  "avg_pipeline_latency_ms": 2143.964491562499,
+  "generated_at": "2026-02-04 00:06:39",
+>>>>>>> 12f8c7a (📊 Update benchmark results)
   "individual_results": [
     {
       "document_name": "dental_bill_clean",
       "document_type": "dental_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 2.3931660000044985,
       "pipeline_latency_ms": 479.5656539999982,
+=======
+      "extraction_latency_ms": 3.8740350000097123,
+      "pipeline_latency_ms": 1377.6010940000133,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -35,8 +52,13 @@
       "document_name": "dental_bill_duplicate",
       "document_type": "dental_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.13782899999625897,
       "pipeline_latency_ms": 2262.8542839999996,
+=======
+      "extraction_latency_ms": 0.20852800000170646,
+      "pipeline_latency_ms": 3425.308874999999,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -52,8 +74,13 @@
       "document_name": "insurance_eob_clean",
       "document_type": "insurance_eob",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.596313000002624,
       "pipeline_latency_ms": 2096.6494609999986,
+=======
+      "extraction_latency_ms": 0.7122669999972686,
+      "pipeline_latency_ms": 2756.1246209999977,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -69,15 +96,20 @@
       "document_name": "medical_bill_clean",
       "document_type": "medical_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.20339499999977306,
       "pipeline_latency_ms": 312.1706230000001,
+=======
+      "extraction_latency_ms": 0.3518959999979643,
+      "pipeline_latency_ms": 2904.4627069999933,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
-      "issues_detected": 0,
+      "issues_detected": 1,
       "issues_expected": 0,
       "true_positives": 0,
-      "false_positives": 0,
+      "false_positives": 1,
       "false_negatives": 0,
       "json_valid": true,
       "error_message": null
@@ -86,8 +118,13 @@
       "document_name": "medical_bill_duplicate",
       "document_type": "medical_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.2251420000050075,
       "pipeline_latency_ms": 1384.0643709999938,
+=======
+      "extraction_latency_ms": 0.2612570000053438,
+      "pipeline_latency_ms": 3164.6735519999966,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -103,8 +140,13 @@
       "document_name": "patient_001_doc_1_medical_bill",
       "document_type": "medical_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.2835309999937863,
       "pipeline_latency_ms": 1755.170504999995,
+=======
+      "extraction_latency_ms": 0.34348000001216406,
+      "pipeline_latency_ms": 1648.266702000015,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -120,8 +162,13 @@
       "document_name": "patient_002_doc_1_medical_bill",
       "document_type": "medical_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.33721499998762283,
       "pipeline_latency_ms": 2877.806588999988,
+=======
+      "extraction_latency_ms": 0.26602500000194595,
+      "pipeline_latency_ms": 2919.807738000003,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -137,8 +184,13 @@
       "document_name": "patient_003_doc_1_medical_bill",
       "document_type": "medical_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.21921999999108266,
       "pipeline_latency_ms": 1652.534175999989,
+=======
+      "extraction_latency_ms": 0.28244599999993625,
+      "pipeline_latency_ms": 1668.6560369999909,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -154,8 +206,13 @@
       "document_name": "patient_004_doc_1_medical_bill",
       "document_type": "medical_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.2540760000044884,
       "pipeline_latency_ms": 2876.27787000001,
+=======
+      "extraction_latency_ms": 0.356273999983614,
+      "pipeline_latency_ms": 2922.985218999969,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -171,8 +228,13 @@
       "document_name": "patient_005_doc_1_medical_bill",
       "document_type": "medical_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.3422019999987924,
       "pipeline_latency_ms": 1725.3121859999965,
+=======
+      "extraction_latency_ms": 0.3000890000066647,
+      "pipeline_latency_ms": 1411.1010040000167,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -188,8 +250,13 @@
       "document_name": "patient_006_doc_1_medical_bill",
       "document_type": "medical_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.22865600000443465,
       "pipeline_latency_ms": 1802.3700540000077,
+=======
+      "extraction_latency_ms": 0.25825100001952705,
+      "pipeline_latency_ms": 2488.6995410000454,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -205,8 +272,13 @@
       "document_name": "patient_007_doc_1_medical_bill",
       "document_type": "medical_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.23670200000935893,
       "pipeline_latency_ms": 2907.5973890000027,
+=======
+      "extraction_latency_ms": 0.21316699999829325,
+      "pipeline_latency_ms": 2753.968218000011,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -222,8 +294,13 @@
       "document_name": "patient_008_doc_1_medical_bill",
       "document_type": "medical_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.251456999990296,
       "pipeline_latency_ms": 1543.0298859999994,
+=======
+      "extraction_latency_ms": 0.22712299997351693,
+      "pipeline_latency_ms": 1805.2457979999588,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -239,8 +316,13 @@
       "document_name": "patient_009_doc_1_medical_bill",
       "document_type": "medical_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.34508400000277106,
       "pipeline_latency_ms": 1221.8791960000033,
+=======
+      "extraction_latency_ms": 0.2341130000047542,
+      "pipeline_latency_ms": 1442.2935719999828,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -256,8 +338,13 @@
       "document_name": "patient_010_doc_1_medical_bill",
       "document_type": "medical_bill",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.27628899999854184,
       "pipeline_latency_ms": 1272.969039000003,
+=======
+      "extraction_latency_ms": 0.31676999998353494,
+      "pipeline_latency_ms": 1339.0222259999973,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
@@ -273,8 +360,13 @@
       "document_name": "pharmacy_receipt",
       "document_type": "pharmacy_receipt",
       "extraction_success": true,
+<<<<<<< HEAD
       "extraction_latency_ms": 0.19087300000819596,
       "pipeline_latency_ms": 221.08789000000684,
+=======
+      "extraction_latency_ms": 0.3113299999881747,
+      "pipeline_latency_ms": 275.214960999989,
+>>>>>>> 12f8c7a (📊 Update benchmark results)
       "input_tokens": null,
       "output_tokens": null,
       "total_tokens": null,
