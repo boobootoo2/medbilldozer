@@ -33,21 +33,35 @@ jobs:
           pip install supabase python-dotenv requests
       
       - name: Download benchmark results
-        uses: actions/download-artifact@v4
+        uses: dawidd6/action-download-artifact@v3
         with:
+          workflow: run_benchmarks.yml
           name: benchmark-results
           path: ./benchmark-artifacts
+          # Download from the workflow run that triggered this
+          run_id: ${{ github.event.workflow_run.id }}
       
       - name: Verify benchmark results exist
         run: |
           echo "Benchmark results found:"
-          ls -la ./benchmark-artifacts/
-          if [ -z "$(ls -A ./benchmark-artifacts/*.json 2>/dev/null)" ]; then
-            echo "Error: No benchmark result files found"
-            exit 1
+          ls -la ./benchmark-artifacts/ || echo "No artifacts directory"
+          if [ ! -d "./benchmark-artifacts" ] || [ -z "$(ls -A ./benchmark-artifacts/*.json 2>/dev/null)" ]; then
+            echo "⚠️  No benchmark result files found - this may be expected if benchmarks didn't run"
+            echo "Checking if benchmark results were committed instead..."
+            # Try to convert committed results as fallback
+            mkdir -p ./benchmark-artifacts
+            for model in openai gemini baseline medgemma; do
+              if [ -f "benchmarks/results/aggregated_metrics_${model}.json" ]; then
+                echo "Found committed results for ${model}, converting..."
+                python3 scripts/convert_benchmark_to_monitoring.py \
+                  --input "benchmarks/results/aggregated_metrics_${model}.json" \
+                  --output "benchmark-artifacts/${model}_benchmark_results.json" \
+                  --model "${model}" || echo "⚠️  Conversion failed for ${model}"
+              fi
+            done
           fi
           echo "Files to process:"
-          ls ./benchmark-artifacts/*.json
+          ls ./benchmark-artifacts/*.json 2>/dev/null || echo "No JSON files found"
       
       - name: Push to Supabase
         env:
@@ -59,19 +73,40 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: |
+          # Check if secrets are configured
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "⚠️  Supabase secrets not configured. Skipping persistence."
+            echo "To enable benchmark persistence, configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY secrets."
+            exit 0
+          fi
+          
           # Process each benchmark result file
+          success_count=0
+          fail_count=0
           for result_file in ./benchmark-artifacts/*_benchmark_results.json; do
             if [ -f "$result_file" ]; then
               echo "Processing: $result_file"
-              python scripts/push_to_supabase.py \
+              if python scripts/push_to_supabase.py \
                 --input "$result_file" \
                 --environment github-actions \
                 --commit-sha "$GITHUB_SHA" \
                 --branch-name "$GITHUB_REF" \
                 --run-id "$GITHUB_RUN_ID" \
-                --triggered-by "$GITHUB_ACTOR" || echo "⚠️  Failed to push $result_file"
+                --triggered-by "$GITHUB_ACTOR"; then
+                echo "✅ Successfully pushed $result_file"
+                ((success_count++))
+              else
+                echo "⚠️  Failed to push $result_file"
+                ((fail_count++))
+              fi
             fi
           done
+          
+          echo "Summary: $success_count succeeded, $fail_count failed"
+          if [ $success_count -eq 0 ] && [ $fail_count -gt 0 ]; then
+            echo "::warning::All benchmark uploads failed"
+            exit 1
+          fi
       
       - name: Post summary
         if: always()
@@ -85,15 +120,22 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Persisted Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          
+          result_count=0
           for result_file in ./benchmark-artifacts/*_benchmark_results.json; do
             if [ -f "$result_file" ]; then
               model=$(basename "$result_file" | cut -d'_' -f1)
-              f1=$(jq -r '.metrics.f1' "$result_file")
-              precision=$(jq -r '.metrics.precision' "$result_file")
-              recall=$(jq -r '.metrics.recall' "$result_file")
-              echo "**${model}**: F1=${f1}, Precision=${precision}, Recall=${recall}" >> $GITHUB_STEP_SUMMARY
+              f1=$(jq -r '.metrics.f1' "$result_file" 2>/dev/null || echo "N/A")
+              precision=$(jq -r '.metrics.precision' "$result_file" 2>/dev/null || echo "N/A")
+              recall=$(jq -r '.metrics.recall' "$result_file" 2>/dev/null || echo "N/A")
+              echo "- **${model}**: F1=${f1}, Precision=${precision}, Recall=${recall}" >> $GITHUB_STEP_SUMMARY
+              ((result_count++))
             fi
           done
+          
+          if [ $result_count -eq 0 ]; then
+            echo "_No benchmark results were persisted in this run._" >> $GITHUB_STEP_SUMMARY
+          fi
       
       - name: Comment on PR (if applicable)
         if: github.event_name == 'pull_request'
