@@ -75,12 +75,8 @@ jobs:
           path: benchmark-artifacts/*.json
           retention-days: 90
       
-      - name: Commit benchmark results
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add benchmarks/results/
-          git diff --quiet && git diff --staged --quiet || (git commit -m "📊 Update benchmark results" && git push)
+      # Note: Results are persisted to Supabase by benchmark-persist.yml workflow
+      # No need to commit JSON files to git
       
       - name: Comment on PR with results
         if: github.event_name == 'pull_request'

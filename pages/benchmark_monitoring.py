@@ -18,6 +18,7 @@ Date: 2026-02-03
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+import pandas as pd
 from datetime import datetime, timedelta
 import sys
 import os
@@ -58,10 +59,13 @@ st.markdown("Real-time ML model performance tracking and regression detection")
 def get_data_access():
     """Initialize data access layer with caching."""
     try:
-        return BenchmarkDataAccess()
+        # Use service role key for dashboard (needs full read access)
+        url = os.getenv('SUPABASE_URL')
+        key = os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_ANON_KEY')
+        return BenchmarkDataAccess(supabase_url=url, supabase_key=key)
     except Exception as e:
         st.error(f"Failed to connect to database: {e}")
-        st.info("Please ensure SUPABASE_URL and SUPABASE_ANON_KEY are set in your environment.")
+        st.info("Please ensure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set in your environment.")
         st.stop()
 
 data_access = get_data_access()
@@ -117,11 +121,12 @@ st.sidebar.markdown("**Last Updated:** " + datetime.now().strftime("%Y-%m-%d %H:
 # Tab Layout
 # ============================================================================
 
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📊 Current Snapshot",
     "📈 Performance Trends",
     "🔄 Model Comparison",
-    "⚠️ Regression Detection"
+    "⚠️ Regression Detection",
+    "🕐 Snapshot History"
 ])
 
 # ============================================================================
@@ -491,6 +496,205 @@ with tab4:
                     st.success("✅ No regression detected - performance within expected range")
 
 # ============================================================================
+# ============================================================================
+# TAB 5: Snapshot History & Version Management
+# ============================================================================
+
+with tab5:
+    st.header("Snapshot History & Version Control")
+    
+    st.markdown("""
+    View and manage snapshot versions for each model configuration. 
+    You can checkout (rollback to) previous snapshots to compare or restore older versions.
+    """)
+    
+    # Model selection for history
+    available_models_history = data_access.get_available_models()
+    
+    if not available_models_history:
+        st.info("No models found. Run benchmarks to create snapshots.")
+    else:
+        selected_model_history = st.selectbox(
+            "Select Model",
+            options=available_models_history,
+            key="history_model"
+        )
+        
+        # Get snapshot history for selected model
+        history_df = data_access.get_snapshot_history(
+            model_version=selected_model_history,
+            dataset_version="benchmark-set-v1",  # You might want to make this dynamic
+            prompt_version="v1",  # You might want to make this dynamic
+            environment=env_filter or "github-actions",
+            limit=50
+        )
+        
+        if history_df.empty:
+            st.warning(f"No snapshot history found for {selected_model_history}")
+        else:
+            st.subheader(f"📜 Version History: {selected_model_history}")
+            
+            # Display metrics
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Total Versions", len(history_df))
+            with col2:
+                current_version = history_df[history_df['is_current']]['snapshot_version'].iloc[0] if any(history_df['is_current']) else "N/A"
+                st.metric("Current Version", f"v{current_version}")
+            with col3:
+                baseline_count = sum(history_df['is_baseline'])
+                st.metric("Baselines", baseline_count)
+            with col4:
+                latest_f1 = history_df.iloc[0]['f1_score'] if not history_df.empty else 0
+                st.metric("Latest F1", f"{latest_f1:.4f}")
+            
+            st.markdown("---")
+            
+            # History table with actions
+            st.subheader("📊 All Snapshot Versions")
+            
+            # Format the display
+            display_history = history_df.copy()
+            display_history['created_at_display'] = pd.to_datetime(display_history['created_at']).dt.strftime('%Y-%m-%d %H:%M')
+            display_history['version'] = 'v' + display_history['snapshot_version'].astype(str)
+            display_history['status'] = display_history.apply(
+                lambda row: '✅ CURRENT' if row['is_current'] else ('⭐ BASELINE' if row['is_baseline'] else ''),
+                axis=1
+            )
+            
+            # Select columns to display
+            display_cols = [
+                'version', 'status', 'f1_score', 'precision_score', 'recall_score',
+                'latency_ms', 'created_at_display', 'commit_sha'
+            ]
+            
+            st.dataframe(
+                display_history[display_cols],
+                use_container_width=True,
+                column_config={
+                    "version": "Version",
+                    "status": "Status",
+                    "f1_score": st.column_config.NumberColumn("F1", format="%.4f"),
+                    "precision_score": st.column_config.NumberColumn("Precision", format="%.4f"),
+                    "recall_score": st.column_config.NumberColumn("Recall", format="%.4f"),
+                    "latency_ms": st.column_config.NumberColumn("Latency (ms)", format="%.0f"),
+                    "created_at_display": "Created At",
+                    "commit_sha": st.column_config.TextColumn("Commit", width="small")
+                }
+            )
+            
+            st.markdown("---")
+            
+            # Checkout/Rollback section
+            st.subheader("🔄 Checkout Snapshot Version")
+            
+            col1, col2 = st.columns([2, 1])
+            
+            with col1:
+                available_versions = history_df['snapshot_version'].tolist()
+                selected_version = st.selectbox(
+                    "Select version to checkout",
+                    options=available_versions,
+                    format_func=lambda x: f"v{x}" + (" (Current)" if history_df[history_df['snapshot_version'] == x]['is_current'].iloc[0] else "")
+                )
+                
+                if selected_version:
+                    version_info = history_df[history_df['snapshot_version'] == selected_version].iloc[0]
+                    st.info(f"""
+                    **Version {selected_version} Details:**
+                    - F1 Score: {version_info['f1_score']:.4f}
+                    - Precision: {version_info['precision_score']:.4f}
+                    - Recall: {version_info['recall_score']:.4f}
+                    - Created: {version_info['created_at']}
+                    - Commit: {version_info['commit_sha'][:8]}
+                    """)
+            
+            with col2:
+                st.markdown("### Actions")
+                if st.button("🔄 Checkout This Version", type="primary", key="checkout_btn"):
+                    try:
+                        success = data_access.checkout_snapshot_version(
+                            model_version=selected_model_history,
+                            dataset_version="benchmark-set-v1",
+                            prompt_version="v1",
+                            environment=env_filter or "github-actions",
+                            snapshot_version=selected_version
+                        )
+                        if success:
+                            st.success(f"✅ Successfully checked out version {selected_version}!")
+                            st.info("The dashboard will now show this version as current. Refresh the page to see changes.")
+                            st.rerun()
+                        else:
+                            st.error("Failed to checkout version.")
+                    except Exception as e:
+                        st.error(f"Error checking out version: {str(e)}")
+                
+                if st.button("⭐ Set as Baseline", key="baseline_btn"):
+                    st.info("Baseline setting feature coming soon!")
+            
+            # Version comparison
+            st.markdown("---")
+            st.subheader("📊 Compare Versions")
+            
+            col1, col2, col3 = st.columns([1, 1, 1])
+            
+            with col1:
+                version_a = st.selectbox("Version A", options=available_versions, key="ver_a")
+            
+            with col2:
+                version_b = st.selectbox("Version B", options=available_versions, index=min(1, len(available_versions)-1) if len(available_versions) > 1 else 0, key="ver_b")
+            
+            with col3:
+                st.markdown("###")
+                if st.button("Compare", type="secondary"):
+                    if version_a == version_b:
+                        st.warning("Please select different versions to compare.")
+                    else:
+                        comparison = data_access.compare_snapshot_versions(
+                            model_version=selected_model_history,
+                            dataset_version="benchmark-set-v1",
+                            prompt_version="v1",
+                            environment=env_filter or "github-actions",
+                            version_a=version_a,
+                            version_b=version_b
+                        )
+                        
+                        if not comparison.empty:
+                            st.markdown(f"### Comparison: v{version_a} vs v{version_b}")
+                            
+                            # Format comparison table
+                            comparison_display = comparison.copy()
+                            comparison_display['delta'] = comparison_display.apply(
+                                lambda row: f"{row['delta']:+.4f}" if row['metric'] != 'latency_ms' else f"{row['delta']:+.2f}",
+                                axis=1
+                            )
+                            comparison_display['percent_change'] = comparison_display['percent_change'].apply(
+                                lambda x: f"{x:+.2f}%" if pd.notnull(x) else "N/A"
+                            )
+                            
+                            st.dataframe(
+                                comparison_display,
+                                use_container_width=True,
+                                column_config={
+                                    "metric": "Metric",
+                                    "version_a_value": st.column_config.NumberColumn(f"v{version_a}", format="%.4f"),
+                                    "version_b_value": st.column_config.NumberColumn(f"v{version_b}", format="%.4f"),
+                                    "delta": "Δ",
+                                    "percent_change": "% Change"
+                                }
+                            )
+                            
+                            # Highlight improvements
+                            improvements = comparison_display[
+                                (comparison_display['metric'].isin(['f1_score', 'precision', 'recall'])) &
+                                (comparison_display['delta'].str.contains(r'\+'))
+                            ]
+                            
+                            if not improvements.empty:
+                                st.success(f"✅ {len(improvements)} metric(s) improved in v{version_b}")
+                        else:
+                            st.warning("No comparison data available.")
+
 # Footer
 # ============================================================================
 

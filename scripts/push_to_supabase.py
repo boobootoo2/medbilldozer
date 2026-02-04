@@ -29,9 +29,13 @@ from typing import Any, Dict, Optional
 
 try:
     from supabase import create_client, Client
+    from dotenv import load_dotenv
 except ImportError:
-    print("Error: supabase package not installed. Run: pip install supabase")
+    print("Error: Required packages not installed. Run: pip install supabase python-dotenv")
     sys.exit(1)
+
+# Load environment variables from .env file
+load_dotenv()
 
 # ============================================================================
 # Configuration
