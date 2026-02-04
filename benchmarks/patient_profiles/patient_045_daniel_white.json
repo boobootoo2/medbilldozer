@@ -1,0 +1,45 @@
+{
+    "patient_id": "P045",
+    "patient_name": "Daniel White",
+    "age": 35,
+    "sex": "M",
+    "known_conditions": [
+        "Seasonal allergies"
+    ],
+    "prior_surgical_history": [],
+    "cardiac_history": "No cardiac symptoms. Recent EKG normal. No chest pain, palpitations, or dyspnea. Active lifestyle, runs regularly.",
+    "visit_type": "Primary care routine visit",
+    "expected_issues": [{
+        "type": "procedure_inconsistent_with_health_history",
+        "severity": "high",
+        "description": "Cardiac stress test billed for asymptomatic patient with no cardiac indications",
+        "requires_domain_knowledge": true,
+        "cpt_code": "93015"
+    }],
+    "documents": [{
+            "document_id": "DOC_P045_001",
+            "document_type": "primary_care_note",
+            "content": "35-year-old male presents for annual physical. Patient reports feeling excellent, exercises regularly (runs 3-4 miles, 4 times per week). No chest pain, no palpitations, no shortness of breath. No family history of premature CAD. Non-smoker. Vitals: BP 118/72, HR 58 (athletic), regular rhythm. Physical exam: Heart RRR, no murmurs. Lungs clear. No concerning findings. Recent lipid panel excellent: Total cholesterol 165, LDL 88, HDL 62. Patient is low risk, no indication for cardiac stress testing."
+        },
+        {
+            "document_id": "DOC_P045_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99396",
+                    "description": "Periodic comprehensive preventive medicine, established patient, age 40-64",
+                    "charge": 225.00
+                },
+                {
+                    "cpt_code": "80061",
+                    "description": "Lipid panel",
+                    "charge": 45.00
+                },
+                {
+                    "cpt_code": "93015",
+                    "description": "Cardiovascular stress test using maximal or submaximal treadmill",
+                    "charge": 425.00
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,70 @@
+{
+    "patient_id": "P036",
+    "patient_name": "Sarah Johnson",
+    "age": 38,
+    "sex": "F",
+    "known_conditions": [
+        "Migraine headaches",
+        "Anxiety"
+    ],
+    "prior_surgical_history": [{
+        "procedure": "Cesarean section",
+        "year": 2020,
+        "indication": "Delivery of healthy infant"
+    }],
+    "diabetes_history": "No diabetes. HbA1c consistently normal (most recent 5.2% in 2025). Fasting glucose 92. No family history of diabetes.",
+    "visit_type": "Neurology follow-up for migraines",
+    "expected_issues": [{
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Diabetic retinopathy screening billed for non-diabetic patient",
+            "requires_domain_knowledge": true,
+            "cpt_code": "92250"
+        },
+        {
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Continuous glucose monitoring setup billed for patient without diabetes",
+            "requires_domain_knowledge": true,
+            "cpt_code": "95251"
+        },
+        {
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "critical",
+            "description": "Diabetic foot exam billed for non-diabetic patient",
+            "requires_domain_knowledge": true,
+            "cpt_code": "G0245"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P036_001",
+            "document_type": "neurology_consultation_note",
+            "content": "38-year-old female with history of migraine headaches presents for follow-up. Migraines occur 2-3 times per month, responsive to sumatriptan. No aura, no neurological deficits. Patient reports excellent overall health. Recent labs: HbA1c 5.2%, fasting glucose 92, normal metabolic panel. No diabetes, no cardiovascular disease. Physical exam: Alert and oriented, cranial nerves II-XII intact, normal sensation and strength in all extremities. Plan: Continue sumatriptan for acute migraine treatment, consider propranolol for prophylaxis if frequency increases."
+        },
+        {
+            "document_id": "DOC_P036_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99214",
+                    "description": "Office visit, established patient, level 4",
+                    "charge": 185.00
+                },
+                {
+                    "cpt_code": "92250",
+                    "description": "Fundus photography with interpretation and report",
+                    "charge": 125.00
+                },
+                {
+                    "cpt_code": "95251",
+                    "description": "Continuous glucose monitoring of interstitial tissue fluid via subcutaneous sensor",
+                    "charge": 275.00
+                },
+                {
+                    "cpt_code": "G0245",
+                    "description": "Initial physician evaluation and management of diabetic patient with diabetic sensory neuropathy",
+                    "charge": 95.00
+                }
+            ]
+        }
+    ]
+}

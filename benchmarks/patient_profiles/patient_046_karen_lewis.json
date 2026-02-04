@@ -1,0 +1,59 @@
+{
+    "patient_id": "P046",
+    "patient_name": "Karen Lewis",
+    "age": 53,
+    "sex": "F",
+    "known_conditions": [
+        "Osteoarthritis",
+        "Hyperlipidemia"
+    ],
+    "prior_surgical_history": [],
+    "infection_history": "No documented infection. All vital signs normal. No fever, no elevated WBC.",
+    "visit_type": "Orthopedic follow-up for knee arthritis",
+    "expected_issues": [{
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "critical",
+            "description": "IV antibiotic administration billed when no infection documented",
+            "requires_domain_knowledge": true,
+            "cpt_code": "96365"
+        },
+        {
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Additional IV antibiotic push billed without infection diagnosis",
+            "requires_domain_knowledge": true,
+            "cpt_code": "96374"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P046_001",
+            "document_type": "orthopedic_consultation_note",
+            "content": "53-year-old female presents for follow-up of bilateral knee osteoarthritis. Patient reports chronic, stable knee pain worse with activity. No signs of infection. Vitals: Temp 98.4F, BP 128/78, HR 72. No fever. Physical exam: Bilateral knee crepitus, no warmth, no erythema, no effusion. Recent labs: WBC 6.8 (normal), no left shift. X-rays show moderate osteoarthritis both knees. Assessment: Osteoarthritis knees, stable. Plan: Continue NSAIDs, physical therapy, consider viscosupplementation. No infection present."
+        },
+        {
+            "document_id": "DOC_P046_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99214",
+                    "description": "Office visit, established patient, level 4",
+                    "charge": 185.00
+                },
+                {
+                    "cpt_code": "73562",
+                    "description": "Radiologic examination, knee; 3 views",
+                    "charge": 125.00
+                },
+                {
+                    "cpt_code": "96365",
+                    "description": "Intravenous infusion, for therapy, prophylaxis, or diagnosis, initial, up to 1 hour",
+                    "charge": 275.00
+                },
+                {
+                    "cpt_code": "96374",
+                    "description": "Therapeutic, prophylactic, or diagnostic injection, intravenous push",
+                    "charge": 165.00
+                }
+            ]
+        }
+    ]
+}

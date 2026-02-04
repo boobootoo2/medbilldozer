@@ -1,0 +1,54 @@
+{
+    "patient_id": "P039",
+    "patient_name": "Robert Harris",
+    "age": 52,
+    "sex": "M",
+    "known_conditions": [
+        "Hypertension",
+        "GERD"
+    ],
+    "prior_surgical_history": [],
+    "diabetes_history": "No diabetes. HbA1c 5.4%, fasting glucose 95. Never been diagnosed with diabetes.",
+    "visit_type": "Primary care visit",
+    "expected_issues": [{
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Insulin pump training billed for patient without diabetes",
+            "requires_domain_knowledge": true,
+            "cpt_code": "95251"
+        },
+        {
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Diabetes self-management training billed for non-diabetic patient",
+            "requires_domain_knowledge": true,
+            "cpt_code": "G0108"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P039_001",
+            "document_type": "primary_care_note",
+            "content": "52-year-old male presents for medication refill. PMH: HTN, GERD. Current medications: lisinopril, omeprazole. Patient reports excellent control of both conditions. Recent labs: HbA1c 5.4%, fasting glucose 95, normal metabolic panel. No diabetes. BP 124/78. Continue current medications."
+        },
+        {
+            "document_id": "DOC_P039_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99212",
+                    "description": "Office visit, established patient, level 2",
+                    "charge": 95.00
+                },
+                {
+                    "cpt_code": "95251",
+                    "description": "Continuous glucose monitoring setup and patient training",
+                    "charge": 275.00
+                },
+                {
+                    "cpt_code": "G0108",
+                    "description": "Diabetes outpatient self-management training services, individual, per 30 minutes",
+                    "charge": 125.00
+                }
+            ]
+        }
+    ]
+}

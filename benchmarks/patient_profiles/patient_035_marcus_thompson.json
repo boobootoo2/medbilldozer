@@ -1,0 +1,64 @@
+{
+    "patient_id": "P035",
+    "patient_name": "Marcus Thompson",
+    "age": 56,
+    "sex": "M",
+    "known_conditions": [
+        "Hypertension",
+        "Hyperlipidemia",
+        "Osteoarthritis"
+    ],
+    "prior_surgical_history": [{
+        "procedure": "Right knee arthroscopy",
+        "year": 2023,
+        "indication": "Meniscal tear"
+    }],
+    "cancer_history": "No history of cancer. Last colonoscopy 2024 negative. PSA normal. No suspicious findings on any imaging.",
+    "visit_type": "Primary care follow-up",
+    "expected_issues": [{
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "critical",
+            "description": "Chemotherapy administration billed for patient with no cancer diagnosis",
+            "requires_domain_knowledge": true,
+            "cpt_code": "96413"
+        },
+        {
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "critical",
+            "description": "Radiation treatment planning billed for patient without malignancy",
+            "requires_domain_knowledge": true,
+            "cpt_code": "77263"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P035_001",
+            "document_type": "primary_care_note",
+            "content": "56-year-old male presents for routine follow-up of HTN and hyperlipidemia. Patient reports feeling well, no new complaints. Current medications: lisinopril 10mg daily, atorvastatin 20mg daily. BP 132/78. Labs reviewed: Cr 0.9, normal CBC, lipid panel improved on statin. Recent colonoscopy (2024) was negative, no polyps. No cancer history, no concerning symptoms. Assessment: HTN and hyperlipidemia well-controlled. Continue current medications, follow up in 6 months."
+        },
+        {
+            "document_id": "DOC_P035_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99213",
+                    "description": "Office visit, established patient, level 3",
+                    "charge": 150.00
+                },
+                {
+                    "cpt_code": "80053",
+                    "description": "Comprehensive metabolic panel",
+                    "charge": 35.00
+                },
+                {
+                    "cpt_code": "96413",
+                    "description": "Chemotherapy administration, intravenous infusion technique, up to 1 hour",
+                    "charge": 1850.00
+                },
+                {
+                    "cpt_code": "77263",
+                    "description": "Therapeutic radiology treatment planning; complex",
+                    "charge": 2200.00
+                }
+            ]
+        }
+    ]
+}
