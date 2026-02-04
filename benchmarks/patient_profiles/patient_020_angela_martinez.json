@@ -1,0 +1,53 @@
+{
+    "patient_id": "P020",
+    "patient_name": "Angela Martinez",
+    "age": 52,
+    "sex": "F",
+    "known_conditions": [
+        "Hypertension",
+        "Minor ankle sprain"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Outpatient urgent care - patient self-arrived by car",
+    "expected_issues": [{
+            "type": "care_setting_inconsistency",
+            "severity": "critical",
+            "description": "Ambulance transport billed but documentation shows patient self-arrived by personal vehicle",
+            "requires_domain_knowledge": true,
+            "cpt_code": "A0428"
+        },
+        {
+            "type": "care_setting_inconsistency",
+            "severity": "critical",
+            "description": "Inpatient hospital stay billed without admission note - outpatient visit only",
+            "requires_domain_knowledge": true,
+            "cpt_code": "99223"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P020_001",
+            "document_type": "urgent_care_note",
+            "content": "52-year-old female self-presented to urgent care by personal vehicle for ankle sprain evaluation. Outpatient visit only. Discharged home walking same day with ankle brace."
+        },
+        {
+            "document_id": "DOC_P020_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "A0428",
+                    "description": "Ambulance service, basic life support, non-emergency transport",
+                    "charge": 950.00
+                },
+                {
+                    "cpt_code": "99223",
+                    "description": "Initial hospital inpatient care, high complexity",
+                    "charge": 420.00
+                },
+                {
+                    "cpt_code": "99282",
+                    "description": "Emergency department visit level 2",
+                    "charge": 285.00
+                }
+            ]
+        }
+    ]
+}
