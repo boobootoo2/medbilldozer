@@ -76,11 +76,12 @@ def push_patient_benchmark(
     avg_latency_ms = results.get('avg_latency_ms', 0.0)
     
     # Build metrics JSONB
+    # Note: domain_knowledge_detection_rate comes as percentage (0-100) from JSON, convert to decimal (0-1)
     metrics = {
         "precision": round(avg_precision, 4),
         "recall": round(avg_recall, 4),
         "f1": round(avg_f1, 4),
-        "domain_knowledge_detection_rate": round(domain_knowledge_rate, 4),
+        "domain_knowledge_detection_rate": round(domain_knowledge_rate / 100.0, 4),  # Convert % to decimal
         "latency_ms": round(avg_latency_ms, 2),
         "total_patients": total_patients,
         "successful_analyses": successful,
@@ -104,22 +105,6 @@ def push_patient_benchmark(
             })
         metrics['patient_results'] = patient_results
     
-    # Insert transaction record
-    transaction_data = {
-        "model_version": model_version,
-        "benchmark_type": "patient_cross_document",
-        "dataset_version": "patient-profiles-v1",
-        "prompt_version": "cross-document-v1",
-        "environment": environment,
-        "commit_sha": commit_sha,
-        "branch_name": branch_name,
-        "triggered_by": triggered_by,
-        "metrics": json.dumps(metrics),
-        "error_count": total_patients - successful,
-        "success_count": successful,
-        "created_at": datetime.utcnow().isoformat()
-    }
-    
     print(f"📤 Pushing patient benchmark to Supabase...")
     print(f"   Model: {model_version}")
     print(f"   Patients: {successful}/{total_patients}")
@@ -127,30 +112,30 @@ def push_patient_benchmark(
     print(f"   F1 Score: {avg_f1:.3f}")
     
     try:
-        # Insert transaction
-        trans_response = client.table('benchmark_transactions').insert(transaction_data).execute()
-        transaction_id = trans_response.data[0]['id']
-        
-        print(f"✅ Transaction created: {transaction_id}")
-        
-        # Upsert snapshot using stored procedure
-        snapshot_data = {
+        # Use the stored procedure to insert transaction and upsert snapshot
+        # This matches the actual function signature in schema_benchmark_monitoring.sql
+        upsert_params = {
+            "p_commit_sha": commit_sha or "unknown",
+            "p_branch_name": branch_name or "develop",
             "p_model_version": model_version,
+            "p_model_provider": model_version.split()[0].lower() if ' ' in model_version else "unknown",  # Extract provider from model name
             "p_dataset_version": "patient-profiles-v1",
+            "p_dataset_size": total_patients,
             "p_prompt_version": "cross-document-v1",
             "p_environment": environment,
-            "p_transaction_id": transaction_id,
-            "p_commit_sha": commit_sha,
-            "p_metrics": json.dumps(metrics),
-            "p_f1_score": avg_f1,
-            "p_precision_score": avg_precision,
-            "p_recall_score": avg_recall,
-            "p_latency_ms": avg_latency_ms,
-            "p_cost_per_analysis": 0.0  # Can be calculated if needed
+            "p_run_id": f"patient-benchmark-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
+            "p_triggered_by": triggered_by or "manual",
+            "p_metrics": metrics,  # Pass as dict, Supabase will convert to JSONB
+            "p_duration_seconds": round(avg_latency_ms * total_patients / 1000.0, 2),
+            "p_tags": ["patient-benchmark", "cross-document", "domain-knowledge"],
+            "p_notes": f"Patient cross-document benchmark: {successful}/{total_patients} successful, {domain_knowledge_rate:.1f}% domain detection"
         }
         
-        client.rpc('upsert_benchmark_result', snapshot_data).execute()
-        print(f"✅ Snapshot upserted for {model_version}")
+        response = client.rpc('upsert_benchmark_result', upsert_params).execute()
+        transaction_id = response.data
+        
+        print(f"✅ Benchmark result upserted successfully")
+        print(f"   Transaction ID: {transaction_id}")
         
         return transaction_id
         
