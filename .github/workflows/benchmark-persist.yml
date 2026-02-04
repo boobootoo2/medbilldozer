@@ -35,7 +35,7 @@ jobs:
       - name: Download benchmark results
         id: download-artifact
         continue-on-error: true
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: run_benchmarks.yml
           name: benchmark-results
