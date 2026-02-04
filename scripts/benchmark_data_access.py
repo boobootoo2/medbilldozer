@@ -22,8 +22,14 @@ import pandas as pd
 
 try:
     from supabase import create_client, Client
-except ImportError:
-    print("Warning: supabase package not installed")
+except ImportError as e:
+    print(f"Error importing supabase: {e}")
+    print("Please install: pip install supabase>=2.3.0")
+    # Define dummy types so module still loads
+
+    def create_client(*args, **kwargs):
+        raise ImportError("supabase package not installed. Run: pip install supabase>=2.3.0")
+
     Client = Any
 
 # ============================================================================
