@@ -398,7 +398,7 @@ Focus especially on gender-specific and age-specific procedures that require med
                 result = PatientBenchmarkResult(
                     patient_id=profile.patient_id,
                     patient_name=profile.name,
-                    model_name=self.model,
+                    model_name=self._get_precise_model_name(),
                     documents_analyzed=len(document_names),
                     analysis_latency_ms=latency_ms,
                     expected_issues=expected_issues,
@@ -420,7 +420,7 @@ Focus especially on gender-specific and age-specific procedures that require med
                 result = PatientBenchmarkResult(
                     patient_id=profile.patient_id,
                     patient_name=profile.name,
-                    model_name=self.model,
+                    model_name=self._get_precise_model_name(),
                     documents_analyzed=len(document_names),
                     analysis_latency_ms=latency_ms,
                     expected_issues=expected_issues,
@@ -450,7 +450,7 @@ Focus especially on gender-specific and age-specific procedures that require med
         avg_latency = sum(r.analysis_latency_ms for r in results) / len(results) if results else 0.0
         
         metrics = PatientBenchmarkMetrics(
-            model_name=self.model,
+            model_name=self._get_precise_model_name(),
             total_patients=len(profile_files),
             successful_analyses=successful,
             avg_precision=avg_precision,

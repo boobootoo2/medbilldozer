@@ -508,9 +508,10 @@ class BenchmarkDataAccess:
     # ========================================================================
     
     def get_available_models(self, environment: Optional[str] = None) -> List[str]:
-        """Get list of unique model versions."""
+        """Get list of unique model versions with current snapshots."""
         query = self.client.table('benchmark_snapshots') \
-            .select('model_version')
+            .select('model_version') \
+            .eq('is_current', True)
         
         if environment:
             query = query.eq('environment', environment)
