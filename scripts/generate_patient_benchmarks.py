@@ -124,26 +124,45 @@ class PatientBenchmarkRunner:
         return model_names.get(self.model, self.model)
     
     def load_patient_profile(self, profile_path: Path) -> tuple:
-        """Load patient profile and expected issues."""
+        """Load patient profile and expected issues. Supports both old and new JSON formats."""
         with open(profile_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
-        profile = PatientProfile(
-            patient_id=data['patient_id'],
-            name=data['name'],
-            age=data['demographics']['age'],
-            sex=data['demographics']['sex'],
-            date_of_birth=data['demographics']['date_of_birth'],
-            conditions=data['medical_history']['conditions'],
-            allergies=data['medical_history']['allergies'],
-            surgeries=data['medical_history']['surgeries']
-        )
+        # Handle both old format (nested) and new format (flat)
+        if 'demographics' in data:
+            # Old format with nested structure
+            profile = PatientProfile(
+                patient_id=data['patient_id'],
+                name=data['name'],
+                age=data['demographics']['age'],
+                sex=data['demographics']['sex'],
+                date_of_birth=data['demographics']['date_of_birth'],
+                conditions=data['medical_history']['conditions'],
+                allergies=data['medical_history']['allergies'],
+                surgeries=data['medical_history']['surgeries']
+            )
+            document_names = data.get('documents', [])
+        else:
+            # New format with flat structure
+            profile = PatientProfile(
+                patient_id=data['patient_id'],
+                name=data.get('patient_name', data.get('name', 'Unknown')),
+                age=data['age'],
+                sex=data['sex'],
+                date_of_birth=data.get('date_of_birth', 'Unknown'),
+                conditions=data.get('known_conditions', []),
+                allergies=data.get('allergies', []),
+                surgeries=[
+                    s.get('procedure', s) if isinstance(s, dict) else s
+                    for s in data.get('prior_surgical_history', [])
+                ]
+            )
+            # Return document dicts (will be processed later to extract content)
+            document_names = data.get('documents', [])
         
         expected_issues = [
             ExpectedIssue(**issue) for issue in data.get('expected_issues', [])
         ]
-        
-        document_names = data.get('documents', [])
         
         return profile, expected_issues, document_names
     
@@ -182,9 +201,24 @@ class PatientBenchmarkRunner:
         
         try:
             # Load all document texts
+            # Handle both old format (filenames) and new format (embedded content)
             doc_texts = []
-            for doc_name in documents:
-                doc_texts.append(self.load_document_text(doc_name))
+            for doc_item in documents:
+                if isinstance(doc_item, str):
+                    # Old format: filename to load
+                    if doc_item.strip():  # Not empty content string
+                        try:
+                            doc_texts.append(self.load_document_text(doc_item))
+                        except FileNotFoundError:
+                            # New format: content embedded directly
+                            doc_texts.append(doc_item)
+                    else:
+                        doc_texts.append(doc_item)
+                elif isinstance(doc_item, dict):
+                    # New format: document dict with content
+                    doc_texts.append(doc_item.get('content', ''))
+                else:
+                    doc_texts.append(str(doc_item))
             
             # Combine documents with patient context for cross-document analysis
             patient_context = f"""
