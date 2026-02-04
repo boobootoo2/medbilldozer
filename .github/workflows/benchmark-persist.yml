@@ -33,6 +33,8 @@ jobs:
           pip install supabase python-dotenv requests
       
       - name: Download benchmark results
+        id: download-artifact
+        continue-on-error: true
         uses: dawidd6/action-download-artifact@v3
         with:
           workflow: run_benchmarks.yml
@@ -43,16 +45,28 @@ jobs:
       
       - name: Verify benchmark results exist
         run: |
-          echo "Benchmark results found:"
+          echo "Checking for benchmark results..."
+          
+          if [ "${{ steps.download-artifact.outcome }}" != "success" ]; then
+            echo "⚠️  Artifact download failed (artifact may not exist)"
+            echo "This is normal if:"
+            echo "  - Benchmark workflow didn't complete successfully"
+            echo "  - Benchmark workflow didn't generate any results"
+            echo "  - Artifact has expired (90 day retention)"
+            echo ""
+            echo "Skipping persistence for this run."
+            exit 0
+          fi
+          
           ls -la ./benchmark-artifacts/ || echo "No artifacts directory"
           
           if [ ! -d "./benchmark-artifacts" ] || [ -z "$(ls -A ./benchmark-artifacts/*.json 2>/dev/null)" ]; then
-            echo "⚠️  No benchmark result files found"
-            echo "This workflow requires artifacts from run_benchmarks.yml"
-            exit 1
+            echo "⚠️  No benchmark result files found in artifacts"
+            echo "Skipping persistence for this run."
+            exit 0
           fi
           
-          echo "Files to process:"
+          echo "✅ Found benchmark results:"
           ls ./benchmark-artifacts/*.json
       
       - name: Push to Supabase
