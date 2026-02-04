@@ -307,7 +307,7 @@ with tab2:
                     height=400
                 )
                 
-                st.plotly_chart(fig_f1, use_container_width=True)
+                st.plotly_chart(fig_f1, use_container_width=True, key=f"f1_chart_{model_version}")
             
             with col2:
                 # Run count
@@ -327,7 +327,7 @@ with tab2:
                     height=400
                 )
                 
-                st.plotly_chart(fig_count, use_container_width=True)
+                st.plotly_chart(fig_count, use_container_width=True, key=f"count_chart_{model_version}")
             
             st.markdown("---")
 
@@ -385,7 +385,7 @@ with tab3:
                 )
             )
             
-            st.plotly_chart(fig_comparison, use_container_width=True)
+            st.plotly_chart(fig_comparison, use_container_width=True, key="comparison_chart")
             
             # Summary statistics
             st.subheader("📊 Comparison Statistics")
