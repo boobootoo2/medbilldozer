@@ -42,7 +42,7 @@ Successfully integrated the Profile Editor feature into medBillDozer using sideb
   - JSON schema examples for all data models
   - Reference for UserProfile, InsurancePlan, Provider, etc.
 
-- **`profile_integration_example.py`**
+- **`examples/profile_integration_example.py`**
   - Copy/paste code snippets for integration
   - Multiple integration patterns with examples
   - Usage examples for accessing profile data
@@ -196,7 +196,7 @@ medbilldozer/
 ├── PROFILE_EDITOR_QUICKSTART.md        # NEW: User quick start guide
 ├── PROFILE_EDITOR_INTEGRATION.md       # NEW: Developer integration guide
 ├── PROFILE_EDITOR_CHANGELOG.md         # NEW: This file
-└── profile_integration_example.py      # NEW: Code examples
+└── examples/profile_integration_example.py      # NEW: Code examples
 ```
 
 ---
@@ -311,7 +311,7 @@ os.replace(tmp_path, final_path)  # Atomic operation
 
 - **Quick Start:** [PROFILE_EDITOR_QUICKSTART.md](./PROFILE_EDITOR_QUICKSTART.md)
 - **Integration Guide:** [PROFILE_EDITOR_INTEGRATION.md](./PROFILE_EDITOR_INTEGRATION.md)
-- **Code Examples:** [profile_integration_example.py](./profile_integration_example.py)
+- **Code Examples:** [examples/profile_integration_example.py](./examples/profile_integration_example.py)
 - **JSON Schemas:** [data/schema_examples.json](./data/schema_examples.json)
 - **Main README:** [README.md](./README.md)
 

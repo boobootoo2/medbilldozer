@@ -33,3 +33,12 @@ data/*.json
 benchmarks/results/*.json
 !benchmarks/results/.gitkeep
 # Test bandit integration
+
+# Build artifacts directory
+.artifacts/
+*.json.bak
+*.csv.bak
+
+# Example outputs
+examples/output/
+examples/*.log
