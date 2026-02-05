@@ -205,8 +205,8 @@ with tab1:
         # Full snapshot table
         st.subheader("📋 All Active Configurations")
         
-        # Format display
-        display_df = snapshots_df[[
+        # Format display - select available columns
+        base_cols = [
             'model_version',
             'dataset_version',
             'prompt_version',
@@ -217,20 +217,30 @@ with tab1:
             'latency_ms',
             'cost_per_analysis',
             'created_at'
-        ]].copy()
+        ]
         
+        # Add triggered_by if available
+        if 'triggered_by' in snapshots_df.columns:
+            base_cols.insert(-1, 'triggered_by')  # Insert before created_at
+        
+        display_df = snapshots_df[base_cols].copy()
         display_df['created_at'] = display_df['created_at'].dt.strftime('%Y-%m-%d %H:%M')
+        
+        column_config = {
+            "f1_score": st.column_config.NumberColumn("F1", format="%.4f"),
+            "precision_score": st.column_config.NumberColumn("Precision", format="%.4f"),
+            "recall_score": st.column_config.NumberColumn("Recall", format="%.4f"),
+            "latency_ms": st.column_config.NumberColumn("Latency (ms)", format="%.0f"),
+            "cost_per_analysis": st.column_config.NumberColumn("Cost", format="$%.4f"),
+        }
+        
+        if 'triggered_by' in snapshots_df.columns:
+            column_config["triggered_by"] = st.column_config.TextColumn("Triggered By", width="medium")
         
         st.dataframe(
             display_df,
             use_container_width=True,
-            column_config={
-                "f1_score": st.column_config.NumberColumn("F1", format="%.4f"),
-                "precision_score": st.column_config.NumberColumn("Precision", format="%.4f"),
-                "recall_score": st.column_config.NumberColumn("Recall", format="%.4f"),
-                "latency_ms": st.column_config.NumberColumn("Latency (ms)", format="%.0f"),
-                "cost_per_analysis": st.column_config.NumberColumn("Cost", format="$%.4f"),
-            }
+            column_config=column_config
         )
 
 # ============================================================================
@@ -566,22 +576,37 @@ with tab5:
             # Select columns to display
             display_cols = [
                 'version', 'status', 'f1_score', 'precision_score', 'recall_score',
-                'latency_ms', 'created_at_display', 'commit_sha'
+                'latency_ms', 'created_at_display'
             ]
+            
+            # Add triggered_by if available
+            if 'triggered_by' in display_history.columns:
+                display_cols.append('triggered_by')
+            
+            # Add commit_sha if available
+            if 'commit_sha' in display_history.columns:
+                display_cols.append('commit_sha')
+            
+            column_config = {
+                "version": "Version",
+                "status": "Status",
+                "f1_score": st.column_config.NumberColumn("F1", format="%.4f"),
+                "precision_score": st.column_config.NumberColumn("Precision", format="%.4f"),
+                "recall_score": st.column_config.NumberColumn("Recall", format="%.4f"),
+                "latency_ms": st.column_config.NumberColumn("Latency (ms)", format="%.0f"),
+                "created_at_display": "Created At",
+            }
+            
+            if 'triggered_by' in display_history.columns:
+                column_config["triggered_by"] = st.column_config.TextColumn("Triggered By", width="medium")
+            
+            if 'commit_sha' in display_history.columns:
+                column_config["commit_sha"] = st.column_config.TextColumn("Commit", width="small")
             
             st.dataframe(
                 display_history[display_cols],
                 use_container_width=True,
-                column_config={
-                    "version": "Version",
-                    "status": "Status",
-                    "f1_score": st.column_config.NumberColumn("F1", format="%.4f"),
-                    "precision_score": st.column_config.NumberColumn("Precision", format="%.4f"),
-                    "recall_score": st.column_config.NumberColumn("Recall", format="%.4f"),
-                    "latency_ms": st.column_config.NumberColumn("Latency (ms)", format="%.0f"),
-                    "created_at_display": "Created At",
-                    "commit_sha": st.column_config.TextColumn("Commit", width="small")
-                }
+                column_config=column_config
             )
             
             st.markdown("---")

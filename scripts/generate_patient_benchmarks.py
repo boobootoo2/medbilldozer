@@ -69,6 +69,12 @@ class PatientBenchmarkResult:
     false_negatives: int
     domain_knowledge_score: float  # % of domain-knowledge issues detected
     error_message: Optional[str] = None
+    # NEW: Domain subcategory breakdown
+    domain_breakdown: Dict[str, Dict[str, float]] = field(default_factory=dict)
+    # NEW: Recall-oriented metrics
+    domain_recall: float = 0.0
+    generic_recall: float = 0.0
+    cross_document_recall: float = 0.0
 
 
 @dataclass
@@ -84,13 +90,35 @@ class PatientBenchmarkMetrics:
     avg_latency_ms: float
     individual_results: List[PatientBenchmarkResult]
     generated_at: str
+    # NEW: Domain subcategory breakdown
+    domain_breakdown: Dict[str, Dict[str, float]] = field(default_factory=dict)
+    # NEW: Parent category aggregations (for statistical stability)
+    aggregated_categories: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    # NEW: Recall-oriented metrics (PRIMARY optimization targets)
+    domain_recall: float = 0.0
+    domain_precision: float = 0.0
+    generic_recall: float = 0.0
+    cross_document_recall: float = 0.0
 
 
 class PatientBenchmarkRunner:
     """Runs cross-document patient-level benchmarks."""
     
-    def __init__(self, model: str):
+    # High-signal subset: Obvious domain violations for rapid recall testing
+    HIGH_SIGNAL_SUBSET = [
+        'patient_001',  # Male with obstetric ultrasound
+        'patient_002',  # Male with Pap smear
+        'patient_006',  # 15yo with screening mammogram
+        'patient_011',  # 8yo with screening colonoscopy
+        'patient_031',  # Right leg amputation + right knee billing
+        'patient_032',  # Appendectomy + appendix removal rebilling
+        'patient_033',  # Bilateral mastectomy + breast procedure billing
+        'patient_035',  # Hysterectomy + uterine procedure billing
+    ]
+    
+    def __init__(self, model: str, subset: Optional[str] = None):
         self.model = model
+        self.subset = subset
         self.benchmarks_dir = PROJECT_ROOT / "benchmarks"
         self.profiles_dir = self.benchmarks_dir / "patient_profiles"
         self.inputs_dir = self.benchmarks_dir / "inputs"
@@ -448,19 +476,130 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
         else:
             return 'medical_bill'
     
+    def _aggregate_parent_categories(self, aggregated: Dict[str, Dict[str, float]]) -> Dict[str, Dict[str, Any]]:
+        """
+        Create parent category aggregations for statistically underpowered subcategories.
+        
+        This improves statistical stability by combining related subcategories.
+        Parent metrics are computed from TOTALS, not averages of recalls, to ensure
+        mathematically correct aggregation.
+        
+        Example: age_inappropriate_service combines:
+        - age_inappropriate
+        - age_inappropriate_procedure  
+        - age_inappropriate_screening
+        
+        Args:
+            aggregated: Per-category breakdown from _aggregate_domain_breakdown
+            
+        Returns:
+            Dictionary with parent categories containing subtype breakdowns
+        """
+        parent_categories = {}
+        
+        # Define parent category groupings
+        AGE_SUBTYPES = ['age_inappropriate', 'age_inappropriate_procedure', 'age_inappropriate_screening']
+        
+        # Aggregate age-inappropriate service (parent category)
+        age_subtypes_present = [cat for cat in AGE_SUBTYPES if cat in aggregated]
+        
+        if age_subtypes_present:
+            # Sum totals across all age subtypes
+            total_detected = sum(aggregated[cat]['total_detected'] for cat in age_subtypes_present)
+            total_missed = sum(aggregated[cat]['total_missed'] for cat in age_subtypes_present)
+            total_cases = sum(aggregated[cat]['total_cases'] for cat in age_subtypes_present)
+            
+            # Calculate parent metrics from totals (NOT from averages)
+            precision = total_detected / (total_detected + 0) if total_detected > 0 else 0.0  # No FP tracking yet
+            recall = total_detected / total_cases if total_cases > 0 else 0.0
+            f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+            
+            # Build parent category with subtype details
+            parent_categories['age_inappropriate_service'] = {
+                'precision': round(precision, 4),
+                'recall': round(recall, 4),
+                'f1': round(f1, 4),
+                'total_detected': total_detected,
+                'total_missed': total_missed,
+                'total_cases': total_cases,
+                'subtypes': {
+                    cat: {
+                        'recall': aggregated[cat]['recall'],
+                        'detected': aggregated[cat]['total_detected'],
+                        'total': aggregated[cat]['total_cases']
+                    }
+                    for cat in age_subtypes_present
+                }
+            }
+        
+        return parent_categories
+    
+    def _aggregate_domain_breakdown(self, results: List[PatientBenchmarkResult]) -> Dict[str, Dict[str, float]]:
+        """
+        Aggregate domain breakdown across all patient results.
+        
+        Returns:
+            Dictionary mapping category to aggregated precision/recall/f1
+        """
+        category_totals = {}
+        
+        for result in results:
+            if result.error_message:
+                continue
+                
+            for category, metrics in result.domain_breakdown.items():
+                if category not in category_totals:
+                    category_totals[category] = {
+                        'total_tp': 0,
+                        'total_fn': 0,
+                        'total_fp': 0,
+                        'total_cases': 0
+                    }
+                
+                category_totals[category]['total_tp'] += metrics['true_positives']
+                category_totals[category]['total_fn'] += metrics['false_negatives']
+                category_totals[category]['total_cases'] += metrics['total']
+        
+        # Calculate final metrics per category
+        aggregated = {}
+        for category, totals in category_totals.items():
+            tp = totals['total_tp']
+            fn = totals['total_fn']
+            total = totals['total_cases']
+            
+            precision = tp / (tp + totals['total_fp']) if (tp + totals['total_fp']) > 0 else 0.0
+            recall = tp / total if total > 0 else 0.0
+            f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+            
+            aggregated[category] = {
+                'precision': round(precision, 4),
+                'recall': round(recall, 4),
+                'f1': round(f1, 4),
+                'total_detected': tp,
+                'total_missed': fn,
+                'total_cases': total
+            }
+        
+        return aggregated
+    
     def evaluate_detection(self, expected: List[ExpectedIssue], detected: List[Dict]) -> tuple:
         """
-        Evaluate detection accuracy.
-        Returns: (true_positives, false_positives, false_negatives, domain_knowledge_score)
+        Evaluate detection accuracy with domain subcategory tracking.
+        
+        Returns: (true_positives, false_positives, false_negatives, domain_knowledge_score, 
+                  domain_breakdown, domain_recall, generic_recall, cross_document_recall)
         """
         if not expected:
             # No issues expected, any detection is false positive
-            return 0, len(detected), 0, 0.0
+            return 0, len(detected), 0, 0.0, {}, 0.0, 0.0, 0.0
         
         # Track which expected issues were matched to avoid double-counting
         matched_expected_indices = set()
         matched_detected_indices = set()
         domain_knowledge_detections = 0
+        
+        # NEW: Track detection by domain subcategory
+        category_stats = {}  # {category: {'tp': X, 'fn': Y, 'total': Z}}
         
         # For each detected issue, try to match it to an expected issue
         for det_idx, detected_issue in enumerate(detected):
@@ -489,7 +628,44 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
                     matched_detected_indices.add(det_idx)
                     if expected_issue.requires_domain_knowledge:
                         domain_knowledge_detections += 1
+                    
+                    # NEW: Track by category
+                    category = expected_issue.type
+                    if category not in category_stats:
+                        category_stats[category] = {'tp': 0, 'fn': 0, 'fp': 0, 'total': 0}
+                    category_stats[category]['tp'] += 1
+                    
                     break  # Move to next detected issue
+        
+        # Track false negatives by category
+        for exp_idx, expected_issue in enumerate(expected):
+            category = expected_issue.type
+            if category not in category_stats:
+                category_stats[category] = {'tp': 0, 'fn': 0, 'fp': 0, 'total': 0}
+            category_stats[category]['total'] += 1
+            
+            if exp_idx not in matched_expected_indices:
+                category_stats[category]['fn'] += 1
+        
+        # Calculate per-category metrics
+        domain_breakdown = {}
+        for category, stats in category_stats.items():
+            tp = stats['tp']
+            fn = stats['fn']
+            total = stats['total']
+            
+            precision = tp / (tp + stats['fp']) if (tp + stats['fp']) > 0 else 0.0
+            recall = tp / total if total > 0 else 0.0
+            f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+            
+            domain_breakdown[category] = {
+                'precision': round(precision, 4),
+                'recall': round(recall, 4),
+                'f1': round(f1, 4),
+                'true_positives': tp,
+                'false_negatives': fn,
+                'total': total
+            }
         
         true_positives = len(matched_expected_indices)
         false_positives = len(detected) - len(matched_detected_indices)
@@ -499,7 +675,15 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
         domain_knowledge_issues = sum(1 for e in expected if e.requires_domain_knowledge)
         domain_knowledge_score = (domain_knowledge_detections / domain_knowledge_issues * 100) if domain_knowledge_issues > 0 else 0.0
         
-        return true_positives, false_positives, false_negatives, domain_knowledge_score
+        # NEW: Calculate recall-oriented metrics
+        domain_recall = (domain_knowledge_detections / domain_knowledge_issues) if domain_knowledge_issues > 0 else 0.0
+        generic_issues = len(expected) - domain_knowledge_issues
+        generic_detections = true_positives - domain_knowledge_detections
+        generic_recall = (generic_detections / generic_issues) if generic_issues > 0 else 0.0
+        cross_document_recall = domain_recall  # For now, domain issues ARE cross-document issues
+        
+        return (true_positives, false_positives, false_negatives, domain_knowledge_score,
+                domain_breakdown, domain_recall, generic_recall, cross_document_recall)
     
     def run_benchmarks(self) -> PatientBenchmarkMetrics:
         """Run benchmarks on all patient profiles."""
@@ -514,7 +698,15 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
             print("⚠️  No patient profiles found!")
             return None
         
-        print(f"📋 Found {len(profile_files)} patient profiles\n")
+        # Filter for high-signal subset if requested
+        if self.subset == 'high_signal':
+            profile_files = [
+                f for f in profile_files
+                if any(hs_id in f.stem for hs_id in self.HIGH_SIGNAL_SUBSET)
+            ]
+            print(f"🎯 Running HIGH-SIGNAL SUBSET MODE ({len(profile_files)} profiles)\n")
+        else:
+            print(f"📋 Found {len(profile_files)} patient profiles\n")
         
         results = []
         total_precision = 0
@@ -550,8 +742,9 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
                     error_message=error
                 )
             else:
-                # Evaluate detection
-                tp, fp, fn, domain_score = self.evaluate_detection(expected_issues, detected_issues)
+                # Evaluate detection with enhanced metrics
+                (tp, fp, fn, domain_score, domain_breakdown, 
+                 domain_recall, generic_recall, cross_document_recall) = self.evaluate_detection(expected_issues, detected_issues)
                 
                 precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
                 recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
@@ -568,7 +761,11 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
                     true_positives=tp,
                     false_positives=fp,
                     false_negatives=fn,
-                    domain_knowledge_score=domain_score
+                    domain_knowledge_score=domain_score,
+                    domain_breakdown=domain_breakdown,
+                    domain_recall=domain_recall,
+                    generic_recall=generic_recall,
+                    cross_document_recall=cross_document_recall
                 )
                 
                 total_precision += precision
@@ -578,7 +775,7 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
                 successful += 1
                 
                 status = "✅" if fn == 0 else "⚠️"
-                print(f"{status} {latency_ms:.0f}ms | Issues: {tp}/{len(expected_issues)} | Domain: {domain_score:.0f}%")
+                print(f"{status} {latency_ms:.0f}ms | Issues: {tp}/{len(expected_issues)} | Domain Recall: {domain_recall*100:.0f}%")
             
             results.append(result)
         
@@ -588,6 +785,18 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
         avg_f1 = total_f1 / successful if successful > 0 else 0.0
         avg_domain_score = total_domain_score / successful if successful > 0 else 0.0
         avg_latency = sum(r.analysis_latency_ms for r in results) / len(results) if results else 0.0
+        
+        # NEW: Calculate aggregated domain breakdown
+        aggregated_domain_breakdown = self._aggregate_domain_breakdown(results)
+        
+        # NEW: Calculate parent category aggregations for statistical stability
+        aggregated_categories = self._aggregate_parent_categories(aggregated_domain_breakdown)
+        
+        # NEW: Calculate recall-oriented metrics
+        avg_domain_recall = sum(r.domain_recall for r in results if not r.error_message) / successful if successful > 0 else 0.0
+        avg_generic_recall = sum(r.generic_recall for r in results if not r.error_message) / successful if successful > 0 else 0.0
+        avg_cross_document_recall = sum(r.cross_document_recall for r in results if not r.error_message) / successful if successful > 0 else 0.0
+        domain_precision = avg_precision  # For now, treat overall precision as domain precision
         
         metrics = PatientBenchmarkMetrics(
             model_name=self._get_precise_model_name(),
@@ -599,23 +808,80 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
             domain_knowledge_detection_rate=avg_domain_score,
             avg_latency_ms=avg_latency,
             individual_results=results,
-            generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            domain_breakdown=aggregated_domain_breakdown,
+            aggregated_categories=aggregated_categories,
+            domain_recall=avg_domain_recall,
+            domain_precision=domain_precision,
+            generic_recall=avg_generic_recall,
+            cross_document_recall=avg_cross_document_recall
         )
         
         return metrics
     
     def print_summary(self, metrics: PatientBenchmarkMetrics):
-        """Print benchmark summary."""
+        """Print enhanced benchmark summary with domain subcategory breakdown."""
         precise_name = self._get_precise_model_name()
         print("\n" + "=" * 70)
         print(f"PATIENT BENCHMARK SUMMARY: {precise_name}")
         print("=" * 70)
         print(f"Patients Analyzed: {metrics.successful_analyses}/{metrics.total_patients}")
-        print(f"Avg Precision: {metrics.avg_precision:.2f}")
-        print(f"Avg Recall: {metrics.avg_recall:.2f}")
-        print(f"Avg F1 Score: {metrics.avg_f1_score:.2f}")
-        print(f"Domain Knowledge Detection Rate: {metrics.domain_knowledge_detection_rate:.1f}%")
-        print(f"Avg Analysis Time: {metrics.avg_latency_ms:.0f}ms ({metrics.avg_latency_ms/1000:.2f}s)")
+        print()
+        print("🎯 RECALL-ORIENTED METRICS (PRIMARY TARGETS):")
+        print(f"  Domain Recall:          {metrics.domain_recall*100:5.1f}%")
+        print(f"  Domain Precision:       {metrics.domain_precision*100:5.1f}%")
+        print(f"  Generic Recall:         {metrics.generic_recall*100:5.1f}%")
+        print(f"  Cross-Document Recall:  {metrics.cross_document_recall*100:5.1f}%")
+        print()
+        print("📊 DOMAIN SUBCATEGORY BREAKDOWN:")
+        if metrics.domain_breakdown:
+            # Define age subtypes for special formatting
+            age_subtypes = {'age_inappropriate', 'age_inappropriate_procedure', 'age_inappropriate_screening'}
+            
+            # Display parent categories first (if available)
+            if metrics.aggregated_categories and 'age_inappropriate_service' in metrics.aggregated_categories:
+                parent = metrics.aggregated_categories['age_inappropriate_service']
+                recall_pct = parent['recall'] * 100
+                detected = parent['total_detected']
+                total = parent['total_cases']
+                print(f"  {'age_inappropriate_service':40s} Recall: {recall_pct:5.1f}%  ({detected}/{total} detected)")
+                
+                # Display subtypes with tree structure
+                subtypes = parent.get('subtypes', {})
+                for i, (subtype, sub_metrics) in enumerate(sorted(subtypes.items())):
+                    is_last = (i == len(subtypes) - 1)
+                    tree_char = '└─' if is_last else '├─'
+                    sub_recall_pct = sub_metrics['recall'] * 100
+                    sub_detected = sub_metrics['detected']
+                    sub_total = sub_metrics['total']
+                    # Map full names to short labels
+                    label_map = {
+                        'age_inappropriate_screening': 'screening',
+                        'age_inappropriate_procedure': 'procedure',
+                        'age_inappropriate': 'general'
+                    }
+                    label = label_map.get(subtype, subtype)
+                    print(f"      {tree_char} {label:34s} {sub_recall_pct:5.1f}%  ({sub_detected}/{sub_total})")
+            
+            # Display all other categories (excluding age subtypes if parent was shown)
+            for category in sorted(metrics.domain_breakdown.keys()):
+                # Skip age subtypes if parent category was displayed
+                if category in age_subtypes and metrics.aggregated_categories.get('age_inappropriate_service'):
+                    continue
+                    
+                cat_metrics = metrics.domain_breakdown[category]
+                recall_pct = cat_metrics['recall'] * 100
+                detected = cat_metrics['total_detected']
+                total = cat_metrics['total_cases']
+                print(f"  {category:40s} Recall: {recall_pct:5.1f}%  ({detected}/{total} detected)")
+        else:
+            print("  No domain subcategory data available")
+        print()
+        print("📈 OVERALL METRICS:")
+        print(f"  Overall F1 Score:       {metrics.avg_f1_score:.3f}")
+        print(f"  Avg Precision:          {metrics.avg_precision:.3f}")
+        print(f"  Avg Recall:             {metrics.avg_recall:.3f}")
+        print(f"  Avg Analysis Time:      {metrics.avg_latency_ms:.0f}ms ({metrics.avg_latency_ms/1000:.2f}s)")
         print("=" * 70)
     
     def save_results(self, metrics: PatientBenchmarkMetrics):
@@ -724,6 +990,23 @@ def main():
         type=str,
         help='Git commit SHA'
     )
+    parser.add_argument(
+        '--branch-name',
+        type=str,
+        help='Git branch name'
+    )
+    parser.add_argument(
+        '--triggered-by',
+        type=str,
+        help='Who/what triggered this benchmark run (e.g., "prompt-enhancements", "manual-test")'
+    )
+    parser.add_argument(
+        '--subset',
+        type=str,
+        default=None,
+        choices=['high_signal', None],
+        help='Run only high-signal subset for rapid recall optimization (default: run all profiles)'
+    )
     
     args = parser.parse_args()
     
@@ -744,7 +1027,7 @@ def main():
     
     for model in models_to_run:
         try:
-            runner = PatientBenchmarkRunner(model)
+            runner = PatientBenchmarkRunner(model, subset=args.subset)
             metrics = runner.run_benchmarks()
             
             if metrics:
@@ -807,17 +1090,20 @@ def main():
                 except Exception:
                     commit_sha = None
             
-            branch_name = None
-            try:
-                result = subprocess.run(  # nosec B603 B607 - safe git command with hardcoded args
-                    ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
-                    capture_output=True,
-                    text=True,
-                    check=True
-                )
-                branch_name = result.stdout.strip()
-            except Exception:  # nosec B110 - acceptable to ignore git errors
-                pass
+            branch_name = args.branch_name
+            if not branch_name:
+                try:
+                    result = subprocess.run(  # nosec B603 B607 - safe git command with hardcoded args
+                        ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                        capture_output=True,
+                        text=True,
+                        check=True
+                    )
+                    branch_name = result.stdout.strip()
+                except Exception:  # nosec B110 - acceptable to ignore git errors
+                    pass
+            
+            triggered_by = args.triggered_by
             
             # Push each model's results
             for metrics in all_metrics:
@@ -833,6 +1119,8 @@ def main():
                         cmd.extend(['--commit-sha', commit_sha])
                     if branch_name:
                         cmd.extend(['--branch-name', branch_name])
+                    if triggered_by:
+                        cmd.extend(['--triggered-by', triggered_by])
                     
                     subprocess.run(cmd, check=True)  # nosec B603 - safe, controlled script execution
             
