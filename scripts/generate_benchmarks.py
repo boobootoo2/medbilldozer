@@ -22,11 +22,11 @@ from typing import List, Dict, Any, Optional
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from _modules.providers.llm_interface import ProviderRegistry, Issue, LocalHeuristicProvider
-from _modules.providers.medgemma_hosted_provider import MedGemmaHostedProvider
-from _modules.providers.openai_analysis_provider import OpenAIAnalysisProvider
-from _modules.providers.gemini_analysis_provider import GeminiAnalysisProvider
-from _modules.extractors.local_heuristic_extractor import extract_facts_local
+from medbilldozer.providers.llm_interface import ProviderRegistry, Issue, LocalHeuristicProvider
+from medbilldozer.providers.medgemma_hosted_provider import MedGemmaHostedProvider
+from medbilldozer.providers.openai_analysis_provider import OpenAIAnalysisProvider
+from medbilldozer.providers.gemini_analysis_provider import GeminiAnalysisProvider
+from medbilldozer.extractors.local_heuristic_extractor import extract_facts_local
 import os
 
 

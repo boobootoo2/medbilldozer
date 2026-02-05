@@ -122,7 +122,7 @@ st.sidebar.markdown("**Last Updated:** " + datetime.now().strftime("%Y-%m-%d %H:
 # ============================================================================
 
 tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🏥 Patient Benchmarks",
+    "🏥 Model Benchmarks",
     "📊 Current Snapshot",
     "📈 Performance Trends",
     "🔄 Model Comparison",
@@ -181,6 +181,45 @@ with tab1:
                 delta=None
             )
         
+        # Cost Savings Metrics Row (if available)
+        if 'total_potential_savings' in snapshots_df.columns:
+            st.markdown("---")
+            st.subheader("💰 Cost Savings Metrics")
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                total_savings = snapshots_df['total_potential_savings'].sum()
+                st.metric(
+                    "Total Potential Savings",
+                    f"${total_savings:,.2f}",
+                    delta=None
+                )
+            
+            with col2:
+                avg_savings = snapshots_df['avg_savings_per_patient'].mean()
+                st.metric(
+                    "Avg Savings per Patient",
+                    f"${avg_savings:,.2f}",
+                    delta=None
+                )
+            
+            with col3:
+                avg_capture_rate = snapshots_df['savings_capture_rate'].mean()
+                st.metric(
+                    "Avg Capture Rate",
+                    f"{avg_capture_rate:.1f}%",
+                    delta=None
+                )
+            
+            with col4:
+                total_missed = snapshots_df['total_missed_savings'].sum()
+                st.metric(
+                    "Total Missed Savings",
+                    f"${total_missed:,.2f}",
+                    delta=None,
+                    delta_color="inverse"
+                )
+        
         st.markdown("---")
         
         # Top performers
@@ -205,8 +244,8 @@ with tab1:
         # Full snapshot table
         st.subheader("📋 All Active Configurations")
         
-        # Format display
-        display_df = snapshots_df[[
+        # Format display - select available columns
+        base_cols = [
             'model_version',
             'dataset_version',
             'prompt_version',
@@ -217,20 +256,30 @@ with tab1:
             'latency_ms',
             'cost_per_analysis',
             'created_at'
-        ]].copy()
+        ]
         
+        # Add triggered_by if available
+        if 'triggered_by' in snapshots_df.columns:
+            base_cols.insert(-1, 'triggered_by')  # Insert before created_at
+        
+        display_df = snapshots_df[base_cols].copy()
         display_df['created_at'] = display_df['created_at'].dt.strftime('%Y-%m-%d %H:%M')
+        
+        column_config = {
+            "f1_score": st.column_config.NumberColumn("F1", format="%.4f"),
+            "precision_score": st.column_config.NumberColumn("Precision", format="%.4f"),
+            "recall_score": st.column_config.NumberColumn("Recall", format="%.4f"),
+            "latency_ms": st.column_config.NumberColumn("Latency (ms)", format="%.0f"),
+            "cost_per_analysis": st.column_config.NumberColumn("Cost", format="$%.4f"),
+        }
+        
+        if 'triggered_by' in snapshots_df.columns:
+            column_config["triggered_by"] = st.column_config.TextColumn("Triggered By", width="medium")
         
         st.dataframe(
             display_df,
             use_container_width=True,
-            column_config={
-                "f1_score": st.column_config.NumberColumn("F1", format="%.4f"),
-                "precision_score": st.column_config.NumberColumn("Precision", format="%.4f"),
-                "recall_score": st.column_config.NumberColumn("Recall", format="%.4f"),
-                "latency_ms": st.column_config.NumberColumn("Latency (ms)", format="%.0f"),
-                "cost_per_analysis": st.column_config.NumberColumn("Cost", format="$%.4f"),
-            }
+            column_config=column_config
         )
 
 # ============================================================================
@@ -566,22 +615,37 @@ with tab5:
             # Select columns to display
             display_cols = [
                 'version', 'status', 'f1_score', 'precision_score', 'recall_score',
-                'latency_ms', 'created_at_display', 'commit_sha'
+                'latency_ms', 'created_at_display'
             ]
+            
+            # Add triggered_by if available
+            if 'triggered_by' in display_history.columns:
+                display_cols.append('triggered_by')
+            
+            # Add commit_sha if available
+            if 'commit_sha' in display_history.columns:
+                display_cols.append('commit_sha')
+            
+            column_config = {
+                "version": "Version",
+                "status": "Status",
+                "f1_score": st.column_config.NumberColumn("F1", format="%.4f"),
+                "precision_score": st.column_config.NumberColumn("Precision", format="%.4f"),
+                "recall_score": st.column_config.NumberColumn("Recall", format="%.4f"),
+                "latency_ms": st.column_config.NumberColumn("Latency (ms)", format="%.0f"),
+                "created_at_display": "Created At",
+            }
+            
+            if 'triggered_by' in display_history.columns:
+                column_config["triggered_by"] = st.column_config.TextColumn("Triggered By", width="medium")
+            
+            if 'commit_sha' in display_history.columns:
+                column_config["commit_sha"] = st.column_config.TextColumn("Commit", width="small")
             
             st.dataframe(
                 display_history[display_cols],
                 use_container_width=True,
-                column_config={
-                    "version": "Version",
-                    "status": "Status",
-                    "f1_score": st.column_config.NumberColumn("F1", format="%.4f"),
-                    "precision_score": st.column_config.NumberColumn("Precision", format="%.4f"),
-                    "recall_score": st.column_config.NumberColumn("Recall", format="%.4f"),
-                    "latency_ms": st.column_config.NumberColumn("Latency (ms)", format="%.0f"),
-                    "created_at_display": "Created At",
-                    "commit_sha": st.column_config.TextColumn("Commit", width="small")
-                }
+                column_config=column_config
             )
             
             st.markdown("---")
@@ -700,11 +764,11 @@ with tab5:
 # ============================================================================
 
 # ============================================================================
-# TAB 6: Patient Benchmarks (Cross-Document Domain Knowledge)
+# TAB 6: Model Benchmarks (Cross-Document Domain Knowledge)
 # ============================================================================
 
 with tab6:
-    st.header("🏥 Patient Cross-Document Benchmarks")
+    st.header("🏥 Model Benchmarks (Cross-Document Analysis)")
     st.markdown("""
     **Domain Knowledge Detection:** Testing models' ability to identify gender/age-inappropriate 
     medical procedures that require healthcare domain knowledge (e.g., male patient billed for 
@@ -764,7 +828,7 @@ with tab6:
     patient_df = load_patient_benchmarks()
     
     if patient_df.empty:
-        st.warning("No patient benchmark data available. Run patient benchmarks with: `python3 scripts/generate_patient_benchmarks.py --model all --push-to-supabase`")
+        st.warning("No model benchmark data available. Run benchmarks with: `python3 scripts/generate_patient_benchmarks.py --model all --push-to-supabase`")
     else:
         # Get latest result per model
         latest_results = patient_df.sort_values('created_at').groupby('model_version').last().reset_index()

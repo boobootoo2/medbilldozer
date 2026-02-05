@@ -10,7 +10,7 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from _modules.ingest.api import (
+from medbilldozer.ingest.api import (
     ingest_document,
     list_imports,
     get_normalized_data,

@@ -1,18 +1,1 @@
-# Example: Minimal Configuration (Disable Optional Features)
-# Copy this file to app_config.yaml and customize as needed
-
-features:
-  # Disable AI assistant sidebar
-  assistant:
-    enabled: false
-  
-  # Disable pipeline DAG visualization
-  dag:
-    enabled: false
-  
-  # Enable debug mode for development
-  debug:
-    enabled: false
-
-# Keep other settings at defaults (file not shown for brevity)
-# Full configuration options available in app_config.yaml
+config/examples/app_config.example.yaml

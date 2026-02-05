@@ -12,7 +12,7 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from _modules.ui.splash_screen import prepare_splash_audio
+from medbilldozer.ui.splash_screen import prepare_splash_audio
 
 def main():
     """Generate all splash screen audio files."""

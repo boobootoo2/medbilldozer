@@ -19,7 +19,7 @@ sys.modules['openai'] = MagicMock()
 sys.modules['google'] = MagicMock()
 sys.modules['google.genai'] = MagicMock()
 
-from _modules.core.orchestrator_agent import (
+from medbilldozer.core.orchestrator_agent import (
     _clean_llm_json,
     model_backend,
     deterministic_issues_from_facts,
@@ -29,7 +29,7 @@ from _modules.core.orchestrator_agent import (
     extract_pre_facts,
     OrchestratorAgent,
 )
-from _modules.providers.llm_interface import Issue
+from medbilldozer.providers.llm_interface import Issue
 
 
 class TestCleanLLMJson:

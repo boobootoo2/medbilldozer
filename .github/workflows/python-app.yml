@@ -28,7 +28,14 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        # Install main dependencies first (required for medbilldozer package)
+        pip install -r requirements.txt
+        # Install package in editable mode (provides medbilldozer imports)
+        pip install -e . -v
+        # Then install test dependencies
         pip install -r requirements-test.txt
+        # Verify installation
+        python -c "import medbilldozer; print(f'medbilldozer {medbilldozer.__version__} installed successfully')"
     
     - name: Run tests
       run: |
