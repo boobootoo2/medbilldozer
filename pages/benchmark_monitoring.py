@@ -524,9 +524,9 @@ with tab5:
         # Get snapshot history for selected model
         history_df = data_access.get_snapshot_history(
             model_version=selected_model_history,
-            dataset_version="benchmark-set-v1",  # You might want to make this dynamic
-            prompt_version="v1",  # You might want to make this dynamic
-            environment=env_filter or "github-actions",
+            dataset_version="patient-profiles-v1",
+            prompt_version="cross-document-v1",
+            environment=env_filter or "local",  # Default to local if no filter
             limit=50
         )
         
