@@ -1,0 +1,99 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "medbilldozer"
+version = "0.2.0"
+description = "Medical Bill Analysis and Error Detection System"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "medBillDozer Team"}
+]
+keywords = ["medical", "billing", "ai", "healthcare", "error-detection"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Healthcare Industry",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+# Dependencies are specified in requirements.txt
+# During development, install with: pip install -e .
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "flake8>=6.0",
+    "black>=23.0",
+    "mypy>=1.0",
+]
+benchmarks = [
+    "pandas>=2.0",
+    "numpy>=1.24",
+]
+monitoring = [
+    "plotly>=5.0",
+    "streamlit>=1.28",
+]
+
+[project.urls]
+Homepage = "https://github.com/boobootoo2/medbilldozer"
+Repository = "https://github.com/boobootoo2/medbilldozer"
+Issues = "https://github.com/boobootoo2/medbilldozer/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["medbilldozer*"]
+
+[tool.setuptools.package-data]
+medbilldozer = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+]
+
+[tool.black]
+line-length = 120
+target-version = ['py311', 'py312', 'py313']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | build
+  | dist
+  | __pycache__
+)/
+'''
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.flake8]
+max-line-length = 120
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+]
+ignore = ["E203", "W503", "E306"]

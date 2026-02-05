@@ -15,7 +15,7 @@ from pathlib import Path
 # Add parent directory to path to import tour module
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from _modules.ui.guided_tour import TOUR_STEPS
+from medbilldozer.ui.guided_tour import TOUR_STEPS
 
 
 def generate_audio_openai():

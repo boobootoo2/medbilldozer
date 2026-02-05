@@ -13,7 +13,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch, mock_open
 import yaml
-from _modules.utils.config import (
+from medbilldozer.utils.config import (
     AppConfig,
     get_config,
     reload_config,
@@ -275,7 +275,7 @@ class TestGlobalConfigFunctions:
     def test_get_config_returns_singleton(self):
         """get_config() should return the same instance."""
         # Clear global instance
-        import _modules.utils.config as config_module
+        import medbilldozer.utils.config as config_module
         config_module._config_instance = None
 
         config1 = get_config()
@@ -285,7 +285,7 @@ class TestGlobalConfigFunctions:
 
     def test_reload_config_creates_new_instance(self):
         """reload_config() should create a fresh instance."""
-        import _modules.utils.config as config_module
+        import medbilldozer.utils.config as config_module
 
         config1 = get_config()
         config2 = reload_config()
@@ -295,7 +295,7 @@ class TestGlobalConfigFunctions:
 
     def test_is_assistant_enabled_with_default_config(self):
         """is_assistant_enabled() should use global config instance."""
-        import _modules.utils.config as config_module
+        import medbilldozer.utils.config as config_module
 
         # Reset to defaults
         config_module._config_instance = None
@@ -305,14 +305,14 @@ class TestGlobalConfigFunctions:
 
     def test_is_dag_enabled_with_default_config(self):
         """is_dag_enabled() should use global config instance."""
-        import _modules.utils.config as config_module
+        import medbilldozer.utils.config as config_module
         config_module._config_instance = None
 
         assert is_dag_enabled() is True
 
     def test_is_debug_enabled_with_default_config(self):
         """is_debug_enabled() should use global config instance."""
-        import _modules.utils.config as config_module
+        import medbilldozer.utils.config as config_module
         config_module._config_instance = None
 
         # Default has debug disabled
@@ -320,14 +320,14 @@ class TestGlobalConfigFunctions:
 
     def test_is_privacy_ui_enabled_with_default_config(self):
         """is_privacy_ui_enabled() should use global config instance."""
-        import _modules.utils.config as config_module
+        import medbilldozer.utils.config as config_module
         config_module._config_instance = None
 
         assert is_privacy_ui_enabled() is True
 
     def test_is_coverage_matrix_enabled_with_default_config(self):
         """is_coverage_matrix_enabled() should use global config instance."""
-        import _modules.utils.config as config_module
+        import medbilldozer.utils.config as config_module
         config_module._config_instance = None
 
         assert is_coverage_matrix_enabled() is True

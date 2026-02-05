@@ -7,35 +7,35 @@ and UI rendering for detecting billing, pharmacy, dental, and insurance claim is
 import streamlit as st
 
 # Core modules
-from _modules.core.auth import check_access_password
-from _modules.core.orchestrator_agent import OrchestratorAgent
-from _modules.core.analysis_runner import (
+from medbilldozer.core.auth import check_access_password
+from medbilldozer.core.orchestrator_agent import OrchestratorAgent
+from medbilldozer.core.analysis_runner import (
     run_document_analysis,
     render_cached_results,
 )
 
 # UI modules
-from _modules.ui.bootstrap import (
+from medbilldozer.ui.bootstrap import (
     bootstrap_ui_minimal,
     bootstrap_home_page,
     should_enable_guided_tour,
 )
-from _modules.ui.page_router import render_page_navigation, route_to_page
-from _modules.ui.privacy_ui import render_privacy_dialog
-from _modules.ui.ui_documents import render_document_inputs
-from _modules.ui.doc_assistant import render_doc_assistant, render_contextual_help
-from _modules.ui.guided_tour import (
+from medbilldozer.ui.page_router import render_page_navigation, route_to_page
+from medbilldozer.ui.privacy_ui import render_privacy_dialog
+from medbilldozer.ui.ui_documents import render_document_inputs
+from medbilldozer.ui.doc_assistant import render_doc_assistant, render_contextual_help
+from medbilldozer.ui.guided_tour import (
     initialize_tour_state,
     maybe_launch_tour,
 )
-from _modules.ui.health_profile import (
+from medbilldozer.ui.health_profile import (
     render_profile_selector,
     render_profile_details,
     get_profile_context_for_analysis,
     render_receipt_uploader,
     get_uploaded_receipts_context,
 )
-from _modules.ui.ui import (
+from medbilldozer.ui.ui import (
     render_provider_selector,
     render_analyze_button,
     render_clear_history_button,
@@ -43,24 +43,24 @@ from _modules.ui.ui import (
     render_footer,
     show_analysis_error,
 )
-from _modules.ui.audio_controls import initialize_audio_state
-from _modules.ui.splash_screen import (
+from medbilldozer.ui.audio_controls import initialize_audio_state
+from medbilldozer.ui.splash_screen import (
     should_show_splash_screen,
     render_splash_screen,
 )
-from _modules.core.coverage_matrix import build_coverage_matrix
-from _modules.ui.ui_coverage_matrix import render_coverage_matrix
+from medbilldozer.core.coverage_matrix import build_coverage_matrix
+from medbilldozer.ui.ui_coverage_matrix import render_coverage_matrix
 
 # Provider modules
-from _modules.providers.provider_registry import (
+from medbilldozer.providers.provider_registry import (
     register_providers,
     ENGINE_OPTIONS,
 )
-from _modules.providers.llm_interface import ProviderRegistry
+from medbilldozer.providers.llm_interface import ProviderRegistry
 
 # Utils
-from _modules.utils.runtime_flags import debug_enabled
-from _modules.utils.config import (
+from medbilldozer.utils.runtime_flags import debug_enabled
+from medbilldozer.utils.config import (
     is_assistant_enabled,
     is_debug_enabled,
     is_privacy_ui_enabled,
@@ -282,7 +282,7 @@ def main():
         if should_analyze:
             # Validate inputs
             if not documents:
-                from _modules.ui.ui import show_empty_warning
+                from medbilldozer.ui.ui import show_empty_warning
                 show_empty_warning()
                 render_contextual_help('error')
                 st.session_state.pending_analysis = False
@@ -385,7 +385,7 @@ def main():
     # TAB 2: DEMO PROD WORKFLOW (Profile-based)
     # --------------------------------------------------
     with tab2:
-        from _modules.ui.prod_workflow import render_prod_workflow
+        from medbilldozer.ui.prod_workflow import render_prod_workflow
         render_prod_workflow()
 
 
