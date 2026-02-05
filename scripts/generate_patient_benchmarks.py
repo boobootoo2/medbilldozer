@@ -657,8 +657,7 @@ def main():
             commit_sha = args.commit_sha
             if not commit_sha:
                 try:
-                    # nosec B603 B607 - safe git command with hardcoded args
-                    result = subprocess.run(
+                    result = subprocess.run(  # nosec B603 B607 - safe git command with hardcoded args
                         ['git', 'rev-parse', 'HEAD'],
                         capture_output=True,
                         text=True,
@@ -670,8 +669,7 @@ def main():
             
             branch_name = None
             try:
-                # nosec B603 B607 - safe git command with hardcoded args
-                result = subprocess.run(
+                result = subprocess.run(  # nosec B603 B607 - safe git command with hardcoded args
                     ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
                     capture_output=True,
                     text=True,
