@@ -11,11 +11,11 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from _modules.data.fictional_entities import (
+from medbilldozer.data.fictional_entities import (
     generate_fictional_insurance_companies,
     generate_fictional_healthcare_providers,
 )
-from _modules.data.health_data_ingestion import (
+from medbilldozer.data.health_data_ingestion import (
     import_sample_data,
     extract_insurance_plan_from_entity,
     extract_provider_from_entity,

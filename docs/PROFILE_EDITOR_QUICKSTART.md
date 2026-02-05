@@ -148,7 +148,7 @@ For detailed integration patterns, customization options, and API reference, see
 
 - **[PROFILE_EDITOR_INTEGRATION.md](./PROFILE_EDITOR_INTEGRATION.md)** - Complete integration guide
 - **[data/schema_examples.json](./data/schema_examples.json)** - JSON schema reference
-- **[profile_integration_example.py](./profile_integration_example.py)** - Code examples
+- **[profile_integration_example.py](../examples/profile_integration_example.py)** - Code examples
 
 ## 🤝 Support
 
@@ -157,7 +157,7 @@ If you encounter issues or have questions:
 1. Check the [Troubleshooting](#-troubleshooting) section above
 2. Review the [Integration Guide](./PROFILE_EDITOR_INTEGRATION.md)
 3. Check the [JSON Schema Examples](./data/schema_examples.json)
-4. Look at [Code Examples](./profile_integration_example.py)
+4. Look at [Code Examples](../examples/profile_integration_example.py)
 
 ## 🎉 That's It!
 

@@ -33,7 +33,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from supabase import create_client
 
 
-def export_error_type_performance(environment=None, output_file='error_type_performance.csv'):
+def export_error_type_performance(environment=None, output_file='.artifacts/error_type_performance.csv'):
     """
     Export error type performance data from Supabase to CSV.
     
@@ -159,7 +159,7 @@ def main():
     parser.add_argument(
         '--output',
         type=str,
-        default='error_type_performance.csv',
+        default='.artifacts/error_type_performance.csv',
         help='Output CSV filename (default: error_type_performance.csv)'
     )
     

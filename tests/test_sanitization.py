@@ -4,7 +4,7 @@ Tests all sanitization functions against known malicious inputs.
 """
 
 import pytest
-from _modules.utils.sanitize import (
+from medbilldozer.utils.sanitize import (
     sanitize_text,
     sanitize_html_content,
     sanitize_filename,

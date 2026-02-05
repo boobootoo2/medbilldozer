@@ -1,7 +1,7 @@
 """Tests for image path utilities."""
 import os
 import pytest
-from _modules.utils.image_paths import (
+from medbilldozer.utils.image_paths import (
     is_local_environment,
     get_image_url,
     get_avatar_url,
