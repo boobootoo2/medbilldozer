@@ -74,6 +74,27 @@ jobs:
             fi
           done
       
+      - name: Push results to Supabase
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          # Push each model's results to Supabase
+          for model in openai gemini baseline; do
+            if [ -f "benchmark-artifacts/${model}_benchmark_results.json" ]; then
+              echo "📤 Pushing ${model} results to Supabase..."
+              python3 scripts/push_to_supabase.py \
+                --input "benchmark-artifacts/${model}_benchmark_results.json" \
+                --environment github-actions \
+                --commit-sha ${{ github.sha }} \
+                --branch-name ${{ github.ref_name }} \
+                --run-id ${{ github.run_id }} \
+                --triggered-by ${{ github.actor }} \
+                --verify || echo "⚠️ Failed to push ${model} to Supabase"
+            fi
+          done
+      
       - name: Upload benchmark results as artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -81,9 +102,6 @@ jobs:
           name: benchmark-results
           path: benchmark-artifacts/*.json
           retention-days: 90
-      
-      # Note: Results are persisted to Supabase by benchmark-persist.yml workflow
-      # No need to commit JSON files to git
       
       - name: Comment on PR with results
         if: github.event_name == 'pull_request'

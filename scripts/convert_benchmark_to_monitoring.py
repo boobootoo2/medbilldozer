@@ -27,6 +27,7 @@ def convert_to_monitoring_format(input_file: Path, model_name: str) -> dict:
     # Model version should match the display name for consistency
     model_display_names = {
         'medgemma': 'Google MedGemma-4B-IT',
+        'gemma3': 'Google Gemma-3-27B-IT',
         'gemini': 'Google Gemini 1.5 Pro',
         'openai': 'OpenAI GPT-4',
         'baseline': 'Heuristic Baseline'
