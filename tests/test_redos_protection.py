@@ -6,7 +6,7 @@ protections against catastrophic backtracking attacks.
 
 import time
 import pytest
-from _modules.extractors.local_heuristic_extractor import _find_first, extract_facts_local
+from medbilldozer.extractors.local_heuristic_extractor import _find_first, extract_facts_local
 
 
 class TestReDoSProtection:
@@ -112,7 +112,7 @@ class TestHTMLStripReDoS:
     def test_malformed_html_tags(self):
         """Test handling of malformed HTML that could cause ReDoS."""
         # Import the module that has strip_html functions
-        from _modules.ui import ui_pipeline_dag
+        from medbilldozer.ui import ui_pipeline_dag
         
         # Malicious input: many < without closing >
         malicious_html = "<" * 10000

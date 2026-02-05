@@ -25,10 +25,10 @@ import argparse
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from _modules.providers.medgemma_hosted_provider import MedGemmaHostedProvider
-from _modules.providers.openai_analysis_provider import OpenAIAnalysisProvider
-from _modules.providers.gemini_analysis_provider import GeminiAnalysisProvider
-from _modules.providers.llm_interface import LocalHeuristicProvider
+from medbilldozer.providers.medgemma_hosted_provider import MedGemmaHostedProvider
+from medbilldozer.providers.openai_analysis_provider import OpenAIAnalysisProvider
+from medbilldozer.providers.gemini_analysis_provider import GeminiAnalysisProvider
+from medbilldozer.providers.llm_interface import LocalHeuristicProvider
 
 
 @dataclass

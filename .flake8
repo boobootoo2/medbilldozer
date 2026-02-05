@@ -28,6 +28,7 @@ exclude =
 # E261: at least two spaces before inline comment (stylistic)
 # E304: blank lines found after function decorator (auto-generated)
 # E305: expected 2 blank lines after class or function definition (contextual)
+# E306: expected 1 blank line before a nested definition (stylistic in nested funcs)
 # F401: imported but unused (many are intentional for re-exports or test fixtures)
 # F541: f-string is missing placeholders (used for consistency/templating)
 # F811: redefinition of unused (test fixtures and multiple imports)
@@ -38,7 +39,7 @@ exclude =
 # W291: trailing whitespace (handled by pre-commit)
 # W292: no newline at end of file (handled by pre-commit)
 # W391: blank line at end of file (handled by pre-commit)
-ignore = E203,E302,E501,W503,E402,W504,E226,E261,E303,E304,E305,F401,F541,F811,F821,F841,E131,E741,W291,W292,W391,W291,W293
+ignore = E203,E302,E501,W503,E402,W504,E226,E261,E303,E304,E305,E306,F401,F541,F811,F821,F841,E131,E741,W291,W292,W391,W291,W293
 
 # Show the source code that generated the error
 show-source = True

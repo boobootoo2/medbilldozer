@@ -15,7 +15,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from _modules.data.fictional_entities import (
+from medbilldozer.data.fictional_entities import (
     generate_fictional_insurance_companies,
     generate_fictional_healthcare_providers,
     get_all_fictional_entities,

@@ -19,8 +19,8 @@ sys.modules['streamlit'] = streamlit_mock
 sys.modules['streamlit.components'] = streamlit_mock.components
 sys.modules['streamlit.components.v1'] = streamlit_mock.components.v1
 
-from _modules.ui.ui import calculate_max_savings, html_to_plain_text
-from _modules.providers.llm_interface import Issue
+from medbilldozer.ui.ui import calculate_max_savings, html_to_plain_text
+from medbilldozer.providers.llm_interface import Issue
 
 
 class TestCalculateMaxSavings:

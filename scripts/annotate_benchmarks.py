@@ -17,7 +17,7 @@ from datetime import datetime
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from _modules.extractors.local_heuristic_extractor import extract_facts_local
+from medbilldozer.extractors.local_heuristic_extractor import extract_facts_local
 
 
 def extract_patient_info_from_text(text: str) -> dict:
