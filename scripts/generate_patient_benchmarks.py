@@ -255,29 +255,98 @@ Medical History:
 -------------------
 
 INSTRUCTIONS FOR ANALYSIS:
-Please analyze ALL documents together for this patient, using the medical history for context.
-Look for:
-1. Procedures that don't match the patient's gender (e.g., male receiving obstetric care)
-2. Procedures that don't match the patient's age (e.g., child receiving adult screening)
-3. Procedures that are medically inappropriate given patient demographics
-4. Any procedures that contradict the patient's medical history
-5. Any duplicate charges across documents
-6. Any billing inconsistencies across the patient's documents
+Perform a comprehensive multi-pass analysis of ALL documents for this patient. Use the patient's medical history, demographics, and cross-document patterns.
 
-Focus especially on gender-specific and age-specific procedures that require medical domain knowledge.
+PASS 1 - SYSTEMATIC ERROR DETECTION:
+Analyze each document carefully using chain-of-thought reasoning for the following error categories:
+
+1. ANATOMICAL CONTRADICTION (Domain Knowledge Required):
+   - Definition: Procedures billed for organs/body parts the patient does NOT have
+   - Reasoning Steps: Check medical history → Identify removed/absent organs → Flag procedures on those organs
+   - Examples:
+     * Patient had RIGHT leg amputation → Cannot bill for RIGHT knee surgery (CPT 27447)
+     * Patient had appendectomy → Cannot bill for appendix removal again (CPT 44970)
+     * Patient had hysterectomy → Cannot bill for uterine procedures (CPT 58150)
+   - Look for: Post-surgical history contradicting current procedures
+
+2. TEMPORAL VIOLATION (Timeline Analysis):
+   - Definition: Procedures that violate medical timelines or logical sequencing
+   - Reasoning Steps: Extract all dates → Order procedures chronologically → Check for impossible sequences
+   - Examples:
+     * Billing for removal of organ AFTER already documented removal
+     * Post-operative care billed BEFORE the surgery date
+     * Preventive screening within weeks of prior screening (should be annual)
+   - Look for: Date inconsistencies, premature repeat procedures
+
+3. GENDER-SPECIFIC CONTRADICTION (Anatomical):
+   - Definition: Procedures for anatomy the patient's biological sex does not have
+   - Reasoning Steps: Check patient sex → Identify sex-specific anatomy → Flag opposite-sex procedures
+   - Examples:
+     * Male patient billed for: pregnancy test (CPT 81025), Pap smear (CPT 88150), mammogram (CPT 77067)
+     * Female patient billed for: prostate exam (CPT G0103), prostate biopsy (CPT 55700)
+   - Look for: Obstetric, gynecologic, or urologic procedures mismatched to sex
+
+4. AGE-INAPPROPRIATE PROCEDURE (Clinical Guidelines):
+   - Definition: Procedures outside recommended age ranges per clinical guidelines
+   - Reasoning Steps: Check patient age → Look up procedure age guidelines → Flag if outside range
+   - Examples:
+     * 8-year-old billed for: colonoscopy (recommended 45+), prostate screening (50+)
+     * 35-year-old billed for: pediatric vaccines, well-child visit
+     * 25-year-old billed for: geriatric assessment, Medicare wellness visit
+   - Look for: Screening/preventive procedures far outside typical age ranges
+
+5. PROCEDURE INCONSISTENT WITH HEALTH HISTORY (Medical Appropriateness):
+   - Definition: Procedures that make no medical sense given documented health status
+   - Reasoning Steps: Review conditions/surgeries → Check procedure indications → Flag if contraindicated
+   - Examples:
+     * Healthy patient (no diabetes) billed for: continuous glucose monitor, diabetic retinopathy screening
+     * Patient without cancer history billed for: chemotherapy, radiation oncology
+     * Patient with documented organ removal billed for: screening of that organ
+   - Look for: Disease-specific procedures without corresponding diagnosis
+
+6. DUPLICATE CHARGES (Cross-Document):
+   - Definition: Same procedure billed multiple times across documents for same date
+   - Reasoning Steps: Build procedure inventory → Group by CPT + date → Flag duplicates
+   - Examples:
+     * CPT 99213 (office visit) appears in both clinic bill and insurance EOB for 1/15/2024
+     * Lab test CPT 80053 billed twice on same date in different documents
+   - Look for: Identical CPT codes with identical dates across documents
+
+7. OTHER BILLING INCONSISTENCIES:
+   - Upcoding, unbundling, medical necessity issues, incorrect modifiers
+   - Reasoning Steps: Check CPT combinations → Verify medical necessity → Flag suspicious patterns
+
+PASS 2 - TARGETED VERIFICATION (For Commonly Missed Errors):
+Re-examine documents specifically for these often-missed patterns:
+- Any procedures on organs mentioned in "Prior Surgeries" (especially removals, amputations)
+- Any procedures with dates BEFORE or immediately after related surgeries
+- Any sex-specific procedures (check patient sex field carefully)
+- Any age-extreme procedures (pediatric codes for adults, geriatric codes for young patients)
+- Any disease management procedures without corresponding condition listed
+
+CHAIN-OF-THOUGHT REASONING REQUIRED:
+For each potential issue, show your reasoning:
+1. What did I notice? (Evidence)
+2. Why is this problematic? (Medical knowledge)
+3. What error category does this fall into?
+4. What is the specific CPT code involved?
+
+FEW-SHOT EXAMPLES:
+Example 1: "Patient had right leg amputation in 2022. Document 2 bills CPT 27447 (knee replacement) on right knee in 2024. REASONING: Patient cannot have knee replacement on amputated leg. ERROR TYPE: anatomical_contradiction"
+
+Example 2: "Patient is 8 years old. Document 1 bills CPT 45378 (colonoscopy screening). REASONING: Colonoscopy screening recommended for age 45+, not appropriate for child without specific medical indication. ERROR TYPE: age_inappropriate_procedure"
+
+Example 3: "Patient is male (sex: M). Document 3 bills CPT 88150 (Pap smear). REASONING: Pap smears are cervical cancer screenings for patients with cervixes (female anatomy). Male patients cannot have this procedure. ERROR TYPE: gender_specific_contradiction"
+
+NOW ANALYZE: Report ALL issues found with specific CPT codes, clear evidence, and error type classification.
 """
             
-            # Call provider with combined patient context
-            # Pass None for facts since the context is already embedded in the text
-            result = self.provider.analyze_document(patient_context, facts=None)
+            # PASS 1: Initial comprehensive analysis
+            result_pass1 = self.provider.analyze_document(patient_context, facts=None)
             
-            end_time = time.perf_counter()
-            latency_ms = (end_time - start_time) * 1000
-            
-            # Extract detected issues from AnalysisResult object
+            # Extract detected issues from PASS 1
             detected_issues = []
-            if result and hasattr(result, 'issues'):
-                # Convert Issue objects to dicts for evaluation
+            if result_pass1 and hasattr(result_pass1, 'issues'):
                 detected_issues = [
                     {
                         'type': issue.type,
@@ -286,8 +355,79 @@ Focus especially on gender-specific and age-specific procedures that require med
                         'code': issue.code,
                         'max_savings': issue.max_savings
                     }
-                    for issue in result.issues
+                    for issue in result_pass1.issues
                 ]
+            
+            # PASS 2: Targeted verification for commonly missed error types
+            # Build targeted prompt focusing on weak categories
+            pass2_prompt = f"""
+PASS 2 - TARGETED VERIFICATION FOR PATIENT {profile.patient_id}:
+
+Patient Summary:
+- Age: {profile.age} years, Sex: {profile.sex}
+- Surgeries: {', '.join(profile.surgeries) if profile.surgeries else 'None'}
+- Conditions: {', '.join(profile.conditions) if profile.conditions else 'None'}
+
+Previously detected {len(detected_issues)} issue(s) in PASS 1.
+
+Now perform TARGETED checks for these commonly-missed error types:
+
+1. ANATOMICAL CONTRADICTIONS:
+   - Check if Prior Surgeries list contains: amputation, removal, ectomy, hysterectomy, appendectomy, nephrectomy
+   - If YES: Scan ALL documents for CPT codes related to those removed/absent organs
+   - Example: "right leg amputation" → Flag ANY right leg/knee procedures (CPT 27xxx)
+
+2. TEMPORAL VIOLATIONS:
+   - Extract ALL dates from documents
+   - Check for procedures on removed organs AFTER removal date
+   - Check for duplicate screenings within 1 year
+
+3. HEALTH HISTORY INCONSISTENCIES:
+   - If Conditions list is EMPTY or minimal, look for disease-specific procedures:
+     * Diabetes procedures without diabetes diagnosis
+     * Cardiac procedures without heart disease
+     * Oncology procedures without cancer history
+   - Example: Healthy patient → Flag glucose monitors, chemotherapy, etc.
+
+4. AGE/SEX MISMATCHES:
+   - If age < 18: Flag colonoscopy, prostate screening, mammography
+   - If age > 18: Flag pediatric vaccines, well-child visits
+   - If sex = Male: Flag pregnancy, Pap smear, mammogram, ovarian/uterine procedures
+   - If sex = Female: Flag prostate procedures
+
+DOCUMENTS TO RE-EXAMINE:
+"""
+            
+            # Add documents again for pass 2
+            for i, doc_text in enumerate(doc_texts, 1):
+                pass2_prompt += f"\n--- DOCUMENT {i} ---\n{doc_text}\n"
+            
+            pass2_prompt += """
+Report ONLY issues NOT found in PASS 1. Focus on the 4 categories above.
+Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problematic]"
+"""
+            
+            # Call provider for PASS 2 with targeted prompt
+            result_pass2 = self.provider.analyze_document(pass2_prompt, facts=None)
+            
+            # Merge PASS 2 results with PASS 1 (deduplicate by CPT code)
+            pass1_codes = {issue['code'] for issue in detected_issues if issue.get('code')}
+            
+            if result_pass2 and hasattr(result_pass2, 'issues'):
+                for issue in result_pass2.issues:
+                    # Only add if CPT code not already detected in pass 1
+                    if issue.code and issue.code not in pass1_codes:
+                        detected_issues.append({
+                            'type': issue.type,
+                            'summary': issue.summary,
+                            'evidence': issue.evidence,
+                            'code': issue.code,
+                            'max_savings': issue.max_savings
+                        })
+                        pass1_codes.add(issue.code)
+            
+            end_time = time.perf_counter()
+            latency_ms = (end_time - start_time) * 1000
             
             return detected_issues, latency_ms, None
             
