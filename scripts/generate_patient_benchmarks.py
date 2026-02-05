@@ -32,6 +32,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from medbilldozer.providers.medgemma_hosted_provider import MedGemmaHostedProvider
+from medbilldozer.providers.gemma3_hosted_provider import Gemma3HostedProvider
 from medbilldozer.providers.openai_analysis_provider import OpenAIAnalysisProvider
 from medbilldozer.providers.gemini_analysis_provider import GeminiAnalysisProvider
 from medbilldozer.providers.llm_interface import LocalHeuristicProvider
@@ -146,6 +147,8 @@ class PatientBenchmarkRunner:
         """Initialize the analysis provider."""
         if self.model == "medgemma":
             return MedGemmaHostedProvider()
+        elif self.model == "gemma3":
+            return Gemma3HostedProvider()
         elif self.model == "openai":
             return OpenAIAnalysisProvider()
         elif self.model == "gemini":
@@ -159,6 +162,7 @@ class PatientBenchmarkRunner:
         """Get the precise model name for display."""
         model_names = {
             "medgemma": "Google MedGemma-4B-IT",
+            "gemma3": "Google Gemma-3-27B-IT",
             "openai": "OpenAI GPT-4",
             "gemini": "Google Gemini 1.5 Pro",
             "baseline": "Heuristic Baseline"
@@ -1181,6 +1185,7 @@ def update_readme(all_metrics: List[PatientBenchmarkMetrics]):
     # Create model name mapping
     model_name_map = {
         "medgemma": "Google MedGemma-4B-IT",
+        "gemma3": "Google Gemma-3-27B-IT",
         "openai": "OpenAI GPT-4",
         "gemini": "Google Gemini 1.5 Pro",
         "baseline": "Heuristic Baseline"
@@ -1244,7 +1249,7 @@ def main():
         '--model',
         type=str,
         default='all',
-        choices=['medgemma', 'openai', 'gemini', 'baseline', 'all'],
+        choices=['medgemma', 'gemma3', 'openai', 'gemini', 'baseline', 'all'],
         help='Which model to benchmark (default: all)'
     )
     parser.add_argument(
@@ -1320,6 +1325,7 @@ def main():
         # Create mapping of model keys to precise names
         model_name_map = {
             "medgemma": "Google MedGemma-4B-IT",
+            "gemma3": "Google Gemma-3-27B-IT",
             "openai": "OpenAI GPT-4",
             "gemini": "Google Gemini 1.5 Pro",
             "baseline": "Heuristic Baseline"

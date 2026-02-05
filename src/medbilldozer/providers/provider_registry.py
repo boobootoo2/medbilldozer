@@ -9,6 +9,11 @@ try:
 except Exception:
     MedGemmaHostedProvider = None
 
+try:
+    from medbilldozer.providers.gemma3_hosted_provider import Gemma3HostedProvider
+except Exception:
+    Gemma3HostedProvider = None
+
 
 # Engine options for user-facing selection
 ENGINE_OPTIONS = {
@@ -22,16 +27,26 @@ ENGINE_OPTIONS = {
 def register_providers():
     """Register available LLM analysis providers.
 
-    Attempts to register MedGemma, Gemini, and OpenAI providers.
+    Attempts to register MedGemma, Gemma-3, Gemini, and OpenAI providers.
     Only registers providers that pass health checks.
     """
-    # --- MedGemma ---
+    # --- MedGemma 4B ---
     try:
-        provider = MedGemmaHostedProvider()
-        if provider.health_check():
-            ProviderRegistry.register("medgemma-4b-it", provider)
+        if MedGemmaHostedProvider:
+            provider = MedGemmaHostedProvider()
+            if provider.health_check():
+                ProviderRegistry.register("medgemma-4b-it", provider)
     except Exception as e:
         print(f"[medgemma] provider registration failed: {e}")
+
+    # --- Gemma-3 27B ---
+    try:
+        if Gemma3HostedProvider:
+            gemma3_provider = Gemma3HostedProvider()
+            if gemma3_provider.health_check():
+                ProviderRegistry.register("gemma3-27b-it", gemma3_provider)
+    except Exception as e:
+        print(f"[gemma3] provider registration failed: {e}")
 
     # --- Gemini ---
     try:
