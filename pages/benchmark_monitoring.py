@@ -181,45 +181,6 @@ with tab1:
                 delta=None
             )
         
-        # Cost Savings Metrics Row (if available)
-        if 'total_potential_savings' in snapshots_df.columns:
-            st.markdown("---")
-            st.subheader("💰 Cost Savings Metrics")
-            col1, col2, col3, col4 = st.columns(4)
-            
-            with col1:
-                total_savings = snapshots_df['total_potential_savings'].sum()
-                st.metric(
-                    "Total Potential Savings",
-                    f"${total_savings:,.2f}",
-                    delta=None
-                )
-            
-            with col2:
-                avg_savings = snapshots_df['avg_savings_per_patient'].mean()
-                st.metric(
-                    "Avg Savings per Patient",
-                    f"${avg_savings:,.2f}",
-                    delta=None
-                )
-            
-            with col3:
-                avg_capture_rate = snapshots_df['savings_capture_rate'].mean()
-                st.metric(
-                    "Avg Capture Rate",
-                    f"{avg_capture_rate:.1f}%",
-                    delta=None
-                )
-            
-            with col4:
-                total_missed = snapshots_df['total_missed_savings'].sum()
-                st.metric(
-                    "Total Missed Savings",
-                    f"${total_missed:,.2f}",
-                    delta=None,
-                    delta_color="inverse"
-                )
-        
         st.markdown("---")
         
         # Top performers
@@ -378,6 +339,175 @@ with tab2:
                 )
                 
                 st.plotly_chart(fig_count, use_container_width=True, key=f"count_chart_{model_version}")
+            
+            # Cost Savings Trends (if data available)
+            @st.cache_data(ttl=300)
+            def load_cost_savings_timeseries(model, days, environment):
+                start_date = datetime.now() - timedelta(days=days)
+                df = data_access.get_transactions(start_date=start_date, environment=environment)
+                if df.empty or 'total_patients' not in df.columns:
+                    return None
+                
+                model_df = df[df['model_version'] == model].copy()
+                if model_df.empty or 'total_potential_savings' not in model_df.columns:
+                    return None
+                
+                return model_df[['created_at', 'total_potential_savings', 'savings_capture_rate', 'avg_savings_per_patient']].sort_values('created_at')
+            
+            savings_ts = load_cost_savings_timeseries(model_version, days_back, env_filter)
+            
+            if savings_ts is not None and not savings_ts.empty:
+                st.subheader("💰 Cost Savings Trends")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    fig = go.Figure()
+                    fig.add_trace(go.Scatter(
+                        x=savings_ts['created_at'],
+                        y=savings_ts['total_potential_savings'],
+                        mode='lines+markers',
+                        name='Potential Savings',
+                        line=dict(color='green', width=2),
+                        marker=dict(size=8)
+                    ))
+                    fig.update_layout(
+                        title="Potential Savings Over Time",
+                        xaxis_title="Date",
+                        yaxis_title="Amount ($)",
+                        height=350
+                    )
+                    st.plotly_chart(fig, use_container_width=True, key=f"savings_trend_{model_version}")
+                
+                with col2:
+                    fig = go.Figure()
+                    fig.add_trace(go.Scatter(
+                        x=savings_ts['created_at'],
+                        y=savings_ts['savings_capture_rate'],
+                        mode='lines+markers',
+                        name='Capture Rate',
+                        line=dict(color='blue', width=2),
+                        marker=dict(size=8)
+                    ))
+                    fig.update_layout(
+                        title="Savings Capture Rate Over Time",
+                        xaxis_title="Date",
+                        yaxis_title="Capture Rate (%)",
+                        height=350
+                    )
+                    st.plotly_chart(fig, use_container_width=True, key=f"capture_trend_{model_version}")
+            
+            # Error Category Performance Trends
+            @st.cache_data(ttl=300)
+            def load_error_category_timeseries(model, days, environment):
+                """Load error category performance over time from snapshots."""
+                # Get snapshots for this model
+                all_snapshots = data_access.get_snapshot_history(
+                    model_version=model,
+                    dataset_version="patient-benchmark-v2",  # Adjust as needed
+                    prompt_version="v2-structured-reasoning",  # Adjust as needed
+                    environment=environment or "local",
+                    limit=30
+                )
+                
+                if all_snapshots.empty or 'domain_breakdown' not in all_snapshots.columns:
+                    return None
+                
+                # Parse domain_breakdown from each snapshot
+                import json
+                category_data = []
+                for _, row in all_snapshots.iterrows():
+                    breakdown = row['domain_breakdown']
+                    if isinstance(breakdown, str):
+                        breakdown = json.loads(breakdown)
+                    
+                    if breakdown and isinstance(breakdown, dict):
+                        for category, metrics in breakdown.items():
+                            category_data.append({
+                                'date': row['created_at'],
+                                'category': category.replace('_', ' ').title(),
+                                'recall': metrics.get('recall', 0) * 100,
+                                'precision': metrics.get('precision', 0) * 100,
+                                'detected': metrics.get('total_detected', 0),
+                                'total': metrics.get('total_cases', 0)
+                            })
+                
+                if not category_data:
+                    return None
+                
+                return pd.DataFrame(category_data)
+            
+            category_ts = load_error_category_timeseries(model_version, days_back, env_filter)
+            
+            if category_ts is not None and not category_ts.empty and len(category_ts['date'].unique()) > 1:
+                st.subheader("🎯 Error Category Detection Trends")
+                
+                # Get all unique categories
+                all_categories = category_ts['category'].unique()
+                
+                # Let user select which categories to show
+                default_categories = [c for c in all_categories if any(x in c.lower() for x in ['gender', 'age', 'surgical', 'diagnosis', 'procedure'])]
+                if not default_categories:
+                    default_categories = list(all_categories)[:5]
+                
+                selected_categories = st.multiselect(
+                    "Select Error Categories to Display",
+                    options=sorted(all_categories),
+                    default=default_categories,
+                    key=f"category_select_{model_version}"
+                )
+                
+                if selected_categories:
+                    filtered_df = category_ts[category_ts['category'].isin(selected_categories)]
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        # Recall trends
+                        fig_recall = px.line(
+                            filtered_df,
+                            x='date',
+                            y='recall',
+                            color='category',
+                            markers=True,
+                            labels={'date': 'Date', 'recall': 'Recall (%)', 'category': 'Error Category'},
+                            title="Recall by Error Category Over Time"
+                        )
+                        fig_recall.update_layout(height=400, hovermode='x unified')
+                        fig_recall.update_yaxis(range=[0, 100])
+                        st.plotly_chart(fig_recall, use_container_width=True, key=f"recall_trend_{model_version}")
+                    
+                    with col2:
+                        # Precision trends
+                        fig_precision = px.line(
+                            filtered_df,
+                            x='date',
+                            y='precision',
+                            color='category',
+                            markers=True,
+                            labels={'date': 'Date', 'precision': 'Precision (%)', 'category': 'Error Category'},
+                            title="Precision by Error Category Over Time"
+                        )
+                        fig_precision.update_layout(height=400, hovermode='x unified')
+                        fig_precision.update_yaxis(range=[0, 100])
+                        st.plotly_chart(fig_precision, use_container_width=True, key=f"precision_trend_{model_version}")
+                    
+                    # Show summary stats for selected categories
+                    st.markdown("**Latest Performance by Category:**")
+                    latest_date = filtered_df['date'].max()
+                    latest_perf = filtered_df[filtered_df['date'] == latest_date].sort_values('recall', ascending=False)
+                    
+                    summary_df = latest_perf[['category', 'recall', 'precision', 'detected', 'total']].copy()
+                    summary_df.columns = ['Category', 'Recall %', 'Precision %', 'Detected', 'Total']
+                    st.dataframe(
+                        summary_df,
+                        use_container_width=True,
+                        hide_index=True,
+                        column_config={
+                            'Recall %': st.column_config.NumberColumn('Recall %', format="%.1f%%"),
+                            'Precision %': st.column_config.NumberColumn('Precision %', format="%.1f%%")
+                        }
+                    )
             
             st.markdown("---")
 
@@ -544,6 +674,167 @@ with tab4:
                     st.markdown("- Inspect model configuration")
                 else:
                     st.success("✅ No regression detected - performance within expected range")
+                
+                # Cost Savings Regression Check
+                st.markdown("---")
+                st.subheader("💰 Cost Savings Regression")
+                
+                @st.cache_data(ttl=300)
+                def get_cost_savings_history(model):
+                    start_date = datetime.now() - timedelta(days=days_back)
+                    df = data_access.get_transactions(start_date=start_date, environment=env_filter)
+                    if df.empty or 'total_patients' not in df.columns:
+                        return None
+                    
+                    model_df = df[df['model_version'] == model].copy()
+                    if model_df.empty or 'total_potential_savings' not in model_df.columns:
+                        return None
+                    
+                    return model_df.sort_values('created_at')
+                
+                savings_history = get_cost_savings_history(model_version)
+                
+                if savings_history is not None and len(savings_history) >= 2:
+                    latest = savings_history.iloc[-1]
+                    previous = savings_history.iloc[-2]
+                    
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        current_savings = latest.get('total_potential_savings', 0)
+                        prev_savings = previous.get('total_potential_savings', 0)
+                        delta_savings = current_savings - prev_savings
+                        st.metric(
+                            "Current Potential Savings",
+                            f"${current_savings:,.2f}",
+                            delta=f"${delta_savings:,.2f}"
+                        )
+                    
+                    with col2:
+                        current_capture = latest.get('savings_capture_rate', 0)
+                        prev_capture = previous.get('savings_capture_rate', 0)
+                        delta_capture = current_capture - prev_capture
+                        st.metric(
+                            "Capture Rate",
+                            f"{current_capture:.1f}%",
+                            delta=f"{delta_capture:+.1f}%"
+                        )
+                    
+                    with col3:
+                        current_avg = latest.get('avg_savings_per_patient', 0)
+                        prev_avg = previous.get('avg_savings_per_patient', 0)
+                        delta_avg = current_avg - prev_avg
+                        st.metric(
+                            "Avg Savings/Patient",
+                            f"${current_avg:,.2f}",
+                            delta=f"${delta_avg:,.2f}"
+                        )
+                    
+                    with col4:
+                        current_missed = latest.get('total_missed_savings', 0)
+                        prev_missed = previous.get('total_missed_savings', 0)
+                        delta_missed = current_missed - prev_missed
+                        st.metric(
+                            "Missed Savings",
+                            f"${current_missed:,.2f}",
+                            delta=f"${delta_missed:,.2f}",
+                            delta_color="inverse"
+                        )
+                    
+                    # Alert on savings regression
+                    if delta_capture < -5.0:  # More than 5% drop in capture rate
+                        st.warning(f"⚠️ Savings capture rate dropped by {abs(delta_capture):.1f}% - ROI declining")
+                    elif delta_savings < 0 and abs(delta_savings) > 1000:
+                        st.warning(f"⚠️ Potential savings decreased by ${abs(delta_savings):,.2f}")
+                    else:
+                        st.success("✅ Cost savings metrics stable or improving")
+                else:
+                    st.info("Run more benchmarks to track cost savings regressions over time")
+                
+                # Error Category Performance Regression
+                st.markdown("---")
+                st.subheader("🎯 Error Category Performance Regression")
+                
+                @st.cache_data(ttl=300)
+                def get_category_performance_history(model):
+                    # Get latest snapshots for this model
+                    df = data_access.get_latest_snapshots(environment=env_filter)
+                    if df.empty:
+                        return None
+                    
+                    model_df = df[df['model_version'] == model].copy()
+                    if model_df.empty or 'domain_breakdown' not in model_df.columns:
+                        return None
+                    
+                    # Parse domain_breakdown JSONB
+                    import json
+                    if isinstance(model_df['domain_breakdown'].iloc[0], str):
+                        breakdown = json.loads(model_df['domain_breakdown'].iloc[0])
+                    else:
+                        breakdown = model_df['domain_breakdown'].iloc[0]
+                    
+                    if not breakdown:
+                        return None
+                    
+                    return breakdown
+                
+                category_perf = get_category_performance_history(model_version)
+                
+                if category_perf:
+                    st.markdown("**Recall by Error Category:**")
+                    
+                    # Create a dataframe for display
+                    category_data = []
+                    for category, metrics in category_perf.items():
+                        recall = metrics.get('recall', 0) * 100
+                        detected = metrics.get('total_detected', 0)
+                        total = metrics.get('total_cases', 0)
+                        category_data.append({
+                            'Category': category.replace('_', ' ').title(),
+                            'Recall %': recall,
+                            'Detected': detected,
+                            'Total': total,
+                            'Status': '✅' if recall >= 80 else ('⚠️' if recall >= 50 else '❌')
+                        })
+                    
+                    category_df = pd.DataFrame(category_data).sort_values('Recall %', ascending=False)
+                    
+                    # Display table
+                    st.dataframe(
+                        category_df,
+                        use_container_width=True,
+                        hide_index=True,
+                        column_config={
+                            'Recall %': st.column_config.NumberColumn('Recall %', format="%.1f%%"),
+                            'Detected': st.column_config.NumberColumn('Detected', format="%d"),
+                            'Total': st.column_config.NumberColumn('Total Cases', format="%d")
+                        }
+                    )
+                    
+                    # Alert on low-performing categories
+                    low_performing = category_df[category_df['Recall %'] < 30]
+                    if not low_performing.empty:
+                        st.error(f"🚨 **{len(low_performing)} categories below 30% recall:**")
+                        for _, row in low_performing.iterrows():
+                            st.markdown(f"- **{row['Category']}**: {row['Recall %']:.1f}% ({row['Detected']}/{row['Total']})")
+                    
+                    # Visual chart
+                    fig = px.bar(
+                        category_df,
+                        x='Recall %',
+                        y='Category',
+                        orientation='h',
+                        text='Recall %',
+                        title="Recall Performance by Error Category",
+                        color='Recall %',
+                        color_continuous_scale=['red', 'yellow', 'green'],
+                        range_color=[0, 100]
+                    )
+                    fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+                    fig.update_layout(height=400, xaxis_title="Recall (%)", yaxis_title="")
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("No error category breakdown available. Re-run model benchmarks to track category performance.")
 
 # ============================================================================
 # ============================================================================
@@ -777,50 +1068,72 @@ with tab6:
     
     @st.cache_data(ttl=300)
     def load_patient_benchmarks():
-        """Load patient benchmark results from transactions table."""
-        # Calculate start_date from days_back
-        start_date = datetime.now() - timedelta(days=days_back)
-        
-        # Get all transactions (metrics are already expanded into columns)
-        df = data_access.get_transactions(start_date=start_date, environment=env_filter)
+        """Load patient benchmark results from snapshots table."""
+        # Get latest snapshots (current versions only)
+        df = data_access.get_latest_snapshots(environment=env_filter)
         
         if df.empty:
             return pd.DataFrame()
         
-        # Filter to only patient benchmarks (have total_patients column)
-        if 'total_patients' not in df.columns:
+        # Filter to only model benchmarks (have domain_knowledge_detection_rate in metrics)
+        # Parse metrics JSONB if needed
+        if 'metrics' in df.columns:
+            import json
+            if df['metrics'].dtype == 'object':
+                # Expand metrics JSONB into columns
+                metrics_expanded = df['metrics'].apply(lambda x: x if isinstance(x, dict) else json.loads(x) if isinstance(x, str) else {})
+                metrics_df = pd.json_normalize(metrics_expanded)
+                # Drop metrics column and add expanded columns
+                df = df.drop('metrics', axis=1)
+                # Only add columns that don't already exist
+                for col in metrics_df.columns:
+                    if col not in df.columns:
+                        df[col] = metrics_df[col]
+        
+        # Check if this is model benchmark data (has domain metrics)
+        if 'domain_knowledge_detection_rate' not in df.columns and 'domain_recall' not in df.columns:
             return pd.DataFrame()
         
-        patient_df = df[df['total_patients'].notna()].copy()
+        # Filter out old short-name models (keep only full model names)
+        short_names = ['medgemma', 'openai', 'gemini', 'baseline', 'medgemma-v1.0', 'openai-v1.0', 'baseline-v1.0', 'gemini-v1.0']
+        df = df[~df['model_version'].isin(short_names)].copy()
         
-        if patient_df.empty:
+        if df.empty:
             return pd.DataFrame()
         
-        # Filter out old short-name models (keep only full model names with version numbers)
-        # Old names: medgemma, openai, gemini, baseline
-        # New names: Google MedGemma-4B-IT, OpenAI GPT-4, Google Gemini 1.5 Pro, Heuristic Baseline
-        short_names = ['medgemma', 'openai', 'gemini', 'baseline', 'medgemma-v1.0', 'openai-v1.0', 'baseline-v1.0']
-        patient_df = patient_df[~patient_df['model_version'].isin(short_names)].copy()
+        # Helper function to safely get column value
+        def safe_get_col(col_name, default_col_name=None, default_value=0):
+            if col_name in df.columns:
+                col = df[col_name]
+                # Handle None/NaN values
+                return col.fillna(default_value)
+            elif default_col_name and default_col_name in df.columns:
+                col = df[default_col_name]
+                return col.fillna(default_value)
+            else:
+                return pd.Series([default_value] * len(df), index=df.index)
         
-        if patient_df.empty:
-            return pd.DataFrame()
+        # Handle domain detection rate
+        if 'domain_knowledge_detection_rate' in df.columns:
+            domain_detection = df['domain_knowledge_detection_rate'].fillna(0).apply(lambda x: x if x > 1 else x * 100)
+        else:
+            domain_detection = pd.Series([0] * len(df), index=df.index)
         
         # Create clean dataset with required columns
-        # Handle both decimal (0.667) and percentage (66.7) formats for backwards compatibility
-        domain_rates = patient_df.get('domain_knowledge_detection_rate', 0)
-        # If values are > 1, they're already percentages; if <= 1, they're decimals needing conversion
-        domain_detection = domain_rates.apply(lambda x: x if x > 1 else x * 100)
-        
         result_df = pd.DataFrame({
-            'model_version': patient_df['model_version'],
-            'created_at': patient_df['created_at'],
-            'domain_detection': domain_detection,
-            'f1_score': patient_df.get('f1', 0),
-            'precision': patient_df.get('precision', 0),
-            'recall': patient_df.get('recall', 0),
-            'latency_ms': patient_df.get('latency_ms', 0),
-            'total_patients': patient_df.get('total_patients', 0),
-            'successful': patient_df.get('successful_analyses', 0)
+            'model_version': df['model_version'].values,
+            'created_at': df['created_at'].values,
+            'domain_detection': domain_detection.values,
+            'f1_score': safe_get_col('f1_score', 'f1', 0).values,
+            'precision': safe_get_col('precision_score', 'precision', 0).values,
+            'recall': safe_get_col('recall_score', 'recall', 0).values,
+            'latency_ms': safe_get_col('latency_ms', default_value=0).values,
+            'total_patients': safe_get_col('total_documents', 'total_patients', 0).values,
+            'successful': safe_get_col('success_count', 'successful_analyses', 0).values,
+            'total_potential_savings': safe_get_col('total_potential_savings', default_value=0).values,
+            'total_missed_savings': safe_get_col('total_missed_savings', default_value=0).values,
+            'avg_savings_per_patient': safe_get_col('avg_savings_per_patient', default_value=0).values,
+            'savings_capture_rate': safe_get_col('savings_capture_rate', default_value=0).values
         })
         
         return result_df
@@ -872,6 +1185,78 @@ with tab6:
                 "Total Benchmark Runs",
                 f"{total_runs}"
             )
+        
+        st.markdown("---")
+        
+        # Cost Savings Per Model
+        st.subheader("💰 Cost Savings by Model")
+        
+        # Check if cost savings data exists
+        if 'total_potential_savings' in latest_results.columns:
+            savings_df = latest_results[[
+                'model_version', 'total_potential_savings', 'total_missed_savings',
+                'avg_savings_per_patient', 'savings_capture_rate'
+            ]].copy()
+            
+            savings_df = savings_df.sort_values('total_potential_savings', ascending=False)
+            savings_df.columns = [
+                'Model', 'Potential Savings', 'Missed Savings',
+                'Avg per Patient', 'Capture Rate %'
+            ]
+            
+            # Format currency and percentages
+            savings_df['Potential Savings'] = savings_df['Potential Savings'].apply(lambda x: f"${x:,.2f}")
+            savings_df['Missed Savings'] = savings_df['Missed Savings'].apply(lambda x: f"${x:,.2f}")
+            savings_df['Avg per Patient'] = savings_df['Avg per Patient'].apply(lambda x: f"${x:,.2f}")
+            savings_df['Capture Rate %'] = savings_df['Capture Rate %'].apply(lambda x: f"{x:.1f}%")
+            
+            st.dataframe(savings_df, use_container_width=True, hide_index=True)
+            
+            # Cost savings visualization
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                fig = go.Figure()
+                fig.add_trace(go.Bar(
+                    name='Potential Savings',
+                    x=latest_results['model_version'],
+                    y=latest_results['total_potential_savings'],
+                    text=latest_results['total_potential_savings'].apply(lambda x: f"${x:,.0f}"),
+                    textposition='auto',
+                    marker_color='green'
+                ))
+                fig.add_trace(go.Bar(
+                    name='Missed Savings',
+                    x=latest_results['model_version'],
+                    y=latest_results['total_missed_savings'],
+                    text=latest_results['total_missed_savings'].apply(lambda x: f"${x:,.0f}"),
+                    textposition='auto',
+                    marker_color='red'
+                ))
+                fig.update_layout(
+                    title="Potential vs Missed Savings",
+                    yaxis_title="Amount ($)",
+                    barmode='group',
+                    height=400
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            
+            with col2:
+                fig = px.bar(
+                    latest_results,
+                    x='model_version',
+                    y='savings_capture_rate',
+                    text=latest_results['savings_capture_rate'].apply(lambda x: f"{x:.1f}%"),
+                    labels={'model_version': 'Model', 'savings_capture_rate': 'Capture Rate (%)'},
+                    title="Savings Capture Rate by Model",
+                    color='savings_capture_rate',
+                    color_continuous_scale='RdYlGn'
+                )
+                fig.update_traces(textposition='outside')
+                fig.update_layout(height=400, showlegend=False)
+                st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("🔄 Re-run benchmarks to see cost savings metrics: `python3 scripts/generate_patient_benchmarks.py --model all`")
         
         st.markdown("---")
         
@@ -943,6 +1328,47 @@ with tab6:
                 barmode='group'
             )
             st.plotly_chart(fig, use_container_width=True, key="patient_f1_comparison")
+        
+        # Cost Savings Trends
+        if 'total_potential_savings' in patient_df.columns and len(patient_df) > 1:
+            st.markdown("---")
+            st.subheader("💰 Cost Savings Trends Over Time")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                fig = px.line(
+                    patient_df,
+                    x='created_at',
+                    y='total_potential_savings',
+                    color='model_version',
+                    markers=True,
+                    labels={
+                        'created_at': 'Date',
+                        'total_potential_savings': 'Potential Savings ($)',
+                        'model_version': 'Model'
+                    },
+                    title="Potential Savings Over Time"
+                )
+                fig.update_layout(height=400, hovermode='x unified')
+                st.plotly_chart(fig, use_container_width=True, key="savings_trend")
+            
+            with col2:
+                fig = px.line(
+                    patient_df,
+                    x='created_at',
+                    y='savings_capture_rate',
+                    color='model_version',
+                    markers=True,
+                    labels={
+                        'created_at': 'Date',
+                        'savings_capture_rate': 'Capture Rate (%)',
+                        'model_version': 'Model'
+                    },
+                    title="Savings Capture Rate Over Time"
+                )
+                fig.update_layout(height=400, hovermode='x unified')
+                st.plotly_chart(fig, use_container_width=True, key="capture_rate_trend")
         
         # Detailed metrics
         st.markdown("---")
