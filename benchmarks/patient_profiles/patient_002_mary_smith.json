@@ -16,10 +16,18 @@
         "patient_002_doc_2_pharmacy.txt"
     ],
     "expected_issues": [{
-        "type": "age_inappropriate_procedure",
-        "severity": "high",
-        "description": "72-year-old post-menopausal female billed for IUD insertion (CPT 58300) - clinically inappropriate",
-        "requires_domain_knowledge": true,
-        "cpt_code": "58300"
-    }]
+            "type": "age_inappropriate_procedure",
+            "severity": "high",
+            "description": "72-year-old post-menopausal female billed for IUD insertion (CPT 58300) - clinically inappropriate",
+            "requires_domain_knowledge": true,
+            "cpt_code": "58300"
+        },
+        {
+            "type": "duplicate_charge",
+            "severity": "medium",
+            "description": "Duplicate charge for the same office visit appearing in both medical bill and EOB",
+            "requires_domain_knowledge": false,
+            "cpt_code": "99213"
+        }
+    ]
 }

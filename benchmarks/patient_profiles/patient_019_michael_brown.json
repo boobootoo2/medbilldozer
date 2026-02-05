@@ -1,0 +1,52 @@
+{
+    "patient_id": "P019",
+    "patient_name": "Michael Brown",
+    "age": 48,
+    "sex": "M",
+    "known_conditions": [
+        "Right knee osteoarthritis"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Orthopedic surgery",
+    "expected_issues": [{
+            "type": "anatomical_contradiction",
+            "severity": "critical",
+            "description": "Left knee surgery billed when diagnosis and clinical notes reference right knee pain only",
+            "requires_domain_knowledge": true,
+            "cpt_code": "27447"
+        },
+        {
+            "type": "temporal_violation",
+            "severity": "high",
+            "description": "Multiple anesthesia base units for single procedure session - should be billed once per session",
+            "requires_domain_knowledge": true,
+            "cpt_code": "01382"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P019_001",
+            "document_type": "orthopedic_note",
+            "content": "48-year-old male with severe RIGHT knee osteoarthritis. Plan: Right total knee arthroplasty. LEFT knee asymptomatic."
+        },
+        {
+            "document_id": "DOC_P019_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "27447",
+                    "description": "Total knee arthroplasty (LEFT)",
+                    "charge": 18500.00
+                },
+                {
+                    "cpt_code": "01382",
+                    "description": "Anesthesia for diagnostic knee arthroscopy - Unit 1",
+                    "charge": 850.00
+                },
+                {
+                    "cpt_code": "01382",
+                    "description": "Anesthesia for diagnostic knee arthroscopy - Unit 2 DUPLICATE",
+                    "charge": 850.00
+                }
+            ]
+        }
+    ]
+}

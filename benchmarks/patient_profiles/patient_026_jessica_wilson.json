@@ -1,0 +1,53 @@
+{
+    "patient_id": "P026",
+    "patient_name": "Jessica Wilson",
+    "age": 31,
+    "sex": "F",
+    "known_conditions": [
+        "Anxiety",
+        "Healthy"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Primary care wellness",
+    "expected_issues": [{
+            "type": "diagnosis_procedure_mismatch",
+            "severity": "critical",
+            "description": "Chemotherapy infusion billed without any oncology or cancer diagnosis",
+            "requires_domain_knowledge": true,
+            "cpt_code": "96413"
+        },
+        {
+            "type": "age_inappropriate",
+            "severity": "high",
+            "description": "31-year-old billed for bone density scan without risk factors - typically for postmenopausal women",
+            "requires_domain_knowledge": true,
+            "cpt_code": "77080"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P026_001",
+            "document_type": "primary_care_note",
+            "content": "31-year-old healthy female for annual wellness. No chronic diseases. Anxiety well-controlled with therapy. No cancer history. No family history of osteoporosis."
+        },
+        {
+            "document_id": "DOC_P026_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "96413",
+                    "description": "Chemotherapy administration IV infusion",
+                    "charge": 685.00
+                },
+                {
+                    "cpt_code": "77080",
+                    "description": "DEXA bone density scan",
+                    "charge": 320.00
+                },
+                {
+                    "cpt_code": "99395",
+                    "description": "Preventive visit age 18-39",
+                    "charge": 250.00
+                }
+            ]
+        }
+    ]
+}

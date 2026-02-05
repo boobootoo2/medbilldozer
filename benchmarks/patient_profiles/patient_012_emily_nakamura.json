@@ -1,0 +1,56 @@
+{
+    "patient_id": "P012",
+    "patient_name": "Emily Nakamura",
+    "age": 28,
+    "sex": "F",
+    "known_conditions": [
+        "Asthma",
+        "Seasonal allergies"
+    ],
+    "prior_surgical_history": [{
+        "procedure": "Cholecystectomy (gallbladder removal)",
+        "year": 2022
+    }],
+    "visit_type": "Outpatient gastroenterology",
+    "expected_issues": [{
+            "type": "surgical_history_contradiction",
+            "severity": "critical",
+            "description": "Gallbladder removal billed after documented prior cholecystectomy in 2022",
+            "requires_domain_knowledge": true,
+            "cpt_code": "47562"
+        },
+        {
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Female patient billed for testicular ultrasound - anatomically impossible",
+            "requires_domain_knowledge": true,
+            "cpt_code": "76870"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P012_001",
+            "document_type": "gastro_consult_note",
+            "content": "28-year-old female with history of cholecystectomy (2022) presents with mild dyspepsia. Post-cholecystectomy syndrome ruled out. Recommend H. pylori testing."
+        },
+        {
+            "document_id": "DOC_P012_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "47562",
+                    "description": "Laparoscopic cholecystectomy",
+                    "charge": 9800.00
+                },
+                {
+                    "cpt_code": "76870",
+                    "description": "Ultrasound scrotum and contents",
+                    "charge": 285.00
+                },
+                {
+                    "cpt_code": "99213",
+                    "description": "Office visit level 3",
+                    "charge": 150.00
+                }
+            ]
+        }
+    ]
+}

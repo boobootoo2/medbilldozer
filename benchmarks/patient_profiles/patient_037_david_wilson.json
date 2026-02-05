@@ -1,0 +1,58 @@
+{
+    "patient_id": "P037",
+    "patient_name": "David Wilson",
+    "age": 45,
+    "sex": "M",
+    "known_conditions": [
+        "Hypertension",
+        "Hyperlipidemia"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Primary care follow-up",
+    "expected_issues": [{
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Obstetric ultrasound billed for male patient",
+            "requires_domain_knowledge": true,
+            "cpt_code": "76805"
+        },
+        {
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Prenatal care visit billed for male patient",
+            "requires_domain_knowledge": true,
+            "cpt_code": "59400"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P037_001",
+            "document_type": "primary_care_note",
+            "content": "45-year-old male presents for routine follow-up of hypertension and hyperlipidemia. Patient reports feeling well, no new complaints. Medications: lisinopril 20mg daily, atorvastatin 40mg daily. BP 128/76, HR 72. Labs reviewed: lipid panel showing LDL 95, HDL 52. Continue current management. Follow up in 3 months."
+        },
+        {
+            "document_id": "DOC_P037_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99213",
+                    "description": "Office visit, established patient, level 3",
+                    "charge": 150.00
+                },
+                {
+                    "cpt_code": "80061",
+                    "description": "Lipid panel",
+                    "charge": 45.00
+                },
+                {
+                    "cpt_code": "76805",
+                    "description": "Ultrasound, pregnant uterus, real time with image documentation, fetal and maternal evaluation",
+                    "charge": 450.00
+                },
+                {
+                    "cpt_code": "59400",
+                    "description": "Routine obstetric care including antepartum care, vaginal delivery and postpartum care",
+                    "charge": 4500.00
+                }
+            ]
+        }
+    ]
+}

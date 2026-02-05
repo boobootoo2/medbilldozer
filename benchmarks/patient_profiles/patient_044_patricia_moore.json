@@ -1,0 +1,54 @@
+{
+    "patient_id": "P044",
+    "patient_name": "Patricia Moore",
+    "age": 48,
+    "sex": "F",
+    "known_conditions": [
+        "Migraine headaches",
+        "Hypothyroidism"
+    ],
+    "prior_surgical_history": [],
+    "respiratory_history": "No asthma, no COPD, no chronic respiratory conditions. Never smoked. No wheezing or shortness of breath.",
+    "visit_type": "Neurology follow-up for migraines",
+    "expected_issues": [{
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Pulmonary function testing billed for patient with no asthma or respiratory history",
+            "requires_domain_knowledge": true,
+            "cpt_code": "94010"
+        },
+        {
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Spirometry billed for patient without respiratory symptoms or indication",
+            "requires_domain_knowledge": true,
+            "cpt_code": "94060"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P044_001",
+            "document_type": "neurology_note",
+            "content": "48-year-old female with history of migraines presents for routine follow-up. Migraines well-controlled on topiramate 50mg BID. No recent severe episodes. Patient denies shortness of breath, wheezing, or cough. No respiratory complaints. Lungs clear to auscultation bilaterally. No history of asthma or COPD. Never smoked. Assessment: Migraines stable on current therapy. Continue topiramate."
+        },
+        {
+            "document_id": "DOC_P044_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99214",
+                    "description": "Office visit, established patient, level 4",
+                    "charge": 185.00
+                },
+                {
+                    "cpt_code": "94010",
+                    "description": "Spirometry, including graphic record, total and timed vital capacity",
+                    "charge": 95.00
+                },
+                {
+                    "cpt_code": "94060",
+                    "description": "Bronchodilation responsiveness, spirometry",
+                    "charge": 115.00
+                }
+            ]
+        }
+    ]
+}

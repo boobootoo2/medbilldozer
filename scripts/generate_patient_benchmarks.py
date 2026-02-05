@@ -124,26 +124,45 @@ class PatientBenchmarkRunner:
         return model_names.get(self.model, self.model)
     
     def load_patient_profile(self, profile_path: Path) -> tuple:
-        """Load patient profile and expected issues."""
+        """Load patient profile and expected issues. Supports both old and new JSON formats."""
         with open(profile_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
-        profile = PatientProfile(
-            patient_id=data['patient_id'],
-            name=data['name'],
-            age=data['demographics']['age'],
-            sex=data['demographics']['sex'],
-            date_of_birth=data['demographics']['date_of_birth'],
-            conditions=data['medical_history']['conditions'],
-            allergies=data['medical_history']['allergies'],
-            surgeries=data['medical_history']['surgeries']
-        )
+        # Handle both old format (nested) and new format (flat)
+        if 'demographics' in data:
+            # Old format with nested structure
+            profile = PatientProfile(
+                patient_id=data['patient_id'],
+                name=data['name'],
+                age=data['demographics']['age'],
+                sex=data['demographics']['sex'],
+                date_of_birth=data['demographics']['date_of_birth'],
+                conditions=data['medical_history']['conditions'],
+                allergies=data['medical_history']['allergies'],
+                surgeries=data['medical_history']['surgeries']
+            )
+            document_names = data.get('documents', [])
+        else:
+            # New format with flat structure
+            profile = PatientProfile(
+                patient_id=data['patient_id'],
+                name=data.get('patient_name', data.get('name', 'Unknown')),
+                age=data['age'],
+                sex=data['sex'],
+                date_of_birth=data.get('date_of_birth', 'Unknown'),
+                conditions=data.get('known_conditions', []),
+                allergies=data.get('allergies', []),
+                surgeries=[
+                    s.get('procedure', s) if isinstance(s, dict) else s
+                    for s in data.get('prior_surgical_history', [])
+                ]
+            )
+            # Return document dicts (will be processed later to extract content)
+            document_names = data.get('documents', [])
         
         expected_issues = [
             ExpectedIssue(**issue) for issue in data.get('expected_issues', [])
         ]
-        
-        document_names = data.get('documents', [])
         
         return profile, expected_issues, document_names
     
@@ -182,9 +201,24 @@ class PatientBenchmarkRunner:
         
         try:
             # Load all document texts
+            # Handle both old format (filenames) and new format (embedded content)
             doc_texts = []
-            for doc_name in documents:
-                doc_texts.append(self.load_document_text(doc_name))
+            for doc_item in documents:
+                if isinstance(doc_item, str):
+                    # Old format: filename to load
+                    if doc_item.strip():  # Not empty content string
+                        try:
+                            doc_texts.append(self.load_document_text(doc_item))
+                        except FileNotFoundError:
+                            # New format: content embedded directly
+                            doc_texts.append(doc_item)
+                    else:
+                        doc_texts.append(doc_item)
+                elif isinstance(doc_item, dict):
+                    # New format: document dict with content
+                    doc_texts.append(doc_item.get('content', ''))
+                else:
+                    doc_texts.append(str(doc_item))
             
             # Combine documents with patient context for cross-document analysis
             patient_context = f"""
@@ -364,7 +398,7 @@ Focus especially on gender-specific and age-specific procedures that require med
                 result = PatientBenchmarkResult(
                     patient_id=profile.patient_id,
                     patient_name=profile.name,
-                    model_name=self.model,
+                    model_name=self._get_precise_model_name(),
                     documents_analyzed=len(document_names),
                     analysis_latency_ms=latency_ms,
                     expected_issues=expected_issues,
@@ -386,7 +420,7 @@ Focus especially on gender-specific and age-specific procedures that require med
                 result = PatientBenchmarkResult(
                     patient_id=profile.patient_id,
                     patient_name=profile.name,
-                    model_name=self.model,
+                    model_name=self._get_precise_model_name(),
                     documents_analyzed=len(document_names),
                     analysis_latency_ms=latency_ms,
                     expected_issues=expected_issues,
@@ -416,7 +450,7 @@ Focus especially on gender-specific and age-specific procedures that require med
         avg_latency = sum(r.analysis_latency_ms for r in results) / len(results) if results else 0.0
         
         metrics = PatientBenchmarkMetrics(
-            model_name=self.model,
+            model_name=self._get_precise_model_name(),
             total_patients=len(profile_files),
             successful_analyses=successful,
             avg_precision=avg_precision,
@@ -534,6 +568,22 @@ def main():
         choices=['medgemma', 'openai', 'gemini', 'baseline', 'all'],
         help='Which model to benchmark (default: all)'
     )
+    parser.add_argument(
+        '--push-to-supabase',
+        action='store_true',
+        help='Push results to Supabase for historical tracking'
+    )
+    parser.add_argument(
+        '--environment',
+        type=str,
+        default='local',
+        help='Execution environment (local, github-actions, etc.)'
+    )
+    parser.add_argument(
+        '--commit-sha',
+        type=str,
+        help='Git commit SHA'
+    )
     
     args = parser.parse_args()
     
@@ -595,6 +645,62 @@ def main():
     # Update README with results
     if len(all_metrics) > 1:
         update_readme(all_metrics)
+    
+    # Push to Supabase if requested
+    if args.push_to_supabase and all_metrics:
+        print("\n📤 Pushing results to Supabase...")
+        try:
+            import subprocess  # nosec B404 - needed for git commands
+            import os
+            
+            # Get git info if not provided
+            commit_sha = args.commit_sha
+            if not commit_sha:
+                try:
+                    result = subprocess.run(  # nosec B603 B607 - safe git command with hardcoded args
+                        ['git', 'rev-parse', 'HEAD'],
+                        capture_output=True,
+                        text=True,
+                        check=True
+                    )
+                    commit_sha = result.stdout.strip()
+                except Exception:
+                    commit_sha = None
+            
+            branch_name = None
+            try:
+                result = subprocess.run(  # nosec B603 B607 - safe git command with hardcoded args
+                    ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                branch_name = result.stdout.strip()
+            except Exception:  # nosec B110 - acceptable to ignore git errors
+                pass
+            
+            # Push each model's results
+            for metrics in all_metrics:
+                results_file = PROJECT_ROOT / 'benchmarks' / 'results' / f'patient_benchmark_{metrics.model_name}.json'
+                if results_file.exists():
+                    cmd = [
+                        'python3',
+                        str(PROJECT_ROOT / 'scripts' / 'push_patient_benchmarks.py'),
+                        '--input', str(results_file),
+                        '--environment', args.environment
+                    ]
+                    if commit_sha:
+                        cmd.extend(['--commit-sha', commit_sha])
+                    if branch_name:
+                        cmd.extend(['--branch-name', branch_name])
+                    
+                    subprocess.run(cmd, check=True)  # nosec B603 - safe, controlled script execution
+            
+            print("✅ All results pushed to Supabase successfully!")
+            
+        except Exception as e:
+            print(f"⚠️  Warning: Failed to push to Supabase: {e}")
+            print("   Results are still saved locally in benchmarks/results/")
     
     return 0
 

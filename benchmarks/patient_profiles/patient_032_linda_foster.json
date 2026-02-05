@@ -1,0 +1,64 @@
+{
+    "patient_id": "P032",
+    "patient_name": "Linda Foster",
+    "age": 58,
+    "sex": "F",
+    "known_conditions": [
+        "End-Stage Renal Disease",
+        "Hypertension",
+        "Secondary Hyperparathyroidism"
+    ],
+    "prior_surgical_history": [{
+        "procedure": "Bilateral Nephrectomy",
+        "year": 2022,
+        "indication": "Polycystic kidney disease"
+    }],
+    "current_treatment": "Hemodialysis 3x weekly",
+    "visit_type": "Hemodialysis center visit",
+    "expected_issues": [{
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "critical",
+            "description": "Kidney biopsy billed for patient with documented bilateral nephrectomy in 2022",
+            "requires_domain_knowledge": true,
+            "cpt_code": "50200"
+        },
+        {
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Renal ultrasound billed for kidneys that were surgically removed",
+            "requires_domain_knowledge": true,
+            "cpt_code": "76770"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P032_001",
+            "document_type": "dialysis_treatment_note",
+            "content": "58-year-old female with ESRD s/p bilateral nephrectomy (2022) for PCKD. On hemodialysis 3x weekly via left upper arm AV fistula. Today's session: 3.5 hours, 2.8 kg weight removed, tolerated well. BP 142/88. Continue current dialysis prescription."
+        },
+        {
+            "document_id": "DOC_P032_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "90935",
+                    "description": "Hemodialysis procedure with single evaluation",
+                    "charge": 425.00
+                },
+                {
+                    "cpt_code": "50200",
+                    "description": "Renal biopsy, percutaneous, by trocar or needle",
+                    "charge": 1800.00
+                },
+                {
+                    "cpt_code": "76770",
+                    "description": "Ultrasound, retroperitoneal (kidneys), complete",
+                    "charge": 220.00
+                },
+                {
+                    "cpt_code": "80069",
+                    "description": "Renal function panel",
+                    "charge": 65.00
+                }
+            ]
+        }
+    ]
+}

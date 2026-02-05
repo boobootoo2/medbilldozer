@@ -1,0 +1,59 @@
+{
+    "patient_id": "P034",
+    "patient_name": "Emily Chen",
+    "age": 42,
+    "sex": "F",
+    "known_conditions": [
+        "Seasonal Allergies",
+        "Mild Asthma"
+    ],
+    "prior_surgical_history": [],
+    "cardiac_history": "No cardiac history, normal EKG on file from 2024 annual physical, echo 2023 showed normal EF 60%, no CAD risk factors",
+    "visit_type": "Annual wellness visit",
+    "expected_issues": [{
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "critical",
+            "description": "Coronary artery bypass graft billed for patient with no cardiac disease history",
+            "requires_domain_knowledge": true,
+            "cpt_code": "33533"
+        },
+        {
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Cardiac catheterization billed for patient with excellent cardiac health",
+            "requires_domain_knowledge": true,
+            "cpt_code": "93458"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P034_001",
+            "document_type": "wellness_visit_note",
+            "content": "42-year-old female presents for annual wellness visit. Patient reports excellent health, exercises regularly (runs 5K three times weekly). PMH: seasonal allergies, mild asthma well-controlled with albuterol PRN. No cardiac symptoms. Vitals: BP 118/72, HR 62, regular rhythm. Physical exam unremarkable. Recent labs: Total cholesterol 165, HDL 68, LDL 82, triglycerides 75. Patient is non-smoker, no family history of early CAD. Continue current management."
+        },
+        {
+            "document_id": "DOC_P034_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99396",
+                    "description": "Periodic comprehensive preventive medicine, established patient, age 40-64",
+                    "charge": 225.00
+                },
+                {
+                    "cpt_code": "80061",
+                    "description": "Lipid panel",
+                    "charge": 45.00
+                },
+                {
+                    "cpt_code": "33533",
+                    "description": "Coronary artery bypass, using arterial graft(s); single arterial graft",
+                    "charge": 45000.00
+                },
+                {
+                    "cpt_code": "93458",
+                    "description": "Catheter placement in coronary artery(s) for coronary angiography",
+                    "charge": 3500.00
+                }
+            ]
+        }
+    ]
+}

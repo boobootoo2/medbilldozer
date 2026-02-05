@@ -1,0 +1,59 @@
+{
+    "patient_id": "P017",
+    "patient_name": "Daniel Johnson",
+    "age": 55,
+    "sex": "M",
+    "known_conditions": [
+        "Type 2 Diabetes",
+        "Hypertension"
+    ],
+    "prior_surgical_history": [{
+        "procedure": "Left below-knee amputation",
+        "year": 2020,
+        "reason": "Diabetic foot infection"
+    }],
+    "visit_type": "Outpatient endocrinology",
+    "expected_issues": [{
+            "type": "anatomical_contradiction",
+            "severity": "critical",
+            "description": "Left knee arthroscopy billed on amputated limb - patient had left below-knee amputation in 2020",
+            "requires_domain_knowledge": true,
+            "cpt_code": "29881"
+        },
+        {
+            "type": "temporal_violation",
+            "severity": "high",
+            "description": "Duplicate same-day MRI of left lower extremity - same body region scanned twice",
+            "requires_domain_knowledge": true,
+            "cpt_code": "73721"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P017_001",
+            "document_type": "endocrinology_note",
+            "content": "55-year-old male with diabetes. History of left below-knee amputation (2020). Using prosthetic. Right leg intact. Blood glucose control improved."
+        },
+        {
+            "document_id": "DOC_P017_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "29881",
+                    "description": "Knee arthroscopy, surgical; with meniscectomy (left knee)",
+                    "charge": 3200.00
+                },
+                {
+                    "cpt_code": "73721",
+                    "description": "MRI lower extremity without contrast (left)",
+                    "charge": 1800.00,
+                    "date": "2026-02-04"
+                },
+                {
+                    "cpt_code": "73721",
+                    "description": "MRI lower extremity without contrast (left) - DUPLICATE",
+                    "charge": 1800.00,
+                    "date": "2026-02-04"
+                }
+            ]
+        }
+    ]
+}

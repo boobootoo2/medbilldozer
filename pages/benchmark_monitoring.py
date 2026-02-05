@@ -121,7 +121,8 @@ st.sidebar.markdown("**Last Updated:** " + datetime.now().strftime("%Y-%m-%d %H:
 # Tab Layout
 # ============================================================================
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "🏥 Patient Benchmarks",
     "📊 Current Snapshot",
     "📈 Performance Trends",
     "🔄 Model Comparison",
@@ -307,7 +308,7 @@ with tab2:
                     height=400
                 )
                 
-                st.plotly_chart(fig_f1, use_container_width=True)
+                st.plotly_chart(fig_f1, use_container_width=True, key=f"f1_chart_{model_version}")
             
             with col2:
                 # Run count
@@ -327,7 +328,7 @@ with tab2:
                     height=400
                 )
                 
-                st.plotly_chart(fig_count, use_container_width=True)
+                st.plotly_chart(fig_count, use_container_width=True, key=f"count_chart_{model_version}")
             
             st.markdown("---")
 
@@ -385,7 +386,7 @@ with tab3:
                 )
             )
             
-            st.plotly_chart(fig_comparison, use_container_width=True)
+            st.plotly_chart(fig_comparison, use_container_width=True, key="comparison_chart")
             
             # Summary statistics
             st.subheader("📊 Comparison Statistics")
@@ -697,6 +698,346 @@ with tab5:
 
 # Footer
 # ============================================================================
+
+# ============================================================================
+# TAB 6: Patient Benchmarks (Cross-Document Domain Knowledge)
+# ============================================================================
+
+with tab6:
+    st.header("🏥 Patient Cross-Document Benchmarks")
+    st.markdown("""
+    **Domain Knowledge Detection:** Testing models' ability to identify gender/age-inappropriate 
+    medical procedures that require healthcare domain knowledge (e.g., male patient billed for 
+    pregnancy ultrasound, 8-year-old billed for colonoscopy).
+    """)
+    
+    @st.cache_data(ttl=300)
+    def load_patient_benchmarks():
+        """Load patient benchmark results from transactions table."""
+        # Calculate start_date from days_back
+        start_date = datetime.now() - timedelta(days=days_back)
+        
+        # Get all transactions (metrics are already expanded into columns)
+        df = data_access.get_transactions(start_date=start_date, environment=env_filter)
+        
+        if df.empty:
+            return pd.DataFrame()
+        
+        # Filter to only patient benchmarks (have total_patients column)
+        if 'total_patients' not in df.columns:
+            return pd.DataFrame()
+        
+        patient_df = df[df['total_patients'].notna()].copy()
+        
+        if patient_df.empty:
+            return pd.DataFrame()
+        
+        # Filter out old short-name models (keep only full model names with version numbers)
+        # Old names: medgemma, openai, gemini, baseline
+        # New names: Google MedGemma-4B-IT, OpenAI GPT-4, Google Gemini 1.5 Pro, Heuristic Baseline
+        short_names = ['medgemma', 'openai', 'gemini', 'baseline', 'medgemma-v1.0', 'openai-v1.0', 'baseline-v1.0']
+        patient_df = patient_df[~patient_df['model_version'].isin(short_names)].copy()
+        
+        if patient_df.empty:
+            return pd.DataFrame()
+        
+        # Create clean dataset with required columns
+        # Handle both decimal (0.667) and percentage (66.7) formats for backwards compatibility
+        domain_rates = patient_df.get('domain_knowledge_detection_rate', 0)
+        # If values are > 1, they're already percentages; if <= 1, they're decimals needing conversion
+        domain_detection = domain_rates.apply(lambda x: x if x > 1 else x * 100)
+        
+        result_df = pd.DataFrame({
+            'model_version': patient_df['model_version'],
+            'created_at': patient_df['created_at'],
+            'domain_detection': domain_detection,
+            'f1_score': patient_df.get('f1', 0),
+            'precision': patient_df.get('precision', 0),
+            'recall': patient_df.get('recall', 0),
+            'latency_ms': patient_df.get('latency_ms', 0),
+            'total_patients': patient_df.get('total_patients', 0),
+            'successful': patient_df.get('successful_analyses', 0)
+        })
+        
+        return result_df
+    
+    patient_df = load_patient_benchmarks()
+    
+    if patient_df.empty:
+        st.warning("No patient benchmark data available. Run patient benchmarks with: `python3 scripts/generate_patient_benchmarks.py --model all --push-to-supabase`")
+    else:
+        # Get latest result per model
+        latest_results = patient_df.sort_values('created_at').groupby('model_version').last().reset_index()
+        latest_results = latest_results.sort_values('domain_detection', ascending=False)
+        
+        # Key metrics row
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            best_model = latest_results.iloc[0]['model_version'] if not latest_results.empty else "N/A"
+            best_score = latest_results.iloc[0]['domain_detection'] if not latest_results.empty else 0
+            st.metric(
+                "🏆 Top Model",
+                best_model,
+                f"{best_score:.1f}% domain detection"
+            )
+        
+        with col2:
+            # Calculate average excluding models with 0% (non-functional models)
+            functional_models = latest_results[latest_results['domain_detection'] > 0]
+            avg_domain = functional_models['domain_detection'].mean() if not functional_models.empty else 0
+            model_count = len(functional_models)
+            st.metric(
+                f"Avg Domain Detection ({model_count} models)",
+                f"{avg_domain:.1f}%",
+                help="Average across models that detect domain issues (excludes 0% scores)"
+            )
+        
+        with col3:
+            # Use same functional models filter for consistency
+            avg_f1 = functional_models['f1_score'].mean() if not functional_models.empty else 0
+            st.metric(
+                f"Avg F1 Score ({model_count} models)",
+                f"{avg_f1:.3f}",
+                help="Average F1 across functional models (excludes 0% scores)"
+            )
+        
+        with col4:
+            total_runs = len(patient_df)
+            st.metric(
+                "Total Benchmark Runs",
+                f"{total_runs}"
+            )
+        
+        st.markdown("---")
+        
+        # Leaderboard
+        st.subheader("📊 Domain Knowledge Leaderboard (Latest Run)")
+        
+        display_df = latest_results[[
+            'model_version', 'domain_detection', 'f1_score', 
+            'precision', 'recall', 'total_patients', 'successful'
+        ]].copy()
+        
+        display_df.columns = [
+            'Model', 'Domain Detection %', 'F1 Score', 
+            'Precision', 'Recall', 'Total Patients', 'Successful'
+        ]
+        
+        # Format percentages and decimals
+        display_df['Domain Detection %'] = display_df['Domain Detection %'].apply(lambda x: f"{x:.1f}%")
+        display_df['F1 Score'] = display_df['F1 Score'].apply(lambda x: f"{x:.3f}")
+        display_df['Precision'] = display_df['Precision'].apply(lambda x: f"{x:.3f}")
+        display_df['Recall'] = display_df['Recall'].apply(lambda x: f"{x:.3f}")
+        
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        
+        st.markdown("---")
+        
+        # Historical trends
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("📈 Domain Detection Over Time")
+            
+            if len(patient_df) > 1:
+                fig = px.line(
+                    patient_df,
+                    x='created_at',
+                    y='domain_detection',
+                    color='model_version',
+                    markers=True,
+                    labels={
+                        'created_at': 'Date',
+                        'domain_detection': 'Domain Detection Rate (%)',
+                        'model_version': 'Model'
+                    }
+                )
+                fig.update_layout(height=400, hovermode='x unified')
+                st.plotly_chart(fig, use_container_width=True, key="patient_domain_trend")
+            else:
+                st.info("Run multiple benchmarks over time to see trends")
+        
+        with col2:
+            st.subheader("📊 F1 Score Comparison")
+            
+            fig = go.Figure()
+            for model in latest_results['model_version'].unique():
+                model_data = latest_results[latest_results['model_version'] == model]
+                fig.add_trace(go.Bar(
+                    name=model,
+                    x=['F1 Score'],
+                    y=[model_data['f1_score'].values[0]],
+                    text=[f"{model_data['f1_score'].values[0]:.3f}"],
+                    textposition='auto'
+                ))
+            
+            fig.update_layout(
+                height=400,
+                yaxis_title="F1 Score",
+                showlegend=True,
+                barmode='group'
+            )
+            st.plotly_chart(fig, use_container_width=True, key="patient_f1_comparison")
+        
+        # Detailed metrics
+        st.markdown("---")
+        st.subheader("🔍 Detailed Performance Metrics")
+        
+        # Heatmap of performance across models
+        heatmap_df = latest_results[['model_version', 'domain_detection', 'f1_score', 'precision', 'recall']].set_index('model_version')
+        heatmap_df.columns = ['Domain Detection %', 'F1', 'Precision', 'Recall']
+        
+        fig = px.imshow(
+            heatmap_df.T,
+            labels=dict(x="Model", y="Metric", color="Score"),
+            x=heatmap_df.index,
+            y=heatmap_df.columns,
+            color_continuous_scale='RdYlGn',
+            aspect='auto',
+            text_auto='.2f'
+        )
+        fig.update_layout(height=300)
+        st.plotly_chart(fig, use_container_width=True, key="patient_heatmap")
+        
+        # Error Type Performance Heatmap
+        st.markdown("---")
+        st.subheader("🎯 Performance by Error Type")
+        st.markdown("Detection accuracy for different types of billing errors that require medical domain knowledge.")
+        
+        # Load detailed patient results from transactions to analyze error types
+        try:
+            from supabase import create_client
+            import os
+            import numpy as np
+            
+            supabase = create_client(os.getenv('SUPABASE_URL'), os.getenv('SUPABASE_SERVICE_ROLE_KEY'))
+            
+            # Get latest transaction for each model with error_type_performance data
+            query = supabase.table('benchmark_transactions').select('model_version, metrics, created_at').eq('environment', env_filter or 'local').order('created_at', desc=True).limit(100)
+            response = query.execute()
+            
+            if response.data:
+                # Build error type performance matrix - use latest result per model
+                model_error_performance = {}
+                
+                for transaction in response.data:
+                    model = transaction['model_version']
+                    
+                    # Skip old short-name models
+                    if model in ['medgemma', 'openai', 'gemini', 'baseline', 'medgemma-v1.0', 'openai-v1.0', 'baseline-v1.0']:
+                        continue
+                    
+                    # Only take the first (latest) result for each model
+                    if model in model_error_performance:
+                        continue
+                    
+                    metrics = transaction.get('metrics', {})
+                    error_type_perf = metrics.get('error_type_performance', {})
+                    
+                    if error_type_perf:
+                        model_error_performance[model] = error_type_perf
+                
+                if model_error_performance:
+                    # Build heatmap dataframe
+                    # Get all unique error types
+                    all_error_types = set()
+                    for model_data in model_error_performance.values():
+                        all_error_types.update(model_data.keys())
+                    
+                    # Create matrix
+                    heatmap_data = []
+                    models_list = sorted(model_error_performance.keys())
+                    error_types_list = sorted(all_error_types)
+                    
+                    for error_type in error_types_list:
+                        row = []
+                        for model in models_list:
+                            perf = model_error_performance[model].get(error_type, {})
+                            detection_rate = perf.get('detection_rate', 0.0) * 100  # Convert to percentage
+                            row.append(detection_rate)
+                        heatmap_data.append(row)
+                    
+                    # Create heatmap
+                    heatmap_array = np.array(heatmap_data)
+                    
+                    # Format error type names for display
+                    formatted_error_types = [et.replace('_', ' ').title() for et in error_types_list]
+                    
+                    fig = px.imshow(
+                        heatmap_array,
+                        labels=dict(x="Model", y="Error Type", color="Detection Rate (%)"),
+                        x=models_list,
+                        y=formatted_error_types,
+                        color_continuous_scale='RdYlGn',
+                        aspect='auto',
+                        text_auto='.1f'
+                    )
+                    fig.update_layout(
+                        height=max(400, len(error_types_list) * 30),
+                        xaxis={'side': 'bottom'},
+                        yaxis={'side': 'left'}
+                    )
+                    fig.update_xaxes(tickangle=-45)
+                    st.plotly_chart(fig, use_container_width=True, key="error_type_heatmap")
+                    
+                    # Summary statistics
+                    st.markdown("**Summary:**")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        # Best performing error type
+                        avg_by_error = heatmap_array.mean(axis=1)
+                        best_error_idx = avg_by_error.argmax()
+                        st.metric(
+                            "Easiest to Detect",
+                            formatted_error_types[best_error_idx],
+                            f"{avg_by_error[best_error_idx]:.1f}% avg detection"
+                        )
+                    
+                    with col2:
+                        # Most challenging error type
+                        worst_error_idx = avg_by_error.argmin()
+                        st.metric(
+                            "Most Challenging",
+                            formatted_error_types[worst_error_idx],
+                            f"{avg_by_error[worst_error_idx]:.1f}% avg detection"
+                        )
+                else:
+                    st.info("No error-type performance data available yet. Re-push benchmark results to collect this data.")
+            else:
+                st.warning("No transaction data available for error type analysis.")
+        except Exception as e:
+            st.error(f"Error loading error type performance: {str(e)}")
+            import traceback
+            st.code(traceback.format_exc())
+        
+        # Insights
+        st.markdown("---")
+        st.subheader("💡 Key Insights")
+        
+        if not latest_results.empty:
+            best = latest_results.iloc[0]
+            worst = latest_results.iloc[-1]
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.success(f"""
+                **Best Performer: {best['model_version']}**
+                - Domain Detection: {best['domain_detection']:.1f}%
+                - F1 Score: {best['f1_score']:.3f}
+                - Successfully analyzed {best['successful']}/{best['total_patients']} patients
+                """)
+            
+            with col2:
+                if worst['domain_detection'] < best['domain_detection']:
+                    gap = best['domain_detection'] - worst['domain_detection']
+                    st.warning(f"""
+                    **Performance Gap**
+                    - {best['model_version']} outperforms {worst['model_version']} by {gap:.1f}% in domain detection
+                    - Medical domain knowledge is critical for accurate billing issue detection
+                    """)
 
 st.markdown("---")
 st.markdown("""

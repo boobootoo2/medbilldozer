@@ -1,0 +1,49 @@
+{
+    "patient_id": "P018",
+    "patient_name": "Rachel Kim",
+    "age": 38,
+    "sex": "F",
+    "known_conditions": [
+        "Seasonal allergies"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Primary care - annual physical exam on 2026-01-15",
+    "expected_issues": [{
+            "type": "temporal_violation",
+            "severity": "high",
+            "description": "Two annual physical exams within 3 months (Jan 15 and Feb 4) - typically one per year",
+            "requires_domain_knowledge": true,
+            "cpt_code": "99396"
+        },
+        {
+            "type": "temporal_violation",
+            "severity": "high",
+            "description": "Preventive mammogram repeated too soon (last one 6 months ago) - annual screening recommended",
+            "requires_domain_knowledge": true,
+            "cpt_code": "77067"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P018_001",
+            "document_type": "primary_care_note",
+            "content": "38-year-old female. Annual physical exam completed on 01/15/2026. Presented today (02/04/2026) requesting another annual exam. Screening mammogram performed 08/2025 (6 months ago)."
+        },
+        {
+            "document_id": "DOC_P018_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99396",
+                    "description": "Preventive medicine visit age 40-64",
+                    "charge": 280.00,
+                    "date": "2026-02-04"
+                },
+                {
+                    "cpt_code": "77067",
+                    "description": "Screening mammography bilateral",
+                    "charge": 320.00,
+                    "date": "2026-02-04"
+                }
+            ]
+        }
+    ]
+}

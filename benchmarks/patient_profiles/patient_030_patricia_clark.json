@@ -1,0 +1,53 @@
+{
+    "patient_id": "P030",
+    "patient_name": "Patricia Clark",
+    "age": 58,
+    "sex": "F",
+    "known_conditions": [
+        "Type 2 Diabetes",
+        "Hypothyroidism"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Endocrinology follow-up",
+    "expected_issues": [{
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Female patient billed for prostate biopsy - females do not have a prostate gland",
+            "requires_domain_knowledge": true,
+            "cpt_code": "55700"
+        },
+        {
+            "type": "diagnosis_procedure_mismatch",
+            "severity": "critical",
+            "description": "Dialysis billed without any kidney disease or renal failure diagnosis - normal kidney function",
+            "requires_domain_knowledge": true,
+            "cpt_code": "90935"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P030_001",
+            "document_type": "endocrinology_note",
+            "content": "58-year-old female with diabetes and hypothyroidism. Labs: HbA1c 6.8%, TSH normal, creatinine 0.9 (normal kidney function). Medications adjusted."
+        },
+        {
+            "document_id": "DOC_P030_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "55700",
+                    "description": "Prostate biopsy",
+                    "charge": 1850.00
+                },
+                {
+                    "cpt_code": "90935",
+                    "description": "Hemodialysis procedure",
+                    "charge": 385.00
+                },
+                {
+                    "cpt_code": "99214",
+                    "description": "Office visit level 4",
+                    "charge": 220.00
+                }
+            ]
+        }
+    ]
+}

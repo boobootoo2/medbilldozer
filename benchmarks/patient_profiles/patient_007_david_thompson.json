@@ -16,10 +16,25 @@
         "patient_007_doc_2_lab.txt"
     ],
     "expected_issues": [{
-        "type": "gender_mismatch",
-        "severity": "critical",
-        "description": "Male patient billed for cervical biopsy (CPT 57500) - anatomically impossible",
-        "requires_domain_knowledge": true,
-        "cpt_code": "57500"
-    }]
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for cervical biopsy (CPT 57500) - anatomically impossible",
+            "requires_domain_knowledge": true,
+            "cpt_code": "57421"
+        },
+        {
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for pelvic ultrasound (transvaginal, CPT 76830) - anatomically impossible",
+            "requires_domain_knowledge": true,
+            "cpt_code": "76830"
+        },
+        {
+            "type": "medical_necessity",
+            "severity": "low",
+            "description": "Smoking cessation counseling billed but patient record shows non-smoker",
+            "requires_domain_knowledge": false,
+            "cpt_code": "99406"
+        }
+    ]
 }
