@@ -397,61 +397,117 @@ with tab2:
                     )
                     st.plotly_chart(fig, use_container_width=True, key=f"capture_trend_{model_version}")
             
-            # Error Type Performance Trends
+            # Error Category Performance Trends
             @st.cache_data(ttl=300)
-            def load_error_type_performance(model, days, environment):
-                start_date = datetime.now() - timedelta(days=days)
-                df = data_access.get_transactions(start_date=start_date, environment=environment)
-                if df.empty:
+            def load_error_category_timeseries(model, days, environment):
+                """Load error category performance over time from snapshots."""
+                # Get snapshots for this model
+                all_snapshots = data_access.get_snapshot_history(
+                    model_version=model,
+                    dataset_version="patient-benchmark-v2",  # Adjust as needed
+                    prompt_version="v2-structured-reasoning",  # Adjust as needed
+                    environment=environment or "local",
+                    limit=30
+                )
+                
+                if all_snapshots.empty or 'domain_breakdown' not in all_snapshots.columns:
                     return None
                 
-                model_df = df[df['model_version'] == model].copy()
-                if model_df.empty:
+                # Parse domain_breakdown from each snapshot
+                import json
+                category_data = []
+                for _, row in all_snapshots.iterrows():
+                    breakdown = row['domain_breakdown']
+                    if isinstance(breakdown, str):
+                        breakdown = json.loads(breakdown)
+                    
+                    if breakdown and isinstance(breakdown, dict):
+                        for category, metrics in breakdown.items():
+                            category_data.append({
+                                'date': row['created_at'],
+                                'category': category.replace('_', ' ').title(),
+                                'recall': metrics.get('recall', 0) * 100,
+                                'precision': metrics.get('precision', 0) * 100,
+                                'detected': metrics.get('total_detected', 0),
+                                'total': metrics.get('total_cases', 0)
+                            })
+                
+                if not category_data:
                     return None
                 
-                # Extract domain_breakdown from metrics if available
-                if 'metrics' in model_df.columns:
-                    return model_df[['created_at', 'metrics']].sort_values('created_at')
-                return None
+                return pd.DataFrame(category_data)
             
-            error_perf = load_error_type_performance(model_version, days_back, env_filter)
+            category_ts = load_error_category_timeseries(model_version, days_back, env_filter)
             
-            if error_perf is not None and not error_perf.empty and len(error_perf) > 1:
-                st.subheader("🎯 Error Type Detection Performance")
+            if category_ts is not None and not category_ts.empty and len(category_ts['date'].unique()) > 1:
+                st.subheader("🎯 Error Category Detection Trends")
                 
-                # Parse domain_breakdown from metrics
-                error_types_data = []
-                for _, row in error_perf.iterrows():
-                    metrics = row['metrics']
-                    if isinstance(metrics, dict):
-                        domain_breakdown = metrics.get('domain_breakdown', {})
-                        if domain_breakdown:
-                            for error_type, perf in domain_breakdown.items():
-                                error_types_data.append({
-                                    'date': row['created_at'],
-                                    'error_type': error_type,
-                                    'recall': perf.get('recall', 0) * 100,  # Convert to percentage
-                                    'precision': perf.get('precision', 0) * 100
-                                })
+                # Get all unique categories
+                all_categories = category_ts['category'].unique()
                 
-                if error_types_data:
-                    error_df = pd.DataFrame(error_types_data)
+                # Let user select which categories to show
+                default_categories = [c for c in all_categories if any(x in c.lower() for x in ['gender', 'age', 'surgical', 'diagnosis', 'procedure'])]
+                if not default_categories:
+                    default_categories = list(all_categories)[:5]
+                
+                selected_categories = st.multiselect(
+                    "Select Error Categories to Display",
+                    options=sorted(all_categories),
+                    default=default_categories,
+                    key=f"category_select_{model_version}"
+                )
+                
+                if selected_categories:
+                    filtered_df = category_ts[category_ts['category'].isin(selected_categories)]
                     
-                    # Show only top error types by frequency
-                    top_errors = error_df.groupby('error_type').size().nlargest(5).index
-                    error_df_filtered = error_df[error_df['error_type'].isin(top_errors)]
+                    col1, col2 = st.columns(2)
                     
-                    fig = px.line(
-                        error_df_filtered,
-                        x='date',
-                        y='recall',
-                        color='error_type',
-                        markers=True,
-                        labels={'date': 'Date', 'recall': 'Recall (%)', 'error_type': 'Error Type'},
-                        title="Recall by Error Type Over Time (Top 5)"
+                    with col1:
+                        # Recall trends
+                        fig_recall = px.line(
+                            filtered_df,
+                            x='date',
+                            y='recall',
+                            color='category',
+                            markers=True,
+                            labels={'date': 'Date', 'recall': 'Recall (%)', 'category': 'Error Category'},
+                            title="Recall by Error Category Over Time"
+                        )
+                        fig_recall.update_layout(height=400, hovermode='x unified')
+                        fig_recall.update_yaxis(range=[0, 100])
+                        st.plotly_chart(fig_recall, use_container_width=True, key=f"recall_trend_{model_version}")
+                    
+                    with col2:
+                        # Precision trends
+                        fig_precision = px.line(
+                            filtered_df,
+                            x='date',
+                            y='precision',
+                            color='category',
+                            markers=True,
+                            labels={'date': 'Date', 'precision': 'Precision (%)', 'category': 'Error Category'},
+                            title="Precision by Error Category Over Time"
+                        )
+                        fig_precision.update_layout(height=400, hovermode='x unified')
+                        fig_precision.update_yaxis(range=[0, 100])
+                        st.plotly_chart(fig_precision, use_container_width=True, key=f"precision_trend_{model_version}")
+                    
+                    # Show summary stats for selected categories
+                    st.markdown("**Latest Performance by Category:**")
+                    latest_date = filtered_df['date'].max()
+                    latest_perf = filtered_df[filtered_df['date'] == latest_date].sort_values('recall', ascending=False)
+                    
+                    summary_df = latest_perf[['category', 'recall', 'precision', 'detected', 'total']].copy()
+                    summary_df.columns = ['Category', 'Recall %', 'Precision %', 'Detected', 'Total']
+                    st.dataframe(
+                        summary_df,
+                        use_container_width=True,
+                        hide_index=True,
+                        column_config={
+                            'Recall %': st.column_config.NumberColumn('Recall %', format="%.1f%%"),
+                            'Precision %': st.column_config.NumberColumn('Precision %', format="%.1f%%")
+                        }
                     )
-                    fig.update_layout(height=400, hovermode='x unified')
-                    st.plotly_chart(fig, use_container_width=True, key=f"error_type_trend_{model_version}")
             
             st.markdown("---")
 
@@ -694,6 +750,91 @@ with tab4:
                         st.success("✅ Cost savings metrics stable or improving")
                 else:
                     st.info("Run more benchmarks to track cost savings regressions over time")
+                
+                # Error Category Performance Regression
+                st.markdown("---")
+                st.subheader("🎯 Error Category Performance Regression")
+                
+                @st.cache_data(ttl=300)
+                def get_category_performance_history(model):
+                    # Get latest snapshots for this model
+                    df = data_access.get_latest_snapshots(environment=env_filter)
+                    if df.empty:
+                        return None
+                    
+                    model_df = df[df['model_version'] == model].copy()
+                    if model_df.empty or 'domain_breakdown' not in model_df.columns:
+                        return None
+                    
+                    # Parse domain_breakdown JSONB
+                    import json
+                    if isinstance(model_df['domain_breakdown'].iloc[0], str):
+                        breakdown = json.loads(model_df['domain_breakdown'].iloc[0])
+                    else:
+                        breakdown = model_df['domain_breakdown'].iloc[0]
+                    
+                    if not breakdown:
+                        return None
+                    
+                    return breakdown
+                
+                category_perf = get_category_performance_history(model_version)
+                
+                if category_perf:
+                    st.markdown("**Recall by Error Category:**")
+                    
+                    # Create a dataframe for display
+                    category_data = []
+                    for category, metrics in category_perf.items():
+                        recall = metrics.get('recall', 0) * 100
+                        detected = metrics.get('total_detected', 0)
+                        total = metrics.get('total_cases', 0)
+                        category_data.append({
+                            'Category': category.replace('_', ' ').title(),
+                            'Recall %': recall,
+                            'Detected': detected,
+                            'Total': total,
+                            'Status': '✅' if recall >= 80 else ('⚠️' if recall >= 50 else '❌')
+                        })
+                    
+                    category_df = pd.DataFrame(category_data).sort_values('Recall %', ascending=False)
+                    
+                    # Display table
+                    st.dataframe(
+                        category_df,
+                        use_container_width=True,
+                        hide_index=True,
+                        column_config={
+                            'Recall %': st.column_config.NumberColumn('Recall %', format="%.1f%%"),
+                            'Detected': st.column_config.NumberColumn('Detected', format="%d"),
+                            'Total': st.column_config.NumberColumn('Total Cases', format="%d")
+                        }
+                    )
+                    
+                    # Alert on low-performing categories
+                    low_performing = category_df[category_df['Recall %'] < 30]
+                    if not low_performing.empty:
+                        st.error(f"🚨 **{len(low_performing)} categories below 30% recall:**")
+                        for _, row in low_performing.iterrows():
+                            st.markdown(f"- **{row['Category']}**: {row['Recall %']:.1f}% ({row['Detected']}/{row['Total']})")
+                    
+                    # Visual chart
+                    fig = px.bar(
+                        category_df,
+                        x='Recall %',
+                        y='Category',
+                        orientation='h',
+                        text='Recall %',
+                        title="Recall Performance by Error Category",
+                        color='Recall %',
+                        color_continuous_scale=['red', 'yellow', 'green'],
+                        range_color=[0, 100]
+                    )
+                    fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+                    fig.update_layout(height=400, xaxis_title="Recall (%)", yaxis_title="")
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("No error category breakdown available. Re-run model benchmarks to track category performance.")
 
 # ============================================================================
 # ============================================================================
