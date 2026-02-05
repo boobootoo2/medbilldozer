@@ -122,7 +122,7 @@ st.sidebar.markdown("**Last Updated:** " + datetime.now().strftime("%Y-%m-%d %H:
 # ============================================================================
 
 tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🏥 Patient Benchmarks",
+    "🏥 Model Benchmarks",
     "📊 Current Snapshot",
     "📈 Performance Trends",
     "🔄 Model Comparison",
@@ -180,6 +180,45 @@ with tab1:
                 f"{avg_latency:.0f}ms",
                 delta=None
             )
+        
+        # Cost Savings Metrics Row (if available)
+        if 'total_potential_savings' in snapshots_df.columns:
+            st.markdown("---")
+            st.subheader("💰 Cost Savings Metrics")
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                total_savings = snapshots_df['total_potential_savings'].sum()
+                st.metric(
+                    "Total Potential Savings",
+                    f"${total_savings:,.2f}",
+                    delta=None
+                )
+            
+            with col2:
+                avg_savings = snapshots_df['avg_savings_per_patient'].mean()
+                st.metric(
+                    "Avg Savings per Patient",
+                    f"${avg_savings:,.2f}",
+                    delta=None
+                )
+            
+            with col3:
+                avg_capture_rate = snapshots_df['savings_capture_rate'].mean()
+                st.metric(
+                    "Avg Capture Rate",
+                    f"{avg_capture_rate:.1f}%",
+                    delta=None
+                )
+            
+            with col4:
+                total_missed = snapshots_df['total_missed_savings'].sum()
+                st.metric(
+                    "Total Missed Savings",
+                    f"${total_missed:,.2f}",
+                    delta=None,
+                    delta_color="inverse"
+                )
         
         st.markdown("---")
         
@@ -725,11 +764,11 @@ with tab5:
 # ============================================================================
 
 # ============================================================================
-# TAB 6: Patient Benchmarks (Cross-Document Domain Knowledge)
+# TAB 6: Model Benchmarks (Cross-Document Domain Knowledge)
 # ============================================================================
 
 with tab6:
-    st.header("🏥 Patient Cross-Document Benchmarks")
+    st.header("🏥 Model Benchmarks (Cross-Document Analysis)")
     st.markdown("""
     **Domain Knowledge Detection:** Testing models' ability to identify gender/age-inappropriate 
     medical procedures that require healthcare domain knowledge (e.g., male patient billed for 
@@ -789,7 +828,7 @@ with tab6:
     patient_df = load_patient_benchmarks()
     
     if patient_df.empty:
-        st.warning("No patient benchmark data available. Run patient benchmarks with: `python3 scripts/generate_patient_benchmarks.py --model all --push-to-supabase`")
+        st.warning("No model benchmark data available. Run benchmarks with: `python3 scripts/generate_patient_benchmarks.py --model all --push-to-supabase`")
     else:
         # Get latest result per model
         latest_results = patient_df.sort_values('created_at').groupby('model_version').last().reset_index()
