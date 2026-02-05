@@ -58,7 +58,8 @@ jobs:
           python3 scripts/generate_benchmarks.py --model baseline || echo "⚠️ Baseline failed"
           python3 scripts/generate_benchmarks.py --model openai || echo "⚠️ OpenAI failed"
           python3 scripts/generate_benchmarks.py --model gemini || echo "⚠️ Gemini failed"
-          # python3 scripts/generate_benchmarks.py --model medgemma || echo "⚠️ MedGemma failed"
+          python3 scripts/generate_benchmarks.py --model medgemma || echo "⚠️ MedGemma failed"
+          python3 scripts/generate_patient_benchmarks.py --model gemma3 || echo "⚠️ Gemma3 patient benchmark failed"
       
       - name: Convert results to monitoring format
         if: always()
