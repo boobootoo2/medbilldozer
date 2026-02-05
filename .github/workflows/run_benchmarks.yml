@@ -13,7 +13,8 @@ on:
     branches:
       - develop
     paths:
-      - '_modules/providers/**'
+      - 'src/medbilldozer/providers/**'
+      - 'src/medbilldozer/extractors/**'
       - 'scripts/generate_benchmarks.py'
       - 'benchmarks/inputs/**'
       - '.github/workflows/run_benchmarks.yml'
@@ -37,8 +38,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Use minimal requirements for benchmarks only
+          # Install main dependencies first (required for medbilldozer package)
+          pip install -r requirements.txt
+          # Install package in editable mode (provides medbilldozer imports)
+          pip install -e . -v
+          # Install benchmark-specific requirements (may override some versions)
           pip install -r requirements-benchmarks.txt
+          # Verify installation
+          python -c "import sys; print('Python path:', sys.path); import medbilldozer; print(f'medbilldozer {medbilldozer.__version__} imported successfully from {medbilldozer.__file__}')"
       
       - name: Run benchmarks
         env:
