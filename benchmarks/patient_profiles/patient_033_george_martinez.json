@@ -1,0 +1,64 @@
+{
+    "patient_id": "P033",
+    "patient_name": "George Martinez",
+    "age": 71,
+    "sex": "M",
+    "known_conditions": [
+        "Atrial Fibrillation",
+        "Coronary Artery Disease",
+        "Congestive Heart Failure"
+    ],
+    "prior_surgical_history": [{
+        "procedure": "Total Laryngectomy",
+        "year": 2021,
+        "indication": "Laryngeal cancer"
+    }],
+    "current_status": "Breathing via permanent tracheostomy",
+    "visit_type": "Cardiology clinic",
+    "expected_issues": [{
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "critical",
+            "description": "Laryngoscopy with vocal cord biopsy billed for patient who had total laryngectomy",
+            "requires_domain_knowledge": true,
+            "cpt_code": "31535"
+        },
+        {
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Flexible laryngoscopy billed for patient without a larynx",
+            "requires_domain_knowledge": true,
+            "cpt_code": "31575"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P033_001",
+            "document_type": "cardiology_consultation_note",
+            "content": "71-year-old male with PMH of AF, CAD, CHF, s/p total laryngectomy (2021) for laryngeal cancer. Patient breathing via permanent tracheostomy. Presents for AFib management. Currently on apixaban. EKG shows controlled AFib, rate 72. Echo shows EF 40%. Continue current cardiac medications."
+        },
+        {
+            "document_id": "DOC_P033_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99214",
+                    "description": "Office visit, established patient, level 4",
+                    "charge": 185.00
+                },
+                {
+                    "cpt_code": "93000",
+                    "description": "Electrocardiogram, routine ECG with interpretation",
+                    "charge": 75.00
+                },
+                {
+                    "cpt_code": "31535",
+                    "description": "Laryngoscopy, direct, with biopsy",
+                    "charge": 850.00
+                },
+                {
+                    "cpt_code": "31575",
+                    "description": "Laryngoscopy, flexible fiberoptic, diagnostic",
+                    "charge": 320.00
+                }
+            ]
+        }
+    ]
+}

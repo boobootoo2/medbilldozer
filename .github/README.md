@@ -105,13 +105,13 @@ _Patient-level domain knowledge detection across multiple documents._
 ### Model Comparison
 
 | Model | Precision | Recall | F1 | Domain Knowledge Detection |
-|-------|-----------|--------|----|---------:|
-| Google MedGemma-4B-IT | 0.78 | 0.95 | 0.83 | 95.0% ✅ |
-| OpenAI GPT-4 | 0.00 | 0.00 | 0.00 | 0.0%  |
+|-------|-----------|--------|----|-----------|
+| Google MedGemma-4B-IT | 0.32 | 0.19 | 0.23 | 22.1% ✅ |
+| OpenAI GPT-4 | 0.12 | 0.12 | 0.11 | 11.2% ✅ |
 | Google Gemini 1.5 Pro | 0.00 | 0.00 | 0.00 | 0.0%  |
 | Heuristic Baseline | 0.00 | 0.00 | 0.00 | 0.0%  |
 
-_Generated: 2026-02-03 11:27:53_
+_Generated: 2026-02-04 16:36:48_
 
 ## Benchmark Analysis
 

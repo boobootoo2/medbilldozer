@@ -16,10 +16,18 @@
         "patient_010_doc_2_lab.txt"
     ],
     "expected_issues": [{
-        "type": "gender_mismatch",
-        "severity": "critical",
-        "description": "Female patient billed for vasectomy (CPT 55250) - anatomically impossible",
-        "requires_domain_knowledge": true,
-        "cpt_code": "55250"
-    }]
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Female patient billed for vasectomy (CPT 55250) - anatomically impossible",
+            "requires_domain_knowledge": true,
+            "cpt_code": "55250"
+        },
+        {
+            "type": "duplicate_charge",
+            "severity": "medium",
+            "description": "Lab test billed twice on same date for same panel",
+            "requires_domain_knowledge": false,
+            "cpt_code": "80053"
+        }
+    ]
 }

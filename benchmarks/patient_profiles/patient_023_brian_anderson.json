@@ -1,0 +1,53 @@
+{
+    "patient_id": "P023",
+    "patient_name": "Brian Anderson",
+    "age": 56,
+    "sex": "M",
+    "known_conditions": [
+        "Benign prostatic hyperplasia",
+        "Hypertension"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Urology consultation",
+    "expected_issues": [{
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for Pap smear - test for cervical cancer in females only",
+            "requires_domain_knowledge": true,
+            "cpt_code": "88142"
+        },
+        {
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for mammogram - breast cancer screening typically for females",
+            "requires_domain_knowledge": true,
+            "cpt_code": "77067"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P023_001",
+            "document_type": "urology_note",
+            "content": "56-year-old male with benign prostatic hyperplasia. Digital rectal exam performed. PSA level checked. Discussed treatment options."
+        },
+        {
+            "document_id": "DOC_P023_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "88142",
+                    "description": "Cytopathology, cervical Pap smear",
+                    "charge": 85.00
+                },
+                {
+                    "cpt_code": "77067",
+                    "description": "Screening mammography bilateral",
+                    "charge": 320.00
+                },
+                {
+                    "cpt_code": "99213",
+                    "description": "Office visit level 3",
+                    "charge": 150.00
+                }
+            ]
+        }
+    ]
+}

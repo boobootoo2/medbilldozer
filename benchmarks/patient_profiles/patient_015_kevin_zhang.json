@@ -1,0 +1,53 @@
+{
+    "patient_id": "P015",
+    "patient_name": "Kevin Zhang",
+    "age": 42,
+    "sex": "M",
+    "known_conditions": [
+        "Hypertension",
+        "Common cold"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Outpatient primary care - same-day discharge",
+    "expected_issues": [{
+            "type": "care_setting_inconsistency",
+            "severity": "critical",
+            "description": "ICU charges billed for same-day outpatient discharge - ICU requires inpatient admission",
+            "requires_domain_knowledge": true,
+            "cpt_code": "99291"
+        },
+        {
+            "type": "diagnosis_procedure_mismatch",
+            "severity": "critical",
+            "description": "Cardiac catheterization billed for common cold visit - no cardiac indication",
+            "requires_domain_knowledge": true,
+            "cpt_code": "93458"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P015_001",
+            "document_type": "outpatient_note",
+            "content": "42-year-old male with common cold symptoms. Vital signs stable. Discharged home same day with supportive care instructions."
+        },
+        {
+            "document_id": "DOC_P015_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99291",
+                    "description": "Critical care, first 30-74 minutes",
+                    "charge": 1250.00
+                },
+                {
+                    "cpt_code": "93458",
+                    "description": "Cardiac catheterization left heart",
+                    "charge": 4800.00
+                },
+                {
+                    "cpt_code": "99213",
+                    "description": "Office visit level 3",
+                    "charge": 150.00
+                }
+            ]
+        }
+    ]
+}

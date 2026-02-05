@@ -1,0 +1,54 @@
+{
+    "patient_id": "P027",
+    "patient_name": "Henry Davis",
+    "age": 67,
+    "sex": "M",
+    "known_conditions": [
+        "Benign prostatic hyperplasia",
+        "Hypertension",
+        "Osteoarthritis"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Urology consultation",
+    "expected_issues": [{
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for hysterectomy - anatomically impossible (no uterus)",
+            "requires_domain_knowledge": true,
+            "cpt_code": "58150"
+        },
+        {
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for cervical biopsy - males do not have a cervix",
+            "requires_domain_knowledge": true,
+            "cpt_code": "57500"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P027_001",
+            "document_type": "urology_note",
+            "content": "67-year-old male with BPH. PSA levels monitored. Discussed options for prostate management. Digital rectal exam performed."
+        },
+        {
+            "document_id": "DOC_P027_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "58150",
+                    "description": "Total abdominal hysterectomy",
+                    "charge": 12500.00
+                },
+                {
+                    "cpt_code": "57500",
+                    "description": "Biopsy of cervix",
+                    "charge": 385.00
+                },
+                {
+                    "cpt_code": "99213",
+                    "description": "Office visit level 3",
+                    "charge": 150.00
+                }
+            ]
+        }
+    ]
+}

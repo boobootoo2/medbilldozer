@@ -1,0 +1,63 @@
+{
+    "patient_id": "P031",
+    "patient_name": "Richard Phillips",
+    "age": 62,
+    "sex": "M",
+    "known_conditions": [
+        "Type 2 Diabetes",
+        "Peripheral Vascular Disease",
+        "Chronic Kidney Disease Stage 3"
+    ],
+    "prior_surgical_history": [{
+        "procedure": "Right Below-Knee Amputation",
+        "year": 2023,
+        "indication": "Diabetic gangrene"
+    }],
+    "visit_type": "Outpatient follow-up",
+    "expected_issues": [{
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "critical",
+            "description": "Right ankle arthroscopy billed for patient with documented right below-knee amputation in 2023",
+            "requires_domain_knowledge": true,
+            "cpt_code": "29891"
+        },
+        {
+            "type": "procedure_inconsistent_with_health_history",
+            "severity": "high",
+            "description": "Right foot X-ray billed for patient with right BKA",
+            "requires_domain_knowledge": true,
+            "cpt_code": "73630"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P031_001",
+            "document_type": "clinic_visit_note",
+            "content": "62-year-old male with PMH of DM2, PVD, CKD stage 3, s/p right BKA (2023). Patient presents for diabetes follow-up. Right BKA stump healing well, fitted with prosthetic. HbA1c 7.2%. Continue current medications. Follow-up in 3 months."
+        },
+        {
+            "document_id": "DOC_P031_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99213",
+                    "description": "Office visit, established patient, level 3",
+                    "charge": 150.00
+                },
+                {
+                    "cpt_code": "29891",
+                    "description": "Arthroscopy, ankle, surgical, with excision of osteochondral defect, right",
+                    "charge": 3200.00
+                },
+                {
+                    "cpt_code": "73630",
+                    "description": "Radiologic examination, foot, complete, minimum of 3 views, right",
+                    "charge": 85.00
+                },
+                {
+                    "cpt_code": "83036",
+                    "description": "Hemoglobin A1c",
+                    "charge": 45.00
+                }
+            ]
+        }
+    ]
+}

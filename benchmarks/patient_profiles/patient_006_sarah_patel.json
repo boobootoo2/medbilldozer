@@ -16,10 +16,18 @@
         "patient_006_doc_2_imaging.txt"
     ],
     "expected_issues": [{
-        "type": "age_inappropriate_screening",
-        "severity": "high",
-        "description": "15-year-old billed for screening mammogram (CPT 77067) - not recommended before age 40",
-        "requires_domain_knowledge": true,
-        "cpt_code": "77067"
-    }]
+            "type": "age_inappropriate_screening",
+            "severity": "high",
+            "description": "15-year-old billed for screening mammogram (CPT 77067) - not recommended before age 40",
+            "requires_domain_knowledge": true,
+            "cpt_code": "77067"
+        },
+        {
+            "type": "age_inappropriate_screening",
+            "severity": "high",
+            "description": "15-year-old billed for osteoporosis screening (DEXA scan, CPT 77080) - not recommended before menopause",
+            "requires_domain_knowledge": true,
+            "cpt_code": "77080"
+        }
+    ]
 }

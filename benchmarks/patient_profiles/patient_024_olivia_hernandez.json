@@ -1,0 +1,52 @@
+{
+    "patient_id": "P024",
+    "patient_name": "Olivia Hernandez",
+    "age": 2,
+    "sex": "F",
+    "known_conditions": [
+        "Healthy toddler"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Pediatric wellness",
+    "expected_issues": [{
+            "type": "age_inappropriate",
+            "severity": "critical",
+            "description": "2-year-old billed for adult colonoscopy screening - inappropriate for toddler age",
+            "requires_domain_knowledge": true,
+            "cpt_code": "45378"
+        },
+        {
+            "type": "care_setting_inconsistency",
+            "severity": "critical",
+            "description": "Skilled nursing facility daily care billed without transfer documentation - child at home",
+            "requires_domain_knowledge": true,
+            "cpt_code": "99307"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P024_001",
+            "document_type": "pediatric_note",
+            "content": "2-year-old healthy female for well-child check. Living at home with parents. Developmental milestones normal. Immunizations current."
+        },
+        {
+            "document_id": "DOC_P024_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "45378",
+                    "description": "Diagnostic colonoscopy",
+                    "charge": 2800.00
+                },
+                {
+                    "cpt_code": "99307",
+                    "description": "Subsequent nursing facility care",
+                    "charge": 185.00
+                },
+                {
+                    "cpt_code": "99391",
+                    "description": "Preventive visit age 1-4",
+                    "charge": 165.00
+                }
+            ]
+        }
+    ]
+}

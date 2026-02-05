@@ -337,6 +337,10 @@ class BenchmarkDataAccess:
         
         # Expand metrics JSONB into columns
         if 'metrics' in df.columns:
+            # Parse JSON strings if needed
+            import json
+            if df['metrics'].dtype == 'object' and isinstance(df['metrics'].iloc[0], str):
+                df['metrics'] = df['metrics'].apply(json.loads)
             metrics_df = pd.json_normalize(df['metrics'])
             df = pd.concat([df.drop('metrics', axis=1), metrics_df], axis=1)
         
@@ -504,9 +508,10 @@ class BenchmarkDataAccess:
     # ========================================================================
     
     def get_available_models(self, environment: Optional[str] = None) -> List[str]:
-        """Get list of unique model versions."""
+        """Get list of unique model versions with current snapshots."""
         query = self.client.table('benchmark_snapshots') \
-            .select('model_version')
+            .select('model_version') \
+            .eq('is_current', True)
         
         if environment:
             query = query.eq('environment', environment)

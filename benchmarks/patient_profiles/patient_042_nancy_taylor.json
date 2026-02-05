@@ -1,0 +1,48 @@
+{
+    "patient_id": "P042",
+    "patient_name": "Nancy Taylor",
+    "age": 41,
+    "sex": "F",
+    "known_conditions": [
+        "Hypothyroidism"
+    ],
+    "prior_surgical_history": [{
+        "procedure": "Laparoscopic cholecystectomy",
+        "year": 2024,
+        "indication": "Symptomatic cholelithiasis"
+    }],
+    "visit_type": "Outpatient skin lesion removal",
+    "expected_issues": [{
+        "type": "procedure_inconsistent_with_health_history",
+        "severity": "critical",
+        "description": "General anesthesia time billed when no anesthesia was documented or used",
+        "requires_domain_knowledge": true,
+        "cpt_code": "00300"
+    }],
+    "documents": [{
+            "document_id": "DOC_P042_001",
+            "document_type": "procedure_note",
+            "content": "41-year-old female presents for removal of benign nevus on left upper back. Procedure: Excision of 1.5cm nevus with 3mm margins. LOCAL ANESTHESIA: 5cc of 1% lidocaine with epinephrine injected locally. Patient tolerated procedure well under local anesthesia. Simple layered closure with 4-0 sutures. No complications. Patient discharged home in stable condition. Specimen sent to pathology."
+        },
+        {
+            "document_id": "DOC_P042_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "11402",
+                    "description": "Excision, benign lesion, trunk, 1.1 to 2.0 cm",
+                    "charge": 425.00
+                },
+                {
+                    "cpt_code": "88305",
+                    "description": "Surgical pathology, gross and microscopic examination",
+                    "charge": 185.00
+                },
+                {
+                    "cpt_code": "00300",
+                    "description": "Anesthesia for procedures on integumentary system, not otherwise specified",
+                    "charge": 850.00
+                }
+            ]
+        }
+    ]
+}

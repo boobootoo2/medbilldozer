@@ -1,0 +1,53 @@
+{
+    "patient_id": "P013",
+    "patient_name": "Carlos Mendez",
+    "age": 6,
+    "sex": "M",
+    "known_conditions": [
+        "Asthma",
+        "Peanut allergy"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Pediatric well-child visit",
+    "expected_issues": [{
+            "type": "age_inappropriate",
+            "severity": "critical",
+            "description": "6-year-old child billed for screening colonoscopy - not appropriate for pediatric age without rare disease diagnosis",
+            "requires_domain_knowledge": true,
+            "cpt_code": "45378"
+        },
+        {
+            "type": "age_inappropriate",
+            "severity": "high",
+            "description": "Child billed for bone density scan without risk factors - typically for adults 65+ or postmenopausal women",
+            "requires_domain_knowledge": true,
+            "cpt_code": "77080"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P013_001",
+            "document_type": "pediatric_visit_note",
+            "content": "6-year-old male for well-child visit. Growth parameters normal. Asthma well-controlled. Immunizations up to date. Peanut allergy managed with epinephrine auto-injector."
+        },
+        {
+            "document_id": "DOC_P013_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "45378",
+                    "description": "Diagnostic colonoscopy",
+                    "charge": 2800.00
+                },
+                {
+                    "cpt_code": "77080",
+                    "description": "Dual-energy X-ray absorptiometry (DEXA) bone density",
+                    "charge": 320.00
+                },
+                {
+                    "cpt_code": "99393",
+                    "description": "Preventive visit age 5-11",
+                    "charge": 180.00
+                }
+            ]
+        }
+    ]
+}

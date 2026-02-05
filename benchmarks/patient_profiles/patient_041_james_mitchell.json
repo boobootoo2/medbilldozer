@@ -1,0 +1,49 @@
+{
+    "patient_id": "P041",
+    "patient_name": "James Mitchell",
+    "age": 29,
+    "sex": "M",
+    "known_conditions": [
+        "Seasonal allergies"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Urgent care visit for ankle sprain",
+    "expected_issues": [{
+        "type": "procedure_inconsistent_with_health_history",
+        "severity": "critical",
+        "description": "Fracture care billed when X-rays show no fracture",
+        "requires_domain_knowledge": true,
+        "cpt_code": "27808"
+    }],
+    "documents": [{
+            "document_id": "DOC_P041_001",
+            "document_type": "urgent_care_note",
+            "content": "29-year-old male presents with left ankle sprain after twisting ankle playing basketball yesterday. Moderate swelling and tenderness over lateral malleolus. Able to bear weight with pain. X-ray of left ankle performed: NO FRACTURE IDENTIFIED. Diagnosis: Left ankle sprain, grade II. Treatment: RICE protocol, ace wrap, ibuprofen 600mg TID, crutches for comfort. Follow up if not improving in 1 week."
+        },
+        {
+            "document_id": "DOC_P041_002",
+            "document_type": "radiology_report",
+            "content": "LEFT ANKLE 3 VIEWS: No acute fracture or dislocation. No joint effusion. Soft tissue swelling noted laterally. Bones are intact. IMPRESSION: Soft tissue swelling consistent with sprain. No fracture."
+        },
+        {
+            "document_id": "DOC_P041_003",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99283",
+                    "description": "Emergency department visit, moderate complexity",
+                    "charge": 350.00
+                },
+                {
+                    "cpt_code": "73610",
+                    "description": "Radiologic examination, ankle; complete, minimum of 3 views",
+                    "charge": 125.00
+                },
+                {
+                    "cpt_code": "27808",
+                    "description": "Closed treatment of bimalleolar ankle fracture",
+                    "charge": 1850.00
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,54 @@
+{
+    "patient_id": "P029",
+    "patient_name": "Robert Miller",
+    "age": 51,
+    "sex": "M",
+    "known_conditions": [
+        "Hypertension",
+        "Hyperlipidemia"
+    ],
+    "prior_surgical_history": [],
+    "visit_type": "Primary care wellness - last annual exam 2 months ago",
+    "expected_issues": [{
+            "type": "temporal_violation",
+            "severity": "high",
+            "description": "Two annual physical exams within 2 months - insurance typically covers one per year",
+            "requires_domain_knowledge": true,
+            "cpt_code": "99396"
+        },
+        {
+            "type": "gender_mismatch",
+            "severity": "critical",
+            "description": "Male patient billed for transvaginal ultrasound - anatomically impossible",
+            "requires_domain_knowledge": true,
+            "cpt_code": "76830"
+        }
+    ],
+    "documents": [{
+            "document_id": "DOC_P029_001",
+            "document_type": "primary_care_note",
+            "content": "51-year-old male. Annual physical completed 12/2025 (2 months ago). Patient states he forgot and requests another complete exam today (02/2026)."
+        },
+        {
+            "document_id": "DOC_P029_002",
+            "document_type": "billing_statement",
+            "line_items": [{
+                    "cpt_code": "99396",
+                    "description": "Preventive medicine visit age 40-64",
+                    "charge": 280.00,
+                    "date": "2026-02-04"
+                },
+                {
+                    "cpt_code": "76830",
+                    "description": "Ultrasound transvaginal",
+                    "charge": 385.00
+                },
+                {
+                    "cpt_code": "80061",
+                    "description": "Lipid panel",
+                    "charge": 65.00
+                }
+            ]
+        }
+    ]
+}
