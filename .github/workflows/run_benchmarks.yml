@@ -53,23 +53,22 @@ jobs:
           HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
-          # Run each provider separately to handle failures gracefully
-          # Skip MedGemma for now - HF Inference API is unreliable
-          python3 scripts/generate_benchmarks.py --model baseline || echo "⚠️ Baseline failed"
-          python3 scripts/generate_benchmarks.py --model openai || echo "⚠️ OpenAI failed"
-          python3 scripts/generate_benchmarks.py --model gemini || echo "⚠️ Gemini failed"
-          python3 scripts/generate_benchmarks.py --model medgemma || echo "⚠️ MedGemma failed"
-          python3 scripts/generate_patient_benchmarks.py --model gemma3 || echo "⚠️ Gemma3 patient benchmark failed"
+          # Run patient benchmarks for each provider (46 patients per model)
+          python3 scripts/generate_patient_benchmarks.py --model baseline || echo "⚠️ Baseline failed"
+          python3 scripts/generate_patient_benchmarks.py --model openai || echo "⚠️ OpenAI failed"
+          python3 scripts/generate_patient_benchmarks.py --model gemini || echo "⚠️ Gemini failed"
+          python3 scripts/generate_patient_benchmarks.py --model medgemma || echo "⚠️ MedGemma failed"
+          python3 scripts/generate_patient_benchmarks.py --model gemma3 || echo "⚠️ Gemma3 failed"
       
       - name: Convert results to monitoring format
         if: always()
         run: |
           mkdir -p benchmark-artifacts
-          # Convert each model's results
-          for model in openai gemini baseline; do
-            if [ -f "benchmarks/results/aggregated_metrics_${model}.json" ]; then
+          # Convert each model's patient benchmark results (46 patients)
+          for model in baseline openai gemini medgemma gemma3; do
+            if [ -f "benchmarks/results/patient_benchmark_${model}.json" ]; then
               python3 scripts/convert_benchmark_to_monitoring.py \
-                --input "benchmarks/results/aggregated_metrics_${model}.json" \
+                --input "benchmarks/results/patient_benchmark_${model}.json" \
                 --output "benchmark-artifacts/${model}_benchmark_results.json" \
                 --model "${model}"
             fi
@@ -81,8 +80,8 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          # Push each model's results to Supabase
-          for model in openai gemini baseline; do
+          # Push each model's patient benchmark results (46 patients) to Supabase
+          for model in baseline openai gemini medgemma gemma3; do
             if [ -f "benchmark-artifacts/${model}_benchmark_results.json" ]; then
               echo "📤 Pushing ${model} results to Supabase..."
               python3 scripts/push_to_supabase.py \
