@@ -1,0 +1,23 @@
+{
+    "document_type": "medical_bill",
+    "expected_facts": {
+        "patient_name": "Margaret Chen",
+        "patient_dob": "1957-08-12",
+        "date_of_service": "2026-02-05",
+        "facility_name": "QuickCare Urgent Care Center",
+        "medical_line_items": [{
+            "cpt_code": "99213",
+            "date_of_service": "2026-02-05",
+            "description": "Office Visit Level 3",
+            "billed_amount": 185.00,
+            "patient_responsibility": 45.00
+        }]
+    },
+    "expected_issues": [{
+        "type": "drug_drug_interaction",
+        "severity": "critical",
+        "description": "Ciprofloxacin prescribed to patient on Warfarin - major drug interaction increasing bleeding risk",
+        "requires_domain_knowledge": true
+    }],
+    "expected_savings": 0.0
+}

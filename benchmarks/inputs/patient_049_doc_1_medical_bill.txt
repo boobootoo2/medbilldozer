@@ -1,0 +1,31 @@
+MEDICAL BILL - ENDOCRINOLOGY CLINIC
+
+PATIENT: Linda Thompson
+DOB: 03/15/1954
+DATE OF SERVICE: 02/03/2026
+
+PROVIDER: Metro Diabetes Care Center
+DIAGNOSIS: E11.9 - Type 2 Diabetes Mellitus
+
+SERVICES PROVIDED:
+---------------------------------------------------------
+CPT 99214 - Office Visit Level 4          $245.00
+Patient Responsibility: $60.00
+
+RECENT LAB RESULTS (reviewed during visit):
+- eGFR: 25 mL/min/1.73m² (Stage 4 CKD)
+- Creatinine: 2.8 mg/dL (elevated)
+- HbA1c: 8.5% (poorly controlled)
+
+MEDICATIONS PRESCRIBED:
+- Metformin 1000mg, twice daily
+  (New prescription for improved glucose control)
+
+CURRENT MEDICATIONS:
+- Insulin Glargine 30 units daily
+- Amlodipine 10mg daily
+
+TOTAL AMOUNT DUE: $60.00
+
+NOTE: Single-document test. Metformin contraindication with severe renal impairment
+is detectable from bill alone (eGFR 25 noted in document).
