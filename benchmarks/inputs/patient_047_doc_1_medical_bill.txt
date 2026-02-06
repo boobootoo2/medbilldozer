@@ -1,0 +1,27 @@
+MEDICAL BILL - URGENT CARE VISIT
+
+PATIENT: Margaret Chen
+DOB: 08/12/1957
+DATE OF SERVICE: 02/05/2026
+
+PROVIDER: QuickCare Urgent Care Center
+DIAGNOSIS: J06.9 - Acute Upper Respiratory Infection
+
+SERVICES PROVIDED:
+---------------------------------------------------------
+CPT 99213 - Office Visit Level 3          $185.00
+Patient Responsibility: $45.00
+
+MEDICATIONS PRESCRIBED:
+- Ciprofloxacin 500mg, twice daily for 7 days
+  (Prescribed for suspected bacterial sinusitis)
+
+PATIENT CURRENT MEDICATIONS (per chart review):
+- Warfarin 5mg daily
+- Metformin 1000mg twice daily
+- Amlodipine 10mg daily
+
+TOTAL AMOUNT DUE: $45.00
+
+NOTE: This is a single-document test case. The drug interaction (Cipro + Warfarin) 
+is detectable from this bill alone without cross-document reasoning.

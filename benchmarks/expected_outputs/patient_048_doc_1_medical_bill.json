@@ -1,0 +1,23 @@
+{
+    "document_type": "medical_bill",
+    "expected_facts": {
+        "patient_name": "Robert Martinez",
+        "patient_dob": "1963-11-20",
+        "date_of_service": "2026-02-04",
+        "facility_name": "City Orthopedic Associates",
+        "medical_line_items": [{
+            "cpt_code": "99214",
+            "date_of_service": "2026-02-04",
+            "description": "Office Visit Level 4",
+            "billed_amount": 245.00,
+            "patient_responsibility": 60.00
+        }]
+    },
+    "expected_issues": [{
+        "type": "drug_disease_contraindication",
+        "severity": "critical",
+        "description": "Ibuprofen prescribed to patient with recent gastric ulcer - NSAID contraindicated",
+        "requires_domain_knowledge": true
+    }],
+    "expected_savings": 0.0
+}

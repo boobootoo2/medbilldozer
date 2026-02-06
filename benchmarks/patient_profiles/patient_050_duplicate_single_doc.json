@@ -1,0 +1,25 @@
+{
+    "patient_id": "P050",
+    "name": "Sarah Williams",
+    "demographics": {
+        "age": 42,
+        "sex": "F",
+        "date_of_service": "1983-06-08"
+    },
+    "medical_history": {
+        "conditions": [],
+        "allergies": [],
+        "medications": [],
+        "surgeries": []
+    },
+    "documents": [
+        "patient_050_doc_1_medical_bill.txt"
+    ],
+    "expected_issues": [{
+        "type": "duplicate_charge",
+        "severity": "medium",
+        "description": "X-ray (CPT 71020) billed twice on same date - obvious duplicate charge detectable from single document without medical knowledge",
+        "requires_domain_knowledge": false,
+        "cpt_code": "71020"
+    }]
+}
