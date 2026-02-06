@@ -261,7 +261,7 @@ Once data is persisted:
 make monitoring-dashboard
 
 # Or directly
-python3 -m streamlit run pages/benchmark_monitoring.py
+python3 -m streamlit run pages/production_stability.py
 ```
 
 Open: http://localhost:8501

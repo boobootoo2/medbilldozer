@@ -713,7 +713,7 @@ def main():
                   f"{m.issue_f1_score:<10.2f} {latency_sec:<10.2f}s")
         print("=" * 100)
     
-    # Note: Benchmark dashboard (benchmark_dashboard.py) reads results automatically
+    # Note: Clinical Performance dashboard (clinical_performance.py) reads results automatically
     # No need to update README - deploy dashboard to Streamlit Cloud for live metrics
     print(f"📝 Updated README: /Users/jgs/Documents/GitHub/medbilldozer/.github/README.md")
     

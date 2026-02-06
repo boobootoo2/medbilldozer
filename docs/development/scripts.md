@@ -267,7 +267,7 @@ Test Suite:
 ║                  Setup Status: READY ✅                   ║
 ╚═══════════════════════════════════════════════════════════╝
 
-You're all set! Run: streamlit run app.py
+You're all set! Run: streamlit run medBillDozer.py
 ```
 
 ### `migrate_module.py`

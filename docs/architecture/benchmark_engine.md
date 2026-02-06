@@ -281,7 +281,7 @@ Visualize benchmark results over time:
 
 ```bash
 # Launch monitoring dashboard
-streamlit run benchmark_dashboard.py
+streamlit run clinical_performance.py
 ```
 
 Features:

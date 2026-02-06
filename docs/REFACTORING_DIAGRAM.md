@@ -1,9 +1,9 @@
-# App.py Refactoring Diagram
+# MedBillDozer.py Refactoring Diagram
 
 ## Before Refactoring
 
 ```
-app.py (788 lines)
+medBillDozer.py (788 lines)
 ├── Imports (100+ lines)
 ├── check_access_password() 
 ├── should_enable_guided_tour()
@@ -50,7 +50,7 @@ app.py (788 lines)
 ## After Refactoring
 
 ```
-app.py (368 lines) - Clean orchestration layer
+medBillDozer.py (368 lines) - Clean orchestration layer
 ├── Imports (organized by category)
 └── main()
     ├── check_access_password() ───────────────────────> _modules/core/auth.py
@@ -117,7 +117,7 @@ _modules/core/analysis_runner.py (275 lines)
 
 ```
 ┌─────────────────────────────────────────────────┐
-│              User Access app.py                 │
+│              User Access medBillDozer.py                 │
 └───────────────────┬─────────────────────────────┘
                     │
                     ▼
@@ -177,7 +177,7 @@ _modules/core/analysis_runner.py (275 lines)
 ## Module Interaction Map
 
 ```
-                    app.py
+                    (medBillDozer.py)
                       │
         ┌─────────────┼─────────────┐
         │             │             │
@@ -202,10 +202,10 @@ _modules/core/analysis_runner.py (275 lines)
 
 ```
 Before:
-app.py ████████████████████████████████████████ 788 lines
+medBillDozer.py ████████████████████████████████████████ 788 lines
 
 After:
-app.py ████████████████████ 368 lines (53% reduction!)
+medBillDozer.py ████████████████████ 368 lines (53% reduction!)
        + 5 new focused modules
 ```
 
@@ -214,7 +214,7 @@ app.py ████████████████████ 368 lines (5
 ```
 Before:
 ┌────────────────────────────────┐
-│         app.py                 │
+│         medBillDozer.py                 │
 │  - Auth + UI + Analysis +      │
 │    Providers + Routing +       │
 │    Everything else             │
@@ -235,7 +235,7 @@ After:
                   │
         ┌─────────┴─────────┐
         │   Orchestration   │
-        │     (app.py)      │
+        │     ((medBillDozer.py))      │
         └───────────────────┘
 ```
 
@@ -243,7 +243,7 @@ After:
 
 | Module                    | Lines | Purpose              |
 |---------------------------|-------|----------------------|
-| `app.py`                  | 368   | Orchestration        |
+| `medBillDozer.py`                  | 368   | Orchestration        |
 | `auth.py`                 | 56    | Access control       |
 | `bootstrap.py`            | 51    | UI initialization    |
 | `provider_registry.py`    | 52    | Provider management  |

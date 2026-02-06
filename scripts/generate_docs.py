@@ -239,8 +239,8 @@ class DocumentationGenerator:
                     continue
                 self._analyze_file(py_file)
 
-        # Scan app.py
-        app_file = self.root_dir / "app.py"
+        # Scan medBillDozer.py
+        app_file = self.root_dir / "medBillDozer.py"
         if app_file.exists():
             self._analyze_file(app_file)
 

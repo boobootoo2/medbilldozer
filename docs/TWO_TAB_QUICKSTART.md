@@ -94,7 +94,7 @@ Click on either:
 ## File Structure
 
 ```
-app.py                           # Main app with tab routing
+medBillDozer.py                           # Main app with tab routing
 _modules/ui/
   ├── bootstrap.py               # POC workflow initialization
   └── prod_workflow.py           # NEW: Production workflow

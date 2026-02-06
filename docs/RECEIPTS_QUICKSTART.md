@@ -132,7 +132,7 @@ TOTALS:
 
 ## Code Integration
 
-### Enable in app.py
+### Enable in medBillDozer.py
 
 ```python
 # Import (already added)
@@ -174,7 +174,7 @@ agent = OrchestratorAgent(
 
 ## Testing
 
-1. **Start the app**: `streamlit run app.py`
+1. **Start the app**: `streamlit run medBillDozer.py`
 2. **Select profile**: Choose "Policy Holder" or "Dependent"
 3. **Expand receipts**: Click "🧾 Stored Receipts"
 4. **Review data**: Check 10 sample receipts

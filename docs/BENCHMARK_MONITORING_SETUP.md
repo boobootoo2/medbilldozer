@@ -221,7 +221,7 @@ STREAMLIT_THEME_BACKGROUND_COLOR="#ffffff"
 
 1. Go to [share.streamlit.io](https://share.streamlit.io)
 2. Connect your GitHub repo
-3. Set main file: `benchmark_dashboard.py` or `pages/benchmark_monitoring.py`
+3. Set main file: `clinical_performance.py` or `pages/production_stability.py`
 4. Add secrets in Streamlit Cloud dashboard:
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
@@ -288,7 +288,7 @@ SELECT * FROM detect_regression('test-v1.0', 0.05);
 ### Test 4: Dashboard Load
 
 ```bash
-streamlit run pages/benchmark_monitoring.py
+streamlit run pages/production_stability.py
 ```
 
 **Expected:** 

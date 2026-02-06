@@ -242,7 +242,7 @@ Audio playback failures are caught silently to ensure the tour never breaks:
 ### Test Audio Playback
 
 1. Generate or place audio files in `audio/` directory
-2. Run the app: `streamlit run app.py`
+2. Run the app: `streamlit run medBillDozer.py`
 3. Start the guided tour
 4. Navigate through steps
 5. Verify audio plays automatically (check browser console for errors)

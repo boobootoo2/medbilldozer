@@ -64,7 +64,7 @@ medBillDozer is designed for:
 
 1. **Launch the Application**
    ```bash
-   streamlit run app.py
+   streamlit run medBillDozer.py
    ```
    The application will open in your default web browser at `http://localhost:8501`
 

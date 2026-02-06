@@ -74,7 +74,7 @@ This ensures proper contrast regardless of how the user has configured their the
 
 ## Installation
 
-The highlight styles are automatically installed when the tour is active via the `install_tour_highlight_styles()` function called in `app.py`:
+The highlight styles are automatically installed when the tour is active via the `install_tour_highlight_styles()` function called in `medBillDozer.py`:
 
 ```python
 # In bootstrap_home_page()

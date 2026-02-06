@@ -104,7 +104,7 @@ selected_provider = ENGINE_OPTIONS[engine_label]
 
 ## Import Patterns
 
-### Typical app.py imports:
+### Typical medBillDozer.py imports:
 ```python
 # Core
 from _modules.core.auth import check_access_password
@@ -124,7 +124,7 @@ from _modules.providers.provider_registry import register_providers, ENGINE_OPTI
 ## Module Dependencies
 
 ```
-app.py
+(medBillDozer.py)
 ├── core/
 │   ├── auth.py                    (no dependencies)
 │   └── analysis_runner.py         (depends on: orchestrator_agent, ui modules, utils)
@@ -159,4 +159,4 @@ Adding a new feature typically involves:
 4. **New provider**: Register in `_modules/providers/provider_registry.py`
 5. **Analysis feature**: Add to `_modules/core/analysis_runner.py`
 
-Then update `app.py` to call your new functions.
+Then update `medBillDozer.py` to call your new functions.

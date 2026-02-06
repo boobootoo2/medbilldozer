@@ -121,7 +121,7 @@ OPENAI_API_KEY=sk-prod-key-here
 ```bash
 # Quick testing without editing config
 export GUIDED_TOUR=FALSE
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 ---

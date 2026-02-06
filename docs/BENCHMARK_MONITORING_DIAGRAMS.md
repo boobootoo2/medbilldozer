@@ -108,7 +108,7 @@
 │  Layer 5: Visualization (Streamlit Dashboard)                           │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                           │
-│  pages/benchmark_monitoring.py                                          │
+│  pages/production_stability.py                                           │
 │                                                                           │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐        │
 │  │ Current         │  │ Performance     │  │ Model           │        │

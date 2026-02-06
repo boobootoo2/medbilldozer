@@ -173,7 +173,7 @@ def get_default_volume() -> float:
 
 ## Usage Examples
 
-### Basic Usage (In app.py)
+### Basic Usage (In (medBillDozer.py))
 
 ```python
 from _modules.ui.audio_controls import (
@@ -315,7 +315,7 @@ The mute button uses custom styling:
 
 1. **Test mute button appears:**
    ```bash
-   streamlit run app.py
+   streamlit run medBillDozer.py
    # Check sidebar for 🔊 button
    ```
 

@@ -421,7 +421,7 @@ Potential improvements for the session-driven tour:
 
 ## Example Integration
 
-Complete example of integrating the tour into `app.py`:
+Complete example of integrating the tour into `medBillDozer.py`:
 
 ```python
 import streamlit as st

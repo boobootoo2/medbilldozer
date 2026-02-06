@@ -40,7 +40,7 @@ export HF_MODEL_ID="google/medgemma-4b-it"
 ### 3. Launch the App
 
 ```bash
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 The app will open in your browser at `http://localhost:8501`
@@ -257,7 +257,7 @@ medBillDozer is an **educational tool only**. It is NOT:
 
 You're all set! Here's what to do next:
 
-1. ✅ Launch the app: `streamlit run app.py`
+1. ✅ Launch the app: `streamlit run medBillDozer.py`
 2. ✅ Try a demo document
 3. ✅ Analyze your own bills
 4. ✅ Save money! 💰

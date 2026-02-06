@@ -230,7 +230,7 @@ ls -lh audio/splash_*.mp3
 
 ```bash
 # Start app
-streamlit run app.py
+streamlit run medBillDozer.py
 
 # Manual test steps:
 # 1. Load homepage (splash should appear)
@@ -263,7 +263,7 @@ mv audio/splash_billy_1.mp3 audio/splash_billy_1.mp3.bak
 mv audio/splash_billie_2.mp3 audio/splash_billie_2.mp3.bak
 
 # Run app - should work without audio
-streamlit run app.py
+streamlit run medBillDozer.py
 
 # Restore files
 mv audio/splash_billie_0.mp3.bak audio/splash_billie_0.mp3

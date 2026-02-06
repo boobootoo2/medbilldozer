@@ -57,7 +57,7 @@ def main():
     
     print()
     print("Next steps:")
-    print("  1. Test the splash screen: streamlit run app.py")
+    print("  1. Test the splash screen: streamlit run medBillDozer.py")
     print("  2. Stage audio files: git add audio/splash_*.mp3")
     print("  3. Commit: git commit -m 'Add splash screen audio narration'")
 

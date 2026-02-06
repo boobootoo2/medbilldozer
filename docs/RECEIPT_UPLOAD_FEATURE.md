@@ -102,7 +102,7 @@ Generates LLM context string from uploaded receipts:
 Uploaded receipts are automatically included in the analysis context:
 
 ```python
-# In app.py
+# In (medBillDozer.py)
 profile_context = get_profile_context_for_analysis(selected_profile)
 uploaded_receipts_context = get_uploaded_receipts_context()
 

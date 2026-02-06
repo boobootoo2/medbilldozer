@@ -8,4 +8,4 @@
 
 ### Application (1 modules)
 
-- **app**: MedBillDozer - Medical billing error detection application.
+- **medBillDozer**: MedBillDozer - Medical billing error detection application.

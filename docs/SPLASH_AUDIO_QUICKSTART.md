@@ -24,7 +24,7 @@ splash_billie_2.mp3  (62 KB)  - Billie's call to action
 ### Test Splash Screen
 
 ```bash
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 1. Load homepage (splash appears)

@@ -59,7 +59,7 @@ Successfully integrated the Profile Editor feature into medBillDozer using sideb
 ## 📝 Modified Files
 
 ### Application Core
-- **`app.py`**
+- **`medBillDozer.py`**
   - Added profile_editor imports (lines 94-97)
   - Added page navigation state initialization (line 281)
   - Added sidebar navigation buttons (lines 313-329)
@@ -164,7 +164,7 @@ echo "IMPORTER_ENABLED=TRUE" >> .env
 
 ### Start the App
 ```bash
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 ### Access Profile Editor
@@ -176,7 +176,7 @@ Look for the **📋 Profile** button in the sidebar (next to 🏠 Home).
 
 ```
 medbilldozer/
-├── app.py                              # Modified: Added navigation & routing
+├── medBillDozer.py                              # Modified: Added navigation & routing
 ├── _modules/
 │   └── ui/
 │       └── profile_editor.py           # NEW: Main profile editor module
@@ -209,7 +209,7 @@ medbilldozer/
 - **Routing:** Early return pattern in `main()` function
 - **Feature Flags:** Environment variable checks
 
-### Code Changes in app.py
+### Code Changes in medBillDozer.py
 
 **1. Imports (lines 94-97)**
 ```python
@@ -322,7 +322,7 @@ os.replace(tmp_path, final_path)  # Atomic operation
 The Profile Editor is now fully integrated and ready to use. Start by:
 
 1. Ensuring `PROFILE_EDITOR_ENABLED=TRUE` in `.env`
-2. Running `streamlit run app.py`
+2. Running `streamlit run medBillDozer.py`
 3. Clicking **📋 Profile** in the sidebar
 4. Adding your information
 

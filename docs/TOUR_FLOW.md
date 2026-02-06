@@ -197,7 +197,7 @@ If there's an issue:
 ### Environment Variable
 ```bash
 export GUIDED_TOUR=FALSE
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 ### Config File (`app_config.yaml`)

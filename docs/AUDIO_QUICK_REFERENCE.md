@@ -11,7 +11,7 @@
 
 ```bash
 # 1. Start app
-streamlit run app.py
+streamlit run medBillDozer.py
 
 # 2. Look for 🔊 button at top of sidebar
 
@@ -128,7 +128,7 @@ with st.sidebar:
 | `_modules/ui/audio_controls.py` | **NEW** - mute button module |
 | `_modules/ui/splash_screen.py` | Respects mute state |
 | `_modules/ui/guided_tour.py` | Respects mute state |
-| `app.py` | Renders mute button |
+| `medBillDozer.py` | Renders mute button |
 
 ## 🚀 Test Checklist
 
@@ -154,7 +154,7 @@ with st.sidebar:
 The feature is **complete and ready to test**. Just start the app and look for the 🔊 button!
 
 ```bash
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 **Questions?** See full documentation in `docs/AUDIO_CONTROLS.md`

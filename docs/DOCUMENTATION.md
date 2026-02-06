@@ -304,7 +304,7 @@ python3 scripts/generate_docs.py
 ### Module Not Documented
 
 Ensure the module:
-1. Is a `.py` file in `_modules/` or `app.py`
+1. Is a `.py` file in `_modules/` or `medBillDozer.py`
 2. Has valid Python syntax
 3. Is not `__init__.py` (these are skipped)
 

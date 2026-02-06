@@ -14,7 +14,7 @@ This guide walks you through adding cost savings metrics to the Model Benchmark 
 ### 2. Conversion Script (`convert_benchmark_to_monitoring.py`)
 ✅ **ALREADY UPDATED** - Now includes cost savings in monitoring format
 
-### 3. Dashboard (`pages/benchmark_monitoring.py`)
+### 3. Dashboard (`pages/production_stability.py`)
 ✅ **ALREADY UPDATED** - Now displays cost savings metrics when available
 
 ### 4. Database Schema
@@ -90,7 +90,7 @@ python3 scripts/push_to_supabase.py \
 ```bash
 # Stop current dashboard (Ctrl+C in terminal)
 # Then restart:
-python3 -m streamlit run pages/benchmark_monitoring.py --server.port 8502
+python3 -m streamlit run pages/production_stability.py --server.port 8502
 ```
 
 ### Step 5: Verify in Dashboard
@@ -182,7 +182,7 @@ This reflects that we're measuring **model performance**, not patient health met
 ### Core Changes
 - ✅ `scripts/generate_patient_benchmarks.py` - Added cost calculations
 - ✅ `scripts/convert_benchmark_to_monitoring.py` - Added cost fields to monitoring format
-- ✅ `pages/benchmark_monitoring.py` - Added cost savings display section
+- ✅ `pages/production_stability.py` - Added cost savings display section
 
 ### Database Changes
 - ⚠️ `sql/migration_add_cost_savings.sql` - Add columns (NEEDS RUNNING)
@@ -206,7 +206,7 @@ After setup is complete:
 # Full workflow
 python3 scripts/generate_patient_benchmarks.py --model all
 ./scripts/push_local_benchmarks.sh
-python3 -m streamlit run pages/benchmark_monitoring.py --server.port 8502
+python3 -m streamlit run pages/production_stability.py --server.port 8502
 
 # Check results locally
 cat benchmarks/results/patient_benchmark_medgemma.json | jq '.total_potential_savings'

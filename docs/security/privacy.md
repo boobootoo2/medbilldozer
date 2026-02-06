@@ -184,7 +184,7 @@ result = orchestrator.run(text)
 Give users explicit control:
 
 ```python
-# app.py
+# medBillDozer.py
 import streamlit as st
 
 st.markdown("### Privacy Settings")
