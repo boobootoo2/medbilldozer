@@ -28,37 +28,56 @@ class GeminiAnalysisProvider(LLMProvider):
         facts: Optional[Dict] = None
     ) -> AnalysisResult:
 
-        prompt = f"""
-You are a healthcare billing analysis assistant.
+        prompt = f"""You are a medical billing auditor. Analyze the following patient documents for billing errors.
 
-Analyze the document and return a JSON array of issues.
+CRITICAL: Return ONLY a valid JSON array. No markdown, no tables, no explanations. Just JSON.
 
-For each issue:
-- type: one of duplicate_charge, billing_error, non_covered_service,
-        overbilling, insurance_issue, fsa_issue, other
-- summary: short description
-- evidence: brief supporting explanation
-- max_savings: numeric dollar amount representing the MAXIMUM
-  patient responsibility that could be removed if the issue
-  were resolved favorably, using ONLY amounts explicitly stated
-  in the document. If no amount can be determined with certainty,
-  set this to null.
+Look for these billing issues:
+1. Gender mismatches (e.g., male patient billed for obstetric/gynecology procedures)
+2. Age-inappropriate procedures (e.g., pediatric vaccine for 70-year-old)
+3. Procedures on removed/absent body parts (e.g., appendix removal after prior appendectomy)
+4. Procedures without supporting medical conditions in patient history
+5. Duplicate charges (same CPT code, same date, same amount)
+6. Temporal violations (procedures before/after impossible timeframes)
 
-Be conservative. Do not guess or infer missing numbers.
+For each issue found, return:
+{{
+  "type": "gender_mismatch" | "age_inappropriate_procedure" | "anatomical_contradiction" | "procedure_inconsistent_with_health_history" | "duplicate_charge" | "temporal_violation" | "other",
+  "summary": "Brief description",
+  "evidence": "Why this is problematic",
+  "code": "CPT code (e.g., 76805, 99213)",
+  "max_savings": null or dollar amount
+}}
 
-If no issues are found, return an empty JSON array.
+IMPORTANT: Extract CPT codes from the document. Look for patterns like "CPT 76805" or standalone procedure codes.
 
-DOCUMENT:
+Return ONLY the JSON array. If no issues: []
+
+PATIENT DOCUMENTS:
 {raw_text}
-"""
+
+JSON OUTPUT:"""
 
         response_text = run_prompt_gemini(prompt) or "[]"
 
         try:
-            raw_issues = json.loads(response_text)
+            # Clean up response text - sometimes LLMs wrap JSON in markdown
+            cleaned_text = response_text.strip()
+            if cleaned_text.startswith("```json"):
+                cleaned_text = cleaned_text[7:]
+            if cleaned_text.startswith("```"):
+                cleaned_text = cleaned_text[3:]
+            if cleaned_text.endswith("```"):
+                cleaned_text = cleaned_text[:-3]
+            cleaned_text = cleaned_text.strip()
+            
+            raw_issues = json.loads(cleaned_text)
             if not isinstance(raw_issues, list):
                 raw_issues = []
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            # Debug: print first 500 chars of failed response
+            print(f"⚠️  Gemini JSON parse error: {e}")
+            print(f"   Response preview: {response_text[:500]}")
             raw_issues = []
 
         issues = []
@@ -74,6 +93,7 @@ DOCUMENT:
                 type=item.get("type", "other"),
                 summary=item.get("summary", "Potential issue identified"),
                 evidence=item.get("evidence"),
+                code=item.get("code"),  # Include CPT code for matching
                 max_savings=max_savings,
             ))
 
