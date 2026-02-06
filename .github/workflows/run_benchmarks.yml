@@ -15,8 +15,9 @@ on:
     paths:
       - 'src/medbilldozer/providers/**'
       - 'src/medbilldozer/extractors/**'
-      - 'scripts/generate_benchmarks.py'
+      - 'scripts/generate_patient_benchmarks.py'
       - 'benchmarks/inputs/**'
+      - 'benchmarks/patient_profiles/**'
       - '.github/workflows/run_benchmarks.yml'
 
 jobs:

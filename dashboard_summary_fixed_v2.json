@@ -1,0 +1,786 @@
+{
+  "generated_at": "2026-02-05T23:33:32.886921",
+  "time_window_days": null,
+  "total_transactions": 53,
+  "total_benchmark_runs": 53,
+  "models_tracked": 8,
+  "total_potential_savings": 125355.0,
+  "model_summary": {
+    "Heuristic Baseline": {
+      "total_runs": 14,
+      "successful_runs": 5,
+      "failed_runs": 9,
+      "failure_rate": 0.6429,
+      "latest_run": "2026-02-06T04:25:48.800853+00:00",
+      "avg_precision": 1.0,
+      "avg_recall": 0.25,
+      "avg_f1": 0.4,
+      "avg_latency_ms": 0.52,
+      "total_potential_savings": 0.0,
+      "avg_savings_capture_rate": null,
+      "avg_risk_weighted_recall": null,
+      "avg_conservatism_index": null,
+      "avg_roi_ratio": null,
+      "avg_p95_latency_ms": null
+    },
+    "OpenAI GPT-4": {
+      "total_runs": 9,
+      "successful_runs": 9,
+      "failed_runs": 0,
+      "failure_rate": 0.0,
+      "latest_run": "2026-02-06T04:18:48.747636+00:00",
+      "avg_precision": 0.0698,
+      "avg_recall": 0.1622,
+      "avg_f1": 0.085,
+      "avg_latency_ms": 3271.8,
+      "total_potential_savings": 18980.0,
+      "avg_savings_capture_rate": 13.014,
+      "avg_risk_weighted_recall": 0.0,
+      "avg_conservatism_index": 0.7909,
+      "avg_roi_ratio": 916.91,
+      "avg_p95_latency_ms": 0.0
+    },
+    "Google MedGemma-4B-IT": {
+      "total_runs": 8,
+      "successful_runs": 7,
+      "failed_runs": 1,
+      "failure_rate": 0.125,
+      "latest_run": "2026-02-06T04:18:47.764141+00:00",
+      "avg_precision": 0.4907,
+      "avg_recall": 0.2953,
+      "avg_f1": 0.356,
+      "avg_latency_ms": 6026.16,
+      "total_potential_savings": 53260.0,
+      "avg_savings_capture_rate": 45.6158,
+      "avg_risk_weighted_recall": 0.0,
+      "avg_conservatism_index": 0.863,
+      "avg_roi_ratio": 9648.55,
+      "avg_p95_latency_ms": 0.0
+    },
+    "Google Gemma-3-27B-IT": {
+      "total_runs": 5,
+      "successful_runs": 4,
+      "failed_runs": 1,
+      "failure_rate": 0.2,
+      "latest_run": "2026-02-06T04:18:46.742592+00:00",
+      "avg_precision": 0.4891,
+      "avg_recall": 0.3025,
+      "avg_f1": 0.3616,
+      "avg_latency_ms": 9680.4,
+      "total_potential_savings": 52320.0,
+      "avg_savings_capture_rate": 44.596,
+      "avg_risk_weighted_recall": null,
+      "avg_conservatism_index": null,
+      "avg_roi_ratio": 9478.26,
+      "avg_p95_latency_ms": null
+    },
+    "Google Gemini 1.5 Pro": {
+      "total_runs": 8,
+      "successful_runs": 1,
+      "failed_runs": 7,
+      "failure_rate": 0.875,
+      "latest_run": "2026-02-06T04:18:45.992925+00:00",
+      "avg_precision": 0.5,
+      "avg_recall": 0.375,
+      "avg_f1": 0.4167,
+      "avg_latency_ms": 38860.41,
+      "total_potential_savings": 795.0,
+      "avg_savings_capture_rate": 24.1275,
+      "avg_risk_weighted_recall": 0.0,
+      "avg_conservatism_index": 1.0,
+      "avg_roi_ratio": 576.09,
+      "avg_p95_latency_ms": 0.0
+    },
+    "gemini-v1.0": {
+      "total_runs": 2,
+      "successful_runs": 0,
+      "failed_runs": 2,
+      "failure_rate": 1.0,
+      "latest_run": null,
+      "avg_precision": null,
+      "avg_recall": null,
+      "avg_f1": null,
+      "avg_latency_ms": null,
+      "total_potential_savings": 0,
+      "avg_savings_capture_rate": null,
+      "avg_risk_weighted_recall": null,
+      "avg_conservatism_index": null,
+      "avg_roi_ratio": null,
+      "avg_p95_latency_ms": null
+    },
+    "medgemma-v1.0": {
+      "total_runs": 2,
+      "successful_runs": 1,
+      "failed_runs": 1,
+      "failure_rate": 0.5,
+      "latest_run": "2026-02-05T19:15:56.656153+00:00",
+      "avg_precision": 0.5435,
+      "avg_recall": 0.317,
+      "avg_f1": 0.3891,
+      "avg_latency_ms": 6494.39,
+      "total_potential_savings": 0.0,
+      "avg_savings_capture_rate": null,
+      "avg_risk_weighted_recall": null,
+      "avg_conservatism_index": null,
+      "avg_roi_ratio": null,
+      "avg_p95_latency_ms": null
+    },
+    "baseline-v1.0": {
+      "total_runs": 5,
+      "successful_runs": 4,
+      "failed_runs": 1,
+      "failure_rate": 0.2,
+      "latest_run": "2026-02-05T17:54:40.703114+00:00",
+      "avg_precision": 1.0,
+      "avg_recall": 0.25,
+      "avg_f1": 0.4,
+      "avg_latency_ms": 0.5,
+      "total_potential_savings": 0.0,
+      "avg_savings_capture_rate": null,
+      "avg_risk_weighted_recall": null,
+      "avg_conservatism_index": null,
+      "avg_roi_ratio": null,
+      "avg_p95_latency_ms": null
+    }
+  },
+  "category_performance": {
+    "Google MedGemma-4B-IT": {
+      "upcoding": {
+        "total_cases": 4,
+        "total_detected": 2,
+        "avg_detection_rate": 0.5
+      },
+      "gender_mismatch": {
+        "total_cases": 40,
+        "total_detected": 23,
+        "avg_detection_rate": 0.575
+      },
+      "duplicate_charge": {
+        "total_cases": 6,
+        "total_detected": 6,
+        "avg_detection_rate": 1.0
+      },
+      "age_inappropriate": {
+        "total_cases": 18,
+        "total_detected": 2,
+        "avg_detection_rate": 0.1111
+      },
+      "medical_necessity": {
+        "total_cases": 4,
+        "total_detected": 3,
+        "avg_detection_rate": 0.75
+      },
+      "temporal_violation": {
+        "total_cases": 16,
+        "total_detected": 6,
+        "avg_detection_rate": 0.375
+      },
+      "anatomical_contradiction": {
+        "total_cases": 4,
+        "total_detected": 2,
+        "avg_detection_rate": 0.5
+      },
+      "care_setting_inconsistency": {
+        "total_cases": 8,
+        "total_detected": 2,
+        "avg_detection_rate": 0.25
+      },
+      "age_inappropriate_procedure": {
+        "total_cases": 4,
+        "total_detected": 4,
+        "avg_detection_rate": 1.0
+      },
+      "age_inappropriate_screening": {
+        "total_cases": 12,
+        "total_detected": 12,
+        "avg_detection_rate": 1.0
+      },
+      "diagnosis_procedure_mismatch": {
+        "total_cases": 10,
+        "total_detected": 3,
+        "avg_detection_rate": 0.3
+      },
+      "surgical_history_contradiction": {
+        "total_cases": 8,
+        "total_detected": 6,
+        "avg_detection_rate": 0.75
+      },
+      "procedure_inconsistent_with_health_history": {
+        "total_cases": 48,
+        "total_detected": 10,
+        "avg_detection_rate": 0.2083
+      }
+    },
+    "OpenAI GPT-4": {
+      "upcoding": {
+        "total_cases": 2,
+        "total_detected": 1,
+        "avg_detection_rate": 0.5
+      },
+      "gender_mismatch": {
+        "total_cases": 20,
+        "total_detected": 7,
+        "avg_detection_rate": 0.35
+      },
+      "duplicate_charge": {
+        "total_cases": 3,
+        "total_detected": 3,
+        "avg_detection_rate": 1.0
+      },
+      "age_inappropriate": {
+        "total_cases": 9,
+        "total_detected": 0,
+        "avg_detection_rate": 0.0
+      },
+      "medical_necessity": {
+        "total_cases": 2,
+        "total_detected": 1,
+        "avg_detection_rate": 0.5
+      },
+      "temporal_violation": {
+        "total_cases": 8,
+        "total_detected": 0,
+        "avg_detection_rate": 0.0
+      },
+      "anatomical_contradiction": {
+        "total_cases": 2,
+        "total_detected": 0,
+        "avg_detection_rate": 0.0
+      },
+      "care_setting_inconsistency": {
+        "total_cases": 4,
+        "total_detected": 0,
+        "avg_detection_rate": 0.0
+      },
+      "age_inappropriate_procedure": {
+        "total_cases": 2,
+        "total_detected": 2,
+        "avg_detection_rate": 1.0
+      },
+      "age_inappropriate_screening": {
+        "total_cases": 6,
+        "total_detected": 6,
+        "avg_detection_rate": 1.0
+      },
+      "diagnosis_procedure_mismatch": {
+        "total_cases": 5,
+        "total_detected": 0,
+        "avg_detection_rate": 0.0
+      },
+      "surgical_history_contradiction": {
+        "total_cases": 4,
+        "total_detected": 0,
+        "avg_detection_rate": 0.0
+      },
+      "procedure_inconsistent_with_health_history": {
+        "total_cases": 24,
+        "total_detected": 0,
+        "avg_detection_rate": 0.0
+      }
+    }
+  },
+  "category_regressions": {
+    "Google MedGemma-4B-IT": {},
+    "OpenAI GPT-4": {}
+  },
+  "leaderboard": {
+    "by_recall": [
+      [
+        "Google Gemini 1.5 Pro",
+        0.375
+      ],
+      [
+        "medgemma-v1.0",
+        0.317
+      ],
+      [
+        "Google Gemma-3-27B-IT",
+        0.3025
+      ],
+      [
+        "Google MedGemma-4B-IT",
+        0.2953
+      ],
+      [
+        "Heuristic Baseline",
+        0.25
+      ],
+      [
+        "baseline-v1.0",
+        0.25
+      ],
+      [
+        "OpenAI GPT-4",
+        0.1622
+      ]
+    ],
+    "by_precision": [
+      [
+        "Heuristic Baseline",
+        1.0
+      ],
+      [
+        "baseline-v1.0",
+        1.0
+      ],
+      [
+        "medgemma-v1.0",
+        0.5435
+      ],
+      [
+        "Google Gemini 1.5 Pro",
+        0.5
+      ],
+      [
+        "Google MedGemma-4B-IT",
+        0.4907
+      ],
+      [
+        "Google Gemma-3-27B-IT",
+        0.4891
+      ],
+      [
+        "OpenAI GPT-4",
+        0.0698
+      ]
+    ],
+    "by_f1": [
+      [
+        "Google Gemini 1.5 Pro",
+        0.4167
+      ],
+      [
+        "Heuristic Baseline",
+        0.4
+      ],
+      [
+        "baseline-v1.0",
+        0.4
+      ],
+      [
+        "medgemma-v1.0",
+        0.3891
+      ],
+      [
+        "Google Gemma-3-27B-IT",
+        0.3616
+      ],
+      [
+        "Google MedGemma-4B-IT",
+        0.356
+      ],
+      [
+        "OpenAI GPT-4",
+        0.085
+      ]
+    ],
+    "by_risk_weighted_recall": [
+      [
+        "OpenAI GPT-4",
+        0.0
+      ],
+      [
+        "Google MedGemma-4B-IT",
+        0.0
+      ],
+      [
+        "Google Gemini 1.5 Pro",
+        0.0
+      ]
+    ],
+    "by_roi": [
+      [
+        "Google MedGemma-4B-IT",
+        9648.55
+      ],
+      [
+        "Google Gemma-3-27B-IT",
+        9478.26
+      ],
+      [
+        "OpenAI GPT-4",
+        916.91
+      ],
+      [
+        "Google Gemini 1.5 Pro",
+        576.09
+      ]
+    ],
+    "by_speed": [
+      [
+        "baseline-v1.0",
+        0.5
+      ],
+      [
+        "Heuristic Baseline",
+        0.52
+      ],
+      [
+        "OpenAI GPT-4",
+        3271.8
+      ],
+      [
+        "Google MedGemma-4B-IT",
+        6026.16
+      ],
+      [
+        "medgemma-v1.0",
+        6494.39
+      ],
+      [
+        "Google Gemma-3-27B-IT",
+        9680.4
+      ],
+      [
+        "Google Gemini 1.5 Pro",
+        38860.41
+      ]
+    ]
+  },
+  "trends": {
+    "Heuristic Baseline": {
+      "dates": [
+        "2026-02-05T23:39:10.460536+00:00",
+        "2026-02-05T23:39:42.643135+00:00",
+        "2026-02-05T23:51:14.66832+00:00",
+        "2026-02-05T23:51:42.93149+00:00",
+        "2026-02-06T04:25:48.800853+00:00"
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "recall": [
+        0.25,
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      "f1": [
+        0.4,
+        0.4,
+        0.4,
+        0.4,
+        0.4
+      ],
+      "risk_weighted_recall": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "roi_ratio": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "savings_capture_rate": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "OpenAI GPT-4": {
+      "dates": [
+        "2026-02-04T21:48:26.919209+00:00",
+        "2026-02-05T19:19:03.882652+00:00",
+        "2026-02-05T20:32:55.556102+00:00",
+        "2026-02-05T21:52:02.960724+00:00",
+        "2026-02-05T23:39:08.333432+00:00",
+        "2026-02-05T23:51:12.178846+00:00",
+        "2026-02-06T00:58:32.175448+00:00",
+        "2026-02-06T02:46:35.013481+00:00",
+        "2026-02-06T04:18:48.747636+00:00"
+      ],
+      "precision": [
+        0.1178,
+        0.1196,
+        0.0303,
+        0.0303,
+        0.125,
+        0.1429,
+        0.0125,
+        0.0252,
+        0.0252
+      ],
+      "recall": [
+        0.1159,
+        0.0725,
+        0.0598,
+        0.0598,
+        0.5,
+        0.5,
+        0.0435,
+        0.0543,
+        0.0543
+      ],
+      "f1": [
+        0.1058,
+        0.087,
+        0.0342,
+        0.0342,
+        0.2,
+        0.2222,
+        0.0188,
+        0.0312,
+        0.0312
+      ],
+      "risk_weighted_recall": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "roi_ratio": [
+        0.0,
+        0.0,
+        2077.29,
+        2077.29,
+        0.0,
+        0.0,
+        74.88,
+        177.54,
+        177.54
+      ],
+      "savings_capture_rate": [
+        0.0,
+        0.0,
+        28.5714,
+        28.5714,
+        0.0,
+        0.0,
+        1.3895,
+        3.2688,
+        3.2688
+      ]
+    },
+    "Google MedGemma-4B-IT": {
+      "dates": [
+        "2026-02-04T21:48:16.086527+00:00",
+        "2026-02-05T04:47:28.57024+00:00",
+        "2026-02-05T19:19:02.07423+00:00",
+        "2026-02-05T20:32:54.601532+00:00",
+        "2026-02-05T21:52:02.007135+00:00",
+        "2026-02-06T02:46:34.205862+00:00",
+        "2026-02-06T04:18:47.764141+00:00"
+      ],
+      "precision": [
+        0.3152,
+        0.4022,
+        0.5435,
+        0.5326,
+        0.5326,
+        0.5543,
+        0.5543
+      ],
+      "recall": [
+        0.1938,
+        0.2808,
+        0.317,
+        0.3134,
+        0.3134,
+        0.3243,
+        0.3243
+      ],
+      "f1": [
+        0.2283,
+        0.3123,
+        0.3891,
+        0.3833,
+        0.3833,
+        0.3978,
+        0.3978
+      ],
+      "risk_weighted_recall": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "roi_ratio": [
+        0.0,
+        0.0,
+        0.0,
+        9648.55,
+        9648.55,
+        9648.55,
+        9648.55
+      ],
+      "savings_capture_rate": [
+        0.0,
+        0.0,
+        0.0,
+        45.4204,
+        45.4204,
+        45.8111,
+        45.8111
+      ]
+    },
+    "Google Gemma-3-27B-IT": {
+      "dates": [
+        "2026-02-05T21:54:44.637211+00:00",
+        "2026-02-05T23:23:17.744903+00:00",
+        "2026-02-06T02:46:33.198394+00:00",
+        "2026-02-06T04:18:46.742592+00:00"
+      ],
+      "precision": [
+        0.4891,
+        0.4891,
+        0.4891,
+        0.4891
+      ],
+      "recall": [
+        0.3025,
+        0.3025,
+        0.3025,
+        0.3025
+      ],
+      "f1": [
+        0.3616,
+        0.3616,
+        0.3616,
+        0.3616
+      ],
+      "risk_weighted_recall": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "roi_ratio": [
+        9478.26,
+        9478.26,
+        9478.26,
+        9478.26
+      ],
+      "savings_capture_rate": [
+        44.596,
+        44.596,
+        44.596,
+        44.596
+      ]
+    },
+    "Google Gemini 1.5 Pro": {
+      "dates": [
+        "2026-02-06T04:18:45.992925+00:00"
+      ],
+      "precision": [
+        0.5
+      ],
+      "recall": [
+        0.375
+      ],
+      "f1": [
+        0.4167
+      ],
+      "risk_weighted_recall": [
+        0.0
+      ],
+      "roi_ratio": [
+        576.09
+      ],
+      "savings_capture_rate": [
+        24.1275
+      ]
+    },
+    "gemini-v1.0": {
+      "dates": [],
+      "precision": [],
+      "recall": [],
+      "f1": [],
+      "risk_weighted_recall": [],
+      "roi_ratio": [],
+      "savings_capture_rate": []
+    },
+    "medgemma-v1.0": {
+      "dates": [
+        "2026-02-05T19:15:56.656153+00:00"
+      ],
+      "precision": [
+        0.5435
+      ],
+      "recall": [
+        0.317
+      ],
+      "f1": [
+        0.3891
+      ],
+      "risk_weighted_recall": [
+        0.0
+      ],
+      "roi_ratio": [
+        0.0
+      ],
+      "savings_capture_rate": [
+        0.0
+      ]
+    },
+    "baseline-v1.0": {
+      "dates": [
+        "2026-02-05T04:26:30.305363+00:00",
+        "2026-02-05T06:14:40.267612+00:00",
+        "2026-02-05T06:31:35.003788+00:00",
+        "2026-02-05T17:54:40.703114+00:00"
+      ],
+      "precision": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "recall": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      "f1": [
+        0.4,
+        0.4,
+        0.4,
+        0.4
+      ],
+      "risk_weighted_recall": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "roi_ratio": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "savings_capture_rate": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "metadata": {
+    "categories_tracked": 26,
+    "regressions_detected": 0,
+    "earliest_transaction": "2026-02-04T21:48:16.086527+00:00",
+    "latest_transaction": "2026-02-06T04:25:48.800853+00:00"
+  }
+}
