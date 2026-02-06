@@ -1,0 +1,32 @@
+{
+    "patient_id": "P048",
+    "name": "Robert Martinez",
+    "demographics": {
+        "age": 62,
+        "sex": "M",
+        "date_of_birth": "1963-11-20"
+    },
+    "medical_history": {
+        "conditions": [
+            "Active Gastric Ulcer (treated 2 months ago)",
+            "Chronic Lower Back Pain",
+            "Hypertension"
+        ],
+        "allergies": [],
+        "medications": [
+            "Omeprazole 40mg daily",
+            "Lisinopril 20mg daily"
+        ],
+        "surgeries": []
+    },
+    "documents": [
+        "patient_048_doc_1_medical_bill.txt"
+    ],
+    "expected_issues": [{
+        "type": "drug_disease_contraindication",
+        "severity": "critical",
+        "description": "Ibuprofen prescribed to patient with recent gastric ulcer - NSAIDs are contraindicated in active/recent GI bleeding. Requires medical knowledge of drug-disease contraindications.",
+        "requires_domain_knowledge": true,
+        "cpt_code": "99214"
+    }]
+}
