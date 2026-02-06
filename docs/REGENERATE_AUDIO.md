@@ -92,7 +92,7 @@ The splash screen has 3 audio files (Billy & Billie voices):
 rm audio/splash_*.mp3
 
 # Regenerate by running the app
-streamlit run app.py
+streamlit run medBillDozer.py
 # Audio generates automatically on splash screen load
 ```
 
@@ -173,7 +173,7 @@ ls -lh audio/tour_step_5.mp3
 
 ### Test in App
 
-1. Start app: `streamlit run app.py`
+1. Start app: `streamlit run medBillDozer.py`
 2. Start guided tour
 3. Navigate to the step you regenerated
 4. Audio should play with new version
@@ -259,7 +259,7 @@ To get different audio:
 |------|---------|
 | **Regenerate step 5** | `rm audio/tour_step_5.mp3 && python scripts/generate_tour_audio.py --openai` |
 | **Regenerate all tour** | `rm audio/tour_step_*.mp3 && python scripts/generate_tour_audio.py --openai` |
-| **Regenerate splash** | `rm audio/splash_*.mp3 && streamlit run app.py` |
+| **Regenerate splash** | `rm audio/splash_*.mp3 && streamlit run medBillDozer.py` |
 | **Change voice** | Edit `scripts/generate_tour_audio.py`, delete file, regenerate |
 
 **Remember**: The generation script is **smart** - it only generates missing files, so you must **delete first** to regenerate!

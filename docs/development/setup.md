@@ -44,7 +44,7 @@ python -c "import medbilldozer; print(medbilldozer.__version__)"
 pytest tests/ -v
 
 # 8. Launch application
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 ## Detailed Setup
@@ -232,14 +232,14 @@ tests/test_ui.py ................... PASSED
 Start Streamlit server:
 
 ```bash
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 Application opens at: http://localhost:8501
 
-**Launch benchmark dashboard**:
+**Launch clinical performance dashboard**:
 ```bash
-streamlit run benchmark_dashboard.py
+streamlit run clinical_performance.py
 ```
 
 Opens at: http://localhost:8502
@@ -346,7 +346,7 @@ pip list | grep medbilldozer
 **Alternative**: Set environment variables directly
 ```bash
 export OPENAI_API_KEY="your_key"
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 ### Port Already in Use
@@ -362,7 +362,7 @@ lsof -i :8501
 kill -9 <PID>
 
 # Or use different port
-streamlit run app.py --server.port 8503
+streamlit run medBillDozer.py --server.port 8503
 ```
 
 ### Test Failures
@@ -397,7 +397,7 @@ RUN pip install -e .
 
 EXPOSE 8501
 
-CMD ["streamlit", "run", "app.py", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "medBillDozer.py", "--server.address=0.0.0.0"]
 ```
 
 Build and run:

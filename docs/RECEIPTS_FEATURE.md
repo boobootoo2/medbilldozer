@@ -222,7 +222,7 @@ To test the receipts feature:
 
 1. **Select a Profile**:
    ```python
-   # In app.py (already enabled)
+   # In medBillDozer.py (already enabled)
    selected_profile = render_profile_selector()
    ```
 
@@ -244,7 +244,7 @@ To test the receipts feature:
 ## Example Usage
 
 ```python
-# app.py (main application)
+# medBillDozer.py (main application)
 from _modules.ui.health_profile import (
     render_profile_selector,
     render_profile_details,

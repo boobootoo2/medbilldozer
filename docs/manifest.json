@@ -3,8 +3,8 @@
   "total_modules": 1,
   "modules": [
     {
-      "name": "app",
-      "filepath": "app.py",
+      "name": "medBillDozer",
+      "filepath": "medBillDozer.py",
       "has_docstring": true,
       "num_classes": 0,
       "num_functions": 1,

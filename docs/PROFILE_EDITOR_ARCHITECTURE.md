@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                       app.py (main)                         │
+│                       medBillDozer.py (main)                         │
 │                                                             │
 │  1. Check access password (APP_ACCESS_PASSWORD)            │
 │  2. Initialize page navigation state                       │
@@ -179,7 +179,7 @@ _modules/ui/profile_editor.py
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                         app.py                              │
+│                         medBillDozer.py                              │
 └─────────────────────────────────────────────────────────────┘
                           │
                           │ imports

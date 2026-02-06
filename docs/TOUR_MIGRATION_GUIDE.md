@@ -362,7 +362,7 @@ cp _modules/ui/guided_tour_old.py _modules/ui/guided_tour.py
 cp _modules/ui/guided_tour.py.backup _modules/ui/guided_tour.py
 
 # Restart app
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 ## Testing Checklist

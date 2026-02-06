@@ -520,7 +520,7 @@ pwd
 
 # Run from project root
 cd /path/to/medbilldozer
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 ## Next Steps

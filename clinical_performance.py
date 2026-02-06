@@ -6,7 +6,7 @@ This is a separate service that reads benchmark results and displays them.
 Deploy this to Streamlit Cloud for live benchmark metrics.
 
 Usage:
-    streamlit run benchmark_dashboard.py
+    streamlit run clinical_performance.py
 
 Can be deployed to Streamlit Cloud pointing to this file directly.
 """
@@ -20,8 +20,8 @@ import plotly.graph_objects as go
 import plotly.express as px
 
 st.set_page_config(
-    page_title="medBillDozer Benchmarks",
-    page_icon="📊",
+    page_title="🏥 Clinical Performance",
+    page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -38,7 +38,7 @@ def get_full_model_name(model_key: str) -> str:
     return name_map.get(model_key, model_key.replace("_", " ").title())
 
 # Title
-st.title("📊 medBillDozer Benchmark Metrics")
+st.title("🏥 Clinical Performance")
 st.markdown("Real-time performance comparison of medical billing analysis providers")
 
 # Load results

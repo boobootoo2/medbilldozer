@@ -19,7 +19,7 @@ IMPORTER_ENABLED=TRUE
 ### Step 2: Start the App
 
 ```bash
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 ### Step 3: Access Profile Editor
@@ -164,7 +164,7 @@ If you encounter issues or have questions:
 You're ready to use the Profile Editor. Start by:
 
 1. Setting `PROFILE_EDITOR_ENABLED=TRUE` in `.env`
-2. Running `streamlit run app.py`
+2. Running `streamlit run medBillDozer.py`
 3. Clicking **📋 Profile** in the sidebar
 4. Adding your information
 

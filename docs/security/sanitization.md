@@ -70,7 +70,7 @@ def get_expected_mime(extension: str) -> List[str]:
 
 **Usage in Streamlit**:
 ```python
-# app.py
+# medBillDozer.py
 uploaded_file = st.file_uploader(
     "Upload medical bill",
     type=ALLOWED_EXTENSIONS,
@@ -281,7 +281,7 @@ class RateLimiter:
 
 **Usage in Streamlit**:
 ```python
-# app.py
+# medBillDozer.py
 import streamlit as st
 from medbilldozer.utils.rate_limit import RateLimiter
 

@@ -114,7 +114,7 @@ Note: Safari uses native scrollbar (can't customize), but functionality works fi
 ## Testing
 
 ### Manual Test
-1. Start app: `streamlit run app.py`
+1. Start app: `streamlit run medBillDozer.py`
 2. Splash screen appears
 3. Look for "▶ Transcript" button below animation
 4. Click button

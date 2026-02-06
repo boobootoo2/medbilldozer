@@ -7,7 +7,7 @@ Deploy medBillDozer to Streamlit Cloud.
 medBillDozer is built as a Streamlit application with multi-page architecture:
 
 ```
-app.py                              # Main application entry
+medBillDozer.py                              # Main application entry
 pages/
 ├── 1_📊_Snapshot_View.py          # Quick analysis view
 ├── 2_🔬_Analysis_View.py          # Detailed analysis
@@ -29,7 +29,7 @@ export OPENAI_API_KEY="sk-proj-..."
 export GOOGLE_API_KEY="AIza..."
 
 # Run app
-streamlit run app.py
+streamlit run medBillDozer.py
 
 # App available at: http://localhost:8501
 ```
@@ -102,7 +102,7 @@ enable_audio: false
 3. **Configure**:
    - **Repository**: `yourusername/medbilldozer`
    - **Branch**: `main`
-   - **Main file path**: `app.py`
+   - **Main file path**: `medBillDozer.py`
    - **App URL**: `medbilldozer` (or custom subdomain)
 
 4. **Advanced settings**:
@@ -135,7 +135,7 @@ ENABLE_AUDIO = "false"
 
 **Access secrets in code**:
 ```python
-# app.py
+# medBillDozer.py
 import streamlit as st
 
 # Streamlit Cloud automatically loads secrets
@@ -181,7 +181,7 @@ fastReruns = true
 
 **Enable caching**:
 ```python
-# app.py
+# medBillDozer.py
 import streamlit as st
 from medbilldozer.core import OrchestratorAgent
 
@@ -282,7 +282,7 @@ st.json(health_check())
 Use Sentry for error tracking:
 
 ```python
-# app.py
+# medBillDozer.py
 import sentry_sdk
 
 if "SENTRY_DSN" in st.secrets:

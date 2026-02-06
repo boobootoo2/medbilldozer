@@ -50,7 +50,7 @@ Once Supabase recovers:
 1. **Refresh the dashboard** - No code changes needed
 2. **Clear Streamlit cache** if data looks stale:
    - Press `C` in the dashboard
-   - Or restart: `pkill -f streamlit && python3 -m streamlit run pages/benchmark_monitoring.py --server.port 8502`
+   - Or restart: `pkill -f streamlit && python3 -m streamlit run pages/production_stability.py --server.port 8502`
 
 ## Prevention for Future
 

@@ -617,7 +617,7 @@ scripts/
   benchmark_data_access.py              # Data access layer
 
 pages/
-  benchmark_monitoring.py               # Streamlit dashboard
+  production_stability.py               # Streamlit dashboard
 
 docs/
   BENCHMARK_PERSISTENCE_ARCHITECTURE.md # This file

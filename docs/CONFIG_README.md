@@ -8,7 +8,7 @@ The configuration file should be placed in the project root directory:
 ```
 medbilldozer/
 ├── app_config.yaml  ← Configuration file
-├── app.py
+├── medBillDozer.py
 ├── requirements.txt
 └── ...
 ```

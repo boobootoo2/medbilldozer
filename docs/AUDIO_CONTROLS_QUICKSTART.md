@@ -13,7 +13,7 @@ You now have **complete audio control** with:
 
 ```bash
 # Start the app
-streamlit run app.py
+streamlit run medBillDozer.py
 
 # Look for the mute button at top of sidebar
 # Click it to toggle audio on/off
@@ -72,7 +72,7 @@ When unmuted, **audio plays normally**:
 ✅ _modules/ui/audio_controls.py     # New module (mute button)
 ✅ _modules/ui/splash_screen.py      # Respects mute state
 ✅ _modules/ui/guided_tour.py        # Respects mute state
-✅ app.py                            # Renders mute button
+✅ medBillDozer.py                            # Renders mute button
 ```
 
 ### How It Works

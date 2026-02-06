@@ -120,7 +120,7 @@ medbilldozer/
 ├── _modules/
 │   └── ui/
 │       └── guided_tour.py  ← Uses audio files
-└── app.py
+└── medBillDozer.py
 ```
 
 ## 🎯 How It Works in Production
@@ -162,7 +162,7 @@ def run_guided_tour_runtime():
 
 ```bash
 # Start the app
-streamlit run app.py
+streamlit run medBillDozer.py
 
 # Steps:
 # 1. Dismiss splash screen
@@ -238,7 +238,7 @@ open audio/tour_step_1.mp3
    mv audio/tour_step_1.mp3 audio/tour_step_1.mp3.bak
    
    # Verify tour still works (without audio)
-   streamlit run app.py
+   streamlit run medBillDozer.py
    
    # Restore
    mv audio/tour_step_1.mp3.bak audio/tour_step_1.mp3

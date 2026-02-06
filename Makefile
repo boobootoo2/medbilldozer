@@ -36,7 +36,7 @@ install-hooks:
 
 run:
 	@echo "🚀 Starting MedBillDozer..."
-	@streamlit run app.py
+	@streamlit run medBillDozer.py
 
 test:
 	@echo "🧪 Running tests..."
@@ -88,4 +88,4 @@ monitoring-dashboard:
 		echo "Please create .env from .env.example and add your Supabase credentials"; \
 		exit 1; \
 	fi
-	@/usr/local/bin/python3 -m streamlit run pages/benchmark_monitoring.py
+	@/usr/local/bin/python3 -m streamlit run pages/production_stability.py

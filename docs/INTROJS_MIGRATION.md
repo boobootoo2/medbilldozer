@@ -64,7 +64,7 @@ The tour covers 8 key steps:
 8. **Final Step**  
    *"✅ That's it! You're ready to start finding billing errors..."*
 
-### 3. Updated `app.py`
+### 3. Updated `medBillDozer.py`
 
 **Simplified imports:**
 ```python
@@ -180,7 +180,7 @@ Potential improvements:
 If needed, restore original:
 ```bash
 mv _modules/ui/guided_tour.py.backup _modules/ui/guided_tour.py
-git checkout app.py _modules/ui/splash_screen.py
+git checkout medBillDozer.py _modules/ui/splash_screen.py
 ```
 
 ## Resources

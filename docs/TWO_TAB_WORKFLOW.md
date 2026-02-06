@@ -133,7 +133,7 @@ _modules/ui/
 ├── prod_workflow.py      # NEW: Production workflow logic
 └── ...
 
-app.py                    # Main application with tab routing
+medBillDozer.py                    # Main application with tab routing
 ```
 
 ### Key Components

@@ -54,7 +54,7 @@ python3 scripts/push_to_supabase.py \
 make monitoring-dashboard
 
 # Or manually
-streamlit run pages/benchmark_monitoring.py
+streamlit run pages/production_stability.py
 ```
 
 Visit: <http://localhost:8502>

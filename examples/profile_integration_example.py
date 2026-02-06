@@ -1,14 +1,14 @@
 """
-Minimal integration example for Profile Editor in app.py
+Minimal integration example for Profile Editor in medBillDozer.py
 
 This file shows the minimal code needed to add Profile Editor to your existing Streamlit app.
-Copy/adapt these snippets into your app.py file.
+Copy/adapt these snippets into your medBillDozer.py file.
 """
 
 import streamlit as st
 
 # ==============================================================================
-# STEP 1: Add imports at the top of app.py
+# STEP 1: Add imports at the top of medBillDozer.py
 # ==============================================================================
 
 from _modules.ui.profile_editor import (
@@ -218,11 +218,11 @@ def show_profile_completion_banner():
 
 
 # ==============================================================================
-# EXAMPLE: Full minimal integration into existing app.py
+# EXAMPLE: Full minimal integration into existing medBillDozer.py
 # ==============================================================================
 
 """
-# In your existing app.py, add these sections:
+# In your existing medBillDozer.py, add these sections:
 
 # 1. Add import at top:
 from _modules.ui.profile_editor import render_profile_editor, is_profile_editor_enabled
@@ -266,6 +266,6 @@ def main():
 # 4. Set environment variable before running:
 # export PROFILE_EDITOR_ENABLED=true
 # export IMPORTER_ENABLED=true
-# streamlit run app.py
+# streamlit run medBillDozer.py
 """
 

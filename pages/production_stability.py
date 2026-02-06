@@ -42,13 +42,13 @@ except ImportError:
 # ============================================================================
 
 st.set_page_config(
-    page_title="Benchmark Monitoring",
-    page_icon="📊",
+    page_title="🚨 Production Stability",
+    page_icon="�",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-st.title("📊 Benchmark Monitoring Dashboard")
+st.title("🚨 Production Stability")
 st.markdown("Real-time ML model performance tracking and regression detection")
 
 # ============================================================================
@@ -122,20 +122,20 @@ st.sidebar.markdown("**Last Updated:** " + datetime.now().strftime("%Y-%m-%d %H:
 # ============================================================================
 
 tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🏥 Model Benchmarks",
-    "📊 Current Snapshot",
-    "📈 Performance Trends",
-    "🔄 Model Comparison",
-    "⚠️ Regression Detection",
+    "🏥 Clinical Reasoning Evaluation",
+    "📊 System Health Overview",
+    "📈 Reliability Over Time",
+    "⚖️ Model Effectiveness Comparison",
+    "🚨 Performance Stability Monitor",
     "🕐 Snapshot History"
 ])
 
 # ============================================================================
-# TAB 1: Current Snapshot
+# TAB 1: System Health Overview
 # ============================================================================
 
 with tab1:
-    st.header("Current Performance Snapshot")
+    st.header("📊 System Health Overview")
     
     @st.cache_data(ttl=300)  # Cache for 5 minutes
     def load_snapshots(environment):
@@ -244,11 +244,11 @@ with tab1:
         )
 
 # ============================================================================
-# TAB 2: Performance Trends
+# TAB 2: Reliability Over Time
 # ============================================================================
 
 with tab2:
-    st.header("Performance Trends Over Time")
+    st.header("📈 Reliability Over Time")
     
     if not selected_models:
         st.info("Please select at least one model from the sidebar.")
@@ -512,11 +512,11 @@ with tab2:
             st.markdown("---")
 
 # ============================================================================
-# TAB 3: Model Comparison
+# TAB 3: Model Effectiveness Comparison
 # ============================================================================
 
 with tab3:
-    st.header("Model Comparison")
+    st.header("⚖️ Model Effectiveness Comparison")
     
     if len(selected_models) < 2:
         st.info("Please select at least 2 models from the sidebar to compare.")
@@ -596,11 +596,11 @@ with tab3:
             )
 
 # ============================================================================
-# TAB 4: Regression Detection
+# TAB 4: Performance Stability Monitor
 # ============================================================================
 
 with tab4:
-    st.header("⚠️ Regression Detection")
+    st.header("🚨 Performance Stability Monitor")
     
     st.markdown("""
     This tab checks for performance regressions by comparing current performance
@@ -1055,11 +1055,11 @@ with tab5:
 # ============================================================================
 
 # ============================================================================
-# TAB 6: Model Benchmarks (Cross-Document Domain Knowledge)
+# TAB 6: Clinical Reasoning Evaluation (Cross-Document Domain Knowledge)
 # ============================================================================
 
 with tab6:
-    st.header("🏥 Model Benchmarks (Cross-Document Analysis)")
+    st.header("🏥 Clinical Reasoning Evaluation (Cross-Document Analysis)")
     st.markdown("""
     **Domain Knowledge Detection:** Testing models' ability to identify gender/age-inappropriate 
     medical procedures that require healthcare domain knowledge (e.g., male patient billed for 
@@ -1532,7 +1532,7 @@ with tab6:
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #666; font-size: 0.9em;'>
-    <p>Benchmark Monitoring Dashboard v1.0 | MLOps Team</p>
+    <p>Production Stability Monitor v1.0 | MLOps Team</p>
     <p>Data refreshes every 5 minutes | Last refresh: {}</p>
 </div>
 """.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), unsafe_allow_html=True)

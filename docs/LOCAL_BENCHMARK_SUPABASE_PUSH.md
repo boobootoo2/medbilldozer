@@ -148,7 +148,7 @@ ls -lh benchmarks/results/patient_benchmark_*.json
 ### 4. Verify in Dashboard
 Open your Streamlit monitoring dashboard:
 ```bash
-streamlit run pages/benchmark_monitoring.py
+streamlit run pages/production_stability.py
 ```
 
 Check that:

@@ -20,9 +20,9 @@ PROFILE_EDITOR_ENABLED=true
 IMPORTER_ENABLED=true
 ```
 
-### 2. Integration in app.py
+### 2. Integration in medBillDozer.py
 
-Add the following code to your `app.py`:
+Add the following code to your `medBillDozer.py`:
 
 #### Import the Module
 

@@ -17,7 +17,7 @@ medbilldozer/
 │   ├── utils/                 # Utilities
 │   └── __init__.py
 │
-├── app.py                     # Main Streamlit application
+├── medBillDozer.py                     # Main Streamlit application
 ├── benchmark_dashboard.py     # Benchmark monitoring UI
 ├── pyproject.toml             # Package configuration
 ├── requirements.txt           # Dependencies
@@ -173,7 +173,7 @@ utils/
 
 ## Application Entry Points
 
-### `app.py`
+### `medBillDozer.py`
 
 Main Streamlit application:
 
@@ -295,7 +295,7 @@ from ..core.orchestrator_agent import OrchestratorAgent
 
 ### External Imports
 
-From application code (app.py, scripts):
+From application code (medBillDozer.py, scripts):
 
 ```python
 # After pip install -e .
