@@ -32,9 +32,18 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from medbilldozer.providers.medgemma_hosted_provider import MedGemmaHostedProvider
+from medbilldozer.providers.gemma3_hosted_provider import Gemma3HostedProvider
 from medbilldozer.providers.openai_analysis_provider import OpenAIAnalysisProvider
 from medbilldozer.providers.gemini_analysis_provider import GeminiAnalysisProvider
 from medbilldozer.providers.llm_interface import LocalHeuristicProvider
+
+# Import advanced metrics module
+try:
+    from scripts.advanced_metrics import compute_advanced_metrics, merge_metrics_to_dict, format_category_metrics_for_db
+    ADVANCED_METRICS_AVAILABLE = True
+except ImportError:
+    ADVANCED_METRICS_AVAILABLE = False
+    print("⚠️  Advanced metrics module not available, using basic metrics only")
 
 
 @dataclass
@@ -146,6 +155,8 @@ class PatientBenchmarkRunner:
         """Initialize the analysis provider."""
         if self.model == "medgemma":
             return MedGemmaHostedProvider()
+        elif self.model == "gemma3":
+            return Gemma3HostedProvider()
         elif self.model == "openai":
             return OpenAIAnalysisProvider()
         elif self.model == "gemini":
@@ -159,6 +170,7 @@ class PatientBenchmarkRunner:
         """Get the precise model name for display."""
         model_names = {
             "medgemma": "Google MedGemma-4B-IT",
+            "gemma3": "Google Gemma-3-27B-IT",
             "openai": "OpenAI GPT-4",
             "gemini": "Google Gemini 1.5 Pro",
             "baseline": "Heuristic Baseline"
@@ -1084,6 +1096,35 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
             savings_capture_rate=savings_capture_rate
         )
         
+        # ====================================================================
+        # COMPUTE ADVANCED METRICS (Risk-weighted recall, ROI, P95, etc.)
+        # ====================================================================
+        if ADVANCED_METRICS_AVAILABLE:
+            try:
+                # Compute advanced metrics
+                advanced_metrics = compute_advanced_metrics(
+                    patient_results=[r.__dict__ for r in results if not r.error_message],
+                    error_type_performance=aggregated_categories,
+                    total_potential_savings=total_potential_savings,
+                    cost_per_second=0.0005  # $0.0005 per second inference cost
+                )
+                
+                # Store advanced metrics in the metrics object for later use
+                metrics.advanced_metrics = advanced_metrics
+                
+                print(f"\n✨ Advanced Metrics Computed:")
+                print(f"   Risk-Weighted Recall: {advanced_metrics.risk_weighted_recall:.3f}")
+                print(f"   Conservatism Index: {advanced_metrics.conservatism_index:.3f}")
+                print(f"   P95 Latency: {advanced_metrics.p95_latency_ms:.1f}ms")
+                print(f"   ROI Ratio: {advanced_metrics.roi_ratio:.1f}x")
+                print(f"   Inference Cost: ${advanced_metrics.inference_cost_usd:.4f}")
+                
+            except Exception as e:
+                print(f"⚠️  Failed to compute advanced metrics: {e}")
+                metrics.advanced_metrics = None
+        else:
+            metrics.advanced_metrics = None
+        
         return metrics
     
     def print_summary(self, metrics: PatientBenchmarkMetrics):
@@ -1158,11 +1199,36 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
         print("=" * 70)
     
     def save_results(self, metrics: PatientBenchmarkMetrics):
-        """Save results to JSON."""
+        """Save results to JSON with advanced metrics."""
         output_file = self.results_dir / f"patient_benchmark_{self.model}.json"
         
         # Convert to dict with proper serialization
         results_dict = asdict(metrics)
+        
+        # Add advanced metrics if available
+        if hasattr(metrics, 'advanced_metrics') and metrics.advanced_metrics:
+            adv_metrics = metrics.advanced_metrics
+            results_dict['advanced_metrics'] = {
+                'true_positives': adv_metrics.true_positives,
+                'false_positives': adv_metrics.false_positives,
+                'false_negatives': adv_metrics.false_negatives,
+                'risk_weighted_recall': round(adv_metrics.risk_weighted_recall, 4),
+                'conservatism_index': round(adv_metrics.conservatism_index, 4),
+                'p95_latency_ms': round(adv_metrics.p95_latency_ms, 2),
+                'roi_ratio': round(adv_metrics.roi_ratio, 2),
+                'inference_cost_usd': round(adv_metrics.inference_cost_usd, 6),
+            }
+            
+            # Add hybrid metrics if present
+            if adv_metrics.unique_detections is not None:
+                results_dict['advanced_metrics'].update({
+                    'unique_detections': adv_metrics.unique_detections,
+                    'overlap_detections': adv_metrics.overlap_detections,
+                    'complementarity_gain': round(adv_metrics.complementarity_gain, 4)
+                })
+            
+            # Add category metrics with risk weights
+            results_dict['advanced_metrics']['category_metrics'] = adv_metrics.category_metrics
         
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(results_dict, f, indent=2)
@@ -1181,6 +1247,7 @@ def update_readme(all_metrics: List[PatientBenchmarkMetrics]):
     # Create model name mapping
     model_name_map = {
         "medgemma": "Google MedGemma-4B-IT",
+        "gemma3": "Google Gemma-3-27B-IT",
         "openai": "OpenAI GPT-4",
         "gemini": "Google Gemini 1.5 Pro",
         "baseline": "Heuristic Baseline"
@@ -1244,7 +1311,7 @@ def main():
         '--model',
         type=str,
         default='all',
-        choices=['medgemma', 'openai', 'gemini', 'baseline', 'all'],
+        choices=['medgemma', 'gemma3', 'openai', 'gemini', 'baseline', 'all'],
         help='Which model to benchmark (default: all)'
     )
     parser.add_argument(
@@ -1320,6 +1387,7 @@ def main():
         # Create mapping of model keys to precise names
         model_name_map = {
             "medgemma": "Google MedGemma-4B-IT",
+            "gemma3": "Google Gemma-3-27B-IT",
             "openai": "OpenAI GPT-4",
             "gemini": "Google Gemini 1.5 Pro",
             "baseline": "Heuristic Baseline"

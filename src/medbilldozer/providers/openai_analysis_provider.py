@@ -38,6 +38,12 @@ ISSUE TYPES TO DETECT:
 5. cross_bill_discrepancy: Same service appears on multiple bills with different amounts
 6. excessive_charge: Single charge much higher than reasonable for that service
 7. facility_fee_error: Facility/room fees that appear incorrect or excessive
+8. gender_mismatch: Procedures for anatomy the patient doesn't have (e.g., male with obstetric procedures)
+9. age_inappropriate_procedure: Procedures outside recommended age ranges (e.g., 8yo with colonoscopy)
+10. anatomical_contradiction: Procedures on organs/body parts the patient doesn't have
+11. procedure_inconsistent_with_health_history: Procedures without supporting medical conditions
+12. diagnosis_procedure_mismatch: Procedure doesn't match the diagnosis
+13. temporal_violation: Procedures that violate medical timelines
 
 IMPORTANT RULES:
 - If you see the SAME CPT code listed multiple times on the SAME date with the SAME patient responsibility amount, THIS IS A DUPLICATE
@@ -45,6 +51,7 @@ IMPORTANT RULES:
 - If charges are clearly repeated, flag as potential overbilling
 - Use only dollar amounts explicitly shown in the document for max_savings
 - Be thorough - this is for patient advocacy, not insurance approval
+- ALWAYS include the CPT code in the "code" field when available
 
 RESPONSE FORMAT - Return ONLY a valid JSON array, no other text:
 [
@@ -52,6 +59,7 @@ RESPONSE FORMAT - Return ONLY a valid JSON array, no other text:
     "type": "issue_type",
     "summary": "Brief description",
     "evidence": "Specific facts and amounts",
+    "code": "CPT code or procedure code (e.g., 76805, 99213)",
     "max_savings": 150.00
   }}
 ]
@@ -99,6 +107,7 @@ DOCUMENT:
                 type=item.get("type", "other"),
                 summary=item.get("summary", "Potential issue identified"),
                 evidence=item.get("evidence"),
+                code=item.get("code"),  # Include CPT code for matching
                 max_savings=max_savings,
             ))
 
