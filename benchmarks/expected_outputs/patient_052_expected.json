@@ -1,0 +1,11 @@
+{
+    "patient_id": "patient_052",
+    "detected_issues": [{
+        "issue_type": "drug_drug_interaction",
+        "severity": "critical",
+        "description": "MAOI (Phenelzine) + SSRI (Sertraline) - serotonin syndrome risk",
+        "fields_involved": ["medications", "prescriptions"],
+        "reasoning": "Patient prescribed Sertraline (SSRI) while actively taking Phenelzine (MAOI started 5 days ago). This combination causes serotonin syndrome - a life-threatening emergency with hyperthermia, muscle rigidity, altered mental status, autonomic instability, seizures. Requires minimum 2-week washout when switching from MAOI to SSRI. Absolutely contraindicated combination.",
+        "domain_knowledge_required": true
+    }]
+}

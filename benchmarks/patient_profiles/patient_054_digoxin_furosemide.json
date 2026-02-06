@@ -1,0 +1,29 @@
+{
+    "patient_id": "patient_054",
+    "name": "William Patterson",
+    "demographics": {
+        "age": 79,
+        "sex": "M",
+        "date_of_birth": "1946-03-28"
+    },
+    "medical_history": {
+        "conditions": ["Atrial fibrillation", "Heart failure with reduced EF (35%)", "Hypertension"],
+        "medications": ["Digoxin 0.125mg daily", "Metoprolol 50mg BID", "Lisinopril 20mg daily"],
+        "allergies": ["Codeine"]
+    },
+    "current_visit": {
+        "date": "2026-01-22",
+        "provider": "Dr. Jennifer Lee",
+        "diagnosis": "Acute decompensated heart failure",
+        "procedures": ["Hospital admission", "Chest X-ray", "BNP test", "Basic metabolic panel"],
+        "prescriptions": ["Continue home medications", "Furosemide 80mg IV BID (NEW)"]
+    },
+    "expected_issues": [{
+        "issue_type": "drug_drug_interaction",
+        "severity": "critical",
+        "description": "Digoxin + Loop diuretic (Furosemide) without potassium monitoring - digoxin toxicity risk",
+        "fields_involved": ["medications", "prescriptions"],
+        "reasoning": "Furosemide causes potassium and magnesium loss. Hypokalemia and hypomagnesemia dramatically increase digoxin binding to cardiac Na-K-ATPase, precipitating digoxin toxicity (arrhythmias, AV block, ventricular tachycardia). Elderly patients on digoxin starting loop diuretics require close electrolyte monitoring and often potassium supplementation.",
+        "domain_knowledge_required": true
+    }]
+}

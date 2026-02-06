@@ -1,0 +1,53 @@
+MEDICAL BILL - INVOICE #2026-0125-055
+
+Patient: Linda Martinez
+DOB: 09/14/1967
+Date of Service: January 25, 2026
+Provider: Dr. David Thompson, MD - Internal Medicine
+
+DIAGNOSIS:
+- I10: Essential hypertension, inadequately controlled
+- J45.40: Moderate persistent asthma
+- F41.1: Generalized anxiety disorder
+
+CURRENT MEDICATIONS:
+- Albuterol HFA inhaler 90mcg, 2 puffs Q4-6H PRN (rescue inhaler)
+- Fluticasone/Salmeterol 250/50mcg, 1 puff BID (controller for asthma)
+- Amlodipine 5mg PO daily (calcium channel blocker for HTN)
+- Sertraline 100mg PO daily (SSRI for anxiety)
+
+ALLERGIES:
+- Aspirin (documented bronchospasm reaction - aspirin-exacerbated respiratory disease)
+
+PROCEDURES & SERVICES:
+1. CPT 99214 - Office visit, established patient, moderate complexity
+   Charge: $180.00
+
+VITAL SIGNS:
+Blood pressure: 158/94 mmHg (elevated)
+Heart rate: 88 bpm
+Respiratory rate: 16/min
+O2 saturation: 97% on room air
+
+CLINICAL NOTES:
+Patient reports persistent elevated home BP readings averaging 155/92 despite
+compliance with Amlodipine 5mg daily. No recent asthma exacerbations. Using
+rescue inhaler 1-2 times per week. PFTs from 3 months ago showed FEV1 72%
+predicted. Also reports palpitations with anxiety episodes.
+
+ASSESSMENT & PLAN:
+Inadequately controlled hypertension. Will add beta-blocker for dual benefit
+of BP control and anxiety/palpitation management.
+
+NEW PRESCRIPTIONS:
+- Continue Albuterol inhaler PRN
+- Continue Fluticasone/Salmeterol 250/50 BID
+- Continue Amlodipine 5mg PO daily
+- Continue Sertraline 100mg PO daily
+- Propranolol 40mg PO BID (for hypertension and anxiety)
+
+Follow-up in 4 weeks to reassess BP control.
+
+TOTAL CHARGES: $180.00
+
+Payment due within 30 days.

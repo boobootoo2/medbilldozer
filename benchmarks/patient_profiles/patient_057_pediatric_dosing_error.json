@@ -1,0 +1,30 @@
+{
+    "patient_id": "patient_057",
+    "name": "Emma Johnson",
+    "demographics": {
+        "age": 6,
+        "sex": "F",
+        "date_of_birth": "2019-07-22",
+        "weight_kg": 20
+    },
+    "medical_history": {
+        "conditions": ["Acute otitis media"],
+        "medications": [],
+        "allergies": ["None"]
+    },
+    "current_visit": {
+        "date": "2026-01-30",
+        "provider": "Dr. Rachel Foster",
+        "diagnosis": "Acute otitis media, bilateral",
+        "procedures": ["Office visit", "Otoscopic examination"],
+        "prescriptions": ["Amoxicillin 875mg PO BID x 10 days"]
+    },
+    "expected_issues": [{
+        "issue_type": "dosing_error",
+        "severity": "critical",
+        "description": "Adult dose of amoxicillin prescribed for 6-year-old child - severe overdosing",
+        "fields_involved": ["prescriptions", "age", "weight"],
+        "reasoning": "Pediatric amoxicillin dosing for otitis media is 80-90 mg/kg/day divided BID. For 20kg child, correct dose is 800-900 mg/day total (400-450mg BID). Prescribed dose is 875mg BID = 1,750 mg/day - nearly double the appropriate dose. This is an adult dose formulation. Risk of GI toxicity, rash, and antibiotic resistance. Correct prescription should be amoxicillin 400mg/5mL suspension, 10mL (400mg) PO BID.",
+        "domain_knowledge_required": true
+    }]
+}

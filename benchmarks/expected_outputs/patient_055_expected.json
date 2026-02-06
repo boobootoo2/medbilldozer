@@ -1,0 +1,11 @@
+{
+    "patient_id": "patient_055",
+    "detected_issues": [{
+        "issue_type": "drug_disease_contraindication",
+        "severity": "critical",
+        "description": "Non-selective beta-blocker (Propranolol) prescribed to patient with moderate persistent asthma - bronchospasm risk",
+        "fields_involved": ["medications", "prescriptions", "conditions"],
+        "reasoning": "Patient with moderate persistent asthma (FEV1 72%, using controller medications) prescribed Propranolol 40mg BID. Propranolol is a non-selective beta-blocker that blocks beta-2 receptors in bronchial smooth muscle, causing bronchoconstriction and potentially severe bronchospasm. This is an absolute contraindication in asthma. Patient has documented aspirin-induced bronchospasm (aspirin-exacerbated respiratory disease), indicating hyperreactive airways at even higher risk. If beta-blocker therapy necessary, must use cardioselective agent (metoprolol, atenolol) at lowest effective dose with close monitoring.",
+        "domain_knowledge_required": true
+    }]
+}
