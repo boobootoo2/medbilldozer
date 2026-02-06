@@ -4,7 +4,7 @@
     "demographics": {
         "age": 42,
         "sex": "F",
-        "date_of_service": "1983-06-08"
+        "date_of_birth": "1983-06-08"
     },
     "medical_history": {
         "conditions": [],
