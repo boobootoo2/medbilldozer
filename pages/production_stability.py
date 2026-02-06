@@ -1145,19 +1145,131 @@ with tab6:
     else:
         # Get latest result per model
         latest_results = patient_df.sort_values('created_at').groupby('model_version').last().reset_index()
-        latest_results = latest_results.sort_values('domain_detection', ascending=False)
+        
+        # Calculate Healthcare Effectiveness Score (HES) for each model
+        def calculate_healthcare_effectiveness_score(df, history_df):
+            """Calculate composite Healthcare Effectiveness Score."""
+            import numpy as np
+            
+            scores = []
+            for idx, row in df.iterrows():
+                model = row['model_version']
+                
+                # Base metrics
+                avg_f1 = row.get('f1_score', 0) or 0
+                avg_recall = row.get('recall', 0) or 0
+                
+                # Calculate ROI (value per latency unit)
+                latency = max(row.get('latency_ms', 1000), 1)  # Avoid div by zero
+                savings = row.get('total_potential_savings', 0) or 0
+                roi = savings / latency if latency > 0 else 0
+                
+                # Calculate failure rate
+                total = row.get('total_patients', 1) or 1
+                successful = row.get('successful', 0) or 0
+                failure_rate = (total - successful) / total if total > 0 else 1.0
+                
+                # Savings capture rate
+                savings_capture = row.get('savings_capture_rate', 0) or 0
+                savings_capture = savings_capture / 100 if savings_capture > 1 else savings_capture
+                
+                # Stability score from historical data
+                model_history = history_df[history_df['model_version'] == model]
+                if len(model_history) >= 2:
+                    f1_values = model_history['f1_score'].dropna()
+                    if len(f1_values) >= 2:
+                        f1_std = f1_values.std()
+                        stability_score = max(0, 1 - f1_std)
+                    else:
+                        stability_score = 0.5
+                else:
+                    stability_score = 0.5
+                
+                scores.append({
+                    'model': model,
+                    'avg_f1': avg_f1,
+                    'avg_recall': avg_recall,
+                    'roi': roi,
+                    'stability_score': stability_score,
+                    'savings_capture': savings_capture,
+                    'failure_rate': failure_rate,
+                    'run_count': len(model_history)
+                })
+            
+            scores_df = pd.DataFrame(scores)
+            
+            # Normalize ROI and savings capture (min-max scaling)
+            if len(scores_df) > 1:
+                roi_min, roi_max = scores_df['roi'].min(), scores_df['roi'].max()
+                if roi_max > roi_min:
+                    scores_df['normalized_roi'] = (scores_df['roi'] - roi_min) / (roi_max - roi_min)
+                else:
+                    scores_df['normalized_roi'] = 0.5
+                
+                sc_min, sc_max = scores_df['savings_capture'].min(), scores_df['savings_capture'].max()
+                if sc_max > sc_min:
+                    scores_df['savings_capture_norm'] = (scores_df['savings_capture'] - sc_min) / (sc_max - sc_min)
+                else:
+                    scores_df['savings_capture_norm'] = scores_df['savings_capture']
+            else:
+                scores_df['normalized_roi'] = 0.5
+                scores_df['savings_capture_norm'] = scores_df['savings_capture']
+            
+            # Calculate failure penalty
+            scores_df['failure_penalty'] = scores_df['failure_rate'] * 0.25
+            
+            # Apply low-run penalty
+            scores_df['low_run_penalty'] = scores_df['run_count'].apply(lambda x: 0.15 if x < 2 else 0)
+            
+            # Calculate composite HES
+            scores_df['hes'] = (
+                (scores_df['avg_f1'] * 0.40) +
+                (scores_df['avg_recall'] * 0.25) +
+                (scores_df['normalized_roi'] * 0.20) +
+                (scores_df['stability_score'] * 0.10) +
+                (scores_df['savings_capture_norm'] * 0.05) -
+                scores_df['failure_penalty'] -
+                scores_df['low_run_penalty']
+            )
+            
+            return scores_df
+        
+        hes_scores = calculate_healthcare_effectiveness_score(latest_results, patient_df)
+        
+        # Merge HES back into latest_results
+        latest_results = latest_results.merge(
+            hes_scores[['model', 'hes', 'stability_score', 'roi', 'failure_rate']],
+            left_on='model_version',
+            right_on='model',
+            how='left'
+        )
+        
+        # Sort by HES
+        latest_results = latest_results.sort_values('hes', ascending=False)
         
         # Key metrics row
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
             best_model = latest_results.iloc[0]['model_version'] if not latest_results.empty else "N/A"
-            best_score = latest_results.iloc[0]['domain_detection'] if not latest_results.empty else 0
+            best_hes = latest_results.iloc[0]['hes'] if not latest_results.empty else 0
+            best_stability = latest_results.iloc[0]['stability_score'] if not latest_results.empty else 0
+            best_roi = latest_results.iloc[0]['roi'] if not latest_results.empty else 0
+            best_failure = latest_results.iloc[0]['failure_rate'] if not latest_results.empty else 0
+            
             st.metric(
-                "🏆 Top Model",
+                "🏆 Clinical Effectiveness Leader",
                 best_model,
-                f"{best_score:.1f}% domain detection"
+                f"HES: {best_hes:.3f}",
+                help="Ranking based on composite healthcare-weighted score (F1, recall, ROI, stability, reliability)."
             )
+            
+            # Show detailed breakdown in expander
+            with st.expander("📊 Score Breakdown"):
+                st.write(f"**Healthcare Effectiveness Score:** {best_hes:.3f}")
+                st.write(f"**Stability Score:** {best_stability:.3f}")
+                st.write(f"**ROI:** {best_roi:.2f}")
+                st.write(f"**Failure Rate:** {best_failure:.1%}")
         
         with col2:
             # Calculate average excluding models with 0% (non-functional models)
