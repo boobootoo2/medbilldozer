@@ -1,0 +1,41 @@
+MEDICAL BILL - INVOICE #2026-0120-052
+
+Patient: Robert Chen
+DOB: 11/22/1973
+Date of Service: January 20, 2026
+Provider: Dr. Emily Rodriguez, MD - Psychiatry
+
+DIAGNOSIS:
+- F33.2: Major depressive disorder, recurrent, severe without psychotic features
+- F33.9: Treatment-resistant depression
+
+MEDICATION HISTORY:
+Previous trials:
+- Fluoxetine 40mg daily (discontinued 3 weeks ago - inadequate response)
+- Bupropion 300mg daily (discontinued 3 weeks ago - inadequate response)
+
+CURRENT MEDICATIONS:
+- Phenelzine 15mg PO TID (MAOI - initiated 5 days ago on 01/15/2026)
+
+ALLERGIES:
+- No known drug allergies
+
+PROCEDURES & SERVICES:
+1. CPT 90792 - Psychiatric diagnostic evaluation with medical services
+   Charge: $300.00
+
+CLINICAL NOTES:
+Patient reports minimal improvement on Phenelzine after 5 days. Expressing frustration
+with treatment course. PHQ-9 score remains elevated at 22. Discussed augmentation
+strategies given inadequate response to multiple trials.
+
+NEW PRESCRIPTIONS:
+- Continue Phenelzine 15mg PO TID
+- Sertraline 50mg PO daily (SSRI - to augment response)
+
+PLAN:
+Follow-up in 2 weeks to assess response to combination therapy.
+
+TOTAL CHARGES: $300.00
+
+Payment due within 30 days.

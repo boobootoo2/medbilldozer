@@ -1,0 +1,21 @@
+MEDICAL BILL - RADIOLOGY DEPARTMENT
+
+PATIENT: Sarah Williams  
+DOB: 06/08/1983
+DATE OF SERVICE: 02/06/2026
+
+PROVIDER: City Medical Center - Imaging
+DIAGNOSIS: J18.9 - Pneumonia
+
+SERVICES PROVIDED:
+---------------------------------------------------------
+CPT 71020 - Chest X-Ray, 2 views        $75.00
+CPT 99213 - Office Visit Level 3        $185.00
+CPT 71020 - Chest X-Ray, 2 views        $75.00  ← DUPLICATE
+---------------------------------------------------------
+
+TOTAL BILLED: $335.00
+Patient Responsibility: $85.00
+
+NOTE: Single-document test case. Duplicate charge is obvious from bill alone.
+No medical knowledge or cross-document reasoning required - just basic data comparison.

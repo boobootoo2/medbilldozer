@@ -1,0 +1,35 @@
+{
+    "document_type": "medical_bill",
+    "expected_facts": {
+        "patient_name": "Sarah Williams",
+        "patient_dob": "1983-06-08",
+        "date_of_service": "2026-02-06",
+        "facility_name": "City Medical Center - Imaging",
+        "medical_line_items": [{
+            "cpt_code": "71020",
+            "date_of_service": "2026-02-06",
+            "description": "Chest X-Ray, 2 views",
+            "billed_amount": 75.00,
+            "patient_responsibility": 0.00
+        }, {
+            "cpt_code": "99213",
+            "date_of_service": "2026-02-06",
+            "description": "Office Visit Level 3",
+            "billed_amount": 185.00,
+            "patient_responsibility": 0.00
+        }, {
+            "cpt_code": "71020",
+            "date_of_service": "2026-02-06",
+            "description": "Chest X-Ray, 2 views (DUPLICATE)",
+            "billed_amount": 75.00,
+            "patient_responsibility": 0.00
+        }]
+    },
+    "expected_issues": [{
+        "type": "duplicate_charge",
+        "severity": "medium",
+        "description": "CPT 71020 billed twice on same date - duplicate charge",
+        "requires_domain_knowledge": false
+    }],
+    "expected_savings": 75.00
+}

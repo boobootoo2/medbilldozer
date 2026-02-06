@@ -1,0 +1,29 @@
+{
+    "patient_id": "patient_053",
+    "name": "Margaret Wilson",
+    "demographics": {
+        "age": 71,
+        "sex": "F",
+        "date_of_birth": "1954-06-10"
+    },
+    "medical_history": {
+        "conditions": ["Hyperlipidemia", "Coronary artery disease", "Hypertension"],
+        "medications": ["Simvastatin 80mg daily", "Aspirin 81mg daily", "Lisinopril 10mg daily"],
+        "allergies": ["Penicillin"]
+    },
+    "current_visit": {
+        "date": "2026-01-18",
+        "provider": "Dr. Michael Adams",
+        "diagnosis": "Acute bronchitis",
+        "procedures": ["Office visit", "Chest X-ray"],
+        "prescriptions": ["Continue all home medications", "Clarithromycin 500mg BID x 7 days"]
+    },
+    "expected_issues": [{
+        "issue_type": "drug_drug_interaction",
+        "severity": "critical",
+        "description": "Statin (Simvastatin) + Macrolide antibiotic (Clarithromycin) - rhabdomyolysis risk",
+        "fields_involved": ["medications", "prescriptions"],
+        "reasoning": "Clarithromycin is a strong CYP3A4 inhibitor that dramatically increases simvastatin levels. High-dose simvastatin (80mg) with CYP3A4 inhibitor causes rhabdomyolysis - muscle breakdown with myoglobinuria, acute kidney injury, potentially fatal. FDA specifically warns against this combination. Alternative antibiotic should be used.",
+        "domain_knowledge_required": true
+    }]
+}

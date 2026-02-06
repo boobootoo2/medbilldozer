@@ -1,0 +1,11 @@
+{
+    "patient_id": "patient_061",
+    "detected_issues": [{
+        "issue_type": "allergy_violation",
+        "severity": "critical",
+        "description": "Prescribed sulfa antibiotic (Sulfamethoxazole-trimethoprim) to patient with documented Stevens-Johnson syndrome from same drug",
+        "fields_involved": ["prescriptions", "allergies"],
+        "reasoning": "Patient has explicitly documented severe allergic reaction - Stevens-Johnson syndrome (SJS) - to Trimethoprim-sulfamethoxazole in 2019 requiring ICU admission. Chart clearly states 'ABSOLUTE CONTRAINDICATION - DO NOT PRESCRIBE SULFA DRUGS'. Despite this, patient prescribed Sulfamethoxazole-trimethoprim DS (same drug, same class). SJS is a life-threatening severe cutaneous adverse reaction (SCAR) with 20-30% mortality involving extensive skin sloughing, mucosal involvement, and multi-organ failure. Re-exposure to culprit drug triggers recurrent SJS with typically higher severity and faster onset. This is a catastrophic prescribing error. Must use alternative antibiotics: nitrofurantoin, ciprofloxacin, or fosfomycin for UTI treatment.",
+        "domain_knowledge_required": true
+    }]
+}

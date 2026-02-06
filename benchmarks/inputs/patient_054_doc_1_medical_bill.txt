@@ -1,0 +1,55 @@
+MEDICAL BILL - INVOICE #2026-0122-054
+
+Patient: William Patterson
+DOB: 03/28/1946
+Date of Service: January 22, 2026
+Provider: Dr. Jennifer Lee, MD - Cardiology
+
+DIAGNOSIS:
+- I50.23: Acute on chronic systolic heart failure
+- I48.91: Atrial fibrillation, unspecified
+- I10: Essential hypertension
+
+CURRENT MEDICATIONS:
+- Digoxin 0.125mg PO daily (rate control for AFib)
+- Metoprolol succinate 50mg PO BID (beta-blocker)
+- Lisinopril 20mg PO daily (ACE inhibitor for HFrEF)
+
+ALLERGIES:
+- Codeine (nausea)
+
+HOSPITAL ADMISSION - ACUTE CARE
+
+PROCEDURES & SERVICES:
+1. CPT 99223 - Initial hospital admission, high complexity
+   Charge: $450.00
+
+2. CPT 71020 - Chest X-ray, 2 views
+   Result: Pulmonary edema, cardiomegaly
+   Charge: $120.00
+
+3. CPT 83880 - BNP (B-type natriuretic peptide)
+   Result: 1,850 pg/mL (severely elevated)
+   Charge: $95.00
+
+4. CPT 80048 - Basic metabolic panel
+   Result: Normal electrolytes - K+ 4.2 mEq/L, Mg 2.0 mg/dL
+   Charge: $45.00
+
+CLINICAL NOTES:
+79-year-old male with HFrEF (EF 35%) presents with dyspnea, orthopnea, lower extremity
+edema. Exam shows JVP elevation, bilateral rales, 2+ pitting edema. CXR confirms
+pulmonary edema. BNP severely elevated at 1,850. Diagnosis: Acute decompensated HF.
+
+TREATMENT PLAN:
+Admit for IV diuresis. Will use aggressive loop diuretic therapy.
+
+NEW PRESCRIPTIONS:
+- Continue Digoxin 0.125mg PO daily
+- Continue Metoprolol 50mg PO BID
+- Continue Lisinopril 20mg PO daily
+- Furosemide 80mg IV BID (aggressive diuresis for pulmonary edema)
+
+TOTAL CHARGES: $710.00
+
+Payment due within 30 days.

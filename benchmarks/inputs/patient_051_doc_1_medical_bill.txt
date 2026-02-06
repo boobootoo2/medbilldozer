@@ -1,0 +1,40 @@
+MEDICAL BILL - INVOICE #2026-0115-051
+
+Patient: Alice Thompson
+DOB: 08/15/1957
+Date of Service: January 15, 2026
+Provider: Dr. Sarah Martinez, MD - Internal Medicine
+
+DIAGNOSIS:
+- I10: Essential (primary) hypertension
+- E11.9: Type 2 diabetes mellitus without complications
+- N18.3: Chronic kidney disease, stage 3
+
+CURRENT MEDICATIONS:
+- Lisinopril 20mg PO daily (ACE inhibitor for hypertension)
+- Metformin 500mg PO BID (diabetes management)
+- Atorvastatin 40mg PO daily (cholesterol management)
+
+ALLERGIES:
+- Sulfonamides (sulfa drugs) - documented rash
+
+PROCEDURES & SERVICES:
+1. CPT 99214 - Office visit, established patient, moderate complexity
+   Charge: $180.00
+
+2. CPT 80048 - Basic metabolic panel
+   Results noted: eGFR 45 mL/min/1.73m² (Stage 3 CKD)
+   Potassium: 4.8 mEq/L (upper normal limit)
+   Charge: $45.00
+
+CLINICAL NOTES:
+Blood pressure well-controlled on current regimen. Patient reports mild muscle cramps.
+Labs show stable renal function but potassium at upper limit of normal.
+
+NEW PRESCRIPTIONS:
+- Continue Lisinopril 20mg PO daily
+- Potassium chloride 20 mEq PO daily (for muscle cramps)
+
+TOTAL CHARGES: $225.00
+
+Payment due within 30 days.

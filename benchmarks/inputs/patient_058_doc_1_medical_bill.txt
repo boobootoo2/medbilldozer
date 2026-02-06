@@ -1,0 +1,55 @@
+MEDICAL BILL - INVOICE #2026-0201-058
+
+Patient: Dorothy Williams
+DOB: 04/16/1938
+Date of Service: February 1, 2026
+Provider: Dr. Steven Clark, MD - Cardiology
+
+PATIENT INFORMATION:
+Age: 87 years old
+Weight: 52 kg (114.6 lbs)
+Height: 157 cm
+
+DIAGNOSIS:
+- I48.91: Atrial fibrillation, unspecified (new onset)
+- N18.3b: Chronic kidney disease, stage 3B
+- I10: Essential hypertension
+
+CURRENT MEDICATIONS:
+- Lisinopril 10mg PO daily (ACE inhibitor)
+- Amlodipine 5mg PO daily (calcium channel blocker)
+
+ALLERGIES:
+- Penicillin (documented anaphylaxis)
+
+PROCEDURES & SERVICES:
+1. CPT 99214 - Office visit, established patient, moderate complexity
+   Charge: $180.00
+
+2. CPT 93000 - Electrocardiogram (EKG), complete
+   Result: Atrial fibrillation, ventricular rate 110 bpm
+   Charge: $75.00
+
+3. CPT 80069 - Renal function panel
+   Results: Creatinine 1.4 mg/dL, eGFR 38 mL/min/1.73m² (CKD Stage 3B)
+   Charge: $55.00
+
+CLINICAL NOTES:
+87-year-old female with new-onset atrial fibrillation discovered on routine visit.
+Patient reports occasional palpitations over past month. CHA2DS2-VASc score = 5
+(high stroke risk - requires anticoagulation). Renal function shows Stage 3B CKD.
+
+ASSESSMENT & PLAN:
+New-onset AFib requiring anticoagulation for stroke prevention. Will initiate
+direct oral anticoagulant (DOAC) therapy.
+
+NEW PRESCRIPTIONS:
+- Continue Lisinopril 10mg PO daily
+- Continue Amlodipine 5mg PO daily
+- Dabigatran 150mg PO BID (anticoagulation for stroke prevention)
+
+Follow-up in 2 weeks with repeat renal function and CBC.
+
+TOTAL CHARGES: $310.00
+
+Payment due within 30 days.
