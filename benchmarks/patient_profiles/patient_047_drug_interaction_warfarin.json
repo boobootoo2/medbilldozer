@@ -1,0 +1,33 @@
+{
+    "patient_id": "P047",
+    "name": "Margaret Chen",
+    "demographics": {
+        "age": 68,
+        "sex": "F",
+        "date_of_birth": "1957-08-12"
+    },
+    "medical_history": {
+        "conditions": [
+            "Atrial Fibrillation",
+            "Hypertension",
+            "Type 2 Diabetes"
+        ],
+        "allergies": [],
+        "medications": [
+            "Warfarin 5mg daily",
+            "Metformin 1000mg twice daily",
+            "Amlodipine 10mg daily"
+        ],
+        "surgeries": []
+    },
+    "documents": [
+        "patient_047_doc_1_medical_bill.txt"
+    ],
+    "expected_issues": [{
+        "type": "drug_drug_interaction",
+        "severity": "critical",
+        "description": "Ciprofloxacin prescribed to patient on Warfarin - major drug interaction that significantly increases bleeding risk. Requires medical knowledge of antibiotic-anticoagulant interactions.",
+        "requires_domain_knowledge": true,
+        "cpt_code": "99213"
+    }]
+}
