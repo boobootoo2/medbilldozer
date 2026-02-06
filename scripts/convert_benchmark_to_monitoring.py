@@ -27,6 +27,7 @@ def convert_to_monitoring_format(input_file: Path, model_name: str) -> dict:
     # Model version should match the display name for consistency
     model_display_names = {
         'medgemma': 'Google MedGemma-4B-IT',
+        'gemma3': 'Google Gemma-3-27B-IT',
         'gemini': 'Google Gemini 1.5 Pro',
         'openai': 'OpenAI GPT-4',
         'baseline': 'Heuristic Baseline'
@@ -37,37 +38,63 @@ def convert_to_monitoring_format(input_file: Path, model_name: str) -> dict:
     
     if is_patient_benchmark:
         # Convert patient benchmark format
+        base_metrics = {
+            "precision": metrics.get('avg_precision', 0),
+            "recall": metrics.get('avg_recall', 0),
+            "f1": metrics.get('avg_f1_score', 0),
+            "latency_ms": metrics.get('avg_latency_ms', 0),
+            "analysis_cost": 0.0,  # Not tracked in patient benchmarks yet
+            "total_documents": metrics.get('total_patients', 0),
+            "total_issues_detected": sum(r.get('true_positives', 0) for r in metrics.get('individual_results', [])),
+            "total_issues_expected": sum(len(r.get('expected_issues', [])) for r in metrics.get('individual_results', [])),
+            "domain_recall": metrics.get('domain_recall', 0),
+            "domain_precision": metrics.get('domain_precision', 0),
+            "generic_recall": metrics.get('generic_recall', 0),
+            "cross_document_recall": metrics.get('cross_document_recall', 0),
+            "domain_knowledge_detection_rate": metrics.get('domain_knowledge_detection_rate', 0),
+            "total_potential_savings": metrics.get('total_potential_savings', 0),
+            "total_missed_savings": metrics.get('total_missed_savings', 0),
+            "avg_savings_per_patient": metrics.get('avg_savings_per_patient', 0),
+            "savings_capture_rate": metrics.get('savings_capture_rate', 0)
+        }
+        
+        # Add advanced metrics if present (backward compatible)
+        if 'advanced_metrics' in metrics and metrics['advanced_metrics']:
+            adv_metrics = metrics['advanced_metrics']
+            base_metrics.update({
+                "true_positives": adv_metrics.get('true_positives', 0),
+                "false_positives": adv_metrics.get('false_positives', 0),
+                "false_negatives": adv_metrics.get('false_negatives', 0),
+                "risk_weighted_recall": adv_metrics.get('risk_weighted_recall', 0),
+                "conservatism_index": adv_metrics.get('conservatism_index', 0),
+                "p95_latency_ms": adv_metrics.get('p95_latency_ms', 0),
+                "roi_ratio": adv_metrics.get('roi_ratio', 0),
+                "inference_cost_usd": adv_metrics.get('inference_cost_usd', 0),
+            })
+            
+            # Add hybrid metrics if present
+            if 'unique_detections' in adv_metrics:
+                base_metrics.update({
+                    "unique_detections": adv_metrics.get('unique_detections'),
+                    "overlap_detections": adv_metrics.get('overlap_detections'),
+                    "complementarity_gain": adv_metrics.get('complementarity_gain')
+                })
+        
         monitoring_format = {
             "model_version": model_version,
             "model_provider": model_name,
             "dataset_version": dataset_version,
             "dataset_size": metrics.get('total_patients', 0),
             "prompt_version": prompt_version,
-            "metrics": {
-                "precision": metrics.get('avg_precision', 0),
-                "recall": metrics.get('avg_recall', 0),
-                "f1": metrics.get('avg_f1_score', 0),
-                "latency_ms": metrics.get('avg_latency_ms', 0),
-                "analysis_cost": 0.0,  # Not tracked in patient benchmarks yet
-                "total_documents": metrics.get('total_patients', 0),
-                "total_issues_detected": sum(r.get('true_positives', 0) for r in metrics.get('individual_results', [])),
-                "total_issues_expected": sum(len(r.get('expected_issues', [])) for r in metrics.get('individual_results', [])),
-                "domain_recall": metrics.get('domain_recall', 0),
-                "domain_precision": metrics.get('domain_precision', 0),
-                "generic_recall": metrics.get('generic_recall', 0),
-                "cross_document_recall": metrics.get('cross_document_recall', 0),
-                "domain_knowledge_detection_rate": metrics.get('domain_knowledge_detection_rate', 0),
-                "total_potential_savings": metrics.get('total_potential_savings', 0),
-                "total_missed_savings": metrics.get('total_missed_savings', 0),
-                "avg_savings_per_patient": metrics.get('avg_savings_per_patient', 0),
-                "savings_capture_rate": metrics.get('savings_capture_rate', 0)
-            },
+            "metrics": base_metrics,
             "duration_seconds": metrics.get('avg_latency_ms', 0) / 1000,
             "error_count": metrics.get('total_patients', 0) - metrics.get('successful_analyses', 0),
             "success_count": metrics.get('successful_analyses', 0),
             "timestamp": datetime.utcnow().isoformat() + 'Z',
             "domain_breakdown": metrics.get('domain_breakdown', {}),
-            "aggregated_categories": metrics.get('aggregated_categories', {})
+            "aggregated_categories": metrics.get('aggregated_categories', {}),
+            # Add category metrics for database insertion (if advanced metrics present)
+            "category_metrics": metrics.get('advanced_metrics', {}).get('category_metrics', {}) if 'advanced_metrics' in metrics else {}
         }
     else:
         # Convert aggregated metrics format (old format)
