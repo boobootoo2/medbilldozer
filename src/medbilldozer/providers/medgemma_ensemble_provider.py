@@ -22,22 +22,51 @@ SIMPLE_LABEL_MAP: Dict[str, str] = {
     "duplicate_charge": "duplicate_charge",
     "duplicate": "duplicate_charge",
     "duplicate line": "duplicate_charge",
+    "duplicate cpt": "duplicate_charge",
+    "duplicate billing": "duplicate_charge",
+    "duplicate entry": "duplicate_charge",
+    "same date": "duplicate_charge",
     "gender mismatch": "gender_mismatch",
     "gender_mismatch": "gender_mismatch",
+    # phrases commonly observed in summaries that imply gender mismatch
+    "male billed for": "gender_mismatch",
+    "female billed for": "gender_mismatch",
+    "billed for prostate": "gender_mismatch",
+    "billed for pap": "gender_mismatch",
+    "pap smear": "gender_mismatch",
+    "hysterectomy": "gender_mismatch",
+    "vasectomy": "gender_mismatch",
+    "mammogram": "gender_mismatch",
     "age inappropriate": "age_inappropriate_service",
     "age_inappropriate": "age_inappropriate_service",
+    "pediatric": "age_inappropriate_service",
+    "child": "age_inappropriate_service",
+    "neonate": "age_inappropriate_service",
+    "screening colonoscopy": "age_inappropriate_service",
     "anatomical contradiction": "anatomical_contradiction",
     "anatomical_contradiction": "anatomical_contradiction",
     "procedure inconsistent with health history": "procedure_inconsistent_with_health_history",
     "procedure_inconsistent": "procedure_inconsistent_with_health_history",
+    "procedure inconsistent": "procedure_inconsistent_with_health_history",
+    "procedure inconsistency": "procedure_inconsistent_with_health_history",
+    "inconsistent procedure": "procedure_inconsistent_with_health_history",
     "diagnosis procedure mismatch": "diagnosis_procedure_mismatch",
     "diagnosis_procedure_mismatch": "diagnosis_procedure_mismatch",
+    "diagnosis mismatch": "diagnosis_procedure_mismatch",
+    "no diagnosis": "diagnosis_procedure_mismatch",
     "drug disease contraindication": "drug_disease_contraindication",
     "drug_drug_interaction": "drug_drug_interaction",
     "drug interaction": "drug_drug_interaction",
+    "drug-drug": "drug_drug_interaction",
+    "drug drug": "drug_drug_interaction",
+    "maoi": "drug_drug_interaction",
+    "ssri": "drug_drug_interaction",
     "upcoding": "upcoding",
     "overbilling": "overbilling",
     "temporal violation": "temporal_violation",
+    "repeated": "temporal_violation",
+    "repeat": "temporal_violation",
+    "billed twice": "temporal_violation",
 }
 
 
@@ -184,6 +213,154 @@ class MedGemmaEnsembleProvider(LLMProvider):
                 max_savings=getattr(item, 'max_savings', None),
                 recommended_action=getattr(item, 'recommended_action', None)
             ))
+
+        # --- Deterministic heuristics (post-processing) ---
+        # These are low-risk, high-value rules to catch common misses.
+        def _extract_cpt_entries(text: str):
+            # Return list of {cpt, date, snippet}
+            import re
+            entries = []
+            # find all CPT occurrences
+            for m in re.finditer(r"CPT\s*[:\s]?([0-9]{3,5})", text, re.IGNORECASE):
+                cpt = m.group(1)
+                span_start = max(0, m.start() - 120)
+                span_end = min(len(text), m.end() + 120)
+                snippet = text[span_start:span_end].replace('\n', ' ')
+                # try to find a nearby date (look backwards)
+                date_match = re.search(r"Date of Service:?\s*(\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4})", text[:m.start()], re.IGNORECASE)
+                date = date_match.group(1) if date_match else None
+                entries.append({"cpt": cpt, "date": date, "snippet": snippet})
+            return entries
+
+        def _heuristic_gender_mismatch(text: str, existing_codes: set):
+            # Look for sex indicator
+            import re
+            sex_match = re.search(r"Sex: ?([MF]|Male|Female|male|female)", text)
+            sex = None
+            if sex_match:
+                s = sex_match.group(1).lower()
+                if s.startswith('m'):
+                    sex = 'M'
+                elif s.startswith('f'):
+                    sex = 'F'
+
+            if not sex:
+                return []
+
+            male_keywords = ["prostate", "vasectomy", "psa", "prostatectomy"]
+            female_keywords = ["pap", "pap smear", "hysterectomy", "mammogram", "cervical", "ovary", "uterus", "oophorectomy", "cesarean", "obstetric", "pregnancy"]
+
+            issues_out = []
+            entries = _extract_cpt_entries(text)
+            for e in entries:
+                snip = e.get("snippet", "").lower()
+                cpt = e.get("cpt")
+                if cpt and cpt in existing_codes:
+                    continue
+                for kw in male_keywords:
+                    if kw in snip and sex == 'F':
+                        issues_out.append(Issue(
+                            type="gender_mismatch",
+                            summary=f"Possible gender mismatch: found '{kw}' context for CPT {cpt}",
+                            evidence=snip,
+                            code=cpt,
+                            source="deterministic",
+                            confidence=0.9,
+                            max_savings=None
+                        ))
+                        break
+                for kw in female_keywords:
+                    if kw in snip and sex == 'M':
+                        issues_out.append(Issue(
+                            type="gender_mismatch",
+                            summary=f"Possible gender mismatch: found '{kw}' context for CPT {cpt}",
+                            evidence=snip,
+                            code=cpt,
+                            source="deterministic",
+                            confidence=0.9,
+                            max_savings=None
+                        ))
+                        break
+            return issues_out
+
+        def _heuristic_duplicate_charge(text: str, existing_codes: set):
+            import re
+            # split by document markers if present
+            docs = re.split(r"---+\s*DOCUMENT\s*\d+\s*---", text, flags=re.IGNORECASE)
+            # For each doc, collect CPTs and dates
+            doc_cpts = []
+            for d in docs:
+                cpts = re.findall(r"CPT\s*[:\s]?([0-9]{3,5})", d, re.IGNORECASE)
+                # find date for this doc
+                date_match = re.search(r"Date of Service:?\s*(\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4})", d, re.IGNORECASE)
+                date = date_match.group(1) if date_match else None
+                doc_cpts.append({"date": date, "cpts": cpts, "snippet": d[:200].replace('\n', ' ')})
+
+            issues_out = []
+            seen = {}
+            for idx, doc in enumerate(doc_cpts):
+                for c in doc["cpts"]:
+                    key = (c, doc.get("date"))
+                    seen.setdefault(key, []).append((idx, doc.get("snippet")))
+
+            for (cpt, date), items in seen.items():
+                if len(items) > 1 and (not cpt or cpt not in existing_codes):
+                    snippet = items[0][1]
+                    issues_out.append(Issue(
+                        type="duplicate_charge",
+                        summary=f"Duplicate CPT {cpt} on {date or 'multiple documents'}",
+                        evidence=f"Appears in {len(items)} documents. Example context: {snippet}",
+                        code=cpt,
+                        date=date,
+                        source="deterministic",
+                        confidence=0.8,
+                        max_savings=None
+                    ))
+            return issues_out
+
+        def _heuristic_drug_interactions(text: str, existing_codes: set):
+            # Simple pair checks
+            txt = text.lower()
+            issues_out = []
+            pairs = [
+                (['phenelzine', 'maoi'], ['sertraline', 'ssri', 'fluoxetine']),
+                (['warfarin', 'coumadin'], ['ibuprofen', 'naproxen', 'aspirin', 'nsaid']),
+                (['digoxin'], ['furosemide', 'loop diuretic', 'bumetanide'])
+            ]
+            for a_list, b_list in pairs:
+                a_found = next((a for a in a_list if a in txt), None)
+                b_found = next((b for b in b_list if b in txt), None)
+                if a_found and b_found:
+                    issues_out.append(Issue(
+                        type="drug_drug_interaction",
+                        summary=f"Possible drug-drug interaction: {a_found} + {b_found}",
+                        evidence=f"Both '{a_found}' and '{b_found}' found in documents.",
+                        source="deterministic",
+                        confidence=0.85,
+                        max_savings=None
+                    ))
+            return issues_out
+
+        # Build set of existing CPT codes to avoid duplicates
+        existing_codes = {iss.code for iss in issues if iss.code}
+
+        # Run heuristics and append any new detected deterministic issues
+        try:
+            heur_issues = []
+            heur_issues.extend(_heuristic_gender_mismatch(raw_text, existing_codes))
+            heur_issues.extend(_heuristic_duplicate_charge(raw_text, existing_codes))
+            heur_issues.extend(_heuristic_drug_interactions(raw_text, existing_codes))
+
+            # Avoid adding duplicates by (type, code, summary)
+            seen_sig = {(i.type, i.code, i.summary) for i in issues}
+            for hi in heur_issues:
+                sig = (hi.type, getattr(hi, 'code', None), hi.summary)
+                if sig not in seen_sig:
+                    issues.append(hi)
+                    seen_sig.add(sig)
+        except Exception:
+            # heuristics must not break pipeline
+            pass
 
         meta = dict(result.meta or {})
         meta.update({"provider": self.name(), "canonicalized": True})
