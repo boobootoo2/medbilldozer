@@ -229,7 +229,17 @@ class MedGemmaEnsembleProvider(LLMProvider):
                 # try to find a nearby date (look backwards)
                 date_match = re.search(r"Date of Service:?\s*(\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4})", text[:m.start()], re.IGNORECASE)
                 date = date_match.group(1) if date_match else None
-                entries.append({"cpt": cpt, "date": date, "snippet": snippet})
+                # try to find a nearby monetary amount within the surrounding window
+                amount = None
+                amount_match = re.search(r"\$\s*\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*USD", text[span_start:span_end], re.IGNORECASE)
+                if amount_match:
+                    amount = amount_match.group(0).strip()
+                else:
+                    # also accept simple patterns like 123.45 or 123
+                    amount_match = re.search(r"\$?\d{1,6}(?:\.\d{2})?", text[span_start:span_end])
+                    if amount_match:
+                        amount = amount_match.group(0).strip()
+                entries.append({"cpt": cpt, "date": date, "snippet": snippet, "pos": m.start(), "amount": amount})
             return entries
 
         def _heuristic_gender_mismatch(text: str, existing_codes: set):
@@ -252,70 +262,85 @@ class MedGemmaEnsembleProvider(LLMProvider):
 
             issues_out = []
             entries = _extract_cpt_entries(text)
+            # Require corroborating evidence: keyword must be within a tight window (±40 chars) of the CPT occurrence
+            window = 40
             for e in entries:
-                snip = e.get("snippet", "").lower()
+                snip = e.get("snippet", "")
                 cpt = e.get("cpt")
-                if cpt and cpt in existing_codes:
+                pos = e.get("pos")
+                if not cpt or cpt in existing_codes:
                     continue
-                for kw in male_keywords:
-                    if kw in snip and sex == 'F':
-                        issues_out.append(Issue(
-                            type="gender_mismatch",
-                            summary=f"Possible gender mismatch: found '{kw}' context for CPT {cpt}",
-                            evidence=snip,
-                            code=cpt,
-                            source="deterministic",
-                            confidence=0.9,
-                            max_savings=None
-                        ))
-                        break
-                for kw in female_keywords:
-                    if kw in snip and sex == 'M':
-                        issues_out.append(Issue(
-                            type="gender_mismatch",
-                            summary=f"Possible gender mismatch: found '{kw}' context for CPT {cpt}",
-                            evidence=snip,
-                            code=cpt,
-                            source="deterministic",
-                            confidence=0.9,
-                            max_savings=None
-                        ))
-                        break
+                # windowed text around the CPT occurrence (tighter than the snippet)
+                start = max(0, pos - window)
+                end = min(len(text), pos + window)
+                nearby = text[start:end].lower()
+                matched = False
+                if sex == 'F':
+                    for kw in male_keywords:
+                        if kw in nearby:
+                            matched = True
+                            matched_kw = kw
+                            break
+                else:
+                    for kw in female_keywords:
+                        if kw in nearby:
+                            matched = True
+                            matched_kw = kw
+                            break
+
+                if matched:
+                    # only raise when both CPT and nearby sex-specific keyword are present
+                    issues_out.append(Issue(
+                        type="gender_mismatch",
+                        summary=f"Possible gender mismatch: found '{matched_kw}' near CPT {cpt}",
+                        evidence=snip,
+                        code=cpt,
+                        source="deterministic",
+                        confidence=0.85,
+                        max_savings=None
+                    ))
             return issues_out
 
         def _heuristic_duplicate_charge(text: str, existing_codes: set):
             import re
             # split by document markers if present
             docs = re.split(r"---+\s*DOCUMENT\s*\d+\s*---", text, flags=re.IGNORECASE)
-            # For each doc, collect CPTs and dates
-            doc_cpts = []
+            # For each doc, collect CPT entries (use _extract_cpt_entries to also capture amount/date)
+            doc_entries = []
             for d in docs:
-                cpts = re.findall(r"CPT\s*[:\s]?([0-9]{3,5})", d, re.IGNORECASE)
-                # find date for this doc
+                entries = _extract_cpt_entries(d)
+                # find date for this doc as fallback
                 date_match = re.search(r"Date of Service:?\s*(\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4})", d, re.IGNORECASE)
-                date = date_match.group(1) if date_match else None
-                doc_cpts.append({"date": date, "cpts": cpts, "snippet": d[:200].replace('\n', ' ')})
+                doc_date = date_match.group(1) if date_match else None
+                doc_entries.append({"date": doc_date, "entries": entries, "snippet": d[:200].replace('\n', ' ')})
 
             issues_out = []
             seen = {}
-            for idx, doc in enumerate(doc_cpts):
-                for c in doc["cpts"]:
-                    key = (c, doc.get("date"))
-                    seen.setdefault(key, []).append((idx, doc.get("snippet")))
+            # Build seen map keyed by (cpt, date, amount)
+            for idx, doc in enumerate(doc_entries):
+                for e in doc["entries"]:
+                    c = e.get("cpt")
+                    date = e.get("date") or doc.get("date")
+                    amount = e.get("amount")
+                    # normalize amount to string or None
+                    key = (c, date, amount)
+                    seen.setdefault(key, []).append((idx, e.get("snippet")))
 
-            for (cpt, date), items in seen.items():
+            # Only flag duplicates when we have corroborating date AND amount matches across occurrences
+            for (cpt, date, amount), items in seen.items():
                 if len(items) > 1 and (not cpt or cpt not in existing_codes):
-                    snippet = items[0][1]
-                    issues_out.append(Issue(
-                        type="duplicate_charge",
-                        summary=f"Duplicate CPT {cpt} on {date or 'multiple documents'}",
-                        evidence=f"Appears in {len(items)} documents. Example context: {snippet}",
-                        code=cpt,
-                        date=date,
-                        source="deterministic",
-                        confidence=0.8,
-                        max_savings=None
-                    ))
+                    if date and amount:
+                        snippet = items[0][1]
+                        issues_out.append(Issue(
+                            type="duplicate_charge",
+                            summary=f"Duplicate CPT {cpt} on {date} with identical amount {amount}",
+                            evidence=f"Appears in {len(items)} documents with same date and amount. Example context: {snippet}",
+                            code=cpt,
+                            date=date,
+                            source="deterministic",
+                            confidence=0.9,
+                            max_savings=None
+                        ))
             return issues_out
 
         def _heuristic_drug_interactions(text: str, existing_codes: set):
