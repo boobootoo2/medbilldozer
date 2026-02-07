@@ -632,7 +632,8 @@ def main():
     )
     parser.add_argument(
         "--model",
-        choices=["medgemma", "medgemma-ensemble", "openai", "gemini", "baseline", "all"],
+        # choices=["medgemma", "medgemma-ensemble", "openai", "gemini", "baseline", "all"],
+        choices=["medgemma", "medgemma-ensemble", "openai", "all"],
         required=True,
         help="Model to benchmark or 'all' to run all available models"
     )
