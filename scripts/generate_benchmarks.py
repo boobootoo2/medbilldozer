@@ -24,6 +24,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from medbilldozer.providers.llm_interface import ProviderRegistry, Issue, LocalHeuristicProvider
 from medbilldozer.providers.medgemma_hosted_provider import MedGemmaHostedProvider
+from medbilldozer.providers.medgemma_ensemble_provider import MedGemmaEnsembleProvider
 from medbilldozer.providers.openai_analysis_provider import OpenAIAnalysisProvider
 from medbilldozer.providers.gemini_analysis_provider import GeminiAnalysisProvider
 from medbilldozer.extractors.local_heuristic_extractor import extract_facts_local
@@ -76,7 +77,9 @@ class BenchmarkRunner:
     def __init__(self, model: str):
         self.model = model
         self.benchmarks_dir = PROJECT_ROOT / "benchmarks"
-        self.inputs_dir = self.benchmarks_dir / "inputs"
+        # New canonical source: profiles with embedded documents
+        self.profiles_dir = self.benchmarks_dir / "patient_profiles"
+        self.inputs_dir = self.benchmarks_dir / "inputs"  # legacy (used if profile references filenames)
         self.expected_dir = self.benchmarks_dir / "expected_outputs"
         self.results_dir = self.benchmarks_dir / "results"
         
@@ -89,6 +92,12 @@ class BenchmarkRunner:
             if not self.provider.health_check():
                 raise RuntimeError(
                     "MedGemma provider not available. Set HF_API_TOKEN environment variable."
+                )
+        elif model == "medgemma-ensemble":
+            self.provider = MedGemmaEnsembleProvider()
+            if not self.provider.health_check():
+                raise RuntimeError(
+                    "MedGemma ensemble provider not available. Set HF_API_TOKEN environment variable."
                 )
         elif model == "openai":
             if not os.getenv("OPENAI_API_KEY"):
@@ -108,21 +117,25 @@ class BenchmarkRunner:
             raise ValueError(f"Unknown model: {model}. Choose from: medgemma, openai, gemini, baseline")
 
     def load_benchmark_pairs(self) -> List[tuple[Path, Path]]:
-        """Load all input/expected output pairs."""
-        pairs = []
-        
-        if not self.inputs_dir.exists():
-            print(f"⚠️  Inputs directory not found: {self.inputs_dir}")
-            return pairs
-        
-        for input_file in sorted(self.inputs_dir.glob("*.txt")):
-            expected_file = self.expected_dir / f"{input_file.stem}.json"
-            if expected_file.exists():
-                pairs.append((input_file, expected_file))
-            else:
-                print(f"⚠️  Missing expected output for: {input_file.name}")
-        
-        return pairs
+        """Load all patient profile files (profiles should contain embedded documents).
+
+        Backwards-compatible behavior:
+        - If a profile's `documents` list contains strings (filenames), the loader will
+          read the corresponding file from `benchmarks/inputs`.
+        - If a profile already embeds document objects with `content`, those are used as-is.
+
+        Returns a list of profile paths.
+        """
+        profiles = []
+
+        if not self.profiles_dir.exists():
+            print(f"⚠️  Profiles directory not found: {self.profiles_dir}")
+            return profiles
+
+        for profile_file in sorted(self.profiles_dir.glob("*.json")):
+            profiles.append(profile_file)
+
+        return profiles
 
     def run_extraction(self, document_text: str) -> tuple[Dict[str, Any], float, Optional[Dict]]:
         """Run extraction and return facts, latency, and token usage."""
@@ -205,17 +218,48 @@ class BenchmarkRunner:
 
     def run_single_benchmark(
         self,
-        input_file: Path,
-        expected_file: Path
+        profile_file: Path,
     ) -> BenchmarkResult:
-        """Run benchmark on a single document."""
-        document_name = input_file.stem
-        
-        # Load input
-        document_text = input_file.read_text(encoding="utf-8")
-        
-        # Load expected output
-        expected = json.loads(expected_file.read_text(encoding="utf-8"))
+        """Run benchmark on a single patient profile. Build document text from embedded documents.
+
+        The profile may reference document filenames (legacy) stored in `benchmarks/inputs`,
+        or embed document objects with a `content` field.
+        """
+        document_name = profile_file.stem
+
+        profile = json.loads(profile_file.read_text(encoding="utf-8"))
+
+        # Build document text by concatenating embedded documents or loading legacy input files
+        docs = profile.get("documents", [])
+        parts: List[str] = []
+        for i, d in enumerate(docs, 1):
+            if isinstance(d, str):
+                # legacy filename reference
+                input_path = self.inputs_dir / d
+                if input_path.exists():
+                    parts.append(input_path.read_text(encoding="utf-8"))
+                else:
+                    parts.append(f"[Missing input file: {d}]")
+            elif isinstance(d, dict):
+                # already embedded
+                content = d.get("content") or d.get("text") or json.dumps(d)
+                parts.append(content)
+            else:
+                parts.append(str(d))
+
+        document_text = "\n\n".join(parts)
+
+        # Load expected issues: prefer embedded, otherwise try to find an expected file
+        expected = {}
+        if profile.get("expected_issues"):
+            expected = {"expected_issues": profile.get("expected_issues")}
+        else:
+            # Map profile stem to expected file patterns (best-effort)
+            expected_candidates = list(self.expected_dir.glob(f"{profile_file.stem}*.json"))
+            if expected_candidates:
+                expected = json.loads(expected_candidates[0].read_text(encoding="utf-8"))
+            else:
+                expected = {"expected_issues": []}
         
         try:
             # Run extraction
@@ -588,7 +632,7 @@ def main():
     )
     parser.add_argument(
         "--model",
-        choices=["medgemma", "openai", "gemini", "baseline", "all"],
+        choices=["medgemma", "medgemma-ensemble", "openai", "gemini", "baseline", "all"],
         required=True,
         help="Model to benchmark or 'all' to run all available models"
     )

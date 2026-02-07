@@ -1,25 +1,40 @@
 {
-    "patient_id": "P001",
-    "name": "John Doe",
-    "demographics": {
-        "age": 45,
-        "sex": "M",
-        "date_of_birth": "1980-06-15"
-    },
-    "medical_history": {
-        "conditions": ["Type 2 Diabetes", "Hypertension"],
-        "allergies": ["Penicillin"],
-        "surgeries": []
-    },
-    "documents": [
-        "patient_001_doc_1_medical_bill.txt",
-        "patient_001_doc_2_lab_results.txt"
+  "patient_id": "P001",
+  "name": "John Doe",
+  "demographics": {
+    "age": 45,
+    "sex": "M",
+    "date_of_birth": "1980-06-15"
+  },
+  "medical_history": {
+    "conditions": [
+      "Type 2 Diabetes",
+      "Hypertension"
     ],
-    "expected_issues": [{
-        "type": "gender_mismatch",
-        "severity": "critical",
-        "description": "Male patient billed for obstetric ultrasound (CPT 76805) - anatomically impossible",
-        "requires_domain_knowledge": true,
-        "cpt_code": "76805"
-    }]
+    "allergies": [
+      "Penicillin"
+    ],
+    "surgeries": []
+  },
+  "documents": [
+    {
+      "document_id": "patient_001_doc_1_medical_bill",
+      "document_type": "text",
+      "content": "STATEMENT FROM RIVERSIDE MEDICAL CENTER\nAcct: P001-2026-001 | DOB: 06/15/1980 | JOHN DOE\n\n========================================\nService Dates: Jan 10-15, 2026\n========================================\n\nCHARGES:\nOffice Visit - 99213                           $150.00\n  15 min w Dr Williams\n\nObstetric Ultrasound 76805                     $285.00\n  Single/First Gestation\n\nMetabolic Panel 80053                           $45.00\n\nFacility Fee                                    $20.00\n\nSUBTOTAL: $500.00\nInsurance Applied: -$280.00\nDeductible Met: NO\n\nAmount Due: $220.00\n\nPay by: 02/15/2026\nProcessing Questions? 555-MEDCTR\n"
+    },
+    {
+      "document_id": "patient_001_doc_2_lab_results",
+      "document_type": "text",
+      "content": "LAB RESULTS\nName: John Doe  |  DOB: 06/15/80\n\nSpecimen collected: 01/15\nReceived: 01/16\nReported: 01/17\n\nCOMPREHENSIVE METABOLIC PANEL\nGlucose              145 mg/dL       (High)\nBUN                  18 mg/dL        (OK)\nCreatinine           1.0 mg/dL       (OK)\nSodium               140 mEq/L       (OK)\nPotassium            4.2 mEq/L       (OK)\n\nCPT CODE: 80053\nSTATUS: Completed\n\nDr Sarah Johnson - Ordering Physician\nTest referred by - Riverside Medical\n\nNOTES: Glucose elevated. Known Diabetes Type 2. Recommend\n       medication review with prescribing physician.\n\nSpecimen ID: LAB-001-2026-5847\n"
+    }
+  ],
+  "expected_issues": [
+    {
+      "type": "gender_mismatch",
+      "severity": "critical",
+      "description": "Male patient billed for obstetric ultrasound (CPT 76805) - anatomically impossible",
+      "requires_domain_knowledge": true,
+      "cpt_code": "76805"
+    }
+  ]
 }
