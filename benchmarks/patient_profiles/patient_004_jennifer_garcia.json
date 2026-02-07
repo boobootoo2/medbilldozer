@@ -1,33 +1,46 @@
 {
-    "patient_id": "P004",
-    "name": "Jennifer Garcia",
-    "demographics": {
-        "age": 34,
-        "sex": "F",
-        "date_of_birth": "1991-11-08"
-    },
-    "medical_history": {
-        "conditions": ["Hypothyroidism"],
-        "allergies": [],
-        "surgeries": ["Appendectomy (2015)"]
-    },
-    "documents": [
-        "patient_004_doc_1_medical_bill.txt",
-        "patient_004_doc_2_eob.txt"
+  "patient_id": "P004",
+  "name": "Jennifer Garcia",
+  "demographics": {
+    "age": 34,
+    "sex": "F",
+    "date_of_birth": "1991-11-08"
+  },
+  "medical_history": {
+    "conditions": [
+      "Hypothyroidism"
     ],
-    "expected_issues": [{
-            "type": "gender_mismatch",
-            "severity": "critical",
-            "description": "Female patient billed for prostate exam (CPT 55700) - anatomically impossible",
-            "requires_domain_knowledge": true,
-            "cpt_code": "55700"
-        },
-        {
-            "type": "upcoding",
-            "severity": "medium",
-            "description": "Routine office visit billed as comprehensive visit (CPT 99215 instead of 99213)",
-            "requires_domain_knowledge": false,
-            "cpt_code": "99215"
-        }
+    "allergies": [],
+    "surgeries": [
+      "Appendectomy (2015)"
     ]
+  },
+  "documents": [
+    {
+      "document_id": "patient_004_doc_1_medical_bill",
+      "document_type": "text",
+      "content": "CENTRAL MEDICAL ASSOCIATES\nDate: 01/30/2026\nAcct: P004\n\nPatient: Jennifer Garcia\nDOB: 11/08/1991\nSex: FEMALE\n\nServices Provided - 01/28/2026\n===================================\n\nOffice Visit 99214              185.00\nProstate Biopsy 55700           425.00\nTSH Lab Work 84443               55.00\nEquipment/Supplies               15.00\n\nTOTAL CHARGES:                  680.00\nInsurance Status: PENDING\nAMOUNT DUE NOW:                 680.00\n\nBill Due: 02/28/2026\n\nFor billing questions:\nbilling@centralmedical.com\n(555) 333-4444\n\nAccount Mgr: Robert Johnson\n"
+    },
+    {
+      "document_id": "patient_004_doc_2_eob",
+      "document_type": "text",
+      "content": "BLUE CROSS BLUE SHIELD\nEOB - Explanation of Benefits\n\nMember: Jennifer Garcia\nID: BCB-P004-2026\nClaim Date: 01/28/2026\n\nPROCESSING SUMMARY:\nOffice Visit (99214)\n  Billed:      $185\n  Allowed:     $140\n  We Pay:      $112\n  You Owe:     $28 (copay)\n\nTSH Test (84443)\n  Billed:      $55\n  Allowed:     $45\n  We Pay:      $45\n  You Owe:     $0\n\nProstate Biopsy (55700)\n  Billed:      $425\n  Status:      DENIED\n  Reason:      Not covered per plan\n  You Owe:     $425\n\nStatus: PROCESSED\n\nThis is NOT a bill. Your provider\nwill bill you for amounts due.\n\nQuestions? Call 1-800-BCBS-NOW\n"
+    }
+  ],
+  "expected_issues": [
+    {
+      "type": "gender_mismatch",
+      "severity": "critical",
+      "description": "Female patient billed for prostate exam (CPT 55700) - anatomically impossible",
+      "requires_domain_knowledge": true,
+      "cpt_code": "55700"
+    },
+    {
+      "type": "upcoding",
+      "severity": "medium",
+      "description": "Routine office visit billed as comprehensive visit (CPT 99215 instead of 99213)",
+      "requires_domain_knowledge": false,
+      "cpt_code": "99215"
+    }
+  ]
 }

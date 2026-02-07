@@ -1,33 +1,44 @@
 {
-    "patient_id": "P008",
-    "name": "Lisa Rodriguez",
-    "demographics": {
-        "age": 3,
-        "sex": "F",
-        "date_of_birth": "2022-05-20"
-    },
-    "medical_history": {
-        "conditions": ["Recurrent Ear Infections"],
-        "allergies": [],
-        "surgeries": []
-    },
-    "documents": [
-        "patient_008_doc_1_medical_bill.txt",
-        "patient_008_doc_2_pharmacy.txt"
+  "patient_id": "P008",
+  "name": "Lisa Rodriguez",
+  "demographics": {
+    "age": 3,
+    "sex": "F",
+    "date_of_birth": "2022-05-20"
+  },
+  "medical_history": {
+    "conditions": [
+      "Recurrent Ear Infections"
     ],
-    "expected_issues": [{
-            "type": "age_inappropriate_screening",
-            "severity": "high",
-            "description": "3-year-old toddler billed for stress cardiac test (CPT 93015) - not age-appropriate",
-            "requires_domain_knowledge": true,
-            "cpt_code": "93015"
-        },
-        {
-            "type": "age_inappropriate_procedure",
-            "severity": "high",
-            "description": "3-year-old billed for adult colonoscopy (CPT 45378) - pediatric procedure would use different code",
-            "requires_domain_knowledge": true,
-            "cpt_code": "45378"
-        }
-    ]
+    "allergies": [],
+    "surgeries": []
+  },
+  "documents": [
+    {
+      "document_id": "patient_008_doc_1_medical_bill",
+      "document_type": "text",
+      "content": "CHILDREN'S MEDICAL GROUP\nStmt CMG-2026-447\nDate: 02/03/2026\n\nLisa Rodriguez\nDOB: 05/20/2022  Age 3  F\n\nVisit Date: 02/03/2026\nDr J Martinez, Pediatrician\n\nOffice Visit (99213)            $135\nStress Test - Cardio (93015)    $875\nEarwax Removal (69210)           $65\nFacility Charge                  $25\n\n---\nTotal:                        $1,100\nInsurance:                     -$950\nYou Pay:                        $150\n\nDue: 03/03/2026\n\nQuestions?\nchildhealth@cmg.com\n(555) 666-7777\n"
+    },
+    {
+      "document_id": "patient_008_doc_2_pharmacy",
+      "document_type": "text",
+      "content": "CVS PHARMACY\nRcpt 02/03/2026\n\nLisa Rodriguez\nDOB: 05/20/2022\nRx: 7729384\n\nAmoxicillin 400mg/5mL\nQty: 100mL\nTake 7mL BID x 10 days\nDr J Martinez\n\nList:     $18.00\nIns:      -$13.00\nCopay:     $5.00 \u2713\n\nNo refills\nShake well\n\nStore 4521\n"
+    }
+  ],
+  "expected_issues": [
+    {
+      "type": "age_inappropriate_screening",
+      "severity": "high",
+      "description": "3-year-old toddler billed for stress cardiac test (CPT 93015) - not age-appropriate",
+      "requires_domain_knowledge": true,
+      "cpt_code": "93015"
+    },
+    {
+      "type": "age_inappropriate_procedure",
+      "severity": "high",
+      "description": "3-year-old billed for adult colonoscopy (CPT 45378) - pediatric procedure would use different code",
+      "requires_domain_knowledge": true,
+      "cpt_code": "45378"
+    }
+  ]
 }
