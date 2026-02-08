@@ -1382,8 +1382,7 @@ def main():
         '--model',
         type=str,
         default='all',
-        # choices=['medgemma', 'medgemma-ensemble', 'gemma3', 'openai', 'gemini', 'baseline', 'all'],
-        choices=['medgemma', 'medgemma-ensemble', 'gemma3', 'openai', 'all'],
+        choices=['medgemma', 'medgemma-ensemble', 'openai', 'all'],
         help='Which model to benchmark (default: all)'
     )
     parser.add_argument(
@@ -1430,7 +1429,7 @@ def main():
     
     # Determine which models to run
     if args.model == 'all':
-        models_to_run = ['medgemma', 'openai', 'gemini', 'baseline']
+        models_to_run = ['medgemma', 'medgemma-ensemble', 'openai']
     else:
         models_to_run = [args.model]
     

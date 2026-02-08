@@ -115,6 +115,9 @@ jobs:
             echo "::warning::All benchmark uploads failed"
             exit 1
           fi
+          
+          # Exit successfully if at least one upload succeeded
+          exit 0
       
       - name: Post summary
         if: always()
