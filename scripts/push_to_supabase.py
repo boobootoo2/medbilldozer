@@ -410,7 +410,12 @@ Examples:
             'environment': args.environment,
             'commit_sha': args.commit_sha,
         }
-        print(f"\n::set-output name=result::{json.dumps(output)}")
+        
+        # Write output for GitHub Actions (using modern GITHUB_OUTPUT method)
+        github_output = os.environ.get('GITHUB_OUTPUT')
+        if github_output:
+            with open(github_output, 'a') as f:
+                f.write(f"result={json.dumps(output)}\n")
         
     except FileNotFoundError as e:
         logger.error(f"File error: {e}")
