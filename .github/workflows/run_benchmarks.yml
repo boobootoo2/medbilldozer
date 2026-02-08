@@ -62,7 +62,7 @@ jobs:
         run: |
           mkdir -p benchmark-artifacts
           # Convert each model's patient benchmark results (46 patients)
-          for model in baseline openai gemini medgemma gemma3; do
+          for model in baseline openai gemini medgemma medgemma-ensemble gemma3; do
             if [ -f "benchmarks/results/patient_benchmark_${model}.json" ]; then
               python3 scripts/convert_benchmark_to_monitoring.py \
                 --input "benchmarks/results/patient_benchmark_${model}.json" \
@@ -87,7 +87,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           # Push each model's patient benchmark results (46 patients) to Supabase
-          for model in baseline openai gemini medgemma gemma3; do
+          for model in baseline openai gemini medgemma medgemma-ensemble gemma3; do
             if [ -f "benchmark-artifacts/${model}_benchmark_results.json" ]; then
               echo "📤 Pushing ${model} results to Supabase..."
               python3 scripts/push_to_supabase.py \
