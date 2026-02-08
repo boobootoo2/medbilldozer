@@ -194,7 +194,7 @@ class MedGemmaEnsembleProvider(LLMProvider):
                     mapped_type = m.get("mapped_type") or m.get("mappedType") or m.get("mapped")
                     confidence = float(m.get("confidence", 0))
                 except Exception:
-                    continue
+                    continue  # nosec B112 - intentional skip of malformed mapping entries
 
                 # Apply mapping only if confidence above threshold
                 threshold = float(os.getenv("ENABLE_ENSEMBLE_CONFIDENCE", "0.7"))
@@ -385,7 +385,7 @@ class MedGemmaEnsembleProvider(LLMProvider):
                     seen_sig.add(sig)
         except Exception:
             # heuristics must not break pipeline
-            pass
+            pass  # nosec B110 - heuristics must not break pipeline
 
         meta = dict(result.meta or {})
         meta.update({"provider": self.name(), "canonicalized": True})
