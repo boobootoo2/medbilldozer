@@ -420,12 +420,12 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
 **Goal**: Production-grade infrastructure and security
 
 #### Week 1-2: Security & Compliance
-- [ ] **HIPAA compliance audit**[^1]
+- [ ] **HIPAA compliance audit**
   - Encrypt data in transit (TLS 1.3) and at rest (AES-256)
   - Implement audit logging for all document access
   - Business Associate Agreement (BAA) templates
   - PHI handling procedures documentation
-- [ ] **Penetration testing**[^2]
+- [ ] **Penetration testing**
   - Engage third-party security firm
   - Address OWASP Top 10 vulnerabilities
   - Input sanitization hardening
@@ -435,11 +435,11 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
   - Right-to-deletion implementation
 
 #### Week 3-4: Infrastructure Scaling
-- [ ] **Kubernetes deployment**[^3]
+- [ ] **Kubernetes deployment**
   - Multi-region availability (US-East, US-West, EU)
   - Auto-scaling based on load (target: 100 concurrent users)
   - Health checks and readiness probes
-- [ ] **Database architecture**[^4]
+- [ ] **Database architecture**
   - PostgreSQL for user profiles (encrypted)
   - Redis cache for session management
   - S3/GCS for document storage (encrypted, lifecycle policies)
@@ -449,7 +449,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
   - Monitor and alert on quota violations
 
 #### Week 5-6: Model Optimization
-- [ ] **MedGemma quantization**[^5]
+- [ ] **MedGemma quantization**
   - GGUF Q4_K_M format for edge deployment
   - Benchmark latency: target <3s per document
   - A/B test quality: ensure <5% F1 degradation
@@ -463,7 +463,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
   - Retry logic with exponential backoff
 
 #### Week 7-8: Monitoring & Observability
-- [ ] **Application Performance Monitoring (APM)**[^6]
+- [ ] **Application Performance Monitoring (APM)**
   - Datadog or New Relic integration
   - Custom metrics: analysis_duration, issues_detected, savings_calculated
   - Distributed tracing for debugging
@@ -471,7 +471,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
   - Sentry for exception monitoring
   - Slack/PagerDuty alerting for critical failures
   - Weekly error review meetings
-- [ ] **User analytics**[^7]
+- [ ] **User analytics**
   - Mixpanel or Amplitude for product analytics
   - Privacy-preserving event tracking (anonymized IDs)
   - Funnel analysis: upload → analyze → export
@@ -483,7 +483,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
 **Goal**: Evidence-based validation of clinical accuracy
 
 #### Week 9-12: Ground Truth Expansion
-- [ ] **Annotate 10,000+ medical bills**[^8]
+- [ ] **Annotate 10,000+ medical bills**
   - Partner with medical coding experts (CPC, CCS certification)
   - Inter-annotator agreement target: κ > 0.8
   - Categories: medical, dental, pharmacy, insurance EOBs
@@ -491,13 +491,13 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
   - Edge cases: pregnancy ultrasound for males, pediatric colonoscopies
   - Multi-document reconciliation scenarios
   - Drug interaction test cases (50+ common pairs)
-- [ ] **Fine-tune MedGemma checkpoint**[^9]
+- [ ] **Fine-tune MedGemma checkpoint**
   - LoRA adapters for billing domain
   - Target metrics: Precision >55%, Recall >70%, F1 >60%
   - Upload to Hugging Face: `boobootoo2/medgemma-4b-it-billdozer`
 
 #### Week 13-16: Clinical Trial Design
-- [ ] **IRB approval application**[^10]
+- [ ] **IRB approval application**
   - Partner with academic medical center
   - Protocol: Randomized controlled trial (RCT)
   - Arms: medBillDozer + standard care vs. standard care alone
@@ -505,7 +505,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
   - Target: 1,000 patients with bills >$5,000
   - Inclusion criteria: English-speaking, internet access
   - Exclusion: Active bankruptcy proceedings
-- [ ] **Outcome measures**[^11]
+- [ ] **Outcome measures**
   - Primary: Billing error correction rate
   - Secondary: Time to resolution, patient satisfaction (NPS), financial savings
   - Tertiary: Stress reduction (PROMIS anxiety scale)
@@ -527,7 +527,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
 **Goal**: Public release and user acquisition
 
 #### Week 21-22: Edge AI Deployment
-- [ ] **Mobile app development**[^12]
+- [ ] **Mobile app development**
   - React Native or Flutter for cross-platform
   - On-device MedGemma inference (MLX for iOS, NNAPI for Android)
   - Offline mode with sync when connected
@@ -541,7 +541,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
   - Marketing assets: screenshots, demo video
 
 #### Week 23-24: User Onboarding & Support
-- [ ] **Interactive tutorial**[^13]
+- [ ] **Interactive tutorial**
   - First-time user walkthrough (30 seconds)
   - Sample bill analysis demo
   - Export and dispute guidance
@@ -555,7 +555,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
   - User success stories showcase
 
 #### Week 25-26: Marketing & Launch
-- [ ] **Press release**[^14]
+- [ ] **Press release**
   - Target: TechCrunch, WIRED, Forbes Healthcare
   - Angle: "AI bulldozer empowers patients against medical billing errors"
   - Embargo coordination with journalists
@@ -569,7 +569,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
   - Goal: Top 5 product of the day
 
 #### Week 27-28: Partnerships & Integration
-- [ ] **Health system pilots**[^15]
+- [ ] **Health system pilots**
   - Partner with 2-3 hospitals for internal billing audit
   - White-label deployment for hospital patient portals
   - Revenue share: 20% of savings recovered
@@ -589,7 +589,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
 **Goal**: Achieve product-market fit and financial sustainability
 
 #### Week 29-32: Revenue Model Implementation
-- [ ] **Pricing tiers**[^16]
+- [ ] **Pricing tiers**
   - **Free**: 10 documents/month, community support
   - **Pro** ($9.99/month): Unlimited docs, priority support, export reports
   - **Family** ($19.99/month): Up to 5 users, shared profiles
@@ -604,7 +604,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
   - Patient advocacy nonprofits partnership
 
 #### Week 33-36: Advanced Features
-- [ ] **Multi-document reconciliation**[^17]
+- [ ] **Multi-document reconciliation**
   - Cross-reference EOB with provider bill
   - Insurance claim tracking integration
   - Family health spending dashboard
@@ -622,7 +622,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
   - 6-month follow-up period
   - Data analysis and statistical testing
   - Manuscript preparation for peer review
-- [ ] **Publication & dissemination**[^18]
+- [ ] **Publication & dissemination**
   - Target journals: JAMA Network Open, Health Affairs
   - Conference presentations: HIMSS, AMA Annual Meeting
   - White paper for policymakers and insurance regulators
@@ -652,7 +652,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
   - Rate limiting: 1,000 requests/day (free tier)
 
 #### Q3-Q4 2027: HAI-DEF Ecosystem Contribution
-- [ ] **Open-source fine-tuned models**[^19]
+- [ ] **Open-source fine-tuned models**
   - Release medgemma-billdozer-v2 on Hugging Face
   - Annotated dataset: 50K+ medical bills (anonymized)
   - Training code and evaluation harness
@@ -665,17 +665,7 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
 
 ## Call to Action
 
-**For Patients**: Download medBillDozer and take control of your medical bills. You deserve transparency.
-
-**For Developers**: Contribute to the open-source project. Together we can bulldoze billing errors out of existence.
-
-**For Healthcare Systems**: Partner with us to improve billing accuracy and patient trust.
-
-**For Judges**: medBillDozer proves that MedGemma + thoughtful engineering can solve real problems crushing real families. This isn't just a demo—it's a movement to put patients back in the driver's seat.
-
----
-
-**Let's bulldoze medical billing errors—one family at a time.** 🚜💪
+**For Judges**: medBillDozer demonstrates how MedGemma's healthcare domain expertise can address a critical real-world problem. By combining MedGemma's medical knowledge with thoughtful engineering—ensemble architecture, rigorous benchmarking, and privacy-first design—we've built a practical tool that detects billing errors affecting millions of Americans. The application is functional, measurable, and addresses genuine financial harm facing patients today.
 
 ---
 
@@ -689,45 +679,3 @@ By putting MedGemma in the hands of patients facing financial ruin from billing 
 6. HAI-DEF collection: <https://developers.google.com/health-ai>
 7. medBillDozer GitHub repository: <https://github.com/boobootoo2/medbilldozer>
 8. MedGemma Impact Challenge: <https://kaggle.com/competitions/med-gemma-impact-challenge>
-
----
-
-## Footnotes
-
-[^1]: **HIPAA Compliance**: While medBillDozer currently operates in session-only mode (no persistent storage), production deployment requires full HIPAA compliance under 45 CFR Parts 160, 162, and 164. Key requirements include encryption (both in transit and at rest), access controls, audit logs, and Business Associate Agreements with any third-party services (e.g., cloud providers, API services). Estimated cost: $15,000-$50,000 for initial audit and remediation.
-
-[^2]: **Security Testing**: Penetration testing should follow OWASP Testing Guide v4.2 methodology. Priority areas: API authentication, input validation (especially for document uploads), SQL injection prevention, XSS protection, and secrets management. Recommended tools: Burp Suite Professional, OWASP ZAP. Estimated cost: $10,000-$25,000 for comprehensive pentesting engagement.
-
-[^3]: **Infrastructure Scaling**: Kubernetes deployment on Google Cloud GKE or AWS EKS provides auto-scaling, high availability, and simplified deployment. Recommended setup: 3 nodes (minimum) with horizontal pod autoscaling (HPA) based on CPU/memory utilization. Expected costs: ~$500-$1,500/month for initial load (100 concurrent users), scaling to $5,000-$10,000/month at 10,000+ users.
-
-[^4]: **Database Architecture**: PostgreSQL provides ACID compliance and robust encryption (pgcrypto extension). For production: managed services like AWS RDS or Google Cloud SQL with automated backups, point-in-time recovery, and read replicas. Redis for session caching reduces database load by 60-80%. Monthly cost estimate: $200-$800 depending on scale.
-
-[^5]: **Model Quantization**: GGUF (GPT-Generated Unified Format) enables efficient inference with minimal quality loss. Q4_K_M quantization typically achieves <3% F1 degradation while reducing model size from ~16GB (FP32) to ~2.5GB, enabling on-device deployment. Tools: llama.cpp, GGML. Testing methodology: measure latency (target: <3s), throughput (tok/s), and benchmark F1 score against non-quantized baseline.
-
-[^6]: **APM Implementation**: Application Performance Monitoring provides end-to-end visibility into system health. Key metrics to track: p50/p95/p99 latency, error rate by endpoint, model inference time, database query performance. Set up alerts for: error rate >1%, latency p95 >10s, API rate limit violations. Monthly cost: $50-$300 for APM services like Datadog or New Relic.
-
-[^7]: **Privacy-Preserving Analytics**: Use anonymized user IDs (UUIDs) instead of PII. Implement strict data retention policies (30 days for event data). Consider differential privacy techniques for aggregate analytics. Ensure analytics provider is GDPR/CCPA compliant. Recommended: Mixpanel (HIPAA BAA available) or self-hosted Matomo for maximum privacy control.
-
-[^8]: **Ground Truth Annotation**: High-quality training data requires domain expertise. Hire certified medical coders (CPC: Certified Professional Coder, CCS: Certified Coding Specialist) at $40-$60/hour. Budget for 10,000 bills × 15 minutes/bill = 2,500 hours = $100,000-$150,000. Use Label Studio or Prodigy for annotation interface. Inter-annotator agreement measured via Cohen's kappa (κ); target κ > 0.8 indicates substantial agreement.
-
-[^9]: **Fine-Tuning Strategy**: Use LoRA (Low-Rank Adaptation) for parameter-efficient fine-tuning of MedGemma. LoRA adds ~2% trainable parameters while achieving comparable performance to full fine-tuning. Training infrastructure: 1-2 A100 GPUs (Google Colab Pro+ or Vast.ai), 2-4 days training time. Hyperparameters: learning rate 2e-4, batch size 4-8, LoRA rank 8-16. Cost: $200-$500 for compute.
-
-[^10]: **IRB Approval**: Institutional Review Board approval required for human subjects research. Partner with academic medical center IRB (e.g., Stanford, Johns Hopkins). Process timeline: 4-8 weeks for initial submission, 2-4 weeks for revisions. Include: study protocol, informed consent forms, data security plan, risk mitigation strategies. Consider expedited review if minimal risk study.
-
-[^11]: **Outcome Measures**: Primary outcome: percentage of billing errors corrected within 90 days (target: >50% correction rate vs. <10% in control). Secondary outcomes: Net Promoter Score (NPS) >50 indicates good product-market fit; financial savings measured via patient-reported outcomes and insurance claim data; anxiety reduction via PROMIS-29 questionnaire. Power analysis: n=1,000 provides 80% power to detect 10% difference in correction rate (α=0.05).
-
-[^12]: **Mobile Development**: React Native enables code sharing between iOS and Android (~70% shared codebase). On-device inference requires: iOS 15+ (Core ML), Android 10+ (NNAPI). Model size budget: <50MB for app store optimization. Alternative: Flutter for better performance, but less mature ML ecosystem. Development timeline: 12-16 weeks for MVP with 2 mobile developers. Cost: $80,000-$120,000 (developers at $100-$150/hour).
-
-[^13]: **User Onboarding**: First-time user experience (FTUE) critical for retention. Industry benchmarks: <30 second tutorial increases completion rate by 40%. Use Intro.js or Shepherd.js for guided tours. A/B test different onboarding flows. Measure: tutorial completion rate (target >80%), first document analysis rate (target >60% within first session).
-
-[^14]: **Press Strategy**: Embargo press release 3-5 days before launch. Target journalists covering: healthcare technology, consumer protection, AI/ML. Pitch angle: "David vs. Goliath" narrative (patients vs. medical billing industry). Include: founder story, patient testimonial, demo video, early metrics (if available). Follow up within 24 hours. Expected coverage: 5-10 tier-1 publications with proper outreach.
-
-[^15]: **Health System Partnerships**: Hospital billing departments spend $68B annually on billing errors (citation 3). Value proposition: reduce claim rejections, improve patient satisfaction (HCAHPS scores), decrease accounts receivable days. Pilot structure: 90-day trial, measure reduction in billing disputes and patient complaints. Revenue model: SaaS ($5,000-$10,000/month per hospital) or revenue share (20-30% of recovered savings).
-
-[^16]: **Pricing Strategy**: Freemium model drives user acquisition while converting power users to paid. Industry benchmarks: 2-5% free-to-paid conversion rate. Pro tier ($9.99/month) targets individuals with chronic conditions or high healthcare utilization. Family tier ($19.99/month) serves 3.14 average household size. Price anchoring: display annual pricing ($99/year for Pro) for 17% discount. Consider: 7-day free trial for Pro tier to demonstrate value.
-
-[^17]: **Multi-Document Reconciliation**: Cross-referencing EOB (Explanation of Benefits) with provider bill detects insurance processing errors. Common issues: incorrect application of deductible, wrong copay calculation, missing covered services. Algorithm: fuzzy matching on CPT codes, dates, and amounts (Levenshtein distance); flag discrepancies >$50 or >10%. User workflow: side-by-side comparison view, highlight differences, suggest appeal language.
-
-[^18]: **Academic Publication**: Peer-reviewed publication establishes clinical credibility and drives adoption by healthcare providers. Target journals: JAMA Network Open (impact factor: 13.8), Health Affairs (5.4), Journal of Medical Internet Research (5.8). Manuscript structure: randomized controlled trial results, cost-benefit analysis, discussion of AI in healthcare billing. Timeline: 3-6 months for initial submission, 6-12 months from submission to publication including revisions.
-
-[^19]: **Open Source Contribution**: Release fine-tuned MedGemma checkpoint under Apache 2.0 license on Hugging Face. Include: model weights (GGUF quantized versions), training code (PyTorch/Transformers), evaluation scripts, annotated dataset (50K bills, PHI removed via regex + manual review). Community benefits: accelerates healthcare AI research, establishes medBillDozer as thought leader, drives GitHub stars and developer engagement. Anonymization process: remove names (NLTK NER), addresses (regex), MRNs (pattern matching), dates (shift by random offset).
