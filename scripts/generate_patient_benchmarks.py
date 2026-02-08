@@ -21,7 +21,7 @@ import json
 import sys
 import time
 import re
-import subprocess
+import subprocess  # nosec B404 - required for git command execution in CI/CD
 from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from pathlib import Path
@@ -311,7 +311,6 @@ class PatientBenchmarkRunner:
             # Combine documents with patient context for cross-document analysis
             patient_context = f"""
 PATIENT PROFILE:
-Name: {profile.name}
 ID: {profile.patient_id}
 Age: {profile.age} years
 Sex: {profile.sex}
@@ -988,7 +987,7 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
         """Process a single patient profile (extracted from original loop)."""
         profile, expected_issues, document_names = self.load_patient_profile(profile_file)
 
-        print(f"[{index}/{total}] {profile.name} ({profile.sex}, {profile.age}y)...", end=" ", flush=True)
+        print(f"[{index}/{total}] Patient {profile.patient_id} ({profile.sex}, {profile.age}y)...", end=" ", flush=True)
 
         detected_issues, latency_ms, error = self.analyze_patient_documents(profile, document_names)
 
