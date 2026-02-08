@@ -687,7 +687,18 @@ with tab4:
                 # Load historical data for this model
                 @st.cache_data(ttl=300)
                 def load_model_history(model, days):
-                    return data_access.get_timeseries_data(model, days_back=days)
+                    start_date = datetime.now() - timedelta(days=days)
+                    df = data_access.get_transactions(
+                        model_version=model,
+                        start_date=start_date,
+                        environment=env_filter
+                    )
+                    # Return only necessary columns
+                    if not df.empty and 'f1' in df.columns:
+                        df = df[['created_at', 'f1']].copy()
+                        df.rename(columns={'f1': 'f1_score'}, inplace=True)
+                        df = df.sort_values('created_at')
+                    return df
                 
                 history_df = load_model_history(model_version, days_back)
                 
@@ -751,7 +762,7 @@ with tab4:
                 st.markdown("**Performance Trend:**")
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(
-                    x=history_df['date'],
+                    x=history_df['created_at'],
                     y=history_df['f1_score'],
                     mode='lines+markers',
                     name='F1 Score',
