@@ -1,0 +1,52 @@
+MEDICAL BILL - INVOICE #2026-0206-061
+
+Patient: Thomas Baker
+DOB: 12/11/1983
+Date of Service: February 6, 2026
+Provider: Dr. Amanda White, MD - Internal Medicine
+
+DIAGNOSIS:
+- N30.00: Acute cystitis without hematuria
+- E10.9: Type 1 diabetes mellitus without complications
+
+CURRENT MEDICATIONS:
+- Insulin glargine (Lantus) 24 units subcutaneous QHS (basal insulin)
+- Insulin lispro (Humalog) subcutaneous with meals per sliding scale (bolus insulin)
+
+ALLERGIES:
+- Trimethoprim-sulfamethoxazole (TMP-SMX/Bactrim/Septra):
+  * SEVERE REACTION: Stevens-Johnson syndrome (SJS) - 2019
+  * DOCUMENTED: Hospital admission, ICU care, dermatology consultation
+  * ABSOLUTE CONTRAINDICATION - DO NOT PRESCRIBE SULFA DRUGS
+
+PROCEDURES & SERVICES:
+1. CPT 99214 - Office visit, established patient, moderate complexity
+   Charge: $180.00
+
+2. CPT 81001 - Urinalysis, automated
+   Result: WBC >100/hpf, positive nitrites, positive leukocyte esterase
+   Charge: $15.00
+
+3. CPT 87088 - Urine culture with colony count
+   Pending (sent to lab)
+   Charge: $45.00
+
+CLINICAL NOTES:
+42-year-old male with Type 1 DM presents with dysuria, frequency, urgency x 2 days.
+No fever, flank pain, or hematuria. UA consistent with acute bacterial cystitis.
+History of recurrent UTIs (3 episodes in past year). Will treat empirically
+pending culture results.
+
+ASSESSMENT & PLAN:
+Uncomplicated acute cystitis. Will prescribe first-line antibiotic therapy.
+
+NEW PRESCRIPTIONS:
+- Continue Insulin glargine 24 units subcutaneous QHS
+- Continue Insulin lispro with meals per sliding scale
+- Sulfamethoxazole-trimethoprim DS (800-160mg) PO BID x 7 days
+
+Follow-up if no improvement in 48 hours or if culture shows resistant organism.
+
+TOTAL CHARGES: $240.00
+
+Payment due within 30 days.

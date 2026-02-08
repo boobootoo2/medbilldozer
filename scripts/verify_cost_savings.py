@@ -105,7 +105,7 @@ def main():
     if local_ok and supabase_ok:
         print("✅ Everything is set up correctly!")
         print("\n📊 Restart your dashboard to see cost savings:")
-        print("   python3 -m streamlit run pages/benchmark_monitoring.py --server.port 8502")
+        print("   python3 -m streamlit run pages/production_stability.py --server.port 8502")
     elif local_ok and not supabase_ok:
         print("⚠️  Local files have cost savings, but database needs migration")
         print("\n📋 Next steps:")

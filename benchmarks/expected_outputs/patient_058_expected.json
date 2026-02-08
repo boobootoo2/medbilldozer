@@ -1,0 +1,11 @@
+{
+    "patient_id": "patient_058",
+    "detected_issues": [{
+        "issue_type": "dosing_error",
+        "severity": "critical",
+        "description": "Inappropriate dabigatran dosing in elderly patient with impaired renal function - excessive bleeding risk",
+        "fields_involved": ["prescriptions", "age", "conditions", "weight"],
+        "reasoning": "Patient is 87-year-old female weighing 52kg with CKD Stage 3B (eGFR 38 mL/min, CrCl ~38 mL/min) prescribed Dabigatran 150mg BID. Per FDA labeling and guidelines, dabigatran dosing with CrCl 30-50 mL/min should be reduced to 75mg BID (per US labeling) or 110mg BID (per European guidelines), especially in patients >80 years or <60kg. Patient meets ALL high-risk criteria: age >80, weight <60kg, CrCl <50. Standard 150mg BID dose is for CrCl >50 mL/min only. This overdosing dramatically increases bleeding risk (GI bleeding, intracranial hemorrhage) with limited reversal options (idarucizumab not always available). Should prescribe reduced dose or consider warfarin with closer monitoring.",
+        "domain_knowledge_required": true
+    }]
+}

@@ -1,0 +1,39 @@
+{
+  "patient_id": "P047",
+  "name": "Margaret Chen",
+  "demographics": {
+    "age": 68,
+    "sex": "F",
+    "date_of_birth": "1957-08-12"
+  },
+  "medical_history": {
+    "conditions": [
+      "Atrial Fibrillation",
+      "Hypertension",
+      "Type 2 Diabetes"
+    ],
+    "allergies": [],
+    "medications": [
+      "Warfarin 5mg daily",
+      "Metformin 1000mg twice daily",
+      "Amlodipine 10mg daily"
+    ],
+    "surgeries": []
+  },
+  "documents": [
+    {
+      "document_id": "patient_047_doc_1_medical_bill",
+      "document_type": "text",
+      "content": "MEDICAL BILL - URGENT CARE VISIT\n\nPATIENT: Margaret Chen\nDOB: 08/12/1957\nDATE OF SERVICE: 02/05/2026\n\nPROVIDER: QuickCare Urgent Care Center\nDIAGNOSIS: J06.9 - Acute Upper Respiratory Infection\n\nSERVICES PROVIDED:\n---------------------------------------------------------\nCPT 99213 - Office Visit Level 3          $185.00\nPatient Responsibility: $45.00\n\nMEDICATIONS PRESCRIBED:\n- Ciprofloxacin 500mg, twice daily for 7 days\n  (Prescribed for suspected bacterial sinusitis)\n\nPATIENT CURRENT MEDICATIONS (per chart review):\n- Warfarin 5mg daily\n- Metformin 1000mg twice daily\n- Amlodipine 10mg daily\n\nTOTAL AMOUNT DUE: $45.00\n\nNOTE: This is a single-document test case. The drug interaction (Cipro + Warfarin) \nis detectable from this bill alone without cross-document reasoning.\n"
+    }
+  ],
+  "expected_issues": [
+    {
+      "type": "drug_drug_interaction",
+      "severity": "critical",
+      "description": "Ciprofloxacin prescribed to patient on Warfarin - major drug interaction that significantly increases bleeding risk. Requires medical knowledge of antibiotic-anticoagulant interactions.",
+      "requires_domain_knowledge": true,
+      "cpt_code": "99213"
+    }
+  ]
+}

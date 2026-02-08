@@ -1,0 +1,11 @@
+{
+    "patient_id": "patient_053",
+    "detected_issues": [{
+        "issue_type": "drug_drug_interaction",
+        "severity": "critical",
+        "description": "High-dose Statin (Simvastatin 80mg) + Macrolide antibiotic (Clarithromycin) - rhabdomyolysis risk",
+        "fields_involved": ["medications", "prescriptions"],
+        "reasoning": "Patient on Simvastatin 80mg daily prescribed Clarithromycin 500mg BID. Clarithromycin is a strong CYP3A4 inhibitor that dramatically increases simvastatin serum levels. High-dose simvastatin (80mg) with CYP3A4 inhibitor causes rhabdomyolysis - severe muscle breakdown with myoglobinuria, acute kidney injury, potentially fatal outcome. FDA Black Box Warning specifically contraindicates this combination. Should use azithromycin or doxycycline instead.",
+        "domain_knowledge_required": true
+    }]
+}

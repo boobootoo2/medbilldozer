@@ -1,0 +1,29 @@
+{
+    "patient_id": "patient_059",
+    "name": "Michael O'Brien",
+    "demographics": {
+        "age": 61,
+        "sex": "M",
+        "date_of_birth": "1964-10-03"
+    },
+    "medical_history": {
+        "conditions": ["Cirrhosis - Child-Pugh Class B", "Portal hypertension", "Esophageal varices (grade 2)"],
+        "medications": ["Propranolol 20mg BID", "Spironolactone 100mg daily", "Furosemide 40mg daily"],
+        "allergies": ["None"]
+    },
+    "current_visit": {
+        "date": "2026-02-03",
+        "provider": "Dr. Lisa Rodriguez",
+        "diagnosis": "Chronic pain from osteoarthritis",
+        "procedures": ["Office visit", "Liver function tests"],
+        "prescriptions": ["Continue home medications", "Acetaminophen 1000mg QID (NEW)"]
+    },
+    "expected_issues": [{
+        "issue_type": "dosing_error",
+        "severity": "critical",
+        "description": "Excessive acetaminophen dosing in patient with cirrhosis - hepatotoxicity risk",
+        "fields_involved": ["prescriptions", "conditions"],
+        "reasoning": "Patient with Child-Pugh Class B cirrhosis prescribed Acetaminophen 1000mg QID (4,000 mg/day total). Standard maximum dose is 4g/day in healthy adults, but patients with cirrhosis require dose reduction to maximum 2g/day due to impaired hepatic metabolism and increased acetaminophen toxicity risk. Prescribed dose doubles the safe maximum for cirrhotic patients, risking acute-on-chronic liver failure. NSAIDs also contraindicated due to portal hypertension and varices.",
+        "domain_knowledge_required": true
+    }]
+}

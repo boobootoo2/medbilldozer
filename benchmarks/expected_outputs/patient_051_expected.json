@@ -1,0 +1,11 @@
+{
+    "patient_id": "patient_051",
+    "detected_issues": [{
+        "issue_type": "drug_drug_interaction",
+        "severity": "critical",
+        "description": "ACE inhibitor (Lisinopril) + Potassium supplement - hyperkalemia risk",
+        "fields_involved": ["medications", "prescriptions"],
+        "reasoning": "Patient on Lisinopril (ACE inhibitor) with new potassium chloride 20 mEq prescription. ACE inhibitors block aldosterone, causing potassium retention. Adding potassium supplement creates significant hyperkalemia risk, especially with baseline K+ 4.8 mEq/L and Stage 3 CKD. This combination can cause life-threatening cardiac arrhythmias.",
+        "domain_knowledge_required": true
+    }]
+}

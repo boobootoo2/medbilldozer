@@ -1,0 +1,42 @@
+{
+  "patient_id": "P049",
+  "name": "Linda Thompson",
+  "demographics": {
+    "age": 71,
+    "sex": "F",
+    "date_of_birth": "1954-03-15"
+  },
+  "medical_history": {
+    "conditions": [
+      "Type 2 Diabetes",
+      "Chronic Kidney Disease Stage 4 (eGFR 25)",
+      "Hypertension"
+    ],
+    "allergies": [],
+    "medications": [
+      "Insulin Glargine 30 units daily",
+      "Amlodipine 10mg daily"
+    ],
+    "surgeries": [],
+    "recent_labs": {
+      "eGFR": "25 mL/min/1.73m\u00b2 (Stage 4 CKD)",
+      "Creatinine": "2.8 mg/dL"
+    }
+  },
+  "documents": [
+    {
+      "document_id": "patient_049_doc_1_medical_bill",
+      "document_type": "text",
+      "content": "MEDICAL BILL - ENDOCRINOLOGY CLINIC\n\nPATIENT: Linda Thompson\nDOB: 03/15/1954\nDATE OF SERVICE: 02/03/2026\n\nPROVIDER: Metro Diabetes Care Center\nDIAGNOSIS: E11.9 - Type 2 Diabetes Mellitus\n\nSERVICES PROVIDED:\n---------------------------------------------------------\nCPT 99214 - Office Visit Level 4          $245.00\nPatient Responsibility: $60.00\n\nRECENT LAB RESULTS (reviewed during visit):\n- eGFR: 25 mL/min/1.73m\u00b2 (Stage 4 CKD)\n- Creatinine: 2.8 mg/dL (elevated)\n- HbA1c: 8.5% (poorly controlled)\n\nMEDICATIONS PRESCRIBED:\n- Metformin 1000mg, twice daily\n  (New prescription for improved glucose control)\n\nCURRENT MEDICATIONS:\n- Insulin Glargine 30 units daily\n- Amlodipine 10mg daily\n\nTOTAL AMOUNT DUE: $60.00\n\nNOTE: Single-document test. Metformin contraindication with severe renal impairment\nis detectable from bill alone (eGFR 25 noted in document).\n"
+    }
+  ],
+  "expected_issues": [
+    {
+      "type": "drug_disease_contraindication",
+      "severity": "critical",
+      "description": "Metformin prescribed to patient with eGFR <30 - absolute contraindication due to lactic acidosis risk. Requires knowledge of renal dosing guidelines and drug contraindications.",
+      "requires_domain_knowledge": true,
+      "cpt_code": "99214"
+    }
+  ]
+}

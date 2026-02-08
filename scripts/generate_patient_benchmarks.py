@@ -21,10 +21,12 @@ import json
 import sys
 import time
 import re
+import subprocess  # nosec B404 - required for git command execution in CI/CD
 from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Optional, Any
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import argparse
 
 # Add project root to path
@@ -36,6 +38,7 @@ from medbilldozer.providers.gemma3_hosted_provider import Gemma3HostedProvider
 from medbilldozer.providers.openai_analysis_provider import OpenAIAnalysisProvider
 from medbilldozer.providers.gemini_analysis_provider import GeminiAnalysisProvider
 from medbilldozer.providers.llm_interface import LocalHeuristicProvider
+from medbilldozer.providers.medgemma_ensemble_provider import MedGemmaEnsembleProvider
 
 # Import advanced metrics module
 try:
@@ -139,9 +142,10 @@ class PatientBenchmarkRunner:
         'patient_035',  # Hysterectomy + uterine procedure billing
     ]
     
-    def __init__(self, model: str, subset: Optional[str] = None):
+    def __init__(self, model: str, subset: Optional[str] = None, workers: int = 1):
         self.model = model
         self.subset = subset
+        self.workers = workers
         self.benchmarks_dir = PROJECT_ROOT / "benchmarks"
         self.profiles_dir = self.benchmarks_dir / "patient_profiles"
         self.inputs_dir = self.benchmarks_dir / "inputs"
@@ -155,6 +159,8 @@ class PatientBenchmarkRunner:
         """Initialize the analysis provider."""
         if self.model == "medgemma":
             return MedGemmaHostedProvider()
+        if self.model == "medgemma-ensemble":
+            return MedGemmaEnsembleProvider()
         elif self.model == "gemma3":
             return Gemma3HostedProvider()
         elif self.model == "openai":
@@ -170,6 +176,7 @@ class PatientBenchmarkRunner:
         """Get the precise model name for display."""
         model_names = {
             "medgemma": "Google MedGemma-4B-IT",
+            "medgemma-ensemble": "medgemma-ensemble-v1.0",
             "gemma3": "Google Gemma-3-27B-IT",
             "openai": "OpenAI GPT-4",
             "gemini": "Google Gemini 1.5 Pro",
@@ -185,15 +192,19 @@ class PatientBenchmarkRunner:
         # Handle both old format (nested) and new format (flat)
         if 'demographics' in data:
             # Old format with nested structure
+            # Be defensive: medical_history or its keys may be missing in some profiles
+            demographics = data.get('demographics', {}) or {}
+            medical_history = data.get('medical_history', {}) or {}
+
             profile = PatientProfile(
-                patient_id=data['patient_id'],
-                name=data['name'],
-                age=data['demographics']['age'],
-                sex=data['demographics']['sex'],
-                date_of_birth=data['demographics']['date_of_birth'],
-                conditions=data['medical_history']['conditions'],
-                allergies=data['medical_history']['allergies'],
-                surgeries=data['medical_history']['surgeries']
+                patient_id=data.get('patient_id', ''),
+                name=data.get('name', ''),
+                age=demographics.get('age', 0),
+                sex=demographics.get('sex', ''),
+                date_of_birth=demographics.get('date_of_birth', ''),
+                conditions=medical_history.get('conditions', []) or [],
+                allergies=medical_history.get('allergies', []) or [],
+                surgeries=medical_history.get('surgeries', []) or []
             )
             document_names = data.get('documents', [])
         else:
@@ -214,9 +225,32 @@ class PatientBenchmarkRunner:
             # Return document dicts (will be processed later to extract content)
             document_names = data.get('documents', [])
         
-        expected_issues = [
-            ExpectedIssue(**issue) for issue in data.get('expected_issues', [])
-        ]
+        # Normalize expected issue dicts to match ExpectedIssue dataclass fields
+        expected_issues = []
+        for issue in data.get('expected_issues', []):
+            normalized = {
+                'type': issue.get('type') or issue.get('issue_type') or issue.get('issue') or '',
+                'severity': issue.get('severity', 'medium'),
+                'description': issue.get('description') or issue.get('reasoning') or '',
+                'requires_domain_knowledge': (
+                    issue.get('requires_domain_knowledge')
+                    or issue.get('domain_knowledge_required')
+                    or issue.get('requires_domain')
+                    or False
+                ),
+                'cpt_code': issue.get('cpt_code') or issue.get('code') or None,
+            }
+            try:
+                expected_issues.append(ExpectedIssue(**normalized))
+            except TypeError:
+                # Fallback: create with minimal fields if unexpected keys remain
+                expected_issues.append(ExpectedIssue(
+                    type=normalized.get('type', ''),
+                    severity=normalized.get('severity', 'medium'),
+                    description=normalized.get('description', ''),
+                    requires_domain_knowledge=normalized.get('requires_domain_knowledge', False),
+                    cpt_code=normalized.get('cpt_code')
+                ))
         
         return profile, expected_issues, document_names
     
@@ -277,7 +311,6 @@ class PatientBenchmarkRunner:
             # Combine documents with patient context for cross-document analysis
             patient_context = f"""
 PATIENT PROFILE:
-Name: {profile.name}
 ID: {profile.patient_id}
 Age: {profile.age} years
 Sex: {profile.sex}
@@ -949,6 +982,66 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
         return (true_positives, false_positives, false_negatives, domain_knowledge_score,
                 domain_breakdown, domain_recall, generic_recall, cross_document_recall,
                 potential_savings, missed_savings)
+
+    def _process_single_profile(self, profile_file: Path, index: int, total: int) -> PatientBenchmarkResult:
+        """Process a single patient profile (extracted from original loop)."""
+        profile, expected_issues, document_names = self.load_patient_profile(profile_file)
+
+        print(f"[{index}/{total}] Patient xxxxxxx (XX, {profile.age}y)...", end=" ", flush=True)
+
+        detected_issues, latency_ms, error = self.analyze_patient_documents(profile, document_names)
+
+        if error:
+            print(f"❌ {error}")
+            result = PatientBenchmarkResult(
+                patient_id=profile.patient_id,
+                patient_name=profile.name,
+                model_name=self._get_precise_model_name(),
+                documents_analyzed=len(document_names),
+                analysis_latency_ms=latency_ms,
+                expected_issues=expected_issues,
+                detected_issues=[],
+                true_positives=0,
+                false_positives=0,
+                false_negatives=len(expected_issues),
+                domain_knowledge_score=0.0,
+                error_message=error
+            )
+            return result
+
+        # Evaluate detection with enhanced metrics
+        (tp, fp, fn, domain_score, domain_breakdown,
+         domain_recall, generic_recall, cross_document_recall,
+         potential_savings, missed_savings) = self.evaluate_detection(expected_issues, detected_issues)
+
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+
+        result = PatientBenchmarkResult(
+            patient_id=profile.patient_id,
+            patient_name=profile.name,
+            model_name=self._get_precise_model_name(),
+            documents_analyzed=len(document_names),
+            analysis_latency_ms=latency_ms,
+            expected_issues=expected_issues,
+            detected_issues=detected_issues,
+            true_positives=tp,
+            false_positives=fp,
+            false_negatives=fn,
+            domain_knowledge_score=domain_score,
+            domain_breakdown=domain_breakdown,
+            domain_recall=domain_recall,
+            generic_recall=generic_recall,
+            cross_document_recall=cross_document_recall,
+            potential_savings=potential_savings,
+            missed_savings=missed_savings
+        )
+
+        status = "✅" if fn == 0 else "⚠️"
+        print(f"{status} {latency_ms:.0f}ms | Issues: {tp}/{len(expected_issues)} | Domain Recall: {domain_recall*100:.0f}%")
+
+        return result
     
     def run_benchmarks(self) -> PatientBenchmarkMetrics:
         """Run benchmarks on all patient profiles."""
@@ -980,72 +1073,50 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
         total_domain_score = 0
         successful = 0
         
-        for i, profile_file in enumerate(profile_files, 1):
-            profile, expected_issues, document_names = self.load_patient_profile(profile_file)
-            
-            print(f"[{i}/{len(profile_files)}] {profile.name} ({profile.sex}, {profile.age}y)...", end=" ", flush=True)
-            
-            # Analyze all documents for this patient
-            detected_issues, latency_ms, error = self.analyze_patient_documents(
-                profile, document_names
-            )
-            
-            if error:
-                print(f"❌ {error}")
-                result = PatientBenchmarkResult(
-                    patient_id=profile.patient_id,
-                    patient_name=profile.name,
-                    model_name=self._get_precise_model_name(),
-                    documents_analyzed=len(document_names),
-                    analysis_latency_ms=latency_ms,
-                    expected_issues=expected_issues,
-                    detected_issues=[],
-                    true_positives=0,
-                    false_positives=0,
-                    false_negatives=len(expected_issues),
-                    domain_knowledge_score=0.0,
-                    error_message=error
-                )
-            else:
-                # Evaluate detection with enhanced metrics
-                (tp, fp, fn, domain_score, domain_breakdown, 
-                 domain_recall, generic_recall, cross_document_recall,
-                 potential_savings, missed_savings) = self.evaluate_detection(expected_issues, detected_issues)
-                
-                precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-                recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-                f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
-                
-                result = PatientBenchmarkResult(
-                    patient_id=profile.patient_id,
-                    patient_name=profile.name,
-                    model_name=self._get_precise_model_name(),
-                    documents_analyzed=len(document_names),
-                    analysis_latency_ms=latency_ms,
-                    expected_issues=expected_issues,
-                    detected_issues=detected_issues,
-                    true_positives=tp,
-                    false_positives=fp,
-                    false_negatives=fn,
-                    domain_knowledge_score=domain_score,
-                    domain_breakdown=domain_breakdown,
-                    domain_recall=domain_recall,
-                    generic_recall=generic_recall,
-                    cross_document_recall=cross_document_recall,
-                    potential_savings=potential_savings,
-                    missed_savings=missed_savings
-                )
-                
-                total_precision += precision
-                total_recall += recall
-                total_f1 += f1
-                total_domain_score += domain_score
-                successful += 1
-                
-                status = "✅" if fn == 0 else "⚠️"
-                print(f"{status} {latency_ms:.0f}ms | Issues: {tp}/{len(expected_issues)} | Domain Recall: {domain_recall*100:.0f}%")
-            
-            results.append(result)
+        # If workers > 1, run profiles in parallel
+        if self.workers > 1:
+            print(f"⚡ Parallel execution with {self.workers} workers")
+            futures = {}
+            with ThreadPoolExecutor(max_workers=self.workers) as ex:
+                for i, profile_file in enumerate(profile_files, 1):
+                    futures[ex.submit(self._process_single_profile, profile_file, i, len(profile_files))] = profile_file
+
+                for fut in as_completed(futures):
+                    try:
+                        result = fut.result()
+                        results.append(result)
+                        if not result.error_message:
+                            # accumulate metrics
+                            tp = result.true_positives
+                            fp = result.false_positives
+                            fn = result.false_negatives
+                            precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+                            recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+                            f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+                            total_precision += precision
+                            total_recall += recall
+                            total_f1 += f1
+                            total_domain_score += result.domain_knowledge_score
+                            successful += 1
+                    except Exception as e:
+                        profile_file = futures.get(fut)
+                        print(f"\n❌ Error processing {profile_file}: {e}")
+        else:
+            for i, profile_file in enumerate(profile_files, 1):
+                result = self._process_single_profile(profile_file, i, len(profile_files))
+                results.append(result)
+                if not result.error_message:
+                    tp = result.true_positives
+                    fp = result.false_positives
+                    fn = result.false_negatives
+                    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+                    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+                    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+                    total_precision += precision
+                    total_recall += recall
+                    total_f1 += f1
+                    total_domain_score += result.domain_knowledge_score
+                    successful += 1
         
         # Calculate aggregated metrics
         avg_precision = total_precision / successful if successful > 0 else 0.0
@@ -1311,7 +1382,7 @@ def main():
         '--model',
         type=str,
         default='all',
-        choices=['medgemma', 'gemma3', 'openai', 'gemini', 'baseline', 'all'],
+        choices=['medgemma', 'medgemma-ensemble', 'openai', 'all'],
         help='Which model to benchmark (default: all)'
     )
     parser.add_argument(
@@ -1347,12 +1418,18 @@ def main():
         choices=['high_signal', None],
         help='Run only high-signal subset for rapid recall optimization (default: run all profiles)'
     )
+    parser.add_argument(
+        '--workers',
+        type=int,
+        default=1,
+        help='Number of parallel workers to run (default: 1)'
+    )
     
     args = parser.parse_args()
     
     # Determine which models to run
     if args.model == 'all':
-        models_to_run = ['medgemma', 'openai', 'gemini', 'baseline']
+        models_to_run = ['medgemma', 'medgemma-ensemble', 'openai']
     else:
         models_to_run = [args.model]
     
@@ -1367,7 +1444,7 @@ def main():
     
     for model in models_to_run:
         try:
-            runner = PatientBenchmarkRunner(model, subset=args.subset)
+            runner = PatientBenchmarkRunner(model, subset=args.subset, workers=args.workers)
             metrics = runner.run_benchmarks()
             
             if metrics:

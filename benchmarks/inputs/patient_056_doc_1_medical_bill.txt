@@ -1,0 +1,47 @@
+MEDICAL BILL - INVOICE #2026-0128-056
+
+Patient: George Anderson
+DOB: 12/05/1951
+Date of Service: January 28, 2026
+Provider: Dr. Patricia Murphy, MD - Urology
+
+DIAGNOSIS:
+- N32.81: Overactive bladder
+- N40.0: Benign prostatic hyperplasia without lower urinary tract symptoms
+- H40.11: Primary open-angle glaucoma (bilateral, documented by ophthalmology)
+
+CURRENT MEDICATIONS:
+- Latanoprost 0.005% ophthalmic solution, 1 drop each eye QHS (glaucoma management)
+- Tamsulosin 0.4mg PO daily (alpha-blocker for BPH)
+
+ALLERGIES:
+- No known drug allergies
+
+PROCEDURES & SERVICES:
+1. CPT 99214 - Office visit, established patient, moderate complexity
+   Charge: $180.00
+
+2. CPT 81001 - Urinalysis, automated without microscopy
+   Result: No infection, no hematuria
+   Charge: $15.00
+
+CLINICAL NOTES:
+Patient reports worsening urinary urgency and frequency over past 2 months.
+Voiding 8-10 times daily with 3-4 episodes of nocturia. Post-void residual
+measured at 45mL (acceptable). UA negative for infection. Glaucoma stable
+per recent ophthalmology note (IOP 16 mmHg OU on latanoprost).
+
+ASSESSMENT & PLAN:
+Overactive bladder symptoms inadequately controlled with behavioral modifications.
+Will initiate pharmacotherapy with anticholinergic agent.
+
+NEW PRESCRIPTIONS:
+- Continue Latanoprost 0.005% eye drops, 1 drop each eye QHS
+- Continue Tamsulosin 0.4mg PO daily
+- Oxybutynin 5mg PO TID (anticholinergic for overactive bladder)
+
+Follow-up in 6 weeks to assess symptom improvement.
+
+TOTAL CHARGES: $195.00
+
+Payment due within 30 days.

@@ -1,0 +1,1677 @@
+"""
+Benchmark Monitoring Dashboard
+================================
+
+Streamlit page for visualizing benchmark performance over time.
+
+Features:
+- Latest snapshot view
+- Historical trends
+- Model comparison
+- Regression detection
+- Time-range filtering
+
+Author: Senior MLOps Engineer
+Date: 2026-02-03
+"""
+
+import streamlit as st
+import plotly.express as px
+import plotly.graph_objects as go
+import pandas as pd
+from datetime import datetime, timedelta
+import sys
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Add scripts to path
+sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+
+try:
+    from benchmark_data_access import BenchmarkDataAccess, format_metric, calculate_delta
+except ImportError:
+    st.error("Could not import benchmark_data_access. Please ensure the module exists.")
+    st.stop()
+
+# ============================================================================
+# Page Configuration
+# ============================================================================
+
+st.set_page_config(
+    page_title="🚨 Production Stability",
+    page_icon="�",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Custom CSS for metric styling
+st.markdown("""
+<style>
+    /* Increase font size for metric values (model names) */
+    [data-testid="stMetricValue"] {
+        font-size: 16px !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+st.title("🚨 Production Stability")
+st.markdown("Real-time ML model performance tracking and regression detection")
+
+# ============================================================================
+# Initialize Data Access
+# ============================================================================
+
+@st.cache_resource
+def get_data_access():
+    """Initialize data access layer with caching."""
+    try:
+        # Use service role key for dashboard (needs full read access)
+        url = os.getenv('SUPABASE_URL')
+        key = os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_ANON_KEY')
+        return BenchmarkDataAccess(supabase_url=url, supabase_key=key)
+    except Exception as e:
+        st.error(f"Failed to connect to database: {e}")
+        st.info("Please ensure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set in your environment.")
+        st.stop()
+
+data_access = get_data_access()
+
+# ============================================================================
+# Sidebar Filters
+# ============================================================================
+
+st.sidebar.header("⚙️ Filters")
+
+# Environment filter
+environments = data_access.get_available_environments()
+selected_environment = st.sidebar.selectbox(
+    "Environment",
+    options=['All'] + environments,
+    index=0
+)
+env_filter = None if selected_environment == 'All' else selected_environment
+
+# Time range filter
+time_range = st.sidebar.selectbox(
+    "Time Range",
+    options=['Last 7 days', 'Last 30 days', 'Last 90 days', 'All time'],
+    index=1
+)
+
+days_back_map = {
+    'Last 7 days': 7,
+    'Last 30 days': 30,
+    'Last 90 days': 90,
+    'All time': 365 * 10  # 10 years
+}
+days_back = days_back_map[time_range]
+
+# Model filter
+available_models = data_access.get_available_models(env_filter)
+selected_models = st.sidebar.multiselect(
+    "Model Versions",
+    options=available_models,
+    default=available_models[:min(3, len(available_models))] if available_models else []
+)
+
+# Refresh button
+if st.sidebar.button("🔄 Refresh Data", use_container_width=True):
+    st.cache_data.clear()
+    st.cache_resource.clear()
+    st.rerun()
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("**Last Updated:** " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+# ============================================================================
+# Tab Layout
+# ============================================================================
+
+tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "🏥 Clinical Reasoning Evaluation",
+    "📊 System Health Overview",
+    "📈 Reliability Over Time",
+    "⚖️ Model Effectiveness Comparison",
+    "🚨 Performance Stability Monitor",
+    "🕐 Snapshot History"
+])
+
+# ============================================================================
+# TAB 1: System Health Overview
+# ============================================================================
+
+with tab1:
+    st.header("📊 System Health Overview")
+    
+    @st.cache_data(ttl=300)  # Cache for 5 minutes
+    def load_snapshots(environment):
+        return data_access.get_latest_snapshots(environment=environment)
+    
+    snapshots_df = load_snapshots(env_filter)
+    
+    if snapshots_df.empty:
+        st.warning("No benchmark data available.")
+    else:
+        # Metrics row
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            avg_f1 = snapshots_df['f1_score'].mean()
+            st.metric(
+                "Average F1 Score",
+                f"{avg_f1:.4f}",
+                delta=None
+            )
+        
+        with col2:
+            avg_precision = snapshots_df['precision_score'].mean()
+            st.metric(
+                "Average Precision",
+                f"{avg_precision:.4f}",
+                delta=None
+            )
+        
+        with col3:
+            avg_recall = snapshots_df['recall_score'].mean()
+            st.metric(
+                "Average Recall",
+                f"{avg_recall:.4f}",
+                delta=None
+            )
+        
+        with col4:
+            avg_latency = snapshots_df['latency_ms'].mean()
+            st.metric(
+                "Average Latency",
+                f"{avg_latency:.0f}ms",
+                delta=None
+            )
+        
+        st.markdown("---")
+        
+        # Top performers
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("🏆 Top Performers by F1")
+            top_f1 = snapshots_df.nlargest(5, 'f1_score')[
+                ['model_version', 'f1_score', 'precision_score', 'recall_score', 'latency_ms']
+            ]
+            st.dataframe(top_f1, use_container_width=True)
+        
+        with col2:
+            st.subheader("⚡ Fastest by Latency")
+            top_speed = snapshots_df.nsmallest(5, 'latency_ms')[
+                ['model_version', 'latency_ms', 'f1_score', 'cost_per_analysis']
+            ]
+            st.dataframe(top_speed, use_container_width=True)
+        
+        st.markdown("---")
+        
+        # Full snapshot table
+        st.subheader("📋 All Active Configurations")
+        
+        # Format display - select available columns
+        base_cols = [
+            'model_version',
+            'dataset_version',
+            'prompt_version',
+            'environment',
+            'f1_score',
+            'precision_score',
+            'recall_score',
+            'latency_ms',
+            'cost_per_analysis',
+            'created_at'
+        ]
+        
+        # Add triggered_by if available
+        if 'triggered_by' in snapshots_df.columns:
+            base_cols.insert(-1, 'triggered_by')  # Insert before created_at
+        
+        display_df = snapshots_df[base_cols].copy()
+        display_df['created_at'] = display_df['created_at'].dt.strftime('%Y-%m-%d %H:%M')
+        
+        column_config = {
+            "f1_score": st.column_config.NumberColumn("F1", format="%.4f"),
+            "precision_score": st.column_config.NumberColumn("Precision", format="%.4f"),
+            "recall_score": st.column_config.NumberColumn("Recall", format="%.4f"),
+            "latency_ms": st.column_config.NumberColumn("Latency (ms)", format="%.0f"),
+            "cost_per_analysis": st.column_config.NumberColumn("Cost", format="$%.4f"),
+        }
+        
+        if 'triggered_by' in snapshots_df.columns:
+            column_config["triggered_by"] = st.column_config.TextColumn("Triggered By", width="medium")
+        
+        st.dataframe(
+            display_df,
+            use_container_width=True,
+            column_config=column_config
+        )
+
+# ============================================================================
+# TAB 2: Reliability Over Time
+# ============================================================================
+
+with tab2:
+    st.header("📈 Reliability Over Time")
+    
+    if not selected_models:
+        st.info("Please select at least one model from the sidebar.")
+    else:
+        for model_version in selected_models:
+            st.subheader(f"📈 {model_version}")
+            
+            @st.cache_data(ttl=300)
+            def load_timeseries(model, days, environment):
+                return data_access.get_time_series(
+                    model_version=model,
+                    metric='f1',
+                    granularity='day',
+                    days_back=days,
+                    environment=environment
+                )
+            
+            ts_df = load_timeseries(model_version, days_back, env_filter)
+            
+            if ts_df.empty:
+                st.warning(f"No historical data for {model_version}")
+                continue
+            
+            # Create metrics
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # F1 trend chart
+                fig_f1 = go.Figure()
+                
+                fig_f1.add_trace(go.Scatter(
+                    x=ts_df['created_at'],
+                    y=ts_df['mean'],
+                    mode='lines+markers',
+                    name='Mean F1',
+                    line=dict(color='#1f77b4', width=2),
+                    marker=dict(size=6)
+                ))
+                
+                # Add confidence band
+                if 'std' in ts_df.columns:
+                    fig_f1.add_trace(go.Scatter(
+                        x=ts_df['created_at'],
+                        y=ts_df['mean'] + ts_df['std'],
+                        mode='lines',
+                        line=dict(width=0),
+                        showlegend=False,
+                        hoverinfo='skip'
+                    ))
+                    
+                    fig_f1.add_trace(go.Scatter(
+                        x=ts_df['created_at'],
+                        y=ts_df['mean'] - ts_df['std'],
+                        mode='lines',
+                        line=dict(width=0),
+                        fill='tonexty',
+                        fillcolor='rgba(31, 119, 180, 0.2)',
+                        name='±1 Std Dev',
+                        hoverinfo='skip'
+                    ))
+                
+                fig_f1.update_layout(
+                    title="F1 Score Over Time",
+                    xaxis_title="Date",
+                    yaxis_title="F1 Score",
+                    hovermode='x unified',
+                    height=400
+                )
+                
+                st.plotly_chart(fig_f1, use_container_width=True, key=f"f1_chart_{model_version}")
+            
+            with col2:
+                # Run count
+                fig_count = go.Figure()
+                
+                fig_count.add_trace(go.Bar(
+                    x=ts_df['created_at'],
+                    y=ts_df['count'],
+                    name='Run Count',
+                    marker_color='#2ca02c'
+                ))
+                
+                fig_count.update_layout(
+                    title="Daily Run Count",
+                    xaxis_title="Date",
+                    yaxis_title="Number of Runs",
+                    height=400
+                )
+                
+                st.plotly_chart(fig_count, use_container_width=True, key=f"count_chart_{model_version}")
+            
+            # Cost Savings Trends (if data available)
+            @st.cache_data(ttl=300)
+            def load_cost_savings_timeseries(model, days, environment):
+                start_date = datetime.now() - timedelta(days=days)
+                df = data_access.get_transactions(start_date=start_date, environment=environment)
+                if df.empty or 'total_patients' not in df.columns:
+                    return None
+                
+                model_df = df[df['model_version'] == model].copy()
+                if model_df.empty or 'total_potential_savings' not in model_df.columns:
+                    return None
+                
+                return model_df[['created_at', 'total_potential_savings', 'savings_capture_rate', 'avg_savings_per_patient']].sort_values('created_at')
+            
+            savings_ts = load_cost_savings_timeseries(model_version, days_back, env_filter)
+            
+            if savings_ts is not None and not savings_ts.empty:
+                st.subheader("💰 Cost Savings Trends")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    fig = go.Figure()
+                    fig.add_trace(go.Scatter(
+                        x=savings_ts['created_at'],
+                        y=savings_ts['total_potential_savings'],
+                        mode='lines+markers',
+                        name='Potential Savings',
+                        line=dict(color='green', width=2),
+                        marker=dict(size=8)
+                    ))
+                    fig.update_layout(
+                        title="Potential Savings Over Time",
+                        xaxis_title="Date",
+                        yaxis_title="Amount ($)",
+                        height=350
+                    )
+                    st.plotly_chart(fig, use_container_width=True, key=f"savings_trend_{model_version}")
+                
+                with col2:
+                    fig = go.Figure()
+                    fig.add_trace(go.Scatter(
+                        x=savings_ts['created_at'],
+                        y=savings_ts['savings_capture_rate'],
+                        mode='lines+markers',
+                        name='Capture Rate',
+                        line=dict(color='blue', width=2),
+                        marker=dict(size=8)
+                    ))
+                    fig.update_layout(
+                        title="Savings Capture Rate Over Time",
+                        xaxis_title="Date",
+                        yaxis_title="Capture Rate (%)",
+                        height=350
+                    )
+                    st.plotly_chart(fig, use_container_width=True, key=f"capture_trend_{model_version}")
+            
+            # Error Category Performance Trends
+            @st.cache_data(ttl=300)
+            def load_error_category_timeseries(model, days, environment):
+                """Load error category performance over time from snapshots."""
+                # Get snapshots for this model
+                all_snapshots = data_access.get_snapshot_history(
+                    model_version=model,
+                    dataset_version="patient-benchmark-v2",  # Adjust as needed
+                    prompt_version="v2-structured-reasoning",  # Adjust as needed
+                    environment=environment or "local",
+                    limit=30
+                )
+                
+                if all_snapshots.empty or 'domain_breakdown' not in all_snapshots.columns:
+                    return None
+                
+                # Parse domain_breakdown from each snapshot
+                import json
+                category_data = []
+                for _, row in all_snapshots.iterrows():
+                    breakdown = row['domain_breakdown']
+                    if isinstance(breakdown, str):
+                        breakdown = json.loads(breakdown)
+                    
+                    if breakdown and isinstance(breakdown, dict):
+                        for category, metrics in breakdown.items():
+                            category_data.append({
+                                'date': row['created_at'],
+                                'category': category.replace('_', ' ').title(),
+                                'recall': metrics.get('recall', 0) * 100,
+                                'precision': metrics.get('precision', 0) * 100,
+                                'detected': metrics.get('total_detected', 0),
+                                'total': metrics.get('total_cases', 0)
+                            })
+                
+                if not category_data:
+                    return None
+                
+                return pd.DataFrame(category_data)
+            
+            category_ts = load_error_category_timeseries(model_version, days_back, env_filter)
+            
+            if category_ts is not None and not category_ts.empty and len(category_ts['date'].unique()) > 1:
+                st.subheader("🎯 Error Category Detection Trends")
+                
+                # Get all unique categories
+                all_categories = category_ts['category'].unique()
+                
+                # Let user select which categories to show
+                default_categories = [c for c in all_categories if any(x in c.lower() for x in ['gender', 'age', 'surgical', 'diagnosis', 'procedure'])]
+                if not default_categories:
+                    default_categories = list(all_categories)[:5]
+                
+                selected_categories = st.multiselect(
+                    "Select Error Categories to Display",
+                    options=sorted(all_categories),
+                    default=default_categories,
+                    key=f"category_select_{model_version}"
+                )
+                
+                if selected_categories:
+                    filtered_df = category_ts[category_ts['category'].isin(selected_categories)]
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        # Recall trends
+                        fig_recall = px.line(
+                            filtered_df,
+                            x='date',
+                            y='recall',
+                            color='category',
+                            markers=True,
+                            labels={'date': 'Date', 'recall': 'Recall (%)', 'category': 'Error Category'},
+                            title="Recall by Error Category Over Time"
+                        )
+                        fig_recall.update_layout(height=400, hovermode='x unified')
+                        fig_recall.update_yaxis(range=[0, 100])
+                        st.plotly_chart(fig_recall, use_container_width=True, key=f"recall_trend_{model_version}")
+                    
+                    with col2:
+                        # Precision trends
+                        fig_precision = px.line(
+                            filtered_df,
+                            x='date',
+                            y='precision',
+                            color='category',
+                            markers=True,
+                            labels={'date': 'Date', 'precision': 'Precision (%)', 'category': 'Error Category'},
+                            title="Precision by Error Category Over Time"
+                        )
+                        fig_precision.update_layout(height=400, hovermode='x unified')
+                        fig_precision.update_yaxis(range=[0, 100])
+                        st.plotly_chart(fig_precision, use_container_width=True, key=f"precision_trend_{model_version}")
+                    
+                    # Show summary stats for selected categories
+                    st.markdown("**Latest Performance by Category:**")
+                    latest_date = filtered_df['date'].max()
+                    latest_perf = filtered_df[filtered_df['date'] == latest_date].sort_values('recall', ascending=False)
+                    
+                    summary_df = latest_perf[['category', 'recall', 'precision', 'detected', 'total']].copy()
+                    summary_df.columns = ['Category', 'Recall %', 'Precision %', 'Detected', 'Total']
+                    st.dataframe(
+                        summary_df,
+                        use_container_width=True,
+                        hide_index=True,
+                        column_config={
+                            'Recall %': st.column_config.NumberColumn('Recall %', format="%.1f%%"),
+                            'Precision %': st.column_config.NumberColumn('Precision %', format="%.1f%%")
+                        }
+                    )
+            
+            st.markdown("---")
+
+# ============================================================================
+# TAB 3: Model Effectiveness Comparison
+# ============================================================================
+
+with tab3:
+    st.header("⚖️ Model Effectiveness Comparison")
+    
+    if len(selected_models) < 2:
+        st.info("Please select at least 2 models from the sidebar to compare.")
+    else:
+        @st.cache_data(ttl=300)
+        def load_comparison(models, days, environment):
+            return data_access.compare_models(
+                model_versions=models,
+                metric='f1',
+                days_back=days,
+                environment=environment
+            )
+        
+        comparison_df = load_comparison(selected_models, days_back, env_filter)
+        
+        if comparison_df.empty:
+            st.warning("No comparison data available.")
+        else:
+            # Line chart comparison
+            fig_comparison = go.Figure()
+            
+            for model in selected_models:
+                model_data = comparison_df[comparison_df['model_version'] == model]
+                
+                fig_comparison.add_trace(go.Scatter(
+                    x=model_data['created_at'],
+                    y=model_data['f1'],
+                    mode='lines+markers',
+                    name=model,
+                    line=dict(width=2),
+                    marker=dict(size=6)
+                ))
+            
+            fig_comparison.update_layout(
+                title="F1 Score Comparison",
+                xaxis_title="Date",
+                yaxis_title="F1 Score",
+                hovermode='x unified',
+                height=500,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1
+                )
+            )
+            
+            st.plotly_chart(fig_comparison, use_container_width=True, key="comparison_chart")
+            
+            # Summary statistics
+            st.subheader("📊 Comparison Statistics")
+            
+            summary_data = []
+            for model in selected_models:
+                model_data = comparison_df[comparison_df['model_version'] == model]['f1']
+                summary_data.append({
+                    'Model': model,
+                    'Mean F1': model_data.mean(),
+                    'Std Dev': model_data.std(),
+                    'Min': model_data.min(),
+                    'Max': model_data.max(),
+                    'Samples': len(model_data)
+                })
+            
+            import pandas as pd
+            summary_df = pd.DataFrame(summary_data)
+            st.dataframe(
+                summary_df,
+                use_container_width=True,
+                column_config={
+                    "Mean F1": st.column_config.NumberColumn(format="%.4f"),
+                    "Std Dev": st.column_config.NumberColumn(format="%.4f"),
+                    "Min": st.column_config.NumberColumn(format="%.4f"),
+                    "Max": st.column_config.NumberColumn(format="%.4f"),
+                }
+            )
+
+# ============================================================================
+# TAB 4: Performance Stability Monitor
+# ============================================================================
+
+with tab4:
+    st.header("🚨 Performance Stability Monitor")
+    
+    st.markdown("""
+    This tab checks for performance regressions by comparing current performance
+    against established baselines. A regression is flagged when F1 score drops
+    by more than the specified threshold.
+    """)
+    
+    threshold = st.slider(
+        "Regression Threshold (%)",
+        min_value=1.0,
+        max_value=10.0,
+        value=5.0,
+        step=0.5,
+        help="Alert when F1 drops by more than this percentage"
+    )
+    
+    st.markdown("---")
+    
+    if not selected_models:
+        st.info("Please select at least one model from the sidebar.")
+    else:
+        for model_version in selected_models:
+            with st.expander(f"🔍 {model_version}", expanded=True):
+                @st.cache_data(ttl=300)
+                def check_regression(model, thresh):
+                    return data_access.detect_regressions(
+                        model_version=model,
+                        threshold=thresh / 100  # Convert percentage to decimal
+                    )
+                
+                regression_result = check_regression(model_version, threshold)
+                
+                if not regression_result:
+                    st.warning("No baseline configured for this model.")
+                    continue
+                
+                current_f1 = regression_result.get('current_f1', 0)
+                baseline_f1 = regression_result.get('baseline_f1', 0)
+                f1_drop = regression_result.get('f1_drop', 0)
+                is_regression = regression_result.get('is_regression', False)
+                
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric(
+                        "Current F1",
+                        f"{current_f1:.4f}",
+                        delta=f"{-f1_drop:.4f}" if f1_drop > 0 else f"+{abs(f1_drop):.4f}",
+                        delta_color="inverse"
+                    )
+                
+                with col2:
+                    st.metric(
+                        "Baseline F1",
+                        f"{baseline_f1:.4f}"
+                    )
+                
+                with col3:
+                    pct_drop = (f1_drop / baseline_f1 * 100) if baseline_f1 > 0 else 0
+                    st.metric(
+                        "Drop %",
+                        f"{pct_drop:.2f}%"
+                    )
+                
+                if is_regression:
+                    st.error(f"🚨 **REGRESSION DETECTED** - F1 dropped by {pct_drop:.2f}%")
+                    st.markdown("**Recommended Actions:**")
+                    st.markdown("- Review recent code changes")
+                    st.markdown("- Check for data drift")
+                    st.markdown("- Verify prompt modifications")
+                    st.markdown("- Inspect model configuration")
+                else:
+                    st.success("✅ No regression detected - performance within expected range")
+                
+                # Cost Savings Regression Check
+                st.markdown("---")
+                st.subheader("💰 Cost Savings Regression")
+                
+                @st.cache_data(ttl=300)
+                def get_cost_savings_history(model):
+                    start_date = datetime.now() - timedelta(days=days_back)
+                    df = data_access.get_transactions(start_date=start_date, environment=env_filter)
+                    if df.empty or 'total_patients' not in df.columns:
+                        return None
+                    
+                    model_df = df[df['model_version'] == model].copy()
+                    if model_df.empty or 'total_potential_savings' not in model_df.columns:
+                        return None
+                    
+                    return model_df.sort_values('created_at')
+                
+                savings_history = get_cost_savings_history(model_version)
+                
+                if savings_history is not None and len(savings_history) >= 2:
+                    latest = savings_history.iloc[-1]
+                    previous = savings_history.iloc[-2]
+                    
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        current_savings = latest.get('total_potential_savings', 0)
+                        prev_savings = previous.get('total_potential_savings', 0)
+                        delta_savings = current_savings - prev_savings
+                        st.metric(
+                            "Current Potential Savings",
+                            f"${current_savings:,.2f}",
+                            delta=f"${delta_savings:,.2f}"
+                        )
+                    
+                    with col2:
+                        current_capture = latest.get('savings_capture_rate', 0)
+                        prev_capture = previous.get('savings_capture_rate', 0)
+                        delta_capture = current_capture - prev_capture
+                        st.metric(
+                            "Capture Rate",
+                            f"{current_capture:.1f}%",
+                            delta=f"{delta_capture:+.1f}%"
+                        )
+                    
+                    with col3:
+                        current_avg = latest.get('avg_savings_per_patient', 0)
+                        prev_avg = previous.get('avg_savings_per_patient', 0)
+                        delta_avg = current_avg - prev_avg
+                        st.metric(
+                            "Avg Savings/Patient",
+                            f"${current_avg:,.2f}",
+                            delta=f"${delta_avg:,.2f}"
+                        )
+                    
+                    with col4:
+                        current_missed = latest.get('total_missed_savings', 0)
+                        prev_missed = previous.get('total_missed_savings', 0)
+                        delta_missed = current_missed - prev_missed
+                        st.metric(
+                            "Missed Savings",
+                            f"${current_missed:,.2f}",
+                            delta=f"${delta_missed:,.2f}",
+                            delta_color="inverse"
+                        )
+                    
+                    # Alert on savings regression
+                    if delta_capture < -5.0:  # More than 5% drop in capture rate
+                        st.warning(f"⚠️ Savings capture rate dropped by {abs(delta_capture):.1f}% - ROI declining")
+                    elif delta_savings < 0 and abs(delta_savings) > 1000:
+                        st.warning(f"⚠️ Potential savings decreased by ${abs(delta_savings):,.2f}")
+                    else:
+                        st.success("✅ Cost savings metrics stable or improving")
+                else:
+                    st.info("Run more benchmarks to track cost savings regressions over time")
+                
+                # Error Category Performance Regression
+                st.markdown("---")
+                st.subheader("🎯 Error Category Performance Regression")
+                
+                @st.cache_data(ttl=300)
+                def get_category_performance_history(model):
+                    # Get latest snapshots for this model
+                    df = data_access.get_latest_snapshots(environment=env_filter)
+                    if df.empty:
+                        return None
+                    
+                    model_df = df[df['model_version'] == model].copy()
+                    if model_df.empty or 'domain_breakdown' not in model_df.columns:
+                        return None
+                    
+                    # Parse domain_breakdown JSONB
+                    import json
+                    if isinstance(model_df['domain_breakdown'].iloc[0], str):
+                        breakdown = json.loads(model_df['domain_breakdown'].iloc[0])
+                    else:
+                        breakdown = model_df['domain_breakdown'].iloc[0]
+                    
+                    if not breakdown:
+                        return None
+                    
+                    return breakdown
+                
+                category_perf = get_category_performance_history(model_version)
+                
+                if category_perf:
+                    st.markdown("**Recall by Error Category:**")
+                    
+                    # Create a dataframe for display
+                    category_data = []
+                    for category, metrics in category_perf.items():
+                        recall = metrics.get('recall', 0) * 100
+                        detected = metrics.get('total_detected', 0)
+                        total = metrics.get('total_cases', 0)
+                        category_data.append({
+                            'Category': category.replace('_', ' ').title(),
+                            'Recall %': recall,
+                            'Detected': detected,
+                            'Total': total,
+                            'Status': '✅' if recall >= 80 else ('⚠️' if recall >= 50 else '❌')
+                        })
+                    
+                    category_df = pd.DataFrame(category_data).sort_values('Recall %', ascending=False)
+                    
+                    # Display table
+                    st.dataframe(
+                        category_df,
+                        use_container_width=True,
+                        hide_index=True,
+                        column_config={
+                            'Recall %': st.column_config.NumberColumn('Recall %', format="%.1f%%"),
+                            'Detected': st.column_config.NumberColumn('Detected', format="%d"),
+                            'Total': st.column_config.NumberColumn('Total Cases', format="%d")
+                        }
+                    )
+                    
+                    # Alert on low-performing categories
+                    low_performing = category_df[category_df['Recall %'] < 30]
+                    if not low_performing.empty:
+                        st.error(f"🚨 **{len(low_performing)} categories below 30% recall:**")
+                        for _, row in low_performing.iterrows():
+                            st.markdown(f"- **{row['Category']}**: {row['Recall %']:.1f}% ({row['Detected']}/{row['Total']})")
+                    
+                    # Visual chart
+                    fig = px.bar(
+                        category_df,
+                        x='Recall %',
+                        y='Category',
+                        orientation='h',
+                        text='Recall %',
+                        title="Recall Performance by Error Category",
+                        color='Recall %',
+                        color_continuous_scale=['red', 'yellow', 'green'],
+                        range_color=[0, 100]
+                    )
+                    fig.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+                    fig.update_layout(height=400, xaxis_title="Recall (%)", yaxis_title="")
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("No error category breakdown available. Re-run model benchmarks to track category performance.")
+
+# ============================================================================
+# ============================================================================
+# TAB 5: Snapshot History & Version Management
+# ============================================================================
+
+with tab5:
+    st.header("Snapshot History & Version Control")
+    
+    st.markdown("""
+    View and manage snapshot versions for each model configuration. 
+    You can checkout (rollback to) previous snapshots to compare or restore older versions.
+    """)
+    
+    # Model selection for history
+    available_models_history = data_access.get_available_models()
+    
+    if not available_models_history:
+        st.info("No models found. Run benchmarks to create snapshots.")
+    else:
+        selected_model_history = st.selectbox(
+            "Select Model",
+            options=available_models_history,
+            key="history_model"
+        )
+        
+        # Get snapshot history for selected model
+        history_df = data_access.get_snapshot_history(
+            model_version=selected_model_history,
+            dataset_version="patient-profiles-v1",
+            prompt_version="cross-document-v1",
+            environment=env_filter or "local",  # Default to local if no filter
+            limit=50
+        )
+        
+        if history_df.empty:
+            st.warning(f"No snapshot history found for {selected_model_history}")
+        else:
+            st.subheader(f"📜 Version History: {selected_model_history}")
+            
+            # Display metrics
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Total Versions", len(history_df))
+            with col2:
+                current_version = history_df[history_df['is_current']]['snapshot_version'].iloc[0] if any(history_df['is_current']) else "N/A"
+                st.metric("Current Version", f"v{current_version}")
+            with col3:
+                baseline_count = sum(history_df['is_baseline'])
+                st.metric("Baselines", baseline_count)
+            with col4:
+                latest_f1 = history_df.iloc[0]['f1_score'] if not history_df.empty else 0
+                st.metric("Latest F1", f"{latest_f1:.4f}")
+            
+            st.markdown("---")
+            
+            # History table with actions
+            st.subheader("📊 All Snapshot Versions")
+            
+            # Format the display
+            display_history = history_df.copy()
+            display_history['created_at_display'] = pd.to_datetime(display_history['created_at']).dt.strftime('%Y-%m-%d %H:%M')
+            display_history['version'] = 'v' + display_history['snapshot_version'].astype(str)
+            display_history['status'] = display_history.apply(
+                lambda row: '✅ CURRENT' if row['is_current'] else ('⭐ BASELINE' if row['is_baseline'] else ''),
+                axis=1
+            )
+            
+            # Select columns to display
+            display_cols = [
+                'version', 'status', 'f1_score', 'precision_score', 'recall_score',
+                'latency_ms', 'created_at_display'
+            ]
+            
+            # Add triggered_by if available
+            if 'triggered_by' in display_history.columns:
+                display_cols.append('triggered_by')
+            
+            # Add commit_sha if available
+            if 'commit_sha' in display_history.columns:
+                display_cols.append('commit_sha')
+            
+            column_config = {
+                "version": "Version",
+                "status": "Status",
+                "f1_score": st.column_config.NumberColumn("F1", format="%.4f"),
+                "precision_score": st.column_config.NumberColumn("Precision", format="%.4f"),
+                "recall_score": st.column_config.NumberColumn("Recall", format="%.4f"),
+                "latency_ms": st.column_config.NumberColumn("Latency (ms)", format="%.0f"),
+                "created_at_display": "Created At",
+            }
+            
+            if 'triggered_by' in display_history.columns:
+                column_config["triggered_by"] = st.column_config.TextColumn("Triggered By", width="medium")
+            
+            if 'commit_sha' in display_history.columns:
+                column_config["commit_sha"] = st.column_config.TextColumn("Commit", width="small")
+            
+            st.dataframe(
+                display_history[display_cols],
+                use_container_width=True,
+                column_config=column_config
+            )
+            
+            st.markdown("---")
+            
+            # Checkout/Rollback section
+            st.subheader("🔄 Checkout Snapshot Version")
+            
+            col1, col2 = st.columns([2, 1])
+            
+            with col1:
+                available_versions = history_df['snapshot_version'].tolist()
+                selected_version = st.selectbox(
+                    "Select version to checkout",
+                    options=available_versions,
+                    format_func=lambda x: f"v{x}" + (" (Current)" if history_df[history_df['snapshot_version'] == x]['is_current'].iloc[0] else "")
+                )
+                
+                if selected_version:
+                    version_info = history_df[history_df['snapshot_version'] == selected_version].iloc[0]
+                    st.info(f"""
+                    **Version {selected_version} Details:**
+                    - F1 Score: {version_info['f1_score']:.4f}
+                    - Precision: {version_info['precision_score']:.4f}
+                    - Recall: {version_info['recall_score']:.4f}
+                    - Created: {version_info['created_at']}
+                    - Commit: {version_info['commit_sha'][:8]}
+                    """)
+            
+            with col2:
+                st.markdown("### Actions")
+                if st.button("🔄 Checkout This Version", type="primary", key="checkout_btn"):
+                    try:
+                        success = data_access.checkout_snapshot(
+                            model_version=selected_model_history,
+                            dataset_version="benchmark-set-v1",
+                            prompt_version="v1",
+                            environment=env_filter or "github-actions",
+                            snapshot_version=selected_version
+                        )
+                        if success:
+                            st.success(f"✅ Successfully checked out version {selected_version}!")
+                            st.info("The dashboard will now show this version as current. Refresh the page to see changes.")
+                            st.rerun()
+                        else:
+                            st.error("Failed to checkout version.")
+                    except Exception as e:
+                        st.error(f"Error checking out version: {str(e)}")
+                
+                if st.button("⭐ Set as Baseline", key="baseline_btn"):
+                    st.info("Baseline setting feature coming soon!")
+            
+            # Version comparison
+            st.markdown("---")
+            st.subheader("📊 Compare Versions")
+            
+            col1, col2, col3 = st.columns([1, 1, 1])
+            
+            with col1:
+                version_a = st.selectbox("Version A", options=available_versions, key="ver_a")
+            
+            with col2:
+                version_b = st.selectbox("Version B", options=available_versions, index=min(1, len(available_versions)-1) if len(available_versions) > 1 else 0, key="ver_b")
+            
+            with col3:
+                st.markdown("###")
+                if st.button("Compare", type="secondary"):
+                    if version_a == version_b:
+                        st.warning("Please select different versions to compare.")
+                    else:
+                        comparison = data_access.compare_snapshot_versions(
+                            model_version=selected_model_history,
+                            dataset_version="benchmark-set-v1",
+                            prompt_version="v1",
+                            environment=env_filter or "github-actions",
+                            version_a=version_a,
+                            version_b=version_b
+                        )
+                        
+                        if not comparison.empty:
+                            st.markdown(f"### Comparison: v{version_a} vs v{version_b}")
+                            
+                            # Format comparison table
+                            comparison_display = comparison.copy()
+                            comparison_display['delta'] = comparison_display.apply(
+                                lambda row: f"{row['delta']:+.4f}" if row['metric'] != 'latency_ms' else f"{row['delta']:+.2f}",
+                                axis=1
+                            )
+                            comparison_display['percent_change'] = comparison_display['percent_change'].apply(
+                                lambda x: f"{x:+.2f}%" if pd.notnull(x) else "N/A"
+                            )
+                            
+                            st.dataframe(
+                                comparison_display,
+                                use_container_width=True,
+                                column_config={
+                                    "metric": "Metric",
+                                    "version_a_value": st.column_config.NumberColumn(f"v{version_a}", format="%.4f"),
+                                    "version_b_value": st.column_config.NumberColumn(f"v{version_b}", format="%.4f"),
+                                    "delta": "Δ",
+                                    "percent_change": "% Change"
+                                }
+                            )
+                            
+                            # Highlight improvements
+                            improvements = comparison_display[
+                                (comparison_display['metric'].isin(['f1_score', 'precision', 'recall'])) &
+                                (comparison_display['delta'].str.contains(r'\+'))
+                            ]
+                            
+                            if not improvements.empty:
+                                st.success(f"✅ {len(improvements)} metric(s) improved in v{version_b}")
+                        else:
+                            st.warning("No comparison data available.")
+
+# Footer
+# ============================================================================
+
+# ============================================================================
+# TAB 6: Clinical Reasoning Evaluation (Cross-Document Domain Knowledge)
+# ============================================================================
+
+with tab6:
+    st.header("🏥 Clinical Reasoning Evaluation (Cross-Document Analysis)")
+    st.markdown("""
+    **Domain Knowledge Detection:** Testing models' ability to identify gender/age-inappropriate 
+    medical procedures that require healthcare domain knowledge (e.g., male patient billed for 
+    pregnancy ultrasound, 8-year-old billed for colonoscopy).
+    """)
+    
+    @st.cache_data(ttl=300)
+    def load_patient_benchmarks():
+        """Load patient benchmark results from snapshots table."""
+        # Get latest snapshots (current versions only)
+        df = data_access.get_latest_snapshots(environment=env_filter)
+        
+        if df.empty:
+            return pd.DataFrame()
+        
+        # Filter to only model benchmarks (have domain_knowledge_detection_rate in metrics)
+        # Parse metrics JSONB if needed
+        if 'metrics' in df.columns:
+            import json
+            if df['metrics'].dtype == 'object':
+                # Expand metrics JSONB into columns
+                metrics_expanded = df['metrics'].apply(lambda x: x if isinstance(x, dict) else json.loads(x) if isinstance(x, str) else {})
+                metrics_df = pd.json_normalize(metrics_expanded)
+                # Drop metrics column and add expanded columns
+                df = df.drop('metrics', axis=1)
+                # Only add columns that don't already exist
+                for col in metrics_df.columns:
+                    if col not in df.columns:
+                        df[col] = metrics_df[col]
+        
+        # Check if this is model benchmark data (has domain metrics)
+        if 'domain_knowledge_detection_rate' not in df.columns and 'domain_recall' not in df.columns:
+            return pd.DataFrame()
+        
+        # Filter out old short-name models (keep only full model names)
+        short_names = ['medgemma', 'openai', 'gemini', 'baseline', 'medgemma-v1.0', 'openai-v1.0', 'baseline-v1.0', 'gemini-v1.0']
+        df = df[~df['model_version'].isin(short_names)].copy()
+        
+        if df.empty:
+            return pd.DataFrame()
+        
+        # Helper function to safely get column value
+        def safe_get_col(col_name, default_col_name=None, default_value=0):
+            if col_name in df.columns:
+                col = df[col_name]
+                # Handle None/NaN values
+                return col.fillna(default_value)
+            elif default_col_name and default_col_name in df.columns:
+                col = df[default_col_name]
+                return col.fillna(default_value)
+            else:
+                return pd.Series([default_value] * len(df), index=df.index)
+        
+        # Handle domain detection rate
+        if 'domain_knowledge_detection_rate' in df.columns:
+            domain_detection = df['domain_knowledge_detection_rate'].fillna(0).apply(lambda x: x if x > 1 else x * 100)
+        else:
+            domain_detection = pd.Series([0] * len(df), index=df.index)
+        
+        # Create clean dataset with required columns
+        result_df = pd.DataFrame({
+            'model_version': df['model_version'].values,
+            'created_at': df['created_at'].values,
+            'domain_detection': domain_detection.values,
+            'f1_score': safe_get_col('f1_score', 'f1', 0).values,
+            'precision': safe_get_col('precision_score', 'precision', 0).values,
+            'recall': safe_get_col('recall_score', 'recall', 0).values,
+            'latency_ms': safe_get_col('latency_ms', default_value=0).values,
+            'total_patients': safe_get_col('total_documents', 'total_patients', 0).values,
+            'successful': safe_get_col('success_count', 'successful_analyses', 0).values,
+            'total_potential_savings': safe_get_col('total_potential_savings', default_value=0).values,
+            'total_missed_savings': safe_get_col('total_missed_savings', default_value=0).values,
+            'avg_savings_per_patient': safe_get_col('avg_savings_per_patient', default_value=0).values,
+            'savings_capture_rate': safe_get_col('savings_capture_rate', default_value=0).values
+        })
+        
+        return result_df
+    
+    patient_df = load_patient_benchmarks()
+    
+    if patient_df.empty:
+        st.warning("No model benchmark data available. Run benchmarks with: `python3 scripts/generate_patient_benchmarks.py --model all --push-to-supabase`")
+    else:
+        # Get latest result per model
+        latest_results = patient_df.sort_values('created_at').groupby('model_version').last().reset_index()
+        
+        # Calculate Healthcare Effectiveness Score (HES) for each model
+        def calculate_healthcare_effectiveness_score(df, history_df):
+            """
+            Calculate composite Healthcare Effectiveness Score (HES).
+            
+            PRIORITIZES RECALL (60% weight): In medical billing compliance, missing errors
+            (false negatives) is more expensive than false positives. The cost of an undetected
+            fraudulent/erroneous medical bill far exceeds the cost of flagging legitimate bills
+            for review.
+            
+            Formula:
+            - Recall: 60% (PRIMARY - error detection rate)
+            - F1: 15% (balanced performance)
+            - ROI: 10% (efficiency - value per latency)
+            - Savings Capture: 10% (financial impact)
+            - Stability: 5% (performance consistency)
+            - Penalties for failures and insufficient data
+            """
+            import numpy as np
+            
+            scores = []
+            for idx, row in df.iterrows():
+                model = row['model_version']
+                
+                # Base metrics
+                avg_f1 = row.get('f1_score', 0) or 0
+                avg_recall = row.get('recall', 0) or 0
+                
+                # Calculate ROI (value per latency unit)
+                latency = max(row.get('latency_ms', 1000), 1)  # Avoid div by zero
+                savings = row.get('total_potential_savings', 0) or 0
+                roi = savings / latency if latency > 0 else 0
+                
+                # Calculate failure rate
+                total = row.get('total_patients', 1) or 1
+                successful = row.get('successful', 0) or 0
+                failure_rate = (total - successful) / total if total > 0 else 1.0
+                
+                # Savings capture rate
+                savings_capture = row.get('savings_capture_rate', 0) or 0
+                savings_capture = savings_capture / 100 if savings_capture > 1 else savings_capture
+                
+                # Stability score from historical data
+                model_history = history_df[history_df['model_version'] == model]
+                if len(model_history) >= 2:
+                    f1_values = model_history['f1_score'].dropna()
+                    if len(f1_values) >= 2:
+                        f1_std = f1_values.std()
+                        stability_score = max(0, 1 - f1_std)
+                    else:
+                        stability_score = 0.5
+                else:
+                    stability_score = 0.5
+                
+                scores.append({
+                    'model': model,
+                    'avg_f1': avg_f1,
+                    'avg_recall': avg_recall,
+                    'roi': roi,
+                    'stability_score': stability_score,
+                    'savings_capture': savings_capture,
+                    'failure_rate': failure_rate,
+                    'run_count': len(model_history)
+                })
+            
+            scores_df = pd.DataFrame(scores)
+            
+            # Normalize ROI and savings capture (min-max scaling)
+            if len(scores_df) > 1:
+                roi_min, roi_max = scores_df['roi'].min(), scores_df['roi'].max()
+                if roi_max > roi_min:
+                    scores_df['normalized_roi'] = (scores_df['roi'] - roi_min) / (roi_max - roi_min)
+                else:
+                    scores_df['normalized_roi'] = 0.5
+                
+                sc_min, sc_max = scores_df['savings_capture'].min(), scores_df['savings_capture'].max()
+                if sc_max > sc_min:
+                    scores_df['savings_capture_norm'] = (scores_df['savings_capture'] - sc_min) / (sc_max - sc_min)
+                else:
+                    scores_df['savings_capture_norm'] = scores_df['savings_capture']
+            else:
+                scores_df['normalized_roi'] = 0.5
+                scores_df['savings_capture_norm'] = scores_df['savings_capture']
+            
+            # Calculate failure penalty
+            scores_df['failure_penalty'] = scores_df['failure_rate'] * 0.25
+            
+            # Apply low-run penalty
+            scores_df['low_run_penalty'] = scores_df['run_count'].apply(lambda x: 0.15 if x < 2 else 0)
+            
+            # Calculate composite HES (Healthcare Effectiveness Score)
+            # PRIORITIZES RECALL: Missing medical billing errors (false negatives) is more costly
+            # than false positives in healthcare compliance scenarios
+            scores_df['hes'] = (
+                (scores_df['avg_recall'] * 0.60) +        # PRIMARY: Catch errors (false negatives are expensive)
+                (scores_df['avg_f1'] * 0.15) +            # Balance: Overall performance
+                (scores_df['normalized_roi'] * 0.10) +    # Efficiency: Value per latency
+                (scores_df['savings_capture_norm'] * 0.10) +  # Financial: Actual savings captured
+                (scores_df['stability_score'] * 0.05) -   # Consistency: Performance variance
+                scores_df['failure_penalty'] -
+                scores_df['low_run_penalty']
+            )
+            
+            return scores_df
+        
+        hes_scores = calculate_healthcare_effectiveness_score(latest_results, patient_df)
+        
+        # Merge HES back into latest_results
+        latest_results = latest_results.merge(
+            hes_scores[['model', 'hes', 'stability_score', 'roi', 'failure_rate']],
+            left_on='model_version',
+            right_on='model',
+            how='left'
+        )
+        
+        # Sort by HES
+        latest_results = latest_results.sort_values('hes', ascending=False)
+        
+        # Key metrics row
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            best_model = latest_results.iloc[0]['model_version'] if not latest_results.empty else "N/A"
+            best_hes = latest_results.iloc[0]['hes'] if not latest_results.empty else 0
+            best_stability = latest_results.iloc[0]['stability_score'] if not latest_results.empty else 0
+            best_roi = latest_results.iloc[0]['roi'] if not latest_results.empty else 0
+            best_failure = latest_results.iloc[0]['failure_rate'] if not latest_results.empty else 0
+            
+            st.metric(
+                "🏆 Clinical Effectiveness Leader",
+                best_model,
+                f"HES: {best_hes:.3f}",
+                help="Ranking based on composite healthcare-weighted score (F1, recall, ROI, stability, reliability)."
+            )
+            
+            # Show detailed breakdown in expander
+            with st.expander("📊 Score Breakdown"):
+                st.write(f"**Healthcare Effectiveness Score:** {best_hes:.3f}")
+                st.write(f"**Stability Score:** {best_stability:.3f}")
+                st.write(f"**ROI:** {best_roi:.2f}")
+                st.write(f"**Failure Rate:** {best_failure:.1%}")
+        
+        with col2:
+            # Calculate average excluding models with 0% (non-functional models)
+            functional_models = latest_results[latest_results['domain_detection'] > 0]
+            avg_domain = functional_models['domain_detection'].mean() if not functional_models.empty else 0
+            model_count = len(functional_models)
+            st.metric(
+                f"Avg Domain Detection ({model_count} models)",
+                f"{avg_domain:.1f}%",
+                help="Average across models that detect domain issues (excludes 0% scores)"
+            )
+        
+        with col3:
+            # Use same functional models filter for consistency
+            avg_f1 = functional_models['f1_score'].mean() if not functional_models.empty else 0
+            st.metric(
+                f"Avg F1 Score ({model_count} models)",
+                f"{avg_f1:.3f}",
+                help="Average F1 across functional models (excludes 0% scores)"
+            )
+        
+        with col4:
+            total_runs = len(patient_df)
+            st.metric(
+                "Total Benchmark Runs",
+                f"{total_runs}"
+            )
+        
+        st.markdown("---")
+        
+        # Cost Savings Per Model
+        st.subheader("💰 Cost Savings by Model")
+        
+        # Check if cost savings data exists
+        if 'total_potential_savings' in latest_results.columns:
+            savings_df = latest_results[[
+                'model_version', 'total_potential_savings', 'total_missed_savings',
+                'avg_savings_per_patient', 'savings_capture_rate'
+            ]].copy()
+            
+            savings_df = savings_df.sort_values('total_potential_savings', ascending=False)
+            savings_df.columns = [
+                'Model', 'Potential Savings', 'Missed Savings',
+                'Avg per Patient', 'Capture Rate %'
+            ]
+            
+            # Format currency and percentages
+            savings_df['Potential Savings'] = savings_df['Potential Savings'].apply(lambda x: f"${x:,.2f}")
+            savings_df['Missed Savings'] = savings_df['Missed Savings'].apply(lambda x: f"${x:,.2f}")
+            savings_df['Avg per Patient'] = savings_df['Avg per Patient'].apply(lambda x: f"${x:,.2f}")
+            savings_df['Capture Rate %'] = savings_df['Capture Rate %'].apply(lambda x: f"{x:.1f}%")
+            
+            st.dataframe(savings_df, use_container_width=True, hide_index=True)
+            
+            # Cost savings visualization
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                fig = go.Figure()
+                fig.add_trace(go.Bar(
+                    name='Potential Savings',
+                    x=latest_results['model_version'],
+                    y=latest_results['total_potential_savings'],
+                    text=latest_results['total_potential_savings'].apply(lambda x: f"${x:,.0f}"),
+                    textposition='auto',
+                    marker_color='green'
+                ))
+                fig.add_trace(go.Bar(
+                    name='Missed Savings',
+                    x=latest_results['model_version'],
+                    y=latest_results['total_missed_savings'],
+                    text=latest_results['total_missed_savings'].apply(lambda x: f"${x:,.0f}"),
+                    textposition='auto',
+                    marker_color='red'
+                ))
+                fig.update_layout(
+                    title="Potential vs Missed Savings",
+                    yaxis_title="Amount ($)",
+                    barmode='group',
+                    height=400
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            
+            with col2:
+                fig = px.bar(
+                    latest_results,
+                    x='model_version',
+                    y='savings_capture_rate',
+                    text=latest_results['savings_capture_rate'].apply(lambda x: f"{x:.1f}%"),
+                    labels={'model_version': 'Model', 'savings_capture_rate': 'Capture Rate (%)'},
+                    title="Savings Capture Rate by Model",
+                    color='savings_capture_rate',
+                    color_continuous_scale='RdYlGn'
+                )
+                fig.update_traces(textposition='outside')
+                fig.update_layout(height=400, showlegend=False)
+                st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("🔄 Re-run benchmarks to see cost savings metrics: `python3 scripts/generate_patient_benchmarks.py --model all`")
+        
+        st.markdown("---")
+        
+        # Leaderboard
+        st.subheader("📊 Domain Knowledge Leaderboard (Latest Run)")
+        
+        display_df = latest_results[[
+            'model_version', 'domain_detection', 'f1_score', 
+            'precision', 'recall', 'total_patients', 'successful'
+        ]].copy()
+        
+        display_df.columns = [
+            'Model', 'Domain Detection %', 'F1 Score', 
+            'Precision', 'Recall', 'Total Patients', 'Successful'
+        ]
+        
+        # Format percentages and decimals
+        display_df['Domain Detection %'] = display_df['Domain Detection %'].apply(lambda x: f"{x:.1f}%")
+        display_df['F1 Score'] = display_df['F1 Score'].apply(lambda x: f"{x:.3f}")
+        display_df['Precision'] = display_df['Precision'].apply(lambda x: f"{x:.3f}")
+        display_df['Recall'] = display_df['Recall'].apply(lambda x: f"{x:.3f}")
+        
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        
+        st.markdown("---")
+        
+        # Historical trends
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("📈 Domain Detection Over Time")
+            
+            if len(patient_df) > 1:
+                fig = px.line(
+                    patient_df,
+                    x='created_at',
+                    y='domain_detection',
+                    color='model_version',
+                    markers=True,
+                    labels={
+                        'created_at': 'Date',
+                        'domain_detection': 'Domain Detection Rate (%)',
+                        'model_version': 'Model'
+                    }
+                )
+                fig.update_layout(height=400, hovermode='x unified')
+                st.plotly_chart(fig, use_container_width=True, key="patient_domain_trend")
+            else:
+                st.info("Run multiple benchmarks over time to see trends")
+        
+        with col2:
+            st.subheader("📊 F1 Score Comparison")
+            
+            fig = go.Figure()
+            for model in latest_results['model_version'].unique():
+                model_data = latest_results[latest_results['model_version'] == model]
+                fig.add_trace(go.Bar(
+                    name=model,
+                    x=['F1 Score'],
+                    y=[model_data['f1_score'].values[0]],
+                    text=[f"{model_data['f1_score'].values[0]:.3f}"],
+                    textposition='auto'
+                ))
+            
+            fig.update_layout(
+                height=400,
+                yaxis_title="F1 Score",
+                showlegend=True,
+                barmode='group'
+            )
+            st.plotly_chart(fig, use_container_width=True, key="patient_f1_comparison")
+        
+        # Cost Savings Trends
+        if 'total_potential_savings' in patient_df.columns and len(patient_df) > 1:
+            st.markdown("---")
+            st.subheader("💰 Cost Savings Trends Over Time")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                fig = px.line(
+                    patient_df,
+                    x='created_at',
+                    y='total_potential_savings',
+                    color='model_version',
+                    markers=True,
+                    labels={
+                        'created_at': 'Date',
+                        'total_potential_savings': 'Potential Savings ($)',
+                        'model_version': 'Model'
+                    },
+                    title="Potential Savings Over Time"
+                )
+                fig.update_layout(height=400, hovermode='x unified')
+                st.plotly_chart(fig, use_container_width=True, key="savings_trend")
+            
+            with col2:
+                fig = px.line(
+                    patient_df,
+                    x='created_at',
+                    y='savings_capture_rate',
+                    color='model_version',
+                    markers=True,
+                    labels={
+                        'created_at': 'Date',
+                        'savings_capture_rate': 'Capture Rate (%)',
+                        'model_version': 'Model'
+                    },
+                    title="Savings Capture Rate Over Time"
+                )
+                fig.update_layout(height=400, hovermode='x unified')
+                st.plotly_chart(fig, use_container_width=True, key="capture_rate_trend")
+        
+        # Detailed metrics
+        st.markdown("---")
+        st.subheader("🔍 Detailed Performance Metrics")
+        
+        # Heatmap of performance across models
+        heatmap_df = latest_results[['model_version', 'domain_detection', 'f1_score', 'precision', 'recall']].set_index('model_version')
+        heatmap_df.columns = ['Domain Detection %', 'F1', 'Precision', 'Recall']
+        
+        fig = px.imshow(
+            heatmap_df.T,
+            labels=dict(x="Model", y="Metric", color="Score"),
+            x=heatmap_df.index,
+            y=heatmap_df.columns,
+            color_continuous_scale='RdYlGn',
+            aspect='auto',
+            text_auto='.2f'
+        )
+        fig.update_layout(height=300)
+        st.plotly_chart(fig, use_container_width=True, key="patient_heatmap")
+        
+        # Error Type Performance Heatmap
+        st.markdown("---")
+        st.subheader("🎯 Performance by Error Type")
+        st.markdown("Detection accuracy for different types of billing errors that require medical domain knowledge.")
+        
+        # Load detailed patient results from transactions to analyze error types
+        try:
+            from supabase import create_client
+            import os
+            import numpy as np
+            
+            supabase = create_client(os.getenv('SUPABASE_URL'), os.getenv('SUPABASE_SERVICE_ROLE_KEY'))
+            
+            # Get latest transaction for each model with error_type_performance data
+            query = supabase.table('benchmark_transactions').select('model_version, metrics, created_at').eq('environment', env_filter or 'local').order('created_at', desc=True).limit(100)
+            response = query.execute()
+            
+            if response.data:
+                # Build error type performance matrix - use latest result per model
+                model_error_performance = {}
+                
+                for transaction in response.data:
+                    model = transaction['model_version']
+                    
+                    # Skip old short-name models
+                    if model in ['medgemma', 'openai', 'gemini', 'baseline', 'medgemma-v1.0', 'openai-v1.0', 'baseline-v1.0']:
+                        continue
+                    
+                    # Only take the first (latest) result for each model
+                    if model in model_error_performance:
+                        continue
+                    
+                    metrics = transaction.get('metrics', {})
+                    error_type_perf = metrics.get('error_type_performance', {})
+                    
+                    if error_type_perf:
+                        model_error_performance[model] = error_type_perf
+                
+                if model_error_performance:
+                    # Build heatmap dataframe
+                    # Get all unique error types
+                    all_error_types = set()
+                    for model_data in model_error_performance.values():
+                        all_error_types.update(model_data.keys())
+                    
+                    # Create matrix
+                    heatmap_data = []
+                    models_list = sorted(model_error_performance.keys())
+                    error_types_list = sorted(all_error_types)
+                    
+                    for error_type in error_types_list:
+                        row = []
+                        for model in models_list:
+                            perf = model_error_performance[model].get(error_type, {})
+                            detection_rate = perf.get('detection_rate', 0.0) * 100  # Convert to percentage
+                            row.append(detection_rate)
+                        heatmap_data.append(row)
+                    
+                    # Create heatmap
+                    heatmap_array = np.array(heatmap_data)
+                    
+                    # Format error type names for display
+                    formatted_error_types = [et.replace('_', ' ').title() for et in error_types_list]
+                    
+                    fig = px.imshow(
+                        heatmap_array,
+                        labels=dict(x="Model", y="Error Type", color="Detection Rate (%)"),
+                        x=models_list,
+                        y=formatted_error_types,
+                        color_continuous_scale='RdYlGn',
+                        aspect='auto',
+                        text_auto='.1f'
+                    )
+                    fig.update_layout(
+                        height=max(400, len(error_types_list) * 30),
+                        xaxis={'side': 'bottom'},
+                        yaxis={'side': 'left'}
+                    )
+                    fig.update_xaxes(tickangle=-45)
+                    st.plotly_chart(fig, use_container_width=True, key="error_type_heatmap")
+                    
+                    # Summary statistics
+                    st.markdown("**Summary:**")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        # Best performing error type
+                        avg_by_error = heatmap_array.mean(axis=1)
+                        best_error_idx = avg_by_error.argmax()
+                        st.metric(
+                            "Easiest to Detect",
+                            formatted_error_types[best_error_idx],
+                            f"{avg_by_error[best_error_idx]:.1f}% avg detection"
+                        )
+                    
+                    with col2:
+                        # Most challenging error type
+                        worst_error_idx = avg_by_error.argmin()
+                        st.metric(
+                            "Most Challenging",
+                            formatted_error_types[worst_error_idx],
+                            f"{avg_by_error[worst_error_idx]:.1f}% avg detection"
+                        )
+                else:
+                    st.info("No error-type performance data available yet. Re-push benchmark results to collect this data.")
+            else:
+                st.warning("No transaction data available for error type analysis.")
+        except Exception as e:
+            st.error(f"Error loading error type performance: {str(e)}")
+            import traceback
+            st.code(traceback.format_exc())
+        
+        # Insights
+        st.markdown("---")
+        st.subheader("💡 Key Insights")
+        
+        if not latest_results.empty:
+            best = latest_results.iloc[0]
+            worst = latest_results.iloc[-1]
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.success(f"""
+                **Best Performer: {best['model_version']}**
+                - Domain Detection: {best['domain_detection']:.1f}%
+                - F1 Score: {best['f1_score']:.3f}
+                - Successfully analyzed {best['successful']}/{best['total_patients']} patients
+                """)
+            
+            with col2:
+                if worst['domain_detection'] < best['domain_detection']:
+                    gap = best['domain_detection'] - worst['domain_detection']
+                    st.warning(f"""
+                    **Performance Gap**
+                    - {best['model_version']} outperforms {worst['model_version']} by {gap:.1f}% in domain detection
+                    - Medical domain knowledge is critical for accurate billing issue detection
+                    """)
+
+st.markdown("---")
+st.markdown("""
+<div style='text-align: center; color: #666; font-size: 0.9em;'>
+    <p>Production Stability Monitor v1.0 | MLOps Team</p>
+    <p>Data refreshes every 5 minutes | Last refresh: {}</p>
+</div>
+""".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), unsafe_allow_html=True)

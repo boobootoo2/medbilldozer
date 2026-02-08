@@ -1,0 +1,56 @@
+MEDICAL BILL - INVOICE #2026-0205-060
+
+Patient: Susan Taylor
+DOB: 08/27/1956
+Date of Service: February 5, 2026
+Provider: Dr. James Mitchell, MD - Cardiology
+
+DIAGNOSIS:
+- F33.1: Major depressive disorder, recurrent, moderate
+- I25.2: Old myocardial infarction (STEMI 03/2024)
+- I25.10: Atherosclerotic heart disease
+
+CARDIAC HISTORY:
+- STEMI March 2024, s/p PCI with drug-eluting stent to LAD
+- Currently on dual antiplatelet therapy (DAPT) through March 2027
+
+CURRENT MEDICATIONS:
+- Aspirin 81mg PO daily (antiplatelet - indefinite)
+- Clopidogrel 75mg PO daily (antiplatelet - through 03/2027 per stent protocol)
+- Atorvastatin 80mg PO daily (high-intensity statin)
+- Metoprolol succinate 50mg PO BID (beta-blocker for cardioprotection)
+
+ALLERGIES:
+- Codeine (nausea, documented)
+
+PROCEDURES & SERVICES:
+1. CPT 99214 - Office visit, established patient, moderate complexity
+   Charge: $180.00
+
+2. PHQ-9 Depression Screening
+   Score: 18 (moderately severe depression)
+   Charge: Included in visit
+
+CLINICAL NOTES:
+Patient followed for post-MI care. Reports persistent low mood, anhedonia,
+sleep disturbance, and fatigue for past 3 months. PHQ-9 score 18. No suicidal
+ideation. Depression affecting medication compliance and cardiac rehabilitation
+participation. Discussed importance of treating depression to improve cardiac
+outcomes.
+
+ASSESSMENT & PLAN:
+Major depressive disorder in patient with recent MI on dual antiplatelet therapy.
+Will initiate SSRI for depression management.
+
+NEW PRESCRIPTIONS:
+- Continue Aspirin 81mg PO daily
+- Continue Clopidogrel 75mg PO daily
+- Continue Atorvastatin 80mg PO daily
+- Continue Metoprolol 50mg PO BID
+- Escitalopram 10mg PO daily (SSRI for depression)
+
+Follow-up in 4 weeks to assess depression response.
+
+TOTAL CHARGES: $180.00
+
+Payment due within 30 days.

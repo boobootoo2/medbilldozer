@@ -76,7 +76,7 @@ def main():
     print("3. Run Migration 2 second")
     print("4. Re-run benchmarks: python3 scripts/generate_patient_benchmarks.py --model all")
     print("5. Push to Supabase: ./scripts/push_local_benchmarks.sh")
-    print("6. Restart dashboard: streamlit run pages/benchmark_monitoring.py --server.port 8502")
+    print("6. Restart dashboard: streamlit run pages/production_stability.py --server.port 8502")
     print()
     print("📖 Full guide: COST_SAVINGS_SETUP.md")
     print("=" * 70)

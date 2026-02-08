@@ -1,0 +1,42 @@
+MEDICAL BILL - INVOICE #2026-0118-053
+
+Patient: Margaret Wilson
+DOB: 06/10/1954
+Date of Service: January 18, 2026
+Provider: Dr. Michael Adams, MD - Family Medicine
+
+DIAGNOSIS:
+- J20.9: Acute bronchitis, unspecified
+- I25.10: Atherosclerotic heart disease (history)
+- E78.5: Hyperlipidemia, unspecified
+
+CURRENT MEDICATIONS:
+- Simvastatin 80mg PO daily (high-intensity statin for CAD)
+- Aspirin 81mg PO daily (cardiac prophylaxis)
+- Lisinopril 10mg PO daily (hypertension/cardioprotection)
+
+ALLERGIES:
+- Penicillin (anaphylaxis documented)
+
+PROCEDURES & SERVICES:
+1. CPT 99214 - Office visit, established patient, moderate complexity
+   Charge: $180.00
+
+2. CPT 71020 - Chest X-ray, 2 views
+   Result: No infiltrate, no consolidation. Consistent with acute bronchitis.
+   Charge: $120.00
+
+CLINICAL NOTES:
+Patient presents with productive cough x 5 days, low-grade fever. Lung exam shows
+scattered rhonchi. CXR negative for pneumonia. Diagnosis: Acute bronchitis.
+Given penicillin allergy, will prescribe macrolide antibiotic.
+
+NEW PRESCRIPTIONS:
+- Continue Simvastatin 80mg PO daily
+- Continue Aspirin 81mg PO daily
+- Continue Lisinopril 10mg PO daily
+- Clarithromycin 500mg PO BID x 7 days (for bronchitis)
+
+TOTAL CHARGES: $300.00
+
+Payment due within 30 days.

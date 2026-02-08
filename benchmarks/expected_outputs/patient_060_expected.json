@@ -1,0 +1,11 @@
+{
+    "patient_id": "patient_060",
+    "detected_issues": [{
+        "issue_type": "drug_drug_interaction",
+        "severity": "high",
+        "description": "SSRI (Escitalopram) added to dual antiplatelet therapy (Aspirin + Clopidogrel) - excessive bleeding risk",
+        "fields_involved": ["medications", "prescriptions"],
+        "reasoning": "Patient on dual antiplatelet therapy (DAPT) - Aspirin 81mg + Clopidogrel 75mg post-MI/PCI (through March 2027 per stent protocol) - now prescribed Escitalopram 10mg daily. SSRIs inhibit platelet serotonin reuptake, impairing platelet aggregation and increasing bleeding risk. Adding SSRI to DAPT creates triple antiplatelet effect, dramatically increasing risk of major bleeding events (GI hemorrhage, intracranial bleeding). Studies demonstrate 2-3x increased bleeding risk with SSRI + antiplatelet combinations. Should use alternative antidepressant without antiplatelet effects (bupropion, mirtazapine, trazodone) or add PPI prophylaxis if SSRI necessary. Particularly concerning given mandatory DAPT duration post-stent.",
+        "domain_knowledge_required": true
+    }]
+}

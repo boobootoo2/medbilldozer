@@ -1,40 +1,55 @@
 {
-    "patient_id": "P007",
-    "name": "David Thompson",
-    "demographics": {
-        "age": 55,
-        "sex": "M",
-        "date_of_birth": "1970-12-03"
-    },
-    "medical_history": {
-        "conditions": ["Benign Prostatic Hyperplasia (BPH)"],
-        "allergies": ["Sulfa drugs"],
-        "surgeries": ["Vasectomy (1998)"]
-    },
-    "documents": [
-        "patient_007_doc_1_medical_bill.txt",
-        "patient_007_doc_2_lab.txt"
+  "patient_id": "P007",
+  "name": "David Thompson",
+  "demographics": {
+    "age": 55,
+    "sex": "M",
+    "date_of_birth": "1970-12-03"
+  },
+  "medical_history": {
+    "conditions": [
+      "Benign Prostatic Hyperplasia (BPH)"
     ],
-    "expected_issues": [{
-            "type": "gender_mismatch",
-            "severity": "critical",
-            "description": "Male patient billed for cervical biopsy (CPT 57500) - anatomically impossible",
-            "requires_domain_knowledge": true,
-            "cpt_code": "57421"
-        },
-        {
-            "type": "gender_mismatch",
-            "severity": "critical",
-            "description": "Male patient billed for pelvic ultrasound (transvaginal, CPT 76830) - anatomically impossible",
-            "requires_domain_knowledge": true,
-            "cpt_code": "76830"
-        },
-        {
-            "type": "medical_necessity",
-            "severity": "low",
-            "description": "Smoking cessation counseling billed but patient record shows non-smoker",
-            "requires_domain_knowledge": false,
-            "cpt_code": "99406"
-        }
+    "allergies": [
+      "Sulfa drugs"
+    ],
+    "surgeries": [
+      "Vasectomy (1998)"
     ]
+  },
+  "documents": [
+    {
+      "document_id": "patient_007_doc_1_medical_bill",
+      "document_type": "text",
+      "content": "UNIVERSITY MEDICAL CENTER\nStmt# P007-2026-0203\nDate: 02/03/2026\n\nDavid Thompson\nDOB: 12/03/1970 | MALE\n\nServices 02/03/2026:\nOffice Visit (99213)             $150\nCervical Biopsy (57500)          $385\nUrinalysis (81000)                $20\nFacility/Tech Fee                $100\n\nSubtotal:                        $655\nClaim Status: SUBMITTED\nIns Est Coverage:               -$500\nEst Balance:                     $155\n\nDue: 03/03/2026\n\nDr. Robert Kim, Urology\nUNIV MEDICAL\n(555) 444-5555\n"
+    },
+    {
+      "document_id": "patient_007_doc_2_lab",
+      "document_type": "text",
+      "content": "QUEST DIAGNOSTICS\nLab Rpt\n\nDavid Thompson\nDOB: 12/03/1970  M\nSpecimen: 02/03/2026\n\nURINALYSIS (81000)\nColor        Yellow\nClarity      Clear\nSpGr         1.018 (OK)\npH           6.5 (OK)\nProtein      NEG\nGlucose      NEG\nBlood        NEG\nEsterase     NEG\nNitrites     NEG\n\nResults: NORMAL\n\nDr Patricia Wong MD\nMedical Director\n\nReport: 02/03/2026\n"
+    }
+  ],
+  "expected_issues": [
+    {
+      "type": "gender_mismatch",
+      "severity": "critical",
+      "description": "Male patient billed for cervical biopsy (CPT 57500) - anatomically impossible",
+      "requires_domain_knowledge": true,
+      "cpt_code": "57421"
+    },
+    {
+      "type": "gender_mismatch",
+      "severity": "critical",
+      "description": "Male patient billed for pelvic ultrasound (transvaginal, CPT 76830) - anatomically impossible",
+      "requires_domain_knowledge": true,
+      "cpt_code": "76830"
+    },
+    {
+      "type": "medical_necessity",
+      "severity": "low",
+      "description": "Smoking cessation counseling billed but patient record shows non-smoker",
+      "requires_domain_knowledge": false,
+      "cpt_code": "99406"
+    }
+  ]
 }

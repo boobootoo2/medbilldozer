@@ -1,0 +1,11 @@
+{
+    "patient_id": "patient_054",
+    "detected_issues": [{
+        "issue_type": "drug_drug_interaction",
+        "severity": "critical",
+        "description": "Digoxin + High-dose loop diuretic (Furosemide) - digoxin toxicity risk from electrolyte depletion",
+        "fields_involved": ["medications", "prescriptions"],
+        "reasoning": "Patient on Digoxin 0.125mg daily started on Furosemide 80mg IV BID (high-dose loop diuretic). Furosemide causes significant potassium and magnesium wasting. Hypokalemia and hypomagnesemia dramatically increase digoxin binding to cardiac Na-K-ATPase, precipitating digoxin toxicity (arrhythmias, AV block, ventricular tachycardia). Elderly patient (79 years) at highest risk. Treatment plan lacks potassium/magnesium supplementation and monitoring protocol despite aggressive diuresis.",
+        "domain_knowledge_required": true
+    }]
+}

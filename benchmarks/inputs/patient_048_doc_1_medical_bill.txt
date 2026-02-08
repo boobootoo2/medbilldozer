@@ -1,0 +1,27 @@
+MEDICAL BILL - ORTHOPEDIC CLINIC
+
+PATIENT: Robert Martinez
+DOB: 11/20/1963
+DATE OF SERVICE: 02/04/2026
+
+PROVIDER: City Orthopedic Associates
+DIAGNOSIS: M54.5 - Low Back Pain
+
+SERVICES PROVIDED:
+---------------------------------------------------------
+CPT 99214 - Office Visit Level 4          $245.00
+Patient Responsibility: $60.00
+
+MEDICATIONS PRESCRIBED:
+- Ibuprofen 600mg, three times daily for 14 days
+  (Prescribed for chronic lower back pain management)
+
+PATIENT MEDICAL HISTORY NOTED:
+- Active gastric ulcer (treated 2 months ago with PPI)
+- Currently on Omeprazole 40mg daily
+- Hypertension controlled with Lisinopril
+
+TOTAL AMOUNT DUE: $60.00
+
+NOTE: Single-document test. Drug-disease contraindication (NSAID + recent GI ulcer)
+is detectable from bill alone without needing cross-document reasoning.
