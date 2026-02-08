@@ -136,9 +136,33 @@ Let:
 
 This measures the proportion of clinically inappropriate procedures successfully detected. It is equivalent to recall on the clinical reasoning subset.
 
+#### Calculation Method
+
+The Domain Detection Rate is computed as follows:
+
+1. **Identify Domain-Specific Issues**: Each ground truth billing error is annotated with `requires_domain_knowledge: true/false` in the benchmark dataset. Domain-specific issues are those that require healthcare expertise to detect, such as:
+   - Gender-inappropriate procedures (e.g., pregnancy ultrasound for male patient)
+   - Age-inappropriate services (e.g., colonoscopy for 8-year-old)
+   - Anatomical contradictions (e.g., bilateral knee surgery after amputation)
+   - Drug-disease contraindications (e.g., beta-blocker for asthma patient)
+   - Surgical history violations
+
+2. **Count Successful Detections**: For each patient case, the system matches detected issues against expected domain-specific issues. A match occurs when the detected issue type and description substantially overlap with an expected issue.
+
+3. **Calculate Rate**:
+   ```
+   Domain Detection Rate = (Detected Domain Issues) / (Total Domain Issues) × 100%
+   
+   Where:
+   - Detected Domain Issues = Count of domain-specific issues successfully identified
+   - Total Domain Issues = Count of all domain-specific issues in ground truth
+   ```
+
+4. **Average Across Patients**: The final rate is the **macro-average** (mean of per-patient recall) across all 61 patient benchmark cases. This treats each patient equally regardless of how many domain-specific issues they have.
+
 **Current value: 63.1%**
 
-This means MedGemma Ensemble successfully identifies 63 out of every 100 clinical billing errors — cases that require healthcare domain knowledge to detect.
+This means MedGemma Ensemble successfully identifies 63 out of every 100 clinical billing errors on average — cases that require healthcare domain knowledge to detect. Across the benchmark set, this represents detecting 70 out of 106 domain-specific billing errors (66.0% micro-average), with the macro-average slightly lower at 63.1% due to giving equal weight to all patients.
 
 ### Healthcare Effectiveness Score (HES)
 
