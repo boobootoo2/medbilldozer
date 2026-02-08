@@ -68,6 +68,8 @@ class BenchmarkResult:
         metrics: Dict[str, Any],
         model_provider: Optional[str] = None,
         dataset_size: Optional[int] = None,
+        domain_breakdown: Optional[Dict[str, Any]] = None,
+        category_metrics: Optional[Dict[str, Any]] = None,
     ):
         self.model_version = model_version
         self.dataset_version = dataset_version
@@ -75,6 +77,8 @@ class BenchmarkResult:
         self.metrics = metrics
         self.model_provider = model_provider
         self.dataset_size = dataset_size
+        self.domain_breakdown = domain_breakdown or {}
+        self.category_metrics = category_metrics or {}
         
         self._validate()
     
@@ -100,6 +104,8 @@ class BenchmarkResult:
             'metrics': self.metrics,
             'model_provider': self.model_provider,
             'dataset_size': self.dataset_size,
+            'domain_breakdown': self.domain_breakdown,
+            'category_metrics': self.category_metrics,
         }
 
 # ============================================================================
@@ -159,6 +165,29 @@ class BenchmarkPersistence:
         logger.info(f"Pushing benchmark: {result.model_version} @ {commit_sha[:8]}")
         
         # Prepare RPC parameters
+        # Embed domain_breakdown and category_metrics into metrics JSONB
+        # for backward compatibility with current database schema
+        metrics_with_domain = result.metrics.copy()
+        if result.domain_breakdown:
+            metrics_with_domain['domain_breakdown'] = result.domain_breakdown
+            
+            # Also create error_type_performance format for dashboard compatibility
+            # Transform domain_breakdown to error_type_performance format
+            error_type_performance = {}
+            for error_type, perf_data in result.domain_breakdown.items():
+                error_type_performance[error_type] = {
+                    'detection_rate': perf_data.get('recall', 0.0),
+                    'precision': perf_data.get('precision', 0.0),
+                    'f1': perf_data.get('f1', 0.0),
+                    'total_cases': perf_data.get('total_cases', 0),
+                    'detected': perf_data.get('total_detected', 0),
+                    'missed': perf_data.get('total_missed', 0)
+                }
+            metrics_with_domain['error_type_performance'] = error_type_performance
+            
+        if result.category_metrics:
+            metrics_with_domain['category_metrics'] = result.category_metrics
+        
         params = {
             'p_commit_sha': commit_sha,
             'p_branch_name': branch_name,
@@ -170,7 +199,7 @@ class BenchmarkPersistence:
             'p_environment': environment,
             'p_run_id': run_id,
             'p_triggered_by': triggered_by,
-            'p_metrics': result.metrics,
+            'p_metrics': metrics_with_domain,
             'p_duration_seconds': duration_seconds,
             'p_tags': tags,
             'p_notes': notes,
@@ -368,6 +397,8 @@ Examples:
             metrics=data.get('metrics'),
             model_provider=data.get('model_provider'),
             dataset_size=data.get('dataset_size'),
+            domain_breakdown=data.get('domain_breakdown'),
+            category_metrics=data.get('category_metrics'),
         )
         
         # Initialize persistence layer

@@ -156,7 +156,31 @@ with tab1:
     if snapshots_df.empty:
         st.warning("No benchmark data available.")
     else:
-        # Metrics row
+        # Cost Savings Summary (Top Banner)
+        if 'metrics' in snapshots_df.columns:
+            # Parse metrics to get savings data
+            def extract_savings(metrics_json):
+                if isinstance(metrics_json, str):
+                    import json
+                    metrics = json.loads(metrics_json)
+                else:
+                    metrics = metrics_json
+                return {
+                    'potential_savings': metrics.get('total_potential_savings', 0),
+                    'savings_capture_rate': metrics.get('savings_capture_rate', 0),
+                    'roi_ratio': metrics.get('roi_ratio', 0)
+                }
+            
+            savings_data = snapshots_df['metrics'].apply(extract_savings)
+            total_savings = sum(s['potential_savings'] for s in savings_data)
+            avg_capture = sum(s['savings_capture_rate'] for s in savings_data if s['savings_capture_rate'] > 0) / max(len([s for s in savings_data if s['savings_capture_rate'] > 0]), 1)
+            avg_roi = sum(s['roi_ratio'] for s in savings_data if s['roi_ratio'] > 0) / max(len([s for s in savings_data if s['roi_ratio'] > 0]), 1)
+            
+            if total_savings > 0:
+                st.info("💰 **Cost Savings Impact**: These models have identified **$" + f"{total_savings:,.2f}" + f"** in potential billing errors across all benchmark runs (avg {avg_capture:.1f}% capture rate, {avg_roi:.0f}x ROI)")
+        
+        # Performance Metrics Row
+        st.markdown("### 📊 Performance Metrics")
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
@@ -193,8 +217,8 @@ with tab1:
         
         st.markdown("---")
         
-        # Top performers
-        col1, col2 = st.columns(2)
+        # Top performers with cost savings
+        col1, col2, col3 = st.columns(3)
         
         with col1:
             st.subheader("🏆 Top Performers by F1")
@@ -209,6 +233,32 @@ with tab1:
                 ['model_version', 'latency_ms', 'f1_score', 'cost_per_analysis']
             ]
             st.dataframe(top_speed, use_container_width=True)
+        
+        with col3:
+            st.subheader("💰 Top Cost Savers")
+            # Extract savings from metrics
+            if 'metrics' in snapshots_df.columns:
+                savings_list = []
+                for _, row in snapshots_df.iterrows():
+                    metrics = row['metrics']
+                    if isinstance(metrics, str):
+                        import json
+                        metrics = json.loads(metrics)
+                    potential_savings = metrics.get('total_potential_savings', 0)
+                    if potential_savings > 0:
+                        savings_list.append({
+                            'Model': row['model_version'],
+                            'Potential Savings': f"${potential_savings:,.0f}",
+                            'Capture Rate': f"{metrics.get('savings_capture_rate', 0):.1f}%"
+                        })
+                
+                if savings_list:
+                    savings_df = pd.DataFrame(savings_list).sort_values('Potential Savings', ascending=False).head(5)
+                    st.dataframe(savings_df, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No cost savings data available")
+            else:
+                st.info("No cost savings data available")
         
         st.markdown("---")
         
@@ -634,56 +684,116 @@ with tab4:
     else:
         for model_version in selected_models:
             with st.expander(f"🔍 {model_version}", expanded=True):
+                # Load historical data for this model
                 @st.cache_data(ttl=300)
-                def check_regression(model, thresh):
-                    return data_access.detect_regressions(
+                def load_model_history(model, days):
+                    start_date = datetime.now() - timedelta(days=days)
+                    df = data_access.get_transactions(
                         model_version=model,
-                        threshold=thresh / 100  # Convert percentage to decimal
+                        start_date=start_date,
+                        environment=env_filter
                     )
+                    # Return only necessary columns
+                    if not df.empty and 'f1' in df.columns:
+                        df = df[['created_at', 'f1']].copy()
+                        df.rename(columns={'f1': 'f1_score'}, inplace=True)
+                        df = df.sort_values('created_at')
+                    return df
                 
-                regression_result = check_regression(model_version, threshold)
+                history_df = load_model_history(model_version, days_back)
                 
-                if not regression_result:
-                    st.warning("No baseline configured for this model.")
+                if history_df.empty or len(history_df) < 2:
+                    st.warning(f"Insufficient data for regression detection. Need at least 2 benchmark runs. Current: {len(history_df)}")
                     continue
                 
-                current_f1 = regression_result.get('current_f1', 0)
-                baseline_f1 = regression_result.get('baseline_f1', 0)
-                f1_drop = regression_result.get('f1_drop', 0)
-                is_regression = regression_result.get('is_regression', False)
+                # Use statistical baseline: best historical performance or average of top 25%
+                sorted_f1 = history_df['f1_score'].sort_values(ascending=False)
+                top_25_percent = max(1, len(sorted_f1) // 4)
+                baseline_f1 = sorted_f1.head(top_25_percent).mean()
                 
-                col1, col2, col3 = st.columns(3)
+                # Current performance is the latest run
+                current_f1 = history_df.iloc[-1]['f1_score']
+                
+                # Calculate drop
+                f1_drop = ((baseline_f1 - current_f1) / baseline_f1) * 100 if baseline_f1 > 0 else 0
+                is_regression = f1_drop > threshold
+                
+                # Display status banner
+                if is_regression:
+                    st.error(f"🚨 **REGRESSION DETECTED** - F1 dropped by {f1_drop:.1f}% (threshold: {threshold}%)")
+                else:
+                    st.success(f"✅ **NO REGRESSION** - Performance within expected range (drop: {f1_drop:.1f}%)")
+                
+                # Metrics
+                col1, col2, col3, col4 = st.columns(4)
                 
                 with col1:
+                    delta_display = f"{-f1_drop:.2f}%" if f1_drop > 0 else f"+{abs(f1_drop):.2f}%"
                     st.metric(
-                        "Current F1",
+                        "Current F1 (Latest)",
                         f"{current_f1:.4f}",
-                        delta=f"{-f1_drop:.4f}" if f1_drop > 0 else f"+{abs(f1_drop):.4f}",
-                        delta_color="inverse"
+                        delta=delta_display,
+                        delta_color="inverse",
+                        help="Latest benchmark result"
                     )
                 
                 with col2:
                     st.metric(
-                        "Baseline F1",
-                        f"{baseline_f1:.4f}"
+                        "Baseline F1 (Top 25%)",
+                        f"{baseline_f1:.4f}",
+                        help=f"Average of top {top_25_percent} runs out of {len(history_df)} total"
                     )
                 
                 with col3:
-                    pct_drop = (f1_drop / baseline_f1 * 100) if baseline_f1 > 0 else 0
                     st.metric(
-                        "Drop %",
-                        f"{pct_drop:.2f}%"
+                        "Performance Drop",
+                        f"{f1_drop:.2f}%",
+                        help="Percentage drop from baseline"
                     )
                 
+                with col4:
+                    st.metric(
+                        "Total Runs",
+                        len(history_df),
+                        help="Number of benchmark runs analyzed"
+                    )
+                
+                # Show trend
+                st.markdown("**Performance Trend:**")
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=history_df['created_at'],
+                    y=history_df['f1_score'],
+                    mode='lines+markers',
+                    name='F1 Score',
+                    line=dict(color='#1f77b4')
+                ))
+                fig.add_hline(
+                    y=baseline_f1,
+                    line_dash="dash",
+                    line_color="green",
+                    annotation_text=f"Baseline ({baseline_f1:.4f})"
+                )
+                fig.add_hline(
+                    y=baseline_f1 * (1 - threshold/100),
+                    line_dash="dash",
+                    line_color="red",
+                    annotation_text=f"Threshold ({baseline_f1 * (1 - threshold/100):.4f})"
+                )
+                fig.update_layout(
+                    height=300,
+                    xaxis_title="Date",
+                    yaxis_title="F1 Score",
+                    showlegend=True
+                )
+                st.plotly_chart(fig, use_container_width=True, key=f"regression_trend_{model_version}")
+                
                 if is_regression:
-                    st.error(f"🚨 **REGRESSION DETECTED** - F1 dropped by {pct_drop:.2f}%")
-                    st.markdown("**Recommended Actions:**")
-                    st.markdown("- Review recent code changes")
-                    st.markdown("- Check for data drift")
-                    st.markdown("- Verify prompt modifications")
-                    st.markdown("- Inspect model configuration")
-                else:
-                    st.success("✅ No regression detected - performance within expected range")
+                    st.markdown("**📋 Recommended Actions:**")
+                    st.markdown("- 🔍 Review recent code changes")
+                    st.markdown("- 📊 Check for data drift or distribution shifts")
+                    st.markdown("- ✏️ Verify prompt modifications")
+                    st.markdown("- ⚙️ Inspect model configuration and parameters")
                 
                 # Cost Savings Regression Check
                 st.markdown("---")
@@ -871,14 +981,26 @@ with tab5:
             key="history_model"
         )
         
-        # Get snapshot history for selected model
-        history_df = data_access.get_snapshot_history(
-            model_version=selected_model_history,
-            dataset_version="patient-profiles-v1",
-            prompt_version="cross-document-v1",
-            environment=env_filter or "local",  # Default to local if no filter
-            limit=50
-        )
+        # Get latest snapshot for this model to determine dataset/prompt versions
+        latest_snapshots = data_access.get_latest_snapshots(environment=env_filter)
+        model_snapshot = latest_snapshots[latest_snapshots['model_version'] == selected_model_history]
+        
+        if model_snapshot.empty:
+            st.warning(f"No snapshots found for {selected_model_history}")
+            history_df = pd.DataFrame()
+        else:
+            # Use actual dataset and prompt versions from the model's snapshots
+            dataset_version = model_snapshot.iloc[0]['dataset_version']
+            prompt_version = model_snapshot.iloc[0]['prompt_version']
+            
+            # Get snapshot history for selected model
+            history_df = data_access.get_snapshot_history(
+                model_version=selected_model_history,
+                dataset_version=dataset_version,
+                prompt_version=prompt_version,
+                environment=env_filter or "local",  # Default to local if no filter
+                limit=50
+            )
         
         if history_df.empty:
             st.warning(f"No snapshot history found for {selected_model_history}")
