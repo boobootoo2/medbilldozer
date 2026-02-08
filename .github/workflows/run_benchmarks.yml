@@ -71,6 +71,15 @@ jobs:
             fi
           done
       
+      - name: Calculate ROI and cost savings
+        if: always()
+        run: |
+          # Calculate ROI metrics for all models
+          python3 scripts/calculate_roi_metrics.py \
+            --results-dir benchmark-artifacts \
+            --output benchmark-artifacts/roi_summary.json \
+            --report benchmark-artifacts/roi_report.md
+      
       - name: Push results to Supabase
         if: always()
         env:
@@ -92,12 +101,22 @@ jobs:
             fi
           done
       
+      - name: Display ROI summary
+        if: always()
+        run: |
+          echo "═══════════════════════════════════════════════════════════"
+          echo "💰 ROI & COST SAVINGS SUMMARY"
+          echo "═══════════════════════════════════════════════════════════"
+          cat benchmark-artifacts/roi_report.md
+      
       - name: Upload benchmark results as artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results
-          path: benchmark-artifacts/*.json
+          path: |
+            benchmark-artifacts/*.json
+            benchmark-artifacts/*.md
           retention-days: 90
       
       - name: Comment on PR with results
@@ -106,23 +125,48 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const metrics = JSON.parse(fs.readFileSync('benchmarks/results/aggregated_metrics.json'));
             
-            let comment = '## 📊 Benchmark Results\n\n';
-            comment += '| Model | Precision | Recall | F1 Score | Latency |\n';
-            comment += '|-------|-----------|--------|----------|----------|\n';
-            
-            for (const result of metrics.individual_results || []) {
-              const model = result.model_name || 'Unknown';
-              const precision = (metrics.issue_precision * 100).toFixed(1);
-              const recall = (metrics.issue_recall * 100).toFixed(1);
-              const f1 = (metrics.issue_f1_score * 100).toFixed(1);
-              const latency = (metrics.avg_pipeline_latency_ms / 1000).toFixed(2);
-              
-              comment += `| ${model} | ${precision}% | ${recall}% | ${f1}% | ${latency}s |\n`;
+            // Load ROI summary
+            let roiData;
+            try {
+              roiData = JSON.parse(fs.readFileSync('benchmark-artifacts/roi_summary.json', 'utf8'));
+            } catch (error) {
+              console.log('ROI data not found, skipping PR comment');
+              return;
             }
             
-            comment += '\n[View full results →](https://github.com/boobootoo2/medbilldozer/tree/develop/benchmarks/results)\n';
+            // Build comment with ROI metrics
+            let comment = '## � Benchmark Results: ROI & Cost Savings\n\n';
+            
+            // Executive summary
+            const summary = roiData.summary;
+            comment += '### Executive Summary\n\n';
+            comment += `- **Total Consumer Savings**: $${summary.total_potential_savings.toLocaleString()}\n`;
+            comment += `- **Total Analysis Cost**: $${summary.total_cost.toFixed(2)}\n`;
+            comment += `- **Net Benefit**: $${summary.total_net_benefit.toLocaleString()}\n`;
+            comment += `- **Overall ROI**: ${(summary.total_potential_savings / summary.total_cost).toFixed(1)}x\n\n`;
+            
+            // Model comparison table
+            comment += '### Model Performance & ROI\n\n';
+            comment += '| Model | Savings | Cost | Net Benefit | ROI | F1 |\n';
+            comment += '|-------|---------|------|-------------|-----|----|\n';
+            
+            // Sort by ROI
+            const sortedResults = roiData.model_results.sort((a, b) => 
+              b.roi_metrics.roi_ratio - a.roi_metrics.roi_ratio
+            );
+            
+            for (const result of sortedResults) {
+              const savings = result.consumer_savings.total_potential_savings;
+              const cost = result.cost_breakdown.total_cost;
+              const net = result.roi_metrics.net_benefit;
+              const roi = result.roi_metrics.roi_ratio;
+              const f1 = result.performance_metrics.f1;
+              
+              comment += `| ${result.model_name} | $${savings.toLocaleString()} | $${cost.toFixed(2)} | $${net.toLocaleString()} | ${roi.toFixed(1)}x | ${f1.toFixed(3)} |\n`;
+            }
+            
+            comment += '\n📊 [View detailed report →](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n';
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
