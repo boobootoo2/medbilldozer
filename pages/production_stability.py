@@ -156,7 +156,31 @@ with tab1:
     if snapshots_df.empty:
         st.warning("No benchmark data available.")
     else:
-        # Metrics row
+        # Cost Savings Summary (Top Banner)
+        if 'metrics' in snapshots_df.columns:
+            # Parse metrics to get savings data
+            def extract_savings(metrics_json):
+                if isinstance(metrics_json, str):
+                    import json
+                    metrics = json.loads(metrics_json)
+                else:
+                    metrics = metrics_json
+                return {
+                    'potential_savings': metrics.get('total_potential_savings', 0),
+                    'savings_capture_rate': metrics.get('savings_capture_rate', 0),
+                    'roi_ratio': metrics.get('roi_ratio', 0)
+                }
+            
+            savings_data = snapshots_df['metrics'].apply(extract_savings)
+            total_savings = sum(s['potential_savings'] for s in savings_data)
+            avg_capture = sum(s['savings_capture_rate'] for s in savings_data if s['savings_capture_rate'] > 0) / max(len([s for s in savings_data if s['savings_capture_rate'] > 0]), 1)
+            avg_roi = sum(s['roi_ratio'] for s in savings_data if s['roi_ratio'] > 0) / max(len([s for s in savings_data if s['roi_ratio'] > 0]), 1)
+            
+            if total_savings > 0:
+                st.info("💰 **Cost Savings Impact**: These models have identified **$" + f"{total_savings:,.2f}" + f"** in potential billing errors across all benchmark runs (avg {avg_capture:.1f}% capture rate, {avg_roi:.0f}x ROI)")
+        
+        # Performance Metrics Row
+        st.markdown("### 📊 Performance Metrics")
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
@@ -193,8 +217,8 @@ with tab1:
         
         st.markdown("---")
         
-        # Top performers
-        col1, col2 = st.columns(2)
+        # Top performers with cost savings
+        col1, col2, col3 = st.columns(3)
         
         with col1:
             st.subheader("🏆 Top Performers by F1")
@@ -209,6 +233,32 @@ with tab1:
                 ['model_version', 'latency_ms', 'f1_score', 'cost_per_analysis']
             ]
             st.dataframe(top_speed, use_container_width=True)
+        
+        with col3:
+            st.subheader("💰 Top Cost Savers")
+            # Extract savings from metrics
+            if 'metrics' in snapshots_df.columns:
+                savings_list = []
+                for _, row in snapshots_df.iterrows():
+                    metrics = row['metrics']
+                    if isinstance(metrics, str):
+                        import json
+                        metrics = json.loads(metrics)
+                    potential_savings = metrics.get('total_potential_savings', 0)
+                    if potential_savings > 0:
+                        savings_list.append({
+                            'Model': row['model_version'],
+                            'Potential Savings': f"${potential_savings:,.0f}",
+                            'Capture Rate': f"{metrics.get('savings_capture_rate', 0):.1f}%"
+                        })
+                
+                if savings_list:
+                    savings_df = pd.DataFrame(savings_list).sort_values('Potential Savings', ascending=False).head(5)
+                    st.dataframe(savings_df, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No cost savings data available")
+            else:
+                st.info("No cost savings data available")
         
         st.markdown("---")
         
