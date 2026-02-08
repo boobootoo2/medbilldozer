@@ -1,0 +1,11 @@
+{
+    "patient_id": "patient_056",
+    "detected_issues": [{
+        "issue_type": "drug_disease_contraindication",
+        "severity": "critical",
+        "description": "Anticholinergic agent (Oxybutynin) prescribed to patient with primary open-angle glaucoma",
+        "fields_involved": ["medications", "prescriptions", "conditions"],
+        "reasoning": "Patient with documented primary open-angle glaucoma (on latanoprost therapy) prescribed Oxybutynin 5mg TID. Anticholinergic medications cause pupillary dilation (mydriasis) which can precipitate acute angle-closure glaucoma attack and worsen intraocular pressure control even in open-angle glaucoma. Risk of sudden IOP elevation causing severe eye pain, vision loss, potential permanent blindness. This is a contraindication in FDA labeling. Should use alternative therapy such as beta-3 agonist (mirabegron) which lacks anticholinergic effects.",
+        "domain_knowledge_required": true
+    }]
+}

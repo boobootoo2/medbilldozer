@@ -1,33 +1,44 @@
 {
-    "patient_id": "P006",
-    "name": "Sarah Patel",
-    "demographics": {
-        "age": 15,
-        "sex": "F",
-        "date_of_birth": "2010-07-14"
-    },
-    "medical_history": {
-        "conditions": ["Scoliosis"],
-        "allergies": [],
-        "surgeries": []
-    },
-    "documents": [
-        "patient_006_doc_1_medical_bill.txt",
-        "patient_006_doc_2_imaging.txt"
+  "patient_id": "P006",
+  "name": "Sarah Patel",
+  "demographics": {
+    "age": 15,
+    "sex": "F",
+    "date_of_birth": "2010-07-14"
+  },
+  "medical_history": {
+    "conditions": [
+      "Scoliosis"
     ],
-    "expected_issues": [{
-            "type": "age_inappropriate_screening",
-            "severity": "high",
-            "description": "15-year-old billed for screening mammogram (CPT 77067) - not recommended before age 40",
-            "requires_domain_knowledge": true,
-            "cpt_code": "77067"
-        },
-        {
-            "type": "age_inappropriate_screening",
-            "severity": "high",
-            "description": "15-year-old billed for osteoporosis screening (DEXA scan, CPT 77080) - not recommended before menopause",
-            "requires_domain_knowledge": true,
-            "cpt_code": "77080"
-        }
-    ]
+    "allergies": [],
+    "surgeries": []
+  },
+  "documents": [
+    {
+      "document_id": "patient_006_doc_1_medical_bill",
+      "document_type": "text",
+      "content": "ADOLESCENT HEALTH CENTER\nInvoice AHC-2026-156\nDate: 02/02/2026\n\nSarah Patel\nDOB: 07/14/2010  Age: 15  F\n\nVISIT 02/02/2026\nDr Emily Rodriguez\n\nPreventive Visit (99394)        $165\nScreening Mammography (77067)   $320\nFlu Shot (87804)                 $30\n\n---\nSubtotal                        $515\nInsurance:                      -$450\nYour Cost                        $65\n\nDue: 03/02/2026\n\nTeenage/Adolescent Care\nConfidential Health Services\n(555) 222-1111\n"
+    },
+    {
+      "document_id": "patient_006_doc_2_imaging",
+      "document_type": "text",
+      "content": "RADIOLOGY ASSOCIATES\nREPORT\nDate: 02/02/2026\n\nPatient: Sarah Patel  DOB: 07/14/2010\n\nEXAM: Spine X-Ray\n\nINDICATION:\nScoliosis screening\n\nFINDINGS:\nMild dextroscoliosis thoracic spine ~12 deg\nNo fracture or dislocation\nVertebral heights OK\nNormal alignment\n\nIMPRESSION:\nMild thoracic scoliosis\nConsider Ortho f/u\n\nSigned: Dr Kevin Liu, MD\nRadiologist\nDate: 02/02/2026 14:30\n"
+    }
+  ],
+  "expected_issues": [
+    {
+      "type": "age_inappropriate_screening",
+      "severity": "high",
+      "description": "15-year-old billed for screening mammogram (CPT 77067) - not recommended before age 40",
+      "requires_domain_knowledge": true,
+      "cpt_code": "77067"
+    },
+    {
+      "type": "age_inappropriate_screening",
+      "severity": "high",
+      "description": "15-year-old billed for osteoporosis screening (DEXA scan, CPT 77080) - not recommended before menopause",
+      "requires_domain_knowledge": true,
+      "cpt_code": "77080"
+    }
+  ]
 }

@@ -1,47 +1,58 @@
 {
-    "patient_id": "P005",
-    "name": "Michael O'Connor",
-    "demographics": {
-        "age": 28,
-        "sex": "M",
-        "date_of_birth": "1997-04-19"
-    },
-    "medical_history": {
-        "conditions": [],
-        "allergies": ["Shellfish"],
-        "surgeries": []
-    },
-    "documents": [
-        "patient_005_doc_1_medical_bill.txt",
-        "patient_005_doc_2_pharmacy.txt"
+  "patient_id": "P005",
+  "name": "Michael O'Connor",
+  "demographics": {
+    "age": 28,
+    "sex": "M",
+    "date_of_birth": "1997-04-19"
+  },
+  "medical_history": {
+    "conditions": [],
+    "allergies": [
+      "Shellfish"
     ],
-    "expected_issues": [{
-            "type": "gender_mismatch",
-            "severity": "critical",
-            "description": "Male patient billed for hysterectomy (CPT 58150) - anatomically impossible",
-            "requires_domain_knowledge": true,
-            "cpt_code": "58150"
-        },
-        {
-            "type": "gender_mismatch",
-            "severity": "critical",
-            "description": "Male patient billed for cervical cancer screening (Pap smear, CPT 88175) - anatomically impossible",
-            "requires_domain_knowledge": true,
-            "cpt_code": "88175"
-        },
-        {
-            "type": "gender_mismatch",
-            "severity": "critical",
-            "description": "Male patient billed for mammogram (CPT 77065) - inappropriate for demographic",
-            "requires_domain_knowledge": true,
-            "cpt_code": "77065"
-        },
-        {
-            "type": "duplicate_charge",
-            "severity": "medium",
-            "description": "Same prescription charged twice on different dates but filled only once",
-            "requires_domain_knowledge": false,
-            "cpt_code": "N/A"
-        }
-    ]
+    "surgeries": []
+  },
+  "documents": [
+    {
+      "document_id": "patient_005_doc_1_medical_bill",
+      "document_type": "text",
+      "content": "SURGICAL SPECIALISTS GROUP\nStatement - P005\nDate: 02/01/2026\n\nMichael O'Connor\nDOB: 04/19/1997 | MALE | Age 28\n\nSURGICAL PROCEDURES:\nComplex Office Consult (99215)    $250\nHysterectomy Total Abdom (58150)  $8,500\nLab Draw (36415)                  $15\nFacility Charge                   $2,500\nAnesthesia Services              $1,200\nSupplies/Equip                    $500\n\nSUBTOTAL:                        $12,965\nInsurance: PENDING APPROVAL\nDeposit Due:                     $3,000\n\nExpected Insurance Coverage:      -$8,000\nEst. Balance After Insurance:     $4,965\n\nDUE DATE: 02/28/2026\n\nDr. Amanda White, Surgeon\n(555) 999-0001\n"
+    },
+    {
+      "document_id": "patient_005_doc_2_pharmacy",
+      "document_type": "text",
+      "content": "WALGREENS PHARMACY\nRcpt #WG-784521 | 02/01/2026\n\nMichael O'Connor\nRx: 3849273\n\nIbuprofen 800mg\nQty 20 tablets\nQ6H PRN pain\nDr A White\n\nSubtotal:     $12\nTax:          $0\nTotal:        $12\n\nPaid: CASH $12\n\nPharm: Lisa Chen RPh\nStore #2847\n"
+    }
+  ],
+  "expected_issues": [
+    {
+      "type": "gender_mismatch",
+      "severity": "critical",
+      "description": "Male patient billed for hysterectomy (CPT 58150) - anatomically impossible",
+      "requires_domain_knowledge": true,
+      "cpt_code": "58150"
+    },
+    {
+      "type": "gender_mismatch",
+      "severity": "critical",
+      "description": "Male patient billed for cervical cancer screening (Pap smear, CPT 88175) - anatomically impossible",
+      "requires_domain_knowledge": true,
+      "cpt_code": "88175"
+    },
+    {
+      "type": "gender_mismatch",
+      "severity": "critical",
+      "description": "Male patient billed for mammogram (CPT 77065) - inappropriate for demographic",
+      "requires_domain_knowledge": true,
+      "cpt_code": "77065"
+    },
+    {
+      "type": "duplicate_charge",
+      "severity": "medium",
+      "description": "Same prescription charged twice on different dates but filled only once",
+      "requires_domain_knowledge": false,
+      "cpt_code": "N/A"
+    }
+  ]
 }

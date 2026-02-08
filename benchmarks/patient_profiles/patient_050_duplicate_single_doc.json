@@ -1,0 +1,31 @@
+{
+  "patient_id": "P050",
+  "name": "Sarah Williams",
+  "demographics": {
+    "age": 42,
+    "sex": "F",
+    "date_of_birth": "1983-06-08"
+  },
+  "medical_history": {
+    "conditions": [],
+    "allergies": [],
+    "medications": [],
+    "surgeries": []
+  },
+  "documents": [
+    {
+      "document_id": "patient_050_doc_1_medical_bill",
+      "document_type": "text",
+      "content": "MEDICAL BILL - RADIOLOGY DEPARTMENT\n\nPATIENT: Sarah Williams  \nDOB: 06/08/1983\nDATE OF SERVICE: 02/06/2026\n\nPROVIDER: City Medical Center - Imaging\nDIAGNOSIS: J18.9 - Pneumonia\n\nSERVICES PROVIDED:\n---------------------------------------------------------\nCPT 71020 - Chest X-Ray, 2 views        $75.00\nCPT 99213 - Office Visit Level 3        $185.00\nCPT 71020 - Chest X-Ray, 2 views        $75.00  \u2190 DUPLICATE\n---------------------------------------------------------\n\nTOTAL BILLED: $335.00\nPatient Responsibility: $85.00\n\nNOTE: Single-document test case. Duplicate charge is obvious from bill alone.\nNo medical knowledge or cross-document reasoning required - just basic data comparison.\n"
+    }
+  ],
+  "expected_issues": [
+    {
+      "type": "duplicate_charge",
+      "severity": "medium",
+      "description": "X-ray (CPT 71020) billed twice on same date - obvious duplicate charge detectable from single document without medical knowledge",
+      "requires_domain_knowledge": false,
+      "cpt_code": "71020"
+    }
+  ]
+}

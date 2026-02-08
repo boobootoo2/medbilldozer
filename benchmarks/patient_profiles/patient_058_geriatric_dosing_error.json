@@ -1,0 +1,30 @@
+{
+    "patient_id": "patient_058",
+    "name": "Dorothy Williams",
+    "demographics": {
+        "age": 87,
+        "sex": "F",
+        "date_of_birth": "1938-04-16",
+        "weight_kg": 52
+    },
+    "medical_history": {
+        "conditions": ["Atrial fibrillation", "Chronic kidney disease Stage 3B (eGFR 38)", "Hypertension"],
+        "medications": ["Lisinopril 10mg daily", "Amlodipine 5mg daily"],
+        "allergies": ["Penicillin"]
+    },
+    "current_visit": {
+        "date": "2026-02-01",
+        "provider": "Dr. Steven Clark",
+        "diagnosis": "Atrial fibrillation - new onset",
+        "procedures": ["EKG", "Office visit", "Renal function panel"],
+        "prescriptions": ["Continue home medications", "Dabigatran 150mg BID (NEW)"]
+    },
+    "expected_issues": [{
+        "issue_type": "dosing_error",
+        "severity": "critical",
+        "description": "Inappropriate dabigatran dosing in elderly patient with reduced renal function - bleeding risk",
+        "fields_involved": ["prescriptions", "age", "conditions"],
+        "reasoning": "Patient is 87 years old with CrCl ~38 mL/min (CKD Stage 3B, weight 52kg). Dabigatran dosing for AFib with CrCl 30-50 mL/min should be 110mg BID in elderly patients, especially those >80 years or <60kg. Standard 150mg BID dose is for CrCl >50 mL/min. This overdosing significantly increases bleeding risk (GI bleeding, intracranial hemorrhage) in vulnerable elderly patient with marginal renal function. No reversal agent readily available.",
+        "domain_knowledge_required": true
+    }]
+}

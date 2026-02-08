@@ -1,0 +1,29 @@
+{
+    "patient_id": "patient_052",
+    "name": "Robert Chen",
+    "demographics": {
+        "age": 52,
+        "sex": "M",
+        "date_of_birth": "1973-11-22"
+    },
+    "medical_history": {
+        "conditions": ["Major Depressive Disorder", "Treatment-resistant depression"],
+        "medications": ["Phenelzine 15mg TID (MAOI - started 5 days ago)"],
+        "allergies": ["None"]
+    },
+    "current_visit": {
+        "date": "2026-01-20",
+        "provider": "Dr. Emily Rodriguez",
+        "diagnosis": "Major Depressive Disorder - inadequate response to MAOI",
+        "procedures": ["Psychiatric evaluation"],
+        "prescriptions": ["Continue Phenelzine 15mg TID", "Add Sertraline 50mg daily (SSRI)"]
+    },
+    "expected_issues": [{
+        "issue_type": "drug_drug_interaction",
+        "severity": "critical",
+        "description": "MAOI (Phenelzine) + SSRI (Sertraline) - serotonin syndrome risk",
+        "fields_involved": ["medications", "prescriptions"],
+        "reasoning": "MAOIs and SSRIs together cause serotonin syndrome - a life-threatening condition with hyperthermia, muscle rigidity, altered mental status, autonomic instability. Requires 2-week washout period between switching from MAOI to SSRI. Patient started Phenelzine only 5 days ago - absolutely contraindicated.",
+        "domain_knowledge_required": true
+    }]
+}

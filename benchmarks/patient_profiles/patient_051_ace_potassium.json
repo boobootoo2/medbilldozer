@@ -1,0 +1,29 @@
+{
+    "patient_id": "patient_051",
+    "name": "Alice Thompson",
+    "demographics": {
+        "age": 68,
+        "sex": "F",
+        "date_of_birth": "1957-08-15"
+    },
+    "medical_history": {
+        "conditions": ["Hypertension", "Type 2 Diabetes", "Stage 3 CKD (eGFR 45)"],
+        "medications": ["Lisinopril 20mg daily", "Metformin 500mg BID", "Atorvastatin 40mg daily"],
+        "allergies": ["Sulfa drugs"]
+    },
+    "current_visit": {
+        "date": "2026-01-15",
+        "provider": "Dr. Sarah Martinez",
+        "diagnosis": "Hypertension follow-up",
+        "procedures": ["Office visit - established patient", "Basic metabolic panel"],
+        "prescriptions": ["Continue Lisinopril 20mg daily", "Potassium chloride 20 mEq daily (NEW)"]
+    },
+    "expected_issues": [{
+        "issue_type": "drug_drug_interaction",
+        "severity": "critical",
+        "description": "ACE inhibitor (Lisinopril) + Potassium supplement interaction risk",
+        "fields_involved": ["medications", "prescriptions"],
+        "reasoning": "ACE inhibitors block aldosterone, causing potassium retention. Adding potassium supplement significantly increases hyperkalemia risk, especially with CKD. This combination can cause life-threatening cardiac arrhythmias.",
+        "domain_knowledge_required": true
+    }]
+}

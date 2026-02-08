@@ -1,0 +1,29 @@
+{
+    "patient_id": "patient_055",
+    "name": "Linda Martinez",
+    "demographics": {
+        "age": 58,
+        "sex": "F",
+        "date_of_birth": "1967-09-14"
+    },
+    "medical_history": {
+        "conditions": ["Moderate persistent asthma", "Hypertension", "Anxiety disorder"],
+        "medications": ["Albuterol inhaler PRN", "Fluticasone/Salmeterol 250/50 BID", "Amlodipine 5mg daily", "Sertraline 100mg daily"],
+        "allergies": ["Aspirin (bronchospasm)"]
+    },
+    "current_visit": {
+        "date": "2026-01-25",
+        "provider": "Dr. David Thompson",
+        "diagnosis": "Hypertension - inadequate control",
+        "procedures": ["Office visit", "Blood pressure monitoring"],
+        "prescriptions": ["Continue all home medications", "Add Propranolol 40mg BID"]
+    },
+    "expected_issues": [{
+        "issue_type": "drug_disease_contraindication",
+        "severity": "critical",
+        "description": "Non-selective beta-blocker (Propranolol) in patient with asthma - bronchospasm risk",
+        "fields_involved": ["medications", "prescriptions", "conditions"],
+        "reasoning": "Non-selective beta-blockers like propranolol block beta-2 receptors in bronchial smooth muscle, causing bronchoconstriction. Absolutely contraindicated in asthma patients - can trigger severe, potentially fatal bronchospasm. Patient already has aspirin-induced bronchospasm history, indicating hyperreactive airways. If beta-blocker needed, must use cardioselective agent (metoprolol, atenolol) at lowest dose.",
+        "domain_knowledge_required": true
+    }]
+}

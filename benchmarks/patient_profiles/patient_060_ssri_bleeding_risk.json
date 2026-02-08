@@ -1,0 +1,29 @@
+{
+    "patient_id": "patient_060",
+    "name": "Susan Taylor",
+    "demographics": {
+        "age": 69,
+        "sex": "F",
+        "date_of_birth": "1956-08-27"
+    },
+    "medical_history": {
+        "conditions": ["Coronary artery disease", "s/p MI 2024", "Major depressive disorder"],
+        "medications": ["Aspirin 81mg daily", "Clopidogrel 75mg daily", "Atorvastatin 80mg daily", "Metoprolol 50mg BID"],
+        "allergies": ["Codeine"]
+    },
+    "current_visit": {
+        "date": "2026-02-05",
+        "provider": "Dr. James Mitchell",
+        "diagnosis": "Major depressive disorder - worsening symptoms",
+        "procedures": ["Office visit", "PHQ-9 depression screening"],
+        "prescriptions": ["Continue all cardiac medications", "Escitalopram 10mg daily (NEW)"]
+    },
+    "expected_issues": [{
+        "issue_type": "drug_drug_interaction",
+        "severity": "high",
+        "description": "SSRI (Escitalopram) added to dual antiplatelet therapy - excessive bleeding risk",
+        "fields_involved": ["medications", "prescriptions"],
+        "reasoning": "SSRIs inhibit platelet serotonin reuptake, impairing platelet aggregation and increasing bleeding risk. Patient on dual antiplatelet therapy (aspirin + clopidogrel) post-MI. Adding SSRI creates triple antiplatelet effect, dramatically increasing risk of major bleeding (GI hemorrhage, intracranial bleeding). Studies show 2-3x increased bleeding risk with SSRI + antiplatelet combination. Should use alternative antidepressant without antiplatelet effects (bupropion, mirtazapine) or add PPI for GI protection.",
+        "domain_knowledge_required": true
+    }]
+}

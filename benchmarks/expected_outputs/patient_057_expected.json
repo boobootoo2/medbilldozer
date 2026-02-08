@@ -1,0 +1,11 @@
+{
+    "patient_id": "patient_057",
+    "detected_issues": [{
+        "issue_type": "dosing_error",
+        "severity": "critical",
+        "description": "Severe pediatric overdosing - adult amoxicillin dose prescribed for 6-year-old child",
+        "fields_involved": ["prescriptions", "age", "weight"],
+        "reasoning": "Patient is 6-year-old child weighing 20kg prescribed Amoxicillin 875mg PO BID (1,750 mg/day total). Pediatric dosing for acute otitis media per IDSA guidelines is 80-90 mg/kg/day divided BID. Correct dose for 20kg child is 800-900 mg/day total (400-450mg per dose BID). Prescribed dose of 875mg BID is 194% of maximum recommended daily dose - nearly double appropriate dosing. This is an adult tablet formulation. Risk of significant GI adverse effects, allergic reactions, and promotion of antibiotic resistance. Correct prescription should be amoxicillin 400mg/5mL oral suspension, 10mL (400mg) PO BID x 10 days.",
+        "domain_knowledge_required": true
+    }]
+}

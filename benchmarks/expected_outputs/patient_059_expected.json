@@ -1,0 +1,11 @@
+{
+    "patient_id": "patient_059",
+    "detected_issues": [{
+        "issue_type": "dosing_error",
+        "severity": "critical",
+        "description": "Excessive acetaminophen dosing in patient with Child-Pugh Class B cirrhosis - acute-on-chronic liver failure risk",
+        "fields_involved": ["prescriptions", "conditions"],
+        "reasoning": "Patient with documented Child-Pugh Class B cirrhosis (bilirubin 2.8, albumin 2.9, INR 1.6, score 8) prescribed Acetaminophen 1000mg QID = 4,000 mg/day total. While 4g/day is standard maximum in healthy adults, patients with cirrhosis have impaired hepatic metabolism and increased susceptibility to acetaminophen hepatotoxicity. Maximum safe dose in cirrhotic patients is 2g/day (2,000 mg/day). Prescribed dose is double the safe maximum for this patient population. Risk of acute-on-chronic liver failure, which carries >50% mortality. Should prescribe maximum 500mg QID or 650mg TID (2g/day max), or consider alternative analgesic with minimal hepatic metabolism.",
+        "domain_knowledge_required": true
+    }]
+}

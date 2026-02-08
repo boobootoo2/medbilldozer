@@ -41,7 +41,7 @@ medBillDozer is built to systematically reconcile bills, claims, EOBs, and recei
 
 ```bash
 pip install -r requirements.txt
-streamlit run app.py
+streamlit run medBillDozer.py
 ```
 
 ### 5-Minute Tutorial

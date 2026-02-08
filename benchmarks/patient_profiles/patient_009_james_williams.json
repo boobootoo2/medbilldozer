@@ -1,33 +1,51 @@
 {
-    "patient_id": "P009",
-    "name": "James Williams",
-    "demographics": {
-        "age": 82,
-        "sex": "M",
-        "date_of_birth": "1943-08-30"
-    },
-    "medical_history": {
-        "conditions": ["Atrial Fibrillation", "Chronic Kidney Disease Stage 3", "Osteoporosis"],
-        "allergies": ["Codeine"],
-        "surgeries": ["Pacemaker Insertion (2018)", "Cataract Surgery (2021)"]
-    },
-    "documents": [
-        "patient_009_doc_1_medical_bill.txt",
-        "patient_009_doc_2_eob.txt"
+  "patient_id": "P009",
+  "name": "James Williams",
+  "demographics": {
+    "age": 82,
+    "sex": "M",
+    "date_of_birth": "1943-08-30"
+  },
+  "medical_history": {
+    "conditions": [
+      "Atrial Fibrillation",
+      "Chronic Kidney Disease Stage 3",
+      "Osteoporosis"
     ],
-    "expected_issues": [{
-            "type": "gender_mismatch",
-            "severity": "critical",
-            "description": "Male patient billed for pregnancy test (CPT 81025) - anatomically impossible",
-            "requires_domain_knowledge": true,
-            "cpt_code": "81025"
-        },
-        {
-            "type": "age_inappropriate_screening",
-            "severity": "medium",
-            "description": "82-year-old billed for sports physical (CPT 99455) - age-inappropriate",
-            "requires_domain_knowledge": true,
-            "cpt_code": "99455"
-        }
+    "allergies": [
+      "Codeine"
+    ],
+    "surgeries": [
+      "Pacemaker Insertion (2018)",
+      "Cataract Surgery (2021)"
     ]
+  },
+  "documents": [
+    {
+      "document_id": "patient_009_doc_1_medical_bill",
+      "document_type": "text",
+      "content": "SENIOR CARE MEDICAL PRACTICE\nBill P009 | 02/03/2026\n\nJames Williams\nDOB: 08/30/1943 | M | Age 82\n\nCHARGES:\nOffice Visit 99214              $190\nPregnancy Test 81025            $25\nSports Physical 99455           $125\nECG/EKG 93040                   $45\nFacility Fee                    $20\n\n---\nTOTAL:                         $405\nInsurance: PENDING\nAmount Due Now:                $405\n\nDue Date: 03/03/2026\n\nDr Susan Park, MD\nGeriatric Medicine\n\n(555) 888-2222\n"
+    },
+    {
+      "document_id": "patient_009_doc_2_eob",
+      "document_type": "text",
+      "content": "MEDICARE EOB\nBeneficiary: James Williams\nMedicare #: 1EG4-TE5-MK73\nClaim: 2026-0234-JW\n\nService Date: 02/03/2026\nProvider: Senior Care Medical\n\nCLAIM DETAILS:\n\nOffice Visit (99214)\n  Charged:      $190\n  Allowed:      $145\n  Medicare Pd:  $116 (80%)\n  You Owe:      $29\n\nPregnancy Test (81025)\n  Charged:      $25\n  Allowed:      $25\n  Medicare Pd:  $0 (NOT COVERED)\n  You Owe:      $25\n\nSports Phys (99455)\n  Charged:      $125\n  Allowed:      $125\n  Medicare Pd:  $0 (NOT COVERED)\n  You Owe:      $125\n\nEKG (93040)\n  Charged:      $45\n  Allowed:      $35\n  Medicare Pd:  $28 (80%)\n  You Owe:      $7\n\n---\nTOTAL MEDICARE PAID:    $144\nYOUR RESPONSIBILITY:    $186\n\nNOT A BILL - KEEP FOR RECORDS\nQuestions: 1-800-MEDICARE\n"
+    }
+  ],
+  "expected_issues": [
+    {
+      "type": "gender_mismatch",
+      "severity": "critical",
+      "description": "Male patient billed for pregnancy test (CPT 81025) - anatomically impossible",
+      "requires_domain_knowledge": true,
+      "cpt_code": "81025"
+    },
+    {
+      "type": "age_inappropriate_screening",
+      "severity": "medium",
+      "description": "82-year-old billed for sports physical (CPT 99455) - age-inappropriate",
+      "requires_domain_knowledge": true,
+      "cpt_code": "99455"
+    }
+  ]
 }

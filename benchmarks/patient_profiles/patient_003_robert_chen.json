@@ -1,40 +1,53 @@
 {
-    "patient_id": "P003",
-    "name": "Robert Chen",
-    "demographics": {
-        "age": 8,
-        "sex": "M",
-        "date_of_birth": "2017-09-10"
-    },
-    "medical_history": {
-        "conditions": ["Asthma"],
-        "allergies": ["Peanuts"],
-        "surgeries": []
-    },
-    "documents": [
-        "patient_003_doc_1_medical_bill.txt",
-        "patient_003_doc_2_dental.txt"
+  "patient_id": "P003",
+  "name": "Robert Chen",
+  "demographics": {
+    "age": 8,
+    "sex": "M",
+    "date_of_birth": "2017-09-10"
+  },
+  "medical_history": {
+    "conditions": [
+      "Asthma"
     ],
-    "expected_issues": [{
-            "type": "age_inappropriate_screening",
-            "severity": "high",
-            "description": "8-year-old child billed for colonoscopy (CPT 45378) - not age-appropriate screening",
-            "requires_domain_knowledge": true,
-            "cpt_code": "45378"
-        },
-        {
-            "type": "age_inappropriate_screening",
-            "severity": "high",
-            "description": "8-year-old billed for prostate cancer screening (PSA test, CPT 84153) - not clinically indicated",
-            "requires_domain_knowledge": true,
-            "cpt_code": "84153"
-        },
-        {
-            "type": "medical_necessity",
-            "severity": "medium",
-            "description": "Pediatric patient charged for geriatric assessment (CPT 99483) - age mismatch",
-            "requires_domain_knowledge": true,
-            "cpt_code": "99483"
-        }
-    ]
+    "allergies": [
+      "Peanuts"
+    ],
+    "surgeries": []
+  },
+  "documents": [
+    {
+      "document_id": "patient_003_doc_1_medical_bill",
+      "document_type": "text",
+      "content": "PEDIATRIC CARE CENTER\nAcct P003 | DOB: 09/10/2017\n\nRobert Chen - Age 8\n\nService Date: 01/22/2026\n\nITEMIZED CHARGES:\n------------------\nPreventive Visit (99392)      $175.00\nColonoscopy Procedure (45378) $1,850.00\nImmunization (90471)          $25.00\nFacility Charge              $50.00\n\nSUBTOTAL:              $2,100.00\nInsurance (Aetna):     -$1,800.00\nCopay/Deductible:      -$25.00\n\nBALANCE DUE:           $275.00\n\nProvider: Dr. Lisa Rodriguez, MD\n\nFor questions: pediatriccare@email.com\n(555) 777-1234 ext 5\n"
+    },
+    {
+      "document_id": "patient_003_doc_2_dental",
+      "document_type": "text",
+      "content": "BRIGHT SMILES PEDIATRIC DENTISTRY\nReceipt #D-2026-0892\nDate: 01/28/2026\n\nPatient: Robert Chen (DOB 09/10/2017)\n\nPeriodic Evaluation (D0120)    $45\nCleaning - Child (D1120)       $60\nFluoride Treatment (D1206)     $35\n\n---\nTotal                         $140\nInsurance Paid               -$120\nPatient Paid                  -$20\n\nStatus: PAID IN FULL\n\nNext visit: July 2026\nInsurance: Delta Dental\n\nDr. Michael Park, DDS\nOffice Tel: (555) 888-9999\n"
+    }
+  ],
+  "expected_issues": [
+    {
+      "type": "age_inappropriate_screening",
+      "severity": "high",
+      "description": "8-year-old child billed for colonoscopy (CPT 45378) - not age-appropriate screening",
+      "requires_domain_knowledge": true,
+      "cpt_code": "45378"
+    },
+    {
+      "type": "age_inappropriate_screening",
+      "severity": "high",
+      "description": "8-year-old billed for prostate cancer screening (PSA test, CPT 84153) - not clinically indicated",
+      "requires_domain_knowledge": true,
+      "cpt_code": "84153"
+    },
+    {
+      "type": "medical_necessity",
+      "severity": "medium",
+      "description": "Pediatric patient charged for geriatric assessment (CPT 99483) - age mismatch",
+      "requires_domain_knowledge": true,
+      "cpt_code": "99483"
+    }
+  ]
 }

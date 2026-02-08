@@ -1,0 +1,55 @@
+MEDICAL BILL - INVOICE #2026-0203-059
+
+Patient: Michael O'Brien
+DOB: 10/03/1964
+Date of Service: February 3, 2026
+Provider: Dr. Lisa Rodriguez, MD - Gastroenterology
+
+DIAGNOSIS:
+- K74.60: Cirrhosis of liver (Child-Pugh Class B)
+- K76.6: Portal hypertension
+- I85.00: Esophageal varices without bleeding (Grade 2)
+- M19.90: Osteoarthritis, unspecified site
+
+CURRENT MEDICATIONS:
+- Propranolol 20mg PO BID (non-selective beta-blocker for variceal prophylaxis)
+- Spironolactone 100mg PO daily (diuretic for ascites)
+- Furosemide 40mg PO daily (loop diuretic)
+
+ALLERGIES:
+- No known drug allergies
+
+PROCEDURES & SERVICES:
+1. CPT 99214 - Office visit, established patient, moderate complexity
+   Charge: $180.00
+
+2. CPT 80076 - Hepatic function panel
+   Results: 
+   - Total bilirubin: 2.8 mg/dL (elevated)
+   - Albumin: 2.9 g/dL (low)
+   - INR: 1.6 (elevated)
+   - AST: 98 U/L, ALT: 76 U/L
+   [Child-Pugh Score: 8 points = Class B]
+   Charge: $65.00
+
+CLINICAL NOTES:
+Patient with known Child-Pugh B cirrhosis (NASH-related) presents with worsening
+knee and hip pain from osteoarthritis. Pain limiting mobility and quality of life.
+Patient requesting pain management. Cannot use NSAIDs due to portal hypertension
+and esophageal varices (bleeding risk). Will prescribe acetaminophen for pain.
+
+ASSESSMENT & PLAN:
+Osteoarthritis pain in patient with cirrhosis. Will use acetaminophen given
+NSAID contraindication.
+
+NEW PRESCRIPTIONS:
+- Continue Propranolol 20mg PO BID
+- Continue Spironolactone 100mg PO daily
+- Continue Furosemide 40mg PO daily
+- Acetaminophen 1000mg PO QID (for osteoarthritis pain)
+
+Follow-up in 1 month.
+
+TOTAL CHARGES: $245.00
+
+Payment due within 30 days.

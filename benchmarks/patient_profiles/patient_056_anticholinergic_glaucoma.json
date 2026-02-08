@@ -1,0 +1,29 @@
+{
+    "patient_id": "patient_056",
+    "name": "George Anderson",
+    "demographics": {
+        "age": 74,
+        "sex": "M",
+        "date_of_birth": "1951-12-05"
+    },
+    "medical_history": {
+        "conditions": ["Primary open-angle glaucoma", "Overactive bladder", "Benign prostatic hyperplasia"],
+        "medications": ["Latanoprost 0.005% eye drops QHS", "Tamsulosin 0.4mg daily"],
+        "allergies": ["None"]
+    },
+    "current_visit": {
+        "date": "2026-01-28",
+        "provider": "Dr. Patricia Murphy",
+        "diagnosis": "Overactive bladder - worsening symptoms",
+        "procedures": ["Office visit", "Urinalysis"],
+        "prescriptions": ["Continue home medications", "Oxybutynin 5mg TID (NEW)"]
+    },
+    "expected_issues": [{
+        "issue_type": "drug_disease_contraindication",
+        "severity": "critical",
+        "description": "Anticholinergic agent (Oxybutynin) in patient with glaucoma - acute angle-closure risk",
+        "fields_involved": ["medications", "prescriptions", "conditions"],
+        "reasoning": "Anticholinergic medications cause pupillary dilation (mydriasis), which can precipitate acute angle-closure glaucoma attack - sudden IOP elevation causing severe eye pain, vision loss, and potential permanent blindness. While patient has open-angle glaucoma (not angle-closure), anticholinergics can still worsen IOP control. Alternative treatments (beta-3 agonists like mirabegron) should be used.",
+        "domain_knowledge_required": true
+    }]
+}

@@ -129,12 +129,12 @@ def show_analysis_error(msg: str):
 
 
 # ==================================================
-# Page config (MUST be first in app.py)
+# Page config (MUST be first in medBillDozer.py)
 # ==================================================
 
 
 def setup_page():
-    """Configure Streamlit page settings. Must be called first in app.py.
+    """Configure Streamlit page settings. Must be called first in medBillDozer.py.
 
     Sets page title and centered layout.
     Opens sidebar by default if guided tour is active.

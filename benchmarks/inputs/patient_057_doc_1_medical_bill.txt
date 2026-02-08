@@ -1,0 +1,49 @@
+MEDICAL BILL - INVOICE #2026-0130-057
+
+Patient: Emma Johnson
+DOB: 07/22/2019
+Date of Service: January 30, 2026
+Provider: Dr. Rachel Foster, MD - Pediatrics
+
+PATIENT INFORMATION:
+Age: 6 years old
+Weight: 20 kg (44 lbs)
+Height: 115 cm
+
+DIAGNOSIS:
+- H66.93: Otitis media, unspecified, bilateral
+
+CURRENT MEDICATIONS:
+- None (healthy child)
+
+ALLERGIES:
+- No known drug allergies
+
+PROCEDURES & SERVICES:
+1. CPT 99213 - Office visit, established patient, low complexity
+   Charge: $150.00
+
+CLINICAL NOTES:
+Patient presents with 2 days of ear pain, fever to 101.5°F, and decreased hearing.
+Parent reports pulling at ears, irritability. No URI symptoms.
+
+PHYSICAL EXAMINATION:
+Otoscopic exam: Bilateral TM erythema, bulging, decreased mobility. No perforation.
+Throat: Non-erythematous
+Lymph nodes: Small bilateral cervical nodes
+
+ASSESSMENT:
+Acute otitis media, bilateral
+
+PLAN:
+First-line antibiotic therapy per IDSA guidelines.
+
+NEW PRESCRIPTIONS:
+- Amoxicillin 875mg PO BID x 10 days
+
+PARENT EDUCATION:
+Complete full 10-day course. Follow-up if symptoms worsen or no improvement in 48-72 hours.
+
+TOTAL CHARGES: $150.00
+
+Payment due within 30 days.

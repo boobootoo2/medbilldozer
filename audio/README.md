@@ -116,7 +116,7 @@ TourStep(
 
 Audio files are automatically loaded by the tour runtime:
 
-1. Start the app: `streamlit run app.py`
+1. Start the app: `streamlit run medBillDozer.py`
 2. Dismiss splash screen
 3. Start the guided tour
 4. Navigate through steps - audio plays automatically

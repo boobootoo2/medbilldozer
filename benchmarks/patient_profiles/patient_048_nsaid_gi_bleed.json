@@ -1,0 +1,38 @@
+{
+  "patient_id": "P048",
+  "name": "Robert Martinez",
+  "demographics": {
+    "age": 62,
+    "sex": "M",
+    "date_of_birth": "1963-11-20"
+  },
+  "medical_history": {
+    "conditions": [
+      "Active Gastric Ulcer (treated 2 months ago)",
+      "Chronic Lower Back Pain",
+      "Hypertension"
+    ],
+    "allergies": [],
+    "medications": [
+      "Omeprazole 40mg daily",
+      "Lisinopril 20mg daily"
+    ],
+    "surgeries": []
+  },
+  "documents": [
+    {
+      "document_id": "patient_048_doc_1_medical_bill",
+      "document_type": "text",
+      "content": "MEDICAL BILL - ORTHOPEDIC CLINIC\n\nPATIENT: Robert Martinez\nDOB: 11/20/1963\nDATE OF SERVICE: 02/04/2026\n\nPROVIDER: City Orthopedic Associates\nDIAGNOSIS: M54.5 - Low Back Pain\n\nSERVICES PROVIDED:\n---------------------------------------------------------\nCPT 99214 - Office Visit Level 4          $245.00\nPatient Responsibility: $60.00\n\nMEDICATIONS PRESCRIBED:\n- Ibuprofen 600mg, three times daily for 14 days\n  (Prescribed for chronic lower back pain management)\n\nPATIENT MEDICAL HISTORY NOTED:\n- Active gastric ulcer (treated 2 months ago with PPI)\n- Currently on Omeprazole 40mg daily\n- Hypertension controlled with Lisinopril\n\nTOTAL AMOUNT DUE: $60.00\n\nNOTE: Single-document test. Drug-disease contraindication (NSAID + recent GI ulcer)\nis detectable from bill alone without needing cross-document reasoning.\n"
+    }
+  ],
+  "expected_issues": [
+    {
+      "type": "drug_disease_contraindication",
+      "severity": "critical",
+      "description": "Ibuprofen prescribed to patient with recent gastric ulcer - NSAIDs are contraindicated in active/recent GI bleeding. Requires medical knowledge of drug-disease contraindications.",
+      "requires_domain_knowledge": true,
+      "cpt_code": "99214"
+    }
+  ]
+}

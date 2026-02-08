@@ -1,0 +1,29 @@
+{
+    "patient_id": "patient_061",
+    "name": "Thomas Baker",
+    "demographics": {
+        "age": 42,
+        "sex": "M",
+        "date_of_birth": "1983-12-11"
+    },
+    "medical_history": {
+        "conditions": ["Type 1 Diabetes mellitus", "Recurrent UTIs"],
+        "medications": ["Insulin glargine 24 units QHS", "Insulin lispro with meals"],
+        "allergies": ["Trimethoprim-sulfamethoxazole (TMP-SMX) - Stevens-Johnson syndrome"]
+    },
+    "current_visit": {
+        "date": "2026-02-06",
+        "provider": "Dr. Amanda White",
+        "diagnosis": "Acute cystitis (urinary tract infection)",
+        "procedures": ["Office visit", "Urinalysis with culture"],
+        "prescriptions": ["Continue insulin regimen", "Sulfamethoxazole-trimethoprim DS BID x 7 days"]
+    },
+    "expected_issues": [{
+        "issue_type": "allergy_violation",
+        "severity": "critical",
+        "description": "Prescribed antibiotic (Sulfamethoxazole-trimethoprim) with documented severe allergic reaction history",
+        "fields_involved": ["prescriptions", "allergies"],
+        "reasoning": "Patient has documented severe allergic reaction (Stevens-Johnson syndrome - SJS) to TMP-SMX in allergy history. SJS is a life-threatening severe cutaneous adverse reaction with 20-30% mortality. Re-exposure to culprit drug (sulfonamide antibiotics) can trigger recurrent SJS with higher severity. This is an absolute contraindication. Alternative antibiotics (nitrofurantoin, ciprofloxacin, fosfomycin) must be used for UTI treatment.",
+        "domain_knowledge_required": true
+    }]
+}
