@@ -1,3 +1,6 @@
+# Install the medbilldozer package itself
+.
+
 absl-py==2.3.1
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.3
