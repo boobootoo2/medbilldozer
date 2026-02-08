@@ -55,7 +55,7 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
           # Run patient benchmarks for all models using v2 script with parallel workers
-          python3 scripts/run_benchmarks_v2.py --model all --workers 2
+          python3 scripts/run_benchmarks_v2.py --model all --workers 2 
       
       - name: Convert results to monitoring format
         if: always()
