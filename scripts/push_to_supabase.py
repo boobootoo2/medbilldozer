@@ -170,6 +170,21 @@ class BenchmarkPersistence:
         metrics_with_domain = result.metrics.copy()
         if result.domain_breakdown:
             metrics_with_domain['domain_breakdown'] = result.domain_breakdown
+            
+            # Also create error_type_performance format for dashboard compatibility
+            # Transform domain_breakdown to error_type_performance format
+            error_type_performance = {}
+            for error_type, perf_data in result.domain_breakdown.items():
+                error_type_performance[error_type] = {
+                    'detection_rate': perf_data.get('recall', 0.0),
+                    'precision': perf_data.get('precision', 0.0),
+                    'f1': perf_data.get('f1', 0.0),
+                    'total_cases': perf_data.get('total_cases', 0),
+                    'detected': perf_data.get('total_detected', 0),
+                    'missed': perf_data.get('total_missed', 0)
+                }
+            metrics_with_domain['error_type_performance'] = error_type_performance
+            
         if result.category_metrics:
             metrics_with_domain['category_metrics'] = result.category_metrics
         
