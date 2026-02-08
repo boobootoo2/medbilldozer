@@ -48,6 +48,16 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Custom CSS for metric styling
+st.markdown("""
+<style>
+    /* Increase font size for metric values (model names) */
+    [data-testid="stMetricValue"] {
+        font-size: 16px !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 st.title("🚨 Production Stability")
 st.markdown("Real-time ML model performance tracking and regression detection")
 
@@ -1148,7 +1158,22 @@ with tab6:
         
         # Calculate Healthcare Effectiveness Score (HES) for each model
         def calculate_healthcare_effectiveness_score(df, history_df):
-            """Calculate composite Healthcare Effectiveness Score."""
+            """
+            Calculate composite Healthcare Effectiveness Score (HES).
+            
+            PRIORITIZES RECALL (60% weight): In medical billing compliance, missing errors
+            (false negatives) is more expensive than false positives. The cost of an undetected
+            fraudulent/erroneous medical bill far exceeds the cost of flagging legitimate bills
+            for review.
+            
+            Formula:
+            - Recall: 60% (PRIMARY - error detection rate)
+            - F1: 15% (balanced performance)
+            - ROI: 10% (efficiency - value per latency)
+            - Savings Capture: 10% (financial impact)
+            - Stability: 5% (performance consistency)
+            - Penalties for failures and insufficient data
+            """
             import numpy as np
             
             scores = []
@@ -1221,13 +1246,15 @@ with tab6:
             # Apply low-run penalty
             scores_df['low_run_penalty'] = scores_df['run_count'].apply(lambda x: 0.15 if x < 2 else 0)
             
-            # Calculate composite HES
+            # Calculate composite HES (Healthcare Effectiveness Score)
+            # PRIORITIZES RECALL: Missing medical billing errors (false negatives) is more costly
+            # than false positives in healthcare compliance scenarios
             scores_df['hes'] = (
-                (scores_df['avg_f1'] * 0.40) +
-                (scores_df['avg_recall'] * 0.25) +
-                (scores_df['normalized_roi'] * 0.20) +
-                (scores_df['stability_score'] * 0.10) +
-                (scores_df['savings_capture_norm'] * 0.05) -
+                (scores_df['avg_recall'] * 0.60) +        # PRIMARY: Catch errors (false negatives are expensive)
+                (scores_df['avg_f1'] * 0.15) +            # Balance: Overall performance
+                (scores_df['normalized_roi'] * 0.10) +    # Efficiency: Value per latency
+                (scores_df['savings_capture_norm'] * 0.10) +  # Financial: Actual savings captured
+                (scores_df['stability_score'] * 0.05) -   # Consistency: Performance variance
                 scores_df['failure_penalty'] -
                 scores_df['low_run_penalty']
             )

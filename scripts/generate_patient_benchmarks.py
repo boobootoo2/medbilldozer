@@ -21,6 +21,7 @@ import json
 import sys
 import time
 import re
+import subprocess
 from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from pathlib import Path
@@ -175,6 +176,7 @@ class PatientBenchmarkRunner:
         """Get the precise model name for display."""
         model_names = {
             "medgemma": "Google MedGemma-4B-IT",
+            "medgemma-ensemble": "medgemma-ensemble-v1.0",
             "gemma3": "Google Gemma-3-27B-IT",
             "openai": "OpenAI GPT-4",
             "gemini": "Google Gemini 1.5 Pro",
@@ -1381,7 +1383,8 @@ def main():
         '--model',
         type=str,
         default='all',
-        choices=['medgemma', 'medgemma-ensemble', 'gemma3', 'openai', 'gemini', 'baseline', 'all'],
+        # choices=['medgemma', 'medgemma-ensemble', 'gemma3', 'openai', 'gemini', 'baseline', 'all'],
+        choices=['medgemma', 'medgemma-ensemble', 'gemma3', 'openai', 'all'],
         help='Which model to benchmark (default: all)'
     )
     parser.add_argument(

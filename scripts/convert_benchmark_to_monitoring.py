@@ -27,12 +27,15 @@ def convert_to_monitoring_format(input_file: Path, model_name: str) -> dict:
     # Model version should match the display name for consistency
     model_display_names = {
         'medgemma': 'Google MedGemma-4B-IT',
+        'medgemma-ensemble': 'medgemma-ensemble-v1.0',
         'gemma3': 'Google Gemma-3-27B-IT',
         'gemini': 'Google Gemini 1.5 Pro',
         'openai': 'OpenAI GPT-4',
         'baseline': 'Heuristic Baseline'
     }
-    model_version = model_display_names.get(model_name, f"{model_name}-v1.0")
+    # For patient benchmarks, use the model_name from the JSON file directly if it exists
+    # This preserves the version set in generate_patient_benchmarks.py
+    model_version = metrics.get('model_name', model_display_names.get(model_name, f"{model_name}-v1.0"))
     dataset_version = "patient-benchmark-v2" if is_patient_benchmark else "benchmark-set-v1"
     prompt_version = metrics.get('prompt_version', 'v2-structured-reasoning' if is_patient_benchmark else 'v1')
     
