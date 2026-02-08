@@ -981,14 +981,26 @@ with tab5:
             key="history_model"
         )
         
-        # Get snapshot history for selected model
-        history_df = data_access.get_snapshot_history(
-            model_version=selected_model_history,
-            dataset_version="patient-profiles-v1",
-            prompt_version="cross-document-v1",
-            environment=env_filter or "local",  # Default to local if no filter
-            limit=50
-        )
+        # Get latest snapshot for this model to determine dataset/prompt versions
+        latest_snapshots = data_access.get_latest_snapshots(environment=env_filter)
+        model_snapshot = latest_snapshots[latest_snapshots['model_version'] == selected_model_history]
+        
+        if model_snapshot.empty:
+            st.warning(f"No snapshots found for {selected_model_history}")
+            history_df = pd.DataFrame()
+        else:
+            # Use actual dataset and prompt versions from the model's snapshots
+            dataset_version = model_snapshot.iloc[0]['dataset_version']
+            prompt_version = model_snapshot.iloc[0]['prompt_version']
+            
+            # Get snapshot history for selected model
+            history_df = data_access.get_snapshot_history(
+                model_version=selected_model_history,
+                dataset_version=dataset_version,
+                prompt_version=prompt_version,
+                environment=env_filter or "local",  # Default to local if no filter
+                limit=50
+            )
         
         if history_df.empty:
             st.warning(f"No snapshot history found for {selected_model_history}")
