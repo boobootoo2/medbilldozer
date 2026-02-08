@@ -4,6 +4,14 @@ Main Streamlit application that orchestrates document analysis, provider registr
 and UI rendering for detecting billing, pharmacy, dental, and insurance claim issues.
 """
 # app.py
+import sys
+from pathlib import Path
+
+# Add src directory to Python path for package imports
+src_path = Path(__file__).parent / "src"
+if src_path.exists() and str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
 import streamlit as st
 
 # Core modules
