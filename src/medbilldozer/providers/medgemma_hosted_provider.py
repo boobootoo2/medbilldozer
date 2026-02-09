@@ -224,7 +224,7 @@ class MedGemmaHostedProvider(LLMProvider):
             "model": HF_MODEL_ID,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.0,
-            "max_tokens": 1500,
+            "max_tokens": 2500,  # Conservative estimate from tiktoken analysis with buffer
         }
 
         response = requests.post(
