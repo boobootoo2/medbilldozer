@@ -85,9 +85,10 @@ import re
 import json
 import threading
 
-# Global lock and flag for coordinating endpoint warmup across threads
+# Global lock and state for coordinating endpoint warmup across threads
 _warmup_lock = threading.Lock()
 _endpoint_warmed_global = False
+_warmup_attempted = False  # Track if warmup was attempted (success or fail)
 
 
 def _extract_json(text: str) -> dict:
@@ -138,24 +139,36 @@ class MedGemmaHostedProvider(LLMProvider):
         Uses a global lock to ensure only ONE thread does the warmup work.
         Returns True if endpoint is ready, False otherwise.
         """
-        global _endpoint_warmed_global
+        global _endpoint_warmed_global, _warmup_attempted
         
-        # Fast path: already warmed up by another thread
+        # Fast path: already warmed up successfully
         if _endpoint_warmed_global:
             return True
+        
+        # Fast path: warmup was already attempted and failed - don't retry
+        if _warmup_attempted and not _endpoint_warmed_global:
+            return False
         
         # Check if Router (no warmup needed)
         if not HF_ENDPOINT_BASE:
             with _warmup_lock:
                 if not _endpoint_warmed_global:
                     _endpoint_warmed_global = True
+                    _warmup_attempted = True
             return True
             
-        # Acquire lock - only one thread will do the warmup
+        # Acquire lock - only one thread will do the warmup attempt
         with _warmup_lock:
-            # Double-check after acquiring lock (another thread may have just warmed it)
+            # Double-check after acquiring lock (another thread may have just finished)
             if _endpoint_warmed_global:
                 return True
+            
+            # Check if another thread already tried and failed
+            if _warmup_attempted:
+                return False
+            
+            # Mark that we're attempting warmup (prevents other threads from trying)
+            _warmup_attempted = True
             
             # This thread won the race - do the warmup
             print("🔄 Warming up HuggingFace Inference Endpoint (up to 3 minutes)...", flush=True)
