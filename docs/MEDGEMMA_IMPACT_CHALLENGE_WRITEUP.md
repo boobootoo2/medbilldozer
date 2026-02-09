@@ -18,7 +18,7 @@
 
 **Architecture**: Four-phase pipeline combining MedGemma analysis → deterministic canonicalization → optional OpenAI semantic mapping → heuristic safety nets.
 
-**Performance**: Ensemble achieves **62.16% recall** (highest), **45.84% F1**, and **59.21% savings capture rate** — detecting $26,130 in billing errors. Superior recall minimizes missed errors.
+**Performance**: Ensemble achieves **61.9% recall** (highest), **46.9% F1**, and **59.21% savings capture rate** — detecting $26,130 in billing errors. On clinical reasoning cases, achieves **63.1% Domain Detection Rate** and **0.523 HES** (Healthcare Effectiveness Score). Superior recall minimizes missed errors.
 
 ## Technical Implementation
 

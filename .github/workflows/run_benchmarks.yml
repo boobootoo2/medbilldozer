@@ -52,17 +52,21 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
+          HF_ENDPOINT_BASE: ${{ secrets.HF_ENDPOINT_BASE }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
           # Run patient benchmarks for all models using v2 script with parallel workers
-          python3 scripts/run_benchmarks_v2.py --model all --workers 2 
+          # NOTE: Only running OpenAI in CI since HF Inference Endpoint auto-pauses
+          # Run MedGemma models locally when needed, or manually start HF endpoint before workflow
+          python3 scripts/run_benchmarks_v2.py --model openai --workers 2 
       
       - name: Convert results to monitoring format
         if: always()
         run: |
           mkdir -p benchmark-artifacts
-          # Convert each model's patient benchmark results (46 patients)
-          for model in baseline openai gemini medgemma medgemma-ensemble gemma3; do
+          # Convert each model's patient benchmark results (61 patients)
+          # Only convert models that were actually run
+          for model in openai; do
             if [ -f "benchmarks/results/patient_benchmark_${model}.json" ]; then
               python3 scripts/convert_benchmark_to_monitoring.py \
                 --input "benchmarks/results/patient_benchmark_${model}.json" \
@@ -86,8 +90,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          # Push each model's patient benchmark results (46 patients) to Supabase
-          for model in baseline openai gemini medgemma medgemma-ensemble gemma3; do
+          # Push each model's patient benchmark results (61 patients) to Supabase
+          # Only push models that were actually run
+          for model in openai; do
             if [ -f "benchmark-artifacts/${model}_benchmark_results.json" ]; then
               echo "📤 Pushing ${model} results to Supabase..."
               python3 scripts/push_to_supabase.py \

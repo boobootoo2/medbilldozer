@@ -1,0 +1,122 @@
+name: Run All Models Benchmarks (Manual)
+
+on:
+  # Manual trigger only
+  workflow_dispatch:
+    inputs:
+      models:
+        description: 'Models to run (comma-separated or "all")'
+        required: false
+        default: 'all'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e . -v
+          pip install -r requirements-benchmarks.txt
+      
+      - name: Check HuggingFace endpoint status
+        if: contains(github.event.inputs.models, 'all') || contains(github.event.inputs.models, 'medgemma')
+        env:
+          HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
+          HF_ENDPOINT_BASE: ${{ secrets.HF_ENDPOINT_BASE }}
+        run: |
+          echo "🔍 Checking HuggingFace Inference Endpoint status..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${HF_ENDPOINT_BASE}" -H "Authorization: Bearer ${HF_API_TOKEN}")
+          echo "Status code: $STATUS"
+          
+          if [ "$STATUS" = "503" ]; then
+            echo "⚠️ WARNING: HuggingFace endpoint is stopped (503 Service Unavailable)"
+            echo "Please start the endpoint at: https://ui.endpoints.huggingface.co/"
+            echo "Or the benchmark will fail for MedGemma models"
+            echo ""
+            echo "Waiting 2 minutes for manual endpoint start..."
+            sleep 120
+          elif [ "$STATUS" = "200" ]; then
+            echo "✅ Endpoint is running"
+          else
+            echo "⚠️ Unexpected status: $STATUS"
+          fi
+      
+      - name: Run benchmarks
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
+          HF_ENDPOINT_BASE: ${{ secrets.HF_ENDPOINT_BASE }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: |
+          MODELS="${{ github.event.inputs.models }}"
+          if [ -z "$MODELS" ]; then
+            MODELS="all"
+          fi
+          
+          echo "Running benchmarks for models: $MODELS"
+          python3 scripts/run_benchmarks_v2.py --model "$MODELS" --workers 2
+      
+      - name: Convert results to monitoring format
+        if: always()
+        run: |
+          mkdir -p benchmark-artifacts
+          for model in baseline openai gemini medgemma medgemma-ensemble gemma3; do
+            if [ -f "benchmarks/results/patient_benchmark_${model}.json" ]; then
+              python3 scripts/convert_benchmark_to_monitoring.py \
+                --input "benchmarks/results/patient_benchmark_${model}.json" \
+                --output "benchmark-artifacts/${model}_benchmark_results.json" \
+                --model "${model}"
+            fi
+          done
+      
+      - name: Calculate ROI
+        if: always()
+        run: |
+          python3 scripts/calculate_roi_metrics.py \
+            --results-dir benchmark-artifacts \
+            --output benchmark-artifacts/roi_summary.json \
+            --report benchmark-artifacts/roi_report.md
+      
+      - name: Push results to Supabase
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          for model in baseline openai gemini medgemma medgemma-ensemble gemma3; do
+            if [ -f "benchmark-artifacts/${model}_benchmark_results.json" ]; then
+              echo "📤 Pushing ${model} results to Supabase..."
+              python3 scripts/push_to_supabase.py \
+                --input "benchmark-artifacts/${model}_benchmark_results.json" \
+                --environment github-actions-manual \
+                --commit-sha ${{ github.sha }} \
+                --branch-name ${{ github.ref_name }} \
+                --run-id ${{ github.run_id }} \
+                --triggered-by ${{ github.actor }} \
+                --verify || echo "⚠️ Failed to push ${model} to Supabase"
+            fi
+          done
+      
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-all-models
+          path: |
+            benchmark-artifacts/*.json
+            benchmark-artifacts/*.md
+          retention-days: 90
