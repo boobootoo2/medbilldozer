@@ -88,13 +88,21 @@ import json
 def _extract_json(text: str) -> dict:
     """
     Extract the first valid JSON object from model output.
-    Handles leading whitespace, prose, or accidental formatting.
+    Handles leading whitespace, prose, markdown code fences, or accidental formatting.
     """
     if not text:
         raise ValueError("Empty model output")
 
     # Trim obvious whitespace
     cleaned = text.strip()
+    
+    # Remove markdown code fences if present (```json ... ``` or ``` ... ```)
+    if cleaned.startswith("```"):
+        # Remove opening fence
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+        # Remove closing fence
+        cleaned = re.sub(r"\s*```\s*$", "", cleaned)
+        cleaned = cleaned.strip()
 
     # Fast path: already valid JSON
     if cleaned.startswith("{"):
