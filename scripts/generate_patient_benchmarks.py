@@ -145,7 +145,20 @@ class PatientBenchmarkRunner:
     def __init__(self, model: str, subset: Optional[str] = None, workers: int = 1):
         self.model = model
         self.subset = subset
-        self.workers = workers
+        
+        # Respect model-specific worker limits
+        # OpenAI has rate limits that work best with max 2 concurrent workers
+        model_max_workers = {
+            'openai': 2,  # OpenAI rate limits
+            'gemini': 2,  # Gemini also has rate limits
+        }
+        max_allowed = model_max_workers.get(model, workers)
+        self.workers = min(workers, max_allowed)
+        
+        # Notify if workers were capped
+        if self.workers < workers:
+            print(f"ℹ️  Note: {model} limited to {self.workers} workers (requested {workers}) due to API rate limits")
+        
         self.benchmarks_dir = PROJECT_ROOT / "benchmarks"
         self.profiles_dir = self.benchmarks_dir / "patient_profiles"
         self.inputs_dir = self.benchmarks_dir / "inputs"
