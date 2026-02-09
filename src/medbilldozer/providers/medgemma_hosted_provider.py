@@ -6,15 +6,24 @@ for specialized medical billing analysis.
 
 import os
 import json
+import time
 import requests
 from typing import Optional, Dict
 from medbilldozer.providers.llm_interface import LLMProvider, AnalysisResult, Issue
 
 HF_MODEL_ID = os.getenv("HF_MODEL_ID", "google/medgemma-4b-it")
-HF_MODEL_URL = os.getenv(
-    "HF_MODEL_URL",
-    f"https://router.huggingface.co/v1/chat/completions"
-)
+
+# Support both dedicated inference endpoints and router
+# If HF_ENDPOINT_BASE is set, use it (for dedicated endpoints)
+# Otherwise fall back to router
+HF_ENDPOINT_BASE = os.getenv("HF_ENDPOINT_BASE")
+if HF_ENDPOINT_BASE:
+    HF_MODEL_URL = f"{HF_ENDPOINT_BASE}/v1/chat/completions"
+else:
+    HF_MODEL_URL = os.getenv(
+        "HF_MODEL_URL",
+        f"https://router.huggingface.co/v1/chat/completions"
+    )
 
 
 SYSTEM_PROMPT = """
@@ -102,12 +111,82 @@ def _extract_json(text: str) -> dict:
 class MedGemmaHostedProvider(LLMProvider):
     def __init__(self):
         self.token = os.getenv("HF_API_TOKEN")
+        self._endpoint_warmed = False
 
     def name(self) -> str:
         return "medgemma-hosted"
 
     def health_check(self) -> bool:
         return bool(self.token)
+    
+    def _warmup_endpoint(self) -> bool:
+        """
+        Warm up the HuggingFace Inference Endpoint if it's in stopped state.
+        Inference Endpoints auto-pause to save costs and need to be woken up.
+        Returns True if endpoint is ready, False otherwise.
+        """
+        if self._endpoint_warmed:
+            return True
+            
+        if not HF_ENDPOINT_BASE:
+            # Using Router, no warmup needed
+            self._endpoint_warmed = True
+            return True
+        
+        # Only print once at start, not for every parallel worker
+        import sys
+        if not hasattr(sys.stdout, '_hf_warmup_printed'):
+            print("🔄 Warming up HuggingFace Inference Endpoint (30-60s)...", flush=True)
+            sys.stdout._hf_warmup_printed = True
+        
+        headers = {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json",
+        }
+        
+        # Send a minimal warmup request
+        warmup_payload = {
+            "model": HF_MODEL_ID,
+            "messages": [{"role": "user", "content": "Hello"}],
+            "max_tokens": 1,
+        }
+        
+        max_retries = 3
+        retry_delay = 30  # seconds
+        
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(
+                    HF_MODEL_URL,
+                    headers=headers,
+                    json=warmup_payload,
+                    timeout=90,
+                )
+                
+                if response.status_code == 503:
+                    if attempt < max_retries - 1:
+                        print(f"⏳ Attempt {attempt + 1}/{max_retries}...", flush=True)
+                        time.sleep(retry_delay)
+                        continue
+                    else:
+                        print("⚠️ Endpoint unavailable", flush=True)
+                        return False
+                
+                if response.status_code == 200:
+                    print("✅ Ready", flush=True)
+                    self._endpoint_warmed = True
+                    return True
+                    
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    print(f"⏳ Retry {attempt + 1}...", flush=True)
+                    time.sleep(retry_delay)
+                    continue
+                else:
+                    print(f"⚠️ Failed: {str(e)[:100]}", flush=True)
+                    return False
+        
+        return False
 
     def analyze_document(
         self,
@@ -116,6 +195,14 @@ class MedGemmaHostedProvider(LLMProvider):
     ) -> AnalysisResult:
         if not self.token:
             raise RuntimeError("HF_API_TOKEN not set")
+        
+        # Warm up endpoint if needed (only happens once)
+        if not self._warmup_endpoint():
+            raise RuntimeError(
+                "HuggingFace Inference Endpoint is not available. "
+                "Please start the endpoint at: https://ui.endpoints.huggingface.co/ "
+                "or wait for it to auto-scale."
+            )
 
         headers = {
             "Authorization": f"Bearer {self.token}",
@@ -138,6 +225,25 @@ class MedGemmaHostedProvider(LLMProvider):
             json=payload,
             timeout=120,
         )
+        
+        # Provide detailed error message for 400 errors
+        if response.status_code == 400:
+            error_detail = response.text
+            try:
+                error_json = response.json()
+                error_detail = json.dumps(error_json, indent=2)
+            except (json.JSONDecodeError, ValueError):
+                pass
+            raise RuntimeError(
+                f"HuggingFace API returned 400 Bad Request.\n"
+                f"This usually means:\n"
+                f"1. Model '{HF_MODEL_ID}' is not available via Router endpoint\n"
+                f"2. Token doesn't have access to this model\n"
+                f"3. Model requires a dedicated Inference Endpoint\n"
+                f"\nError details:\n{error_detail}\n"
+                f"\nConsider using a dedicated endpoint or switching to Vertex AI for MedGemma."
+            )
+        
         response.raise_for_status()
 
         data = response.json()
@@ -146,8 +252,11 @@ class MedGemmaHostedProvider(LLMProvider):
             content = data["choices"][0]["message"]["content"]
             parsed = _extract_json(content)
         except Exception as e:
+            # Truncate raw output to first 500 chars to avoid log spam
+            truncated = content[:500] + "..." if len(content) > 500 else content
             raise RuntimeError(
-                f"Failed to parse model JSON output: {e}\nRaw output:\n{content}"
+                f"Failed to parse model JSON output: {e}\n"
+                f"Raw output (truncated): {truncated}"
             )
 
         issues = []
