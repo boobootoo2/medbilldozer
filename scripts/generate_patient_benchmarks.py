@@ -28,6 +28,10 @@ from pathlib import Path
 from typing import List, Dict, Optional, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import argparse
+from dotenv import load_dotenv
+
+# Load environment variables from .env file (override shell vars)
+load_dotenv(override=True)
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent

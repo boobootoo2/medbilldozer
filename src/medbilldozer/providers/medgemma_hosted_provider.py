@@ -198,10 +198,14 @@ class MedGemmaHostedProvider(LLMProvider):
         # TEMPORARY: Skip warmup check since endpoint is already running
         # TODO: Fix warmup logic to handle all HTTP response codes properly
         with _warmup_lock:
-            if not _endpoint_warmed_global:
-                print("✅ Skipping warmup - endpoint already active", flush=True)
-                _endpoint_warmed_global = True
-                _warmup_attempted = True
+            # Double-check inside lock - another thread may have already done this
+            if _endpoint_warmed_global:
+                return True
+            
+            # Only first thread prints and sets flags
+            print("✅ Skipping warmup - endpoint already active", flush=True)
+            _endpoint_warmed_global = True
+            _warmup_attempted = True
         return True
             
         # Acquire lock - only one thread will do the warmup attempt
