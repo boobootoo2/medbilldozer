@@ -5,7 +5,7 @@ Uses tiktoken to calculate input/output token requirements.
 """
 
 import json
-import subprocess
+import subprocess  # nosec B404 - subprocess needed for pip install in dev script
 import sys
 from pathlib import Path
 
@@ -16,7 +16,7 @@ try:
     import tiktoken
 except ImportError:
     print("Installing tiktoken...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "tiktoken"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "tiktoken"])  # nosec B603 - safe pip install in dev script
     import tiktoken
 
 
