@@ -95,6 +95,7 @@ def _extract_json(text: str) -> dict:
     """
     Extract the first valid JSON object from model output.
     Handles leading whitespace, prose, markdown code fences, or accidental formatting.
+    Also attempts to repair truncated JSON by closing incomplete structures.
     """
     if not text:
         raise ValueError("Empty model output")
@@ -112,14 +113,51 @@ def _extract_json(text: str) -> dict:
 
     # Fast path: already valid JSON
     if cleaned.startswith("{"):
-        return json.loads(cleaned)
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError as e:
+            # Try to repair truncated JSON
+            if "Unterminated string" in str(e) or "Expecting" in str(e):
+                # Attempt to close incomplete JSON structures
+                repaired = cleaned
+                # Close unterminated strings
+                if repaired.count('"') % 2 != 0:
+                    repaired += '"'
+                # Close incomplete arrays and objects
+                open_braces = repaired.count('{') - repaired.count('}')
+                open_brackets = repaired.count('[') - repaired.count(']')
+                repaired += ']' * open_brackets + '}' * open_braces
+                
+                try:
+                    return json.loads(repaired)
+                except json.JSONDecodeError:
+                    # Still can't parse, raise original error
+                    raise e
+            raise
 
     # Fallback: extract first {...} block
     match = re.search(r"\{[\s\S]*\}", cleaned)
     if not match:
         raise ValueError(f"No JSON object found in model output:\n{text}")
 
-    return json.loads(match.group(0))
+    try:
+        return json.loads(match.group(0))
+    except json.JSONDecodeError as e:
+        # Try repair on extracted JSON
+        extracted = match.group(0)
+        if "Unterminated string" in str(e) or "Expecting" in str(e):
+            repaired = extracted
+            if repaired.count('"') % 2 != 0:
+                repaired += '"'
+            open_braces = repaired.count('{') - repaired.count('}')
+            open_brackets = repaired.count('[') - repaired.count(']')
+            repaired += ']' * open_brackets + '}' * open_braces
+            
+            try:
+                return json.loads(repaired)
+            except json.JSONDecodeError:
+                raise e
+        raise
 
 
 class MedGemmaHostedProvider(LLMProvider):
@@ -259,7 +297,7 @@ class MedGemmaHostedProvider(LLMProvider):
             "model": HF_MODEL_ID,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.0,
-            "max_tokens": 4096,  # Increased for comprehensive multi-pass analysis outputs
+            "max_tokens": 8192,  # Increased to prevent truncation in multi-pass analysis
         }
 
         response = requests.post(
