@@ -224,7 +224,7 @@ class MedGemmaHostedProvider(LLMProvider):
             "model": HF_MODEL_ID,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.0,
-            "max_tokens": 600,
+            "max_tokens": 1500,
         }
 
         response = requests.post(
