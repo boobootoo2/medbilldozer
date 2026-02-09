@@ -5,7 +5,7 @@ Uses tiktoken to calculate input/output token requirements.
 """
 
 import json
-import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -16,7 +16,7 @@ try:
     import tiktoken
 except ImportError:
     print("Installing tiktoken...")
-    os.system("pip install tiktoken")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "tiktoken"])
     import tiktoken
 
 
