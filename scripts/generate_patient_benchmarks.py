@@ -151,6 +151,8 @@ class PatientBenchmarkRunner:
         model_max_workers = {
             'openai': 2,  # OpenAI rate limits
             'gemini': 2,  # Gemini also has rate limits
+            'medgemma': 3,  # HuggingFace endpoint concurrency limit
+            'medgemma-ensemble': 3,  # HuggingFace endpoint concurrency limit
         }
         max_allowed = model_max_workers.get(model, workers)
         self.workers = min(workers, max_allowed)
