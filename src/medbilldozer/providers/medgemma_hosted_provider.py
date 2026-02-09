@@ -168,7 +168,7 @@ class MedGemmaHostedProvider(LLMProvider):
                     HF_MODEL_URL,
                     headers=headers,
                     json=warmup_payload,
-                    timeout=120,
+                    timeout=180,
                 )
                 
                 if response.status_code == 503:
@@ -231,7 +231,7 @@ class MedGemmaHostedProvider(LLMProvider):
             HF_MODEL_URL,
             headers=headers,
             json=payload,
-            timeout=120,
+            timeout=180,
         )
         
         # Provide detailed error message for 400 errors
