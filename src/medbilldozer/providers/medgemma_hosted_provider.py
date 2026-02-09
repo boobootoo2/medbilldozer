@@ -26,59 +26,16 @@ else:
     )
 
 
-SYSTEM_PROMPT = """
-You are a medical billing analysis system.
+SYSTEM_PROMPT = """Medical billing analysis. Return valid JSON only. Be conservative. Only estimate savings when clearly supported by document. Never exceed patient responsibility."""
 
-You MUST return valid JSON only.
-Do not include prose, explanations, or markdown outside JSON.
+TASK_PROMPT = """Analyze billing documents for issues. Estimate max_savings only when directly supported:
+1. Duplicate charges: max_savings = patient responsibility for ONE duplicate
+2. Math errors: max_savings = difference shown
+3. Other issues: max_savings = null unless patient amount clearly eliminated
 
-Be conservative and factual.
-Only estimate savings when the document itself clearly supports it.
-Never guess insurance outcomes.
-Never exceed patient responsibility amounts shown on the document.
-"""
+JSON schema: {"issues": [{"type": string, "summary": string, "evidence": string, "max_savings": number|null}]}
 
-TASK_PROMPT = """
-Analyze the following medical billing documents.
-
-Identify administrative or billing issues.
-
-For each issue, determine whether a MAX POTENTIAL PATIENT SAVINGS
-can be calculated directly from the document.
-
-Rules for estimating max_savings:
-
-1. Duplicate charges
-   - Same CPT code
-   - Same date of service
-   - Identical billed/allowed/patient responsibility
-   → max_savings = patient responsibility for ONE duplicate line item
-
-2. Math or reconciliation errors
-   → max_savings = difference implied by the document
-
-3. Preventive vs diagnostic or coding issues
-   → Do NOT estimate savings unless the patient responsibility amount
-     could clearly be eliminated
-
-4. If savings cannot be confidently estimated
-   → max_savings = null
-
-Return STRICT JSON using this schema:
-
-{
-  "issues": [
-    {
-      "type": string,
-      "summary": string,
-      "evidence": string,
-      "max_savings": number | null
-    }
-  ]
-}
-
-Document:
-"""
+Document:"""
 
 
 import re
@@ -301,14 +258,14 @@ class MedGemmaHostedProvider(LLMProvider):
             "model": HF_MODEL_ID,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.0,
-            "max_tokens": 8192,  # Increased to prevent truncation in multi-pass analysis
+            "max_tokens": 4096,  # Balanced for speed vs completeness
         }
 
         response = requests.post(
             HF_MODEL_URL,
             headers=headers,
             json=payload,
-            timeout=180,
+            timeout=300,  # 5 min timeout for long generations
         )
         
         # Provide detailed error message for 400 errors
