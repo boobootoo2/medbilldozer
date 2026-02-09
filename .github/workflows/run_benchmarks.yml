@@ -56,7 +56,9 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
           # Run patient benchmarks for all models using v2 script with parallel workers
-          python3 scripts/run_benchmarks_v2.py --model all --workers 2 
+          # NOTE: Only running OpenAI in CI since HF Inference Endpoint auto-pauses
+          # Run MedGemma models locally when needed, or manually start HF endpoint before workflow
+          python3 scripts/run_benchmarks_v2.py --model openai --workers 2 
       
       - name: Convert results to monitoring format
         if: always()
