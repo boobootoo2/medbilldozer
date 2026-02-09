@@ -88,13 +88,21 @@ import json
 def _extract_json(text: str) -> dict:
     """
     Extract the first valid JSON object from model output.
-    Handles leading whitespace, prose, or accidental formatting.
+    Handles leading whitespace, prose, markdown code fences, or accidental formatting.
     """
     if not text:
         raise ValueError("Empty model output")
 
     # Trim obvious whitespace
     cleaned = text.strip()
+    
+    # Remove markdown code fences if present (```json ... ``` or ``` ... ```)
+    if cleaned.startswith("```"):
+        # Remove opening fence
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+        # Remove closing fence
+        cleaned = re.sub(r"\s*```\s*$", "", cleaned)
+        cleaned = cleaned.strip()
 
     # Fast path: already valid JSON
     if cleaned.startswith("{"):
@@ -151,7 +159,7 @@ class MedGemmaHostedProvider(LLMProvider):
             "max_tokens": 1,
         }
         
-        max_retries = 3
+        max_retries = 6
         retry_delay = 30  # seconds
         
         for attempt in range(max_retries):
@@ -160,7 +168,7 @@ class MedGemmaHostedProvider(LLMProvider):
                     HF_MODEL_URL,
                     headers=headers,
                     json=warmup_payload,
-                    timeout=90,
+                    timeout=120,
                 )
                 
                 if response.status_code == 503:
@@ -169,7 +177,7 @@ class MedGemmaHostedProvider(LLMProvider):
                         time.sleep(retry_delay)
                         continue
                     else:
-                        print("⚠️ Endpoint unavailable", flush=True)
+                        print("⚠️ Endpoint still unavailable after 3 minutes", flush=True)
                         return False
                 
                 if response.status_code == 200:
@@ -216,7 +224,7 @@ class MedGemmaHostedProvider(LLMProvider):
             "model": HF_MODEL_ID,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.0,
-            "max_tokens": 600,
+            "max_tokens": 2500,  # Conservative estimate from tiktoken analysis with buffer
         }
 
         response = requests.post(
