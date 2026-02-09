@@ -151,7 +151,7 @@ class MedGemmaHostedProvider(LLMProvider):
             "max_tokens": 1,
         }
         
-        max_retries = 3
+        max_retries = 6
         retry_delay = 30  # seconds
         
         for attempt in range(max_retries):
@@ -160,7 +160,7 @@ class MedGemmaHostedProvider(LLMProvider):
                     HF_MODEL_URL,
                     headers=headers,
                     json=warmup_payload,
-                    timeout=90,
+                    timeout=120,
                 )
                 
                 if response.status_code == 503:
@@ -169,7 +169,7 @@ class MedGemmaHostedProvider(LLMProvider):
                         time.sleep(retry_delay)
                         continue
                     else:
-                        print("⚠️ Endpoint unavailable", flush=True)
+                        print("⚠️ Endpoint still unavailable after 3 minutes", flush=True)
                         return False
                 
                 if response.status_code == 200:
