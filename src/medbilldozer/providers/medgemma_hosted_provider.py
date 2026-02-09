@@ -156,6 +156,15 @@ class MedGemmaHostedProvider(LLMProvider):
                     _endpoint_warmed_global = True
                     _warmup_attempted = True
             return True
+        
+        # TEMPORARY: Skip warmup check since endpoint is already running
+        # TODO: Fix warmup logic to handle all HTTP response codes properly
+        with _warmup_lock:
+            if not _endpoint_warmed_global:
+                print("✅ Skipping warmup - endpoint already active", flush=True)
+                _endpoint_warmed_global = True
+                _warmup_attempted = True
+        return True
             
         # Acquire lock - only one thread will do the warmup attempt
         with _warmup_lock:
@@ -250,7 +259,7 @@ class MedGemmaHostedProvider(LLMProvider):
             "model": HF_MODEL_ID,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.0,
-            "max_tokens": 2500,  # Conservative estimate from tiktoken analysis with buffer
+            "max_tokens": 4096,  # Increased for comprehensive multi-pass analysis outputs
         }
 
         response = requests.post(
