@@ -133,7 +133,11 @@ class MedGemmaHostedProvider(LLMProvider):
             self._endpoint_warmed = True
             return True
         
-        print("🔄 Warming up HuggingFace Inference Endpoint (this may take 30-60 seconds)...")
+        # Only print once at start, not for every parallel worker
+        import sys
+        if not hasattr(sys.stdout, '_hf_warmup_printed'):
+            print("🔄 Warming up HuggingFace Inference Endpoint (30-60s)...", flush=True)
+            sys.stdout._hf_warmup_printed = True
         
         headers = {
             "Authorization": f"Bearer {self.token}",
@@ -161,25 +165,25 @@ class MedGemmaHostedProvider(LLMProvider):
                 
                 if response.status_code == 503:
                     if attempt < max_retries - 1:
-                        print(f"⏳ Endpoint starting... waiting {retry_delay}s (attempt {attempt + 1}/{max_retries})")
+                        print(f"⏳ Attempt {attempt + 1}/{max_retries}...", flush=True)
                         time.sleep(retry_delay)
                         continue
                     else:
-                        print("⚠️ Endpoint still unavailable after retries")
+                        print("⚠️ Endpoint unavailable", flush=True)
                         return False
                 
                 if response.status_code == 200:
-                    print("✅ Endpoint warmed up and ready")
+                    print("✅ Ready", flush=True)
                     self._endpoint_warmed = True
                     return True
                     
             except Exception as e:
                 if attempt < max_retries - 1:
-                    print(f"⏳ Warmup attempt {attempt + 1} failed, retrying...")
+                    print(f"⏳ Retry {attempt + 1}...", flush=True)
                     time.sleep(retry_delay)
                     continue
                 else:
-                    print(f"⚠️ Warmup failed: {e}")
+                    print(f"⚠️ Failed: {str(e)[:100]}", flush=True)
                     return False
         
         return False
@@ -248,8 +252,11 @@ class MedGemmaHostedProvider(LLMProvider):
             content = data["choices"][0]["message"]["content"]
             parsed = _extract_json(content)
         except Exception as e:
+            # Truncate raw output to first 500 chars to avoid log spam
+            truncated = content[:500] + "..." if len(content) > 500 else content
             raise RuntimeError(
-                f"Failed to parse model JSON output: {e}\nRaw output:\n{content}"
+                f"Failed to parse model JSON output: {e}\n"
+                f"Raw output (truncated): {truncated}"
             )
 
         issues = []
