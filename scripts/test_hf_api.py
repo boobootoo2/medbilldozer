@@ -73,8 +73,8 @@ try:
             error_data = response.json()
             print("\n📋 Parsed error:")
             print(json.dumps(error_data, indent=2))
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"\n⚠️  Could not parse error response: {e}")
             
 except requests.exceptions.RequestException as e:
     print(f"\n❌ Request failed: {e}")
