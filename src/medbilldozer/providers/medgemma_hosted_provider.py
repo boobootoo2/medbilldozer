@@ -11,10 +11,18 @@ from typing import Optional, Dict
 from medbilldozer.providers.llm_interface import LLMProvider, AnalysisResult, Issue
 
 HF_MODEL_ID = os.getenv("HF_MODEL_ID", "google/medgemma-4b-it")
-HF_MODEL_URL = os.getenv(
-    "HF_MODEL_URL",
-    f"https://router.huggingface.co/v1/chat/completions"
-)
+
+# Support both dedicated inference endpoints and router
+# If HF_ENDPOINT_BASE is set, use it (for dedicated endpoints)
+# Otherwise fall back to router
+HF_ENDPOINT_BASE = os.getenv("HF_ENDPOINT_BASE")
+if HF_ENDPOINT_BASE:
+    HF_MODEL_URL = f"{HF_ENDPOINT_BASE}/v1/chat/completions"
+else:
+    HF_MODEL_URL = os.getenv(
+        "HF_MODEL_URL",
+        f"https://router.huggingface.co/v1/chat/completions"
+    )
 
 
 SYSTEM_PROMPT = """
@@ -138,6 +146,25 @@ class MedGemmaHostedProvider(LLMProvider):
             json=payload,
             timeout=120,
         )
+        
+        # Provide detailed error message for 400 errors
+        if response.status_code == 400:
+            error_detail = response.text
+            try:
+                error_json = response.json()
+                error_detail = json.dumps(error_json, indent=2)
+            except (json.JSONDecodeError, ValueError):
+                pass
+            raise RuntimeError(
+                f"HuggingFace API returned 400 Bad Request.\n"
+                f"This usually means:\n"
+                f"1. Model '{HF_MODEL_ID}' is not available via Router endpoint\n"
+                f"2. Token doesn't have access to this model\n"
+                f"3. Model requires a dedicated Inference Endpoint\n"
+                f"\nError details:\n{error_detail}\n"
+                f"\nConsider using a dedicated endpoint or switching to Vertex AI for MedGemma."
+            )
+        
         response.raise_for_status()
 
         data = response.json()
