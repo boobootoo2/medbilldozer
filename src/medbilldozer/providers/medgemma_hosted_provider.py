@@ -83,6 +83,11 @@ Document:
 
 import re
 import json
+import threading
+
+# Global lock and flag for coordinating endpoint warmup across threads
+_warmup_lock = threading.Lock()
+_endpoint_warmed_global = False
 
 
 def _extract_json(text: str) -> dict:
@@ -119,7 +124,6 @@ def _extract_json(text: str) -> dict:
 class MedGemmaHostedProvider(LLMProvider):
     def __init__(self):
         self.token = os.getenv("HF_API_TOKEN")
-        self._endpoint_warmed = False
 
     def name(self) -> str:
         return "medgemma-hosted"
@@ -131,70 +135,79 @@ class MedGemmaHostedProvider(LLMProvider):
         """
         Warm up the HuggingFace Inference Endpoint if it's in stopped state.
         Inference Endpoints auto-pause to save costs and need to be woken up.
+        Uses a global lock to ensure only ONE thread does the warmup work.
         Returns True if endpoint is ready, False otherwise.
         """
-        if self._endpoint_warmed:
+        global _endpoint_warmed_global
+        
+        # Fast path: already warmed up by another thread
+        if _endpoint_warmed_global:
+            return True
+        
+        # Check if Router (no warmup needed)
+        if not HF_ENDPOINT_BASE:
+            with _warmup_lock:
+                if not _endpoint_warmed_global:
+                    _endpoint_warmed_global = True
             return True
             
-        if not HF_ENDPOINT_BASE:
-            # Using Router, no warmup needed
-            self._endpoint_warmed = True
-            return True
-        
-        # Only print once at start, not for every parallel worker
-        import sys
-        if not hasattr(sys.stdout, '_hf_warmup_printed'):
-            print("🔄 Warming up HuggingFace Inference Endpoint (30-60s)...", flush=True)
-            sys.stdout._hf_warmup_printed = True
-        
-        headers = {
-            "Authorization": f"Bearer {self.token}",
-            "Content-Type": "application/json",
-        }
-        
-        # Send a minimal warmup request
-        warmup_payload = {
-            "model": HF_MODEL_ID,
-            "messages": [{"role": "user", "content": "Hello"}],
-            "max_tokens": 1,
-        }
-        
-        max_retries = 6
-        retry_delay = 30  # seconds
-        
-        for attempt in range(max_retries):
-            try:
-                response = requests.post(
-                    HF_MODEL_URL,
-                    headers=headers,
-                    json=warmup_payload,
-                    timeout=180,
-                )
-                
-                if response.status_code == 503:
+        # Acquire lock - only one thread will do the warmup
+        with _warmup_lock:
+            # Double-check after acquiring lock (another thread may have just warmed it)
+            if _endpoint_warmed_global:
+                return True
+            
+            # This thread won the race - do the warmup
+            print("🔄 Warming up HuggingFace Inference Endpoint (up to 3 minutes)...", flush=True)
+            
+            headers = {
+                "Authorization": f"Bearer {self.token}",
+                "Content-Type": "application/json",
+            }
+            
+            # Send a minimal warmup request
+            warmup_payload = {
+                "model": HF_MODEL_ID,
+                "messages": [{"role": "user", "content": "Hello"}],
+                "max_tokens": 1,
+            }
+            
+            max_retries = 6
+            retry_delay = 30  # seconds
+            
+            for attempt in range(max_retries):
+                try:
+                    response = requests.post(
+                        HF_MODEL_URL,
+                        headers=headers,
+                        json=warmup_payload,
+                        timeout=180,
+                    )
+                    
+                    if response.status_code == 503:
+                        if attempt < max_retries - 1:
+                            print(f"⏳ Attempt {attempt + 1}/{max_retries}...", flush=True)
+                            time.sleep(retry_delay)
+                            continue
+                        else:
+                            print("⚠️ Endpoint still unavailable after 3 minutes", flush=True)
+                            return False
+                    
+                    if response.status_code == 200:
+                        print("✅ Endpoint ready!", flush=True)
+                        _endpoint_warmed_global = True
+                        return True
+                        
+                except Exception as e:
                     if attempt < max_retries - 1:
-                        print(f"⏳ Attempt {attempt + 1}/{max_retries}...", flush=True)
+                        print(f"⏳ Retry {attempt + 1}...", flush=True)
                         time.sleep(retry_delay)
                         continue
                     else:
-                        print("⚠️ Endpoint still unavailable after 3 minutes", flush=True)
+                        print(f"⚠️ Warmup failed: {str(e)[:100]}", flush=True)
                         return False
-                
-                if response.status_code == 200:
-                    print("✅ Ready", flush=True)
-                    self._endpoint_warmed = True
-                    return True
-                    
-            except Exception as e:
-                if attempt < max_retries - 1:
-                    print(f"⏳ Retry {attempt + 1}...", flush=True)
-                    time.sleep(retry_delay)
-                    continue
-                else:
-                    print(f"⚠️ Failed: {str(e)[:100]}", flush=True)
-                    return False
-        
-        return False
+            
+            return False
 
     def analyze_document(
         self,
