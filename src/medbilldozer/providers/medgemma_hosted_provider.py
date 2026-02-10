@@ -104,7 +104,8 @@ def sanitize_and_parse_json(raw_output: str, context: str = "model output") -> T
         ValueError: If JSON cannot be extracted or parsed even after repair attempts
     """
     if not raw_output or not raw_output.strip():
-        raise ValueError(f"Empty {context}")
+        logger.error(f"Empty or whitespace-only output received in {context}")
+        raise ValueError(f"Empty {context} (received: {repr(raw_output[:100])})")
     
     original_output = raw_output
     was_repaired = False
@@ -466,8 +467,30 @@ class MedGemmaHostedProvider(LLMProvider):
             response.raise_for_status()
             data = response.json()
             
-            # Extract content from response
-            content = data["choices"][0]["message"]["content"]
+            # Extract content from response with validation
+            try:
+                content = data["choices"][0]["message"]["content"]
+            except (KeyError, IndexError) as e:
+                logger.error(f"Unexpected API response structure: {e}")
+                logger.error(f"Response keys: {list(data.keys())}")
+                logger.error(f"Full response (first 1000 chars): {json.dumps(data, indent=2)[:1000]}")
+                raise RuntimeError(
+                    f"Unexpected API response structure: {e}\n"
+                    f"Response: {json.dumps(data, indent=2)[:1000]}"
+                )
+            
+            # Handle empty or None content
+            if content is None or (isinstance(content, str) and not content.strip()):
+                finish_reason = data["choices"][0].get("finish_reason", "unknown")
+                logger.error(
+                    f"Model returned empty content. "
+                    f"finish_reason={finish_reason}"
+                )
+                logger.debug(f"Full response: {json.dumps(data, indent=2)[:500]}")
+                raise RuntimeError(
+                    f"Model returned empty content (finish_reason: {finish_reason}). "
+                    f"This may indicate the model refused to respond or hit a content filter."
+                )
             
             # Check for truncation warning
             finish_reason = data["choices"][0].get("finish_reason")
@@ -479,6 +502,14 @@ class MedGemmaHostedProvider(LLMProvider):
             
             return content
             
+        except RuntimeError as e:
+            # Handle empty content with retry
+            if "empty content" in str(e).lower() and retry_count < 2:
+                logger.warning(f"Empty content received, retrying... (attempt {retry_count + 1})")
+                time.sleep(2)
+                return self._call_model(prompt, max_tokens, retry_count + 1)
+            raise
+        
         except requests.exceptions.Timeout:
             if retry_count < 1:
                 logger.warning(f"Request timeout, retrying... (attempt {retry_count + 1})")
