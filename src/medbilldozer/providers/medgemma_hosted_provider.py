@@ -438,8 +438,9 @@ class MedGemmaHostedProvider(LLMProvider):
         # Try to add do_sample if supported (some HF endpoints ignore this)
         try:
             payload["do_sample"] = False  # Greedy decoding
-        except Exception:
-            pass  # Some endpoints don't support this parameter
+        except (KeyError, TypeError) as e:  # nosec B110
+            # Some endpoints don't support this parameter - continue without it
+            logger.debug(f"Could not set do_sample parameter: {e}")
         
         try:
             response = requests.post(
