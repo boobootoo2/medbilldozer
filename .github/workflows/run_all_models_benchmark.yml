@@ -60,7 +60,7 @@ jobs:
           HF_ENDPOINT_BASE: ${{ secrets.HF_ENDPOINT_BASE }}
           HF_MODEL_ID: google/medgemma-4b-it
         run: |
-          python3 scripts/generate_patient_benchmarks.py --model medgemma --workers 10 --fast
+          python3 scripts/generate_patient_benchmarks.py --model medgemma --workers 10
       
       - name: Upload MedGemma results
         if: always()
@@ -99,7 +99,7 @@ jobs:
           HF_ENDPOINT_BASE: ${{ secrets.HF_ENDPOINT_BASE }}
           HF_MODEL_ID: google/medgemma-4b-it
         run: |
-          python3 scripts/generate_patient_benchmarks.py --model medgemma-ensemble --workers 10 --fast
+          python3 scripts/generate_patient_benchmarks.py --model medgemma-ensemble --workers 10
       
       - name: Upload MedGemma Ensemble results
         if: always()
@@ -136,7 +136,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          python3 scripts/generate_patient_benchmarks.py --model openai --workers 10 --fast
+          python3 scripts/generate_patient_benchmarks.py --model openai --workers 10
       
       - name: Upload OpenAI results
         if: always()
@@ -206,7 +206,7 @@ jobs:
           fi
           
           echo "Running benchmarks for models: $MODELS"
-          python3 scripts/run_benchmarks_v2.py --model "$MODELS" --workers 10 --fast
+          python3 scripts/run_benchmarks_v2.py --model "$MODELS" --workers 10
       
       - name: Convert results to monitoring format
         if: always()
