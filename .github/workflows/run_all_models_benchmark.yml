@@ -82,6 +82,24 @@ jobs:
         run: |
           python3 scripts/generate_patient_benchmarks.py --model medgemma --workers 1
       
+      - name: Push results to Supabase
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -f "benchmarks/results/patient_benchmark_medgemma.json" ]; then
+            echo "📤 Pushing medgemma results to Supabase..."
+            python3 scripts/push_patient_benchmarks.py \
+              --input benchmarks/results/patient_benchmark_medgemma.json \
+              --environment github-actions \
+              --commit-sha ${{ github.sha }} \
+              --branch-name ${{ github.ref_name }} \
+              --triggered-by ${{ github.actor }} || echo "⚠️ Failed to push results (validation may have rejected them)"
+          else
+            echo "⚠️ No results file found to push"
+          fi
+      
       - name: Upload MedGemma results
         if: always()
         uses: actions/upload-artifact@v4
@@ -160,6 +178,24 @@ jobs:
           HF_MODEL_ID: google/medgemma-4b-it
         run: |
           python3 scripts/generate_patient_benchmarks.py --model medgemma-ensemble --workers 1
+      
+      - name: Push results to Supabase
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -f "benchmarks/results/patient_benchmark_medgemma-ensemble.json" ]; then
+            echo "📤 Pushing medgemma-ensemble results to Supabase..."
+            python3 scripts/push_patient_benchmarks.py \
+              --input benchmarks/results/patient_benchmark_medgemma-ensemble.json \
+              --environment github-actions \
+              --commit-sha ${{ github.sha }} \
+              --branch-name ${{ github.ref_name }} \
+              --triggered-by ${{ github.actor }} || echo "⚠️ Failed to push results (validation may have rejected them)"
+          else
+            echo "⚠️ No results file found to push"
+          fi
       
       - name: Upload MedGemma Ensemble results
         if: always()

@@ -57,12 +57,12 @@ def push_patient_benchmark(
     commit_sha: Optional[str] = None,
     branch_name: Optional[str] = None,
     triggered_by: Optional[str] = None
-) -> str:
+) -> Optional[str]:
     """
     Push patient benchmark results to Supabase.
     
     Returns:
-        Transaction ID from the database
+        Transaction ID from the database, or None if validation failed
     """
     
     # Extract metrics
@@ -74,6 +74,56 @@ def push_patient_benchmark(
     avg_f1 = results.get('avg_f1_score', 0.0)
     domain_knowledge_rate = results.get('domain_knowledge_detection_rate', 0.0)
     avg_latency_ms = results.get('avg_latency_ms', 0.0)
+    
+    # ============================================================================
+    # VALIDATION: Skip pushing results when endpoint is not working
+    # ============================================================================
+    # 0% domain detection indicates endpoint failures (503 errors, DNS failures, etc.)
+    # rather than legitimate model performance. Don't pollute database with bad data.
+    
+    MIN_DOMAIN_DETECTION_RATE = 0.1  # At least 0.1% to avoid false positives
+    MIN_SUCCESS_RATE = 0.1  # At least 10% of patients should succeed
+    
+    success_rate = successful / total_patients if total_patients > 0 else 0.0
+    
+    validation_failed = False
+    failure_reasons = []
+    
+    # Check 1: Domain detection rate
+    if domain_knowledge_rate < MIN_DOMAIN_DETECTION_RATE:
+        validation_failed = True
+        failure_reasons.append(
+            f"Domain detection rate too low: {domain_knowledge_rate:.2f}% "
+            f"(minimum: {MIN_DOMAIN_DETECTION_RATE}%)"
+        )
+    
+    # Check 2: Success rate
+    if success_rate < MIN_SUCCESS_RATE:
+        validation_failed = True
+        failure_reasons.append(
+            f"Success rate too low: {successful}/{total_patients} ({success_rate*100:.1f}%) "
+            f"(minimum: {MIN_SUCCESS_RATE*100:.0f}%)"
+        )
+    
+    # Check 3: Average recall (should be non-zero for valid results)
+    if avg_recall == 0.0:
+        validation_failed = True
+        failure_reasons.append(f"Average recall is 0.0 (indicates endpoint failures)")
+    
+    if validation_failed:
+        print(f"\n⚠️  VALIDATION FAILED - Skipping upload to Supabase")
+        print(f"   Model: {model_version}")
+        print(f"   Reasons:")
+        for reason in failure_reasons:
+            print(f"     - {reason}")
+        print(f"\n   This typically indicates:")
+        print(f"     • Endpoint returned 503 Service Unavailable")
+        print(f"     • DNS resolution failures")
+        print(f"     • Network timeouts or rate limiting")
+        print(f"     • Endpoint was down or overloaded")
+        print(f"\n   ℹ️  These results will NOT be pushed to the database.")
+        print(f"   Fix the endpoint issues and re-run the benchmark.\n")
+        return None
     
     # Build metrics JSONB
     # Note: domain_knowledge_detection_rate comes as percentage (0-100) from JSON, convert to decimal (0-1)
@@ -248,6 +298,11 @@ def main():
             branch_name=args.branch_name,
             triggered_by=args.triggered_by
         )
+        
+        if transaction_id is None:
+            # Validation failed - results were not pushed
+            print(f"\n⚠️  Results validation failed - NOT pushed to Supabase")
+            return 2  # Return code 2 indicates validation failure
         
         print(f"\n🎉 Successfully pushed patient benchmark results!")
         print(f"   Transaction ID: {transaction_id}")
