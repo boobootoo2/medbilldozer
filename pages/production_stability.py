@@ -1218,7 +1218,7 @@ with tab6:
     pregnancy ultrasound, 8-year-old billed for colonoscopy).
     """)
     
-    @st.cache_data(ttl=300)
+    @st.cache_data(ttl=300)  # Cache for 5 minutes
     def load_patient_benchmarks():
         """Load patient benchmark results from snapshots table."""
         # Get latest snapshots (current versions only)
@@ -1266,8 +1266,9 @@ with tab6:
                 return pd.Series([default_value] * len(df), index=df.index)
         
         # Handle domain detection rate
+        # Database stores as percentage (e.g., 43.716 for 43.716%), so divide by 100 to get 0-1 range
         if 'domain_knowledge_detection_rate' in df.columns:
-            domain_detection = df['domain_knowledge_detection_rate'].fillna(0).apply(lambda x: x if x > 1 else x * 100)
+            domain_detection = df['domain_knowledge_detection_rate'].fillna(0).apply(lambda x: x / 100 if x > 1 else x)
         else:
             domain_detection = pd.Series([0] * len(df), index=df.index)
         
@@ -1325,9 +1326,9 @@ with tab6:
                 # Base metrics
                 avg_f1 = row.get('f1_score', 0) or 0
                 avg_recall = row.get('recall', 0) or 0
-                # Domain detection is stored as percentage (0-100), normalize to 0-1
+                # Domain detection is already normalized to 0-1 range from load_patient_benchmarks()
                 domain_detection = row.get('domain_detection', 0) or 0
-                domain_detection_normalized = domain_detection / 100 if domain_detection > 1 else domain_detection
+                domain_detection_normalized = domain_detection
                 
                 # Calculate ROI (value per latency unit)
                 latency = max(row.get('latency_ms', 1000), 1)  # Avoid div by zero
@@ -1387,10 +1388,12 @@ with tab6:
                 scores_df['savings_capture_norm'] = scores_df['savings_capture']
             
             # Calculate failure penalty
-            scores_df['failure_penalty'] = scores_df['failure_rate'] * 0.25
+            # Note: Failure rate is unreliable due to missing total_patients/successful fields in metrics
+            # Only apply penalty if we have valid data (failure_rate < 1.0 indicates real data)
+            scores_df['failure_penalty'] = scores_df['failure_rate'].apply(lambda x: x * 0.25 if x < 0.99 else 0)
             
-            # Apply low-run penalty
-            scores_df['low_run_penalty'] = scores_df['run_count'].apply(lambda x: 0.15 if x < 2 else 0)
+            # Apply low-run penalty (reduced weight to avoid unfairly penalizing newer models)
+            scores_df['low_run_penalty'] = scores_df['run_count'].apply(lambda x: 0.05 if x < 2 else 0)
             
             # Calculate composite HES (Healthcare Effectiveness Score)
             # PRIORITIZES DOMAIN KNOWLEDGE DETECTION: Detecting healthcare-specific errors
