@@ -34,25 +34,45 @@ jobs:
           pip install -e . -v
           pip install -r requirements-benchmarks.txt
       
-      - name: Check HuggingFace endpoint status
+      - name: Wake up and warmup HuggingFace endpoint
         env:
           HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
           HF_ENDPOINT_BASE: ${{ secrets.HF_ENDPOINT_BASE }}
+          HF_MODEL_ID: google/medgemma-4b-it
         run: |
           echo "🔍 Checking HuggingFace Inference Endpoint status..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${HF_ENDPOINT_BASE}" -H "Authorization: Bearer ${HF_API_TOKEN}")
-          echo "Status code: $STATUS"
           
-          if [ "$STATUS" = "503" ]; then
-            echo "⚠️ WARNING: HuggingFace endpoint is stopped (503 Service Unavailable)"
-            echo "Please start the endpoint at: https://ui.endpoints.huggingface.co/"
-            echo "Waiting 2 minutes for manual endpoint start..."
-            sleep 120
-          elif [ "$STATUS" = "200" ]; then
-            echo "✅ Endpoint is running"
-          else
-            echo "⚠️ Unexpected status: $STATUS"
-          fi
+          # Make a real inference request to wake up the endpoint
+          echo "🚀 Sending warmup request to wake up endpoint..."
+          curl -X POST "${HF_ENDPOINT_BASE}/v1/chat/completions" \
+            -H "Authorization: Bearer ${HF_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "google/medgemma-4b-it",
+              "messages": [{"role": "user", "content": "Test"}],
+              "max_tokens": 10
+            }' || echo "Warmup request sent (may get 503 initially)"
+          
+          echo "⏳ Waiting 5 minutes for endpoint to initialize..."
+          echo "This allows the model to load into memory and become ready."
+          sleep 300
+          
+          # Verify endpoint is ready
+          echo "🔍 Verifying endpoint is ready..."
+          for i in {1..6}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${HF_ENDPOINT_BASE}/v1/chat/completions" \
+              -H "Authorization: Bearer ${HF_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d '{"model": "google/medgemma-4b-it", "messages": [{"role": "user", "content": "Ready?"}], "max_tokens": 5}')
+            
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Endpoint is ready and responding!"
+              break
+            else
+              echo "⏳ Attempt $i/6: Status $STATUS, waiting 30 more seconds..."
+              sleep 30
+            fi
+          done
       
       - name: Run MedGemma benchmarks
         env:
@@ -169,28 +189,46 @@ jobs:
           pip install -e . -v
           pip install -r requirements-benchmarks.txt
       
-      - name: Check HuggingFace endpoint status
+      - name: Wake up HuggingFace endpoint (if using MedGemma models)
         if: contains(github.event.inputs.models, 'all') || contains(github.event.inputs.models, 'medgemma')
         env:
           HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
           HF_ENDPOINT_BASE: ${{ secrets.HF_ENDPOINT_BASE }}
+          HF_MODEL_ID: google/medgemma-4b-it
         run: |
           echo "🔍 Checking HuggingFace Inference Endpoint status..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${HF_ENDPOINT_BASE}" -H "Authorization: Bearer ${HF_API_TOKEN}")
-          echo "Status code: $STATUS"
           
-          if [ "$STATUS" = "503" ]; then
-            echo "⚠️ WARNING: HuggingFace endpoint is stopped (503 Service Unavailable)"
-            echo "Please start the endpoint at: https://ui.endpoints.huggingface.co/"
-            echo "Or the benchmark will fail for MedGemma models"
-            echo ""
-            echo "Waiting 2 minutes for manual endpoint start..."
-            sleep 120
-          elif [ "$STATUS" = "200" ]; then
-            echo "✅ Endpoint is running"
-          else
-            echo "⚠️ Unexpected status: $STATUS"
-          fi
+          # Make a real inference request to wake up the endpoint
+          echo "🚀 Sending warmup request to wake up endpoint..."
+          curl -X POST "${HF_ENDPOINT_BASE}/v1/chat/completions" \
+            -H "Authorization: Bearer ${HF_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "google/medgemma-4b-it",
+              "messages": [{"role": "user", "content": "Test"}],
+              "max_tokens": 10
+            }' || echo "Warmup request sent (may get 503 initially)"
+          
+          echo "⏳ Waiting 5 minutes for endpoint to initialize..."
+          echo "This allows the model to load into memory and become ready."
+          sleep 300
+          
+          # Verify endpoint is ready
+          echo "🔍 Verifying endpoint is ready..."
+          for i in {1..6}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${HF_ENDPOINT_BASE}/v1/chat/completions" \
+              -H "Authorization: Bearer ${HF_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d '{"model": "google/medgemma-4b-it", "messages": [{"role": "user", "content": "Ready?"}], "max_tokens": 5}')
+            
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Endpoint is ready and responding!"
+              break
+            else
+              echo "⏳ Attempt $i/6: Status $STATUS, waiting 30 more seconds..."
+              sleep 30
+            fi
+          done
       
       - name: Run benchmarks
         env:
