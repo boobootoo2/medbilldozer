@@ -99,11 +99,11 @@ SELECT
 FROM benchmark_category_metrics current
 LEFT JOIN LATERAL (
     SELECT *
-    FROM benchmark_category_metrics prev
-    WHERE prev.model_version = current.model_version
-      AND prev.category = current.category
-      AND prev.created_at < current.created_at
-    ORDER BY prev.created_at DESC
+    FROM benchmark_category_metrics previous_run
+    WHERE previous_run.model_version = current.model_version
+      AND previous_run.category = current.category
+      AND previous_run.created_at < current.created_at
+    ORDER BY previous_run.created_at DESC
     LIMIT 1
 ) previous ON true
 ORDER BY current.created_at DESC, current.category;
