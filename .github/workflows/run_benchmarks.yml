@@ -2,6 +2,7 @@ name: Run Benchmarks
 
 on:
   # Run on schedule (daily at 2am UTC)
+  # Note: HF endpoint warmup runs at 1am UTC (see warmup_hf_endpoint.yml)
   schedule:
     - cron: '0 2 * * *'
   

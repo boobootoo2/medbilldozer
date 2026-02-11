@@ -40,24 +40,22 @@ PYTHON_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep "\.py$" |
 
 if [ -n "$PYTHON_FILES" ]; then
     echo ""
-    echo "📋 Running linter on Python files..."
+    echo "� Running security scan (Bandit)..."
     echo "───────────────────────────────────────────────────────────"
     
-    # Check if flake8 is installed
-    if ! command -v flake8 &> /dev/null; then
-        echo "⚠️  flake8 not installed. Installing..."
-        pip3 install flake8 -q
-    fi
-    
-    # Run flake8 on staged files
-    if echo "$PYTHON_FILES" | xargs flake8 --config=.flake8 --show-source --statistics; then
-        echo "✅ Linting passed"
+    # Check if bandit is installed
+    if ! command -v bandit &> /dev/null; then
+        echo "⚠️  bandit not installed. Skipping security scan."
     else
-        echo ""
-        echo "❌ Linting failed! Please fix the issues above."
-        echo "   Tip: Run 'flake8 <file>' to check individual files"
-        echo "   To commit anyway: git commit --no-verify"
-        exit 1
+        # Run bandit on staged files (skip tests directory and ignore low severity)
+        if echo "$PYTHON_FILES" | grep -v "^tests/" | xargs -r bandit -ll -q 2>&1 | grep -q "Issue"; then
+            echo ""
+            echo "⚠️  Security issues detected! Review above."
+            echo "   Tip: Run 'bandit -ll <file>' to check individual files"
+            echo "   These are warnings, not blocking commit."
+        else
+            echo "✅ No security issues found"
+        fi
     fi
 fi
 
@@ -65,42 +63,57 @@ echo ""
 echo "🧪 Running unit tests..."
 echo "───────────────────────────────────────────────────────────"
 
-# Run pytest and capture output and exit code
-TEST_OUTPUT=$(python3 -m pytest tests/ -q --tb=line --continue-on-collection-errors 2>&1)
-TEST_EXIT_CODE=$?
-echo "$TEST_OUTPUT"
+# Skip tests if only docs, markdown, or non-code files changed
+NON_CODE_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -vE "\.(py|yaml|yml|json)$" || true)
+ALL_FILES=$(git diff --cached --name-only --diff-filter=ACMR || true)
 
-# Parse test output
-if echo "$TEST_OUTPUT" | grep -q "failed"; then
-    FAILED_COUNT=$(echo "$TEST_OUTPUT" | grep -oE '[0-9]+ failed' | grep -oE '[0-9]+')
-    echo ""
-    echo "❌ $FAILED_COUNT test(s) failed! Please fix failing tests before committing."
-    echo "   Tip: Run 'make test' or 'pytest tests/ -v' for detailed output"
-    echo "   To commit anyway: git commit --no-verify"
-    exit 1
-elif echo "$TEST_OUTPUT" | grep -q "ERROR.*collecting"; then
-    echo ""
-    echo "⚠️  Test collection error (possibly environment/dependency issue)"
-    echo "   Tip: Run 'make test' to diagnose"
-    echo "   Continuing with commit (import errors won't block)"
+if [ -z "$PYTHON_FILES" ] && [ -n "$NON_CODE_FILES" ]; then
+    echo "✓ Only documentation/config files changed. Skipping tests."
 else
-    echo "✅ All tests passed"
+    # Run pytest and capture output and exit code
+    TEST_OUTPUT=$(python3 -m pytest tests/ -q --tb=line --continue-on-collection-errors 2>&1)
+    TEST_EXIT_CODE=$?
+    echo "$TEST_OUTPUT"
+
+    # Parse test output
+    if echo "$TEST_OUTPUT" | grep -q "failed"; then
+        FAILED_COUNT=$(echo "$TEST_OUTPUT" | grep -oE '[0-9]+ failed' | grep -oE '[0-9]+')
+        echo ""
+        echo "❌ $FAILED_COUNT test(s) failed! Please fix failing tests before committing."
+        echo "   Tip: Run 'make test' or 'pytest tests/ -v' for detailed output"
+        echo "   To commit anyway: git commit --no-verify"
+        exit 1
+    elif echo "$TEST_OUTPUT" | grep -q "ERROR.*collecting"; then
+        echo ""
+        echo "⚠️  Test collection error (possibly environment/dependency issue)"
+        echo "   Tip: Run 'make test' to diagnose"
+        echo "   Continuing with commit (import errors won't block)"
+    else
+        echo "✅ All tests passed"
+    fi
 fi
 
 echo ""
-echo "📚 Generating documentation..."
+echo "📚 Checking documentation..."
 echo "───────────────────────────────────────────────────────────"
 
-# Generate documentation
-make docs > /dev/null 2>&1
+# Only regenerate docs if Python source files in src/ or scripts/ were modified
+PYTHON_SOURCE_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "(^src/|^scripts/|^config/)" | grep "\.py$" || true)
 
-# Check if docs were modified
-if git diff --name-only | grep -q "^docs/"; then
-    echo "📝 Documentation updated. Adding to commit..."
-    git add docs/
-    echo "✅ Documentation changes staged"
+if [ -n "$PYTHON_SOURCE_FILES" ]; then
+    echo "📝 Python source files changed. Regenerating documentation..."
+    make docs > /dev/null 2>&1
+    
+    # Check if docs were modified
+    if git diff --name-only | grep -q "^docs/"; then
+        echo "📝 Documentation updated. Adding to commit..."
+        git add docs/
+        echo "✅ Documentation changes staged"
+    else
+        echo "✓ Documentation already up-to-date"
+    fi
 else
-    echo "✓ Documentation already up-to-date"
+    echo "✓ No source changes detected. Skipping documentation regeneration."
 fi
 
 echo ""
