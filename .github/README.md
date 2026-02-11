@@ -12,15 +12,14 @@
 and explanations of benefits (EOBs) by detecting likely billing errors and
 explaining them in plain language.
 
-## Features
+## 📚 Documentation
 
-
-- **📖 [Quick Start Guide](https://github.com/boobootoo2/medbilldozer/blob/main/docs/QUICKSTART.md)** – Get up and running in 5 minutes
-- **📚 [User Guide](https://github.com/boobootoo2/medbilldozer/blob/main/docs/USER_GUIDE.md)** – Comprehensive end-user documentation
-- **⚙️ [Configuration Guide](https://github.com/boobootoo2/medbilldozer/blob/main/CONFIG_README.md)** – Feature flags and app configuration
-- **🔧 [Technical Documentation](https://github.com/boobootoo2/medbilldozer/blob/main/docs/)** – API reference, modules, dependencies
-- **🧠 [MedGemma & HAI-DEF Alignment](https://github.com/boobootoo2/medbilldozer/blob/main/docs/HAI_DEF_ALIGNMENT.md)** – How this project uses healthcare-aligned foundation models
-- **📝 [Contributing](https://github.com/boobootoo2/medbilldozer/blob/main/DOCUMENTATION.md)** – How to contribute and maintain docs
+- **📖 [README](https://github.com/boobootoo2/medbilldozer/blob/main/README.md)** – Complete user guide and quick start
+- **� [Technical Overview](https://github.com/boobootoo2/medbilldozer/blob/main/docs/medBillDozer_Project_Overview.md)** – Architecture and design
+- **📊 [MedGemma Impact Challenge](https://github.com/boobootoo2/medbilldozer/blob/main/docs/MEDGEMMA_IMPACT_CHALLENGE_WRITEUP.md)** – Healthcare AI alignment
+- **⚙️ [API Reference](https://github.com/boobootoo2/medbilldozer/blob/main/docs/API.md)** – Developer documentation
+- **📦 [Module Documentation](https://github.com/boobootoo2/medbilldozer/blob/main/docs/MODULES.md)** – Code structure
+- **� [Dependencies](https://github.com/boobootoo2/medbilldozer/blob/main/docs/DEPENDENCIES.md)** – Third-party libraries
 
 
 ## Why medBillDozer Is Different
@@ -29,8 +28,8 @@ Most consumer medical billing tools are manual, partial, or reactive.
 medBillDozer is built to systematically reconcile bills, claims, EOBs, and receipts — the point where most billing errors actually occur.
 
 📄 **Learn more:**  
-- [The Hidden Cost of Medical Billing Errors](https://github.com/boobootoo2/medbilldozer/blob/main/docs/the_hidden_cost)  
-- [Competitive Landscape](https://github.com/boobootoo2/medbilldozer/blob/main/docs/competitive_landscape.md)
+- [Technical Writeup](https://github.com/boobootoo2/medbilldozer/blob/main/docs/TECHNICAL_WRITEUP.md)  
+- [MedGemma Impact Challenge](https://github.com/boobootoo2/medbilldozer/blob/main/docs/MEDGEMMA_IMPACT_CHALLENGE_WRITEUP.md)
 
 
 
