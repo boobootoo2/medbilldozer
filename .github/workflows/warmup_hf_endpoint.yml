@@ -1,0 +1,86 @@
+name: Warmup HuggingFace Endpoint
+
+on:
+  # Run 1 hour before benchmarks (1am UTC, benchmarks at 2am UTC)
+  schedule:
+    - cron: '0 1 * * *'
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  warmup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Wake up HuggingFace endpoint
+        env:
+          HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
+          HF_ENDPOINT_BASE: ${{ secrets.HF_ENDPOINT_BASE }}
+          HF_MODEL_ID: google/medgemma-4b-it
+        run: |
+          echo "🔥 Warming up HuggingFace Inference Endpoint..."
+          echo "⏰ Time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "📍 Endpoint: ${HF_ENDPOINT_BASE}"
+          
+          # Send multiple warmup requests to ensure endpoint is loaded
+          echo ""
+          echo "🚀 Sending warmup requests..."
+          
+          for i in {1..5}; do
+            echo "  Request $i/5..."
+            
+            RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${HF_ENDPOINT_BASE}/v1/chat/completions" \
+              -H "Authorization: Bearer ${HF_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "model": "google/medgemma-4b-it",
+                "messages": [{"role": "user", "content": "Hello"}],
+                "max_tokens": 10,
+                "temperature": 0.0
+              }')
+            
+            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+            BODY=$(echo "$RESPONSE" | head -n -1)
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "  ✅ Success (HTTP $HTTP_CODE)"
+            else
+              echo "  ⚠️  HTTP $HTTP_CODE - Endpoint may be initializing..."
+            fi
+            
+            # Wait between requests
+            if [ $i -lt 5 ]; then
+              sleep 30
+            fi
+          done
+          
+          echo ""
+          echo "🔍 Final verification..."
+          
+          # Final check
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${HF_ENDPOINT_BASE}/v1/chat/completions" \
+            -H "Authorization: Bearer ${HF_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "google/medgemma-4b-it",
+              "messages": [{"role": "user", "content": "Test"}],
+              "max_tokens": 50,
+              "temperature": 0.0
+            }')
+          
+          echo ""
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Endpoint is ready and warm!"
+            echo "🕐 Benchmark workflow will start in ~50 minutes"
+          else
+            echo "⚠️  Endpoint status: HTTP $STATUS"
+            echo "   The endpoint may still be initializing."
+            echo "   It should be ready by the time benchmarks start."
+          fi
+          
+          echo ""
+          echo "📊 Summary:"
+          echo "  - Warmup completed at: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "  - Benchmark scheduled for: 2:00 AM UTC"
+          echo "  - Time until benchmarks: ~$(( 60 - $(date +%M) )) minutes"
