@@ -62,51 +62,47 @@ DROP VIEW IF EXISTS v_category_regression_tracking;
 CREATE OR REPLACE VIEW v_category_regression_tracking
 WITH (security_invoker = true)
 AS
+WITH ranked_metrics AS (
+    SELECT 
+        bcm.*,
+        bt.model_version,
+        bt.environment,
+        ROW_NUMBER() OVER (
+            PARTITION BY bt.model_version, bcm.category, bt.environment
+            ORDER BY bcm.created_at DESC
+        ) as run_rank
+    FROM benchmark_category_metrics bcm
+    INNER JOIN benchmark_transactions bt ON bcm.benchmark_run_id = bt.id
+)
 SELECT 
-    current.run_id,
+    current.id,
+    current.benchmark_run_id,
     current.model_version,
     current.category,
-    current.created_at as current_run_date,
-    
-    -- Current metrics
-    current.precision as current_precision,
-    current.recall as current_recall,
-    current.f1 as current_f1,
-    current.issue_count as current_issue_count,
-    
-    -- Previous metrics
-    previous.run_id as previous_run_id,
-    previous.created_at as previous_run_date,
-    previous.precision as previous_precision,
-    previous.recall as previous_recall,
-    previous.f1 as previous_f1,
-    previous.issue_count as previous_issue_count,
-    
-    -- Deltas
-    (current.precision - COALESCE(previous.precision, 0)) as precision_delta,
-    (current.recall - COALESCE(previous.recall, 0)) as recall_delta,
-    (current.f1 - COALESCE(previous.f1, 0)) as f1_delta,
-    (current.issue_count - COALESCE(previous.issue_count, 0)) as issue_count_delta,
+    current.total,
+    current.detected,
+    current.detection_rate as current_rate,
+    previous.detection_rate as previous_rate,
+    current.delta_from_previous,
+    current.created_at,
     
     -- Regression severity classification
-    CASE
-        WHEN (current.f1 - COALESCE(previous.f1, 0)) < -0.10 THEN 'CRITICAL'
-        WHEN (current.f1 - COALESCE(previous.f1, 0)) < -0.05 THEN 'WARNING'
-        WHEN (current.f1 - COALESCE(previous.f1, 0)) > 0.05 THEN 'IMPROVEMENT'
-        ELSE 'STABLE'
-    END as regression_severity
+    CASE 
+        WHEN current.delta_from_previous IS NULL THEN 'baseline'
+        WHEN current.delta_from_previous < -0.1 THEN 'severe_regression'
+        WHEN current.delta_from_previous < -0.05 THEN 'moderate_regression'
+        WHEN current.delta_from_previous < 0 THEN 'minor_regression'
+        WHEN current.delta_from_previous = 0 THEN 'stable'
+        WHEN current.delta_from_previous > 0 THEN 'improvement'
+    END as regression_status
     
-FROM benchmark_category_metrics current
-LEFT JOIN LATERAL (
-    SELECT *
-    FROM benchmark_category_metrics previous_run
-    WHERE previous_run.model_version = current.model_version
-      AND previous_run.category = current.category
-      AND previous_run.created_at < current.created_at
-    ORDER BY previous_run.created_at DESC
-    LIMIT 1
-) previous ON true
-ORDER BY current.created_at DESC, current.category;
+FROM ranked_metrics current
+LEFT JOIN ranked_metrics previous 
+    ON current.model_version = previous.model_version
+    AND current.category = previous.category
+    AND current.environment = previous.environment
+    AND previous.run_rank = 2
+WHERE current.run_rank = 1;
 
 COMMENT ON VIEW v_category_regression_tracking IS 
     'Tracks performance changes across benchmark runs for regression detection. Uses SECURITY INVOKER for proper RLS enforcement.';
