@@ -26,11 +26,6 @@ explaining them in plain language.
 Most consumer medical billing tools are manual, partial, or reactive.  
 medBillDozer is built to systematically reconcile bills, claims, EOBs, and receipts — the point where most billing errors actually occur.
 
-📄 **Learn more:**  
-- [Technical Writeup](https://github.com/boobootoo2/medbilldozer/blob/main/docs/TECHNICAL_WRITEUP.md)  
-- [MedGemma Impact Challenge](https://github.com/boobootoo2/medbilldozer/blob/main/docs/MEDGEMMA_IMPACT_CHALLENGE_WRITEUP.md)
-
-
 
 
 ## Quick Start
