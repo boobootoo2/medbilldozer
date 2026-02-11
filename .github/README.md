@@ -15,11 +15,10 @@ explaining them in plain language.
 ## 📚 Documentation
 
 - **📖 [README](https://github.com/boobootoo2/medbilldozer/blob/main/README.md)** – Complete user guide and quick start
-- **� [Technical Overview](https://github.com/boobootoo2/medbilldozer/blob/main/docs/medBillDozer_Project_Overview.md)** – Architecture and design
-- **📊 [MedGemma Impact Challenge](https://github.com/boobootoo2/medbilldozer/blob/main/docs/MEDGEMMA_IMPACT_CHALLENGE_WRITEUP.md)** – Healthcare AI alignment
+- **🔬 [Technical Writeup](https://github.com/boobootoo2/medbilldozer/blob/main/docs/TECHNICAL_WRITEUP.md)** – Architecture and design
 - **⚙️ [API Reference](https://github.com/boobootoo2/medbilldozer/blob/main/docs/API.md)** – Developer documentation
 - **📦 [Module Documentation](https://github.com/boobootoo2/medbilldozer/blob/main/docs/MODULES.md)** – Code structure
-- **� [Dependencies](https://github.com/boobootoo2/medbilldozer/blob/main/docs/DEPENDENCIES.md)** – Third-party libraries
+- **🔗 [Dependencies](https://github.com/boobootoo2/medbilldozer/blob/main/docs/DEPENDENCIES.md)** – Third-party libraries
 
 
 ## Why medBillDozer Is Different
