@@ -146,6 +146,7 @@ def setup_page():
 
     st.set_page_config(
         page_title="medBillDozer",
+        page_icon="images/avatars/billie__eyes_open__billdozer_up.png",
         layout="centered",
         initial_sidebar_state=initial_sidebar_state
     )

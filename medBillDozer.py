@@ -52,6 +52,10 @@ from medbilldozer.ui.ui import (
     show_analysis_error,
 )
 from medbilldozer.ui.audio_controls import initialize_audio_state
+from medbilldozer.ui.audio_preference_dialog import (
+    should_show_audio_preference_dialog,
+    render_audio_preference_dialog,
+)
 from medbilldozer.ui.splash_screen import (
     should_show_splash_screen,
     render_splash_screen,
@@ -100,6 +104,13 @@ def main():
         return  # Stop rendering if password not entered
 
     # --------------------------------------------------
+    # Audio Preference Dialog (before splash if tour enabled)
+    # --------------------------------------------------
+    if should_enable_guided_tour() and should_show_audio_preference_dialog():
+        render_audio_preference_dialog()
+        return  # Stop rendering until audio preference is set
+
+    # --------------------------------------------------
     # Splash Screen (before everything if tour enabled)
     # --------------------------------------------------
     if should_enable_guided_tour() and should_show_splash_screen():
@@ -146,9 +157,9 @@ def main():
         render_privacy_dialog()
 
     # --------------------------------------------------
-    # Documentation Assistant (sidebar)
+    # Documentation Assistant (sidebar) - only after privacy acknowledged
     # --------------------------------------------------
-    if is_assistant_enabled():
+    if is_assistant_enabled() and st.session_state.get('privacy_acknowledged', False):
         render_doc_assistant()
 
     # ==================================================
