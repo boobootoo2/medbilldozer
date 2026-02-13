@@ -1,215 +1,168 @@
-# medBillDozer — A Governed Clinical Reasoning System for Medical Billing Error Detection
-
-## Live Demo & Resources
-
-**Demonstration Application:**  
-https://medbilldozer.streamlit.app/
-
-**Production Stability Dashboard:**  
-https://medbilldozer.streamlit.app/production_stability
-
-**Passcode:** XXXXXX
-
-**Source Code:**  
-https://github.com/boobootoo2/medbilldozer
-
-The demonstration environment uses synthetic and redacted billing examples. It showcases structured issue detection, confidence scoring, monitoring instrumentation, and exportable summaries. No user data is stored. The demo is not presented as a HIPAA-compliant production system.
+# medBillDozer — A Governed Clinical Reasoning System for Medical Billing Error Detection  
+**John Shultz**
 
 ---
 
-## Your Team
+## Live Demo and Resources
 
-**John Shultz — Healthcare AI Systems Engineer**  
-Architecture design, MedGemma integration, evaluation framework development, monitoring instrumentation, and full-stack implementation.
+**Demo:** https://medbilldozer.streamlit.app/  
+**Monitoring Dashboard:** https://medbilldozer.streamlit.app/production_stability  
+**Passcode:** XXXXXXX  
+**Source Code:** https://github.com/boobootoo2/medbilldozer  
+
+The demonstration uses synthetic and redacted data. It illustrates structured issue detection, confidence scoring, model monitoring, and exportable summaries. No user data is stored and the system is not presented as a HIPAA-compliant production deployment.
 
 ---
 
 ## Problem Statement
 
-Medical billing errors are common and difficult for patients to independently detect. Industry estimates suggest that 49–80% of medical bills contain at least one error[^1] with an average error of approximately $1,300 on large hospital bills[^2]. Medical issues contribute to approximately 66.5% of personal bankruptcies in the United States[^3].
+Medical billing errors are widespread and difficult for patients to independently detect. Industry analyses estimate that **49–80% of medical bills contain at least one error**¹. Large hospital bills average approximately **$1,300 in errors**². Medical issues contribute to **66.5% of personal bankruptcies** in the United States³.
 
-Medical bills contain CPT, CDT, and NDC codes requiring healthcare knowledge to interpret. Patients must evaluate:
+Bills contain CPT, CDT, and NDC codes that require domain knowledge to interpret. Patients must evaluate:
 
 - Duplicate procedure charges  
 - Age- or gender-inappropriate services  
 - Clinically inconsistent procedures  
-- Drug interactions  
+- Drug–disease contraindications  
 - Incorrect coding  
 
-Billing validation requires cross-document demographic validation, clinical appropriateness checks, and conservative reasoning within healthcare constraints. Healthcare-aligned foundation models are well suited to this task.
+This requires cross-document validation, demographic reasoning, and conservative clinical interpretation. General-purpose LLMs parse text well but are not optimized for healthcare reasoning.
 
 ---
 
-## Overall Solution  
-### Effective Use of HAI-DEF Models
+## Healthcare-Aligned Solution
 
-medBillDozer is built around **MedGemma (google/medgemma-4b-it)** from Google’s Health AI Developer Foundations (HAI-DEF).
+medBillDozer is built on **MedGemma (google/medgemma-4b-it)**, part of Google’s Health AI Developer Foundations (HAI-DEF).
 
-Generic LLMs parse text. MedGemma reasons clinically.
+Generic LLMs parse language. **MedGemma reasons clinically.**
 
 MedGemma provides:
 
-- Training on clinical and biomedical text  
-- Structured understanding of CPT/CDT/NDC codes  
-- Awareness of age and gender constraints  
-- Conservative, evidence-grounded outputs  
-- Open weights enabling developer-controlled integration  
+- Training on biomedical and clinical corpora  
+- Structured understanding of medical coding systems  
+- Demographic constraint awareness  
+- Evidence-grounded outputs  
+- Open weights for controlled deployment  
 
-Example reasoning tasks include detecting pregnancy procedures billed to male patients, pediatric colonoscopy billing, age-inconsistent mammograms, and duplicate CPT codes.
+Example detections include pregnancy procedures billed to male patients, pediatric colonoscopy billing, age-inconsistent mammograms, surgical history contradictions, and diagnosis–procedure mismatches.
 
 ---
 
-## System Architecture
+## System Architecture and Governance
 
-medBillDozer integrates MedGemma into a structured workflow:
+medBillDozer integrates MedGemma within a governed pipeline:
 
-1. Primary clinical reasoning via MedGemma  
+1. Clinical reasoning via MedGemma  
 2. Deterministic canonicalization of issue types  
 3. Heuristic validation safeguards  
-4. Structured output formatting and monitoring instrumentation  
+4. Structured output formatting with instrumentation  
 
-MedGemma performs the core medical reasoning step. Deterministic safeguards ensure consistent and controlled outputs.
-
----
-
-## Model Usage Disclosure
-
-During development, benchmarking, and validation, the following large language models were used:
-
-- **Google MedGemma-4B-IT** — primary healthcare reasoning engine and ensemble foundation  
-- **Google Gemini 1.5 Pro** — benchmark comparison baseline  
-- **OpenAI GPT-4o** — benchmark comparison baseline  
-- **Anthropic Claude** — prompt refinement and structured benchmark generation support  
-
-All final system architecture, evaluation framework design, monitoring instrumentation, and ensemble governance logic were independently implemented.
-
-The project is model-agnostic at the orchestration layer, enabling controlled benchmarking across multiple foundation models while isolating healthcare-specific reasoning performance.
+The reasoning layer is model-driven; output control is deterministic and auditable. Model outputs are normalized into canonical issue categories to enable reproducible benchmarking and regression tracking.
 
 ---
 
-## Evaluation Framework & Metric Definitions
+## Evaluation Framework
 
-The system is evaluated using structured benchmarks with annotated ground truth.
+Performance is measured against structured synthetic benchmarks with annotated ground truth.
 
-Let:
+**Overall Metrics**
 
-- **TP_all** = correctly detected issues across all cases  
-- **FP_all** = incorrectly flagged issues  
-- **FN_all** = missed issues  
+Precision_all = TP_all / (TP_all + FP_all)  
+Recall_all = TP_all / (TP_all + FN_all)  
+F1_all = 2 × (Precision_all × Recall_all) / (Precision_all + Recall_all)
 
-### Overall Precision
+**Clinical Subset Metrics**
 
-`Precision_all = TP_all / (TP_all + FP_all)`
+Detection_clinical = TP_clinical / (TP_clinical + FN_clinical)  
+HES = F1_clinical  
 
-### Overall Recall
-
-`Recall_all = TP_all / (TP_all + FN_all)`
-
-Precision and recall measure different failure modes.
-
-### Overall F1
-
-`F1_all = 2 × (Precision_all × Recall_all) / (Precision_all + Recall_all)`
-
-F1 balances over-flagging and under-detection.
+The **Healthcare Effectiveness Score (HES)** isolates domain reasoning performance from general extraction accuracy.
 
 ---
 
 ## Model Performance
 
-| Model                  | Precision | Recall | F1    | Domain Detection | HES   |
-|------------------------|-----------|--------|-------|------------------|-------|
-| **MedGemma Ensemble**  | 44.6%     | 61.9%  | 0.469 | **63.1%**        | **0.523** |
-| GPT-4o                 | 46%       | 42%    | 0.424 | 41.0%            | 0.318 |
-| MedGemma 4B-IT         | 48%       | 31%    | 0.360 | 28.7%            | 0.242 |
+| Model | Precision | Recall | F1 | Domain Detection | HES |
+|-------|-----------|--------|-----|------------------|-----|
+| **MedGemma Ensemble** | 44.6% | 61.9% | 0.469 | **63.1%** | **0.523** |
+| GPT-4o | 46% | 42% | 0.424 | 41.0% | 0.318 |
+| MedGemma 4B-IT | 48% | 31% | 0.360 | 28.7% | 0.242 |
 
-The ensemble achieves the highest recall (61.9%) and strongest performance on clinical reasoning cases.
-
----
-
-## Clinical Reasoning Subset & Domain Detection
-
-Some benchmark cases require explicit clinical reasoning:
-
-- Gender-inappropriate procedures  
-- Age-inappropriate services  
-- Cross-document inconsistencies  
-- Drug–disease contraindications  
-
-Let:
-
-- **TP_clinical**, **FP_clinical**, **FN_clinical** computed only on this subset.
-
-### Domain Knowledge Detection Rate
-
-`Detection_clinical = TP_clinical / (TP_clinical + FN_clinical)`
-
-This metric measures the proportion of clinically inappropriate procedures successfully detected. It is equivalent to recall on the clinical subset.
-
-**MedGemma Ensemble: 63.1%**  
-(77 of 122 domain-specific billing errors detected.)
+The MedGemma ensemble achieves the highest recall and strongest domain-specific detection (77 of 122 clinical inconsistencies detected). This suggests healthcare-aligned reasoning materially improves detection of clinically inappropriate billing patterns.
 
 ---
 
-### Healthcare Effectiveness Score (HES)
+## Category-Level Clinical Analysis
 
-`HES = F1_clinical`
+Aggregate F1 masks variation across error types. The figure below presents detection rates by billing error category.
 
-Where:
+![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F6561712%2Ff299f20408d2fae93e029e41f40b9a57%2Fnewplot%20(3).png?generation=1770956700894373&alt=media)
+**Figure:** Detection rate (%) by billing error category across models. Performance varies substantially by domain; the MedGemma ensemble improves diagnosis–procedure mismatch, surgical history contradiction, and health-history inconsistency detection, while all models struggle with allergy violations and upcoding.
 
-- `Precision_clinical = TP_clinical / (TP_clinical + FP_clinical)`  
-- `Recall_clinical = TP_clinical / (TP_clinical + FN_clinical)`  
-- `F1_clinical = 2 × (Precision_clinical × Recall_clinical) / (Precision_clinical + Recall_clinical)`  
+### Key Observations
 
-**MedGemma Ensemble HES: 0.523**
+- Strong ensemble gains in diagnosis–procedure mismatch (100%) and procedure–history inconsistencies  
+- Robust detection of surgical history contradictions  
+- Persistent difficulty across models for allergy violations and upcoding  
+- Improved demographic reasoning in age- and gender-mismatch categories  
 
-HES isolates healthcare reasoning performance from general extraction accuracy.
+This granular analysis highlights both strengths and limitations and supports the use of ensemble governance.
 
 ---
 
-## Monitoring & Governance
+## Monitoring and Regression Control
 
-The Production Stability Dashboard provides:
+The Production Stability Dashboard tracks:
 
-- Regression detection against stored baselines  
-- Versioned model tracking  
-- F1 stability monitoring across runs  
+- Versioned model performance  
+- Baseline regression detection  
+- F1 stability across benchmark runs  
 
-Current snapshot:
+**Current snapshot:**
 
-- `F1_all (current) = 0.469`  
-- `F1_all (baseline) = 0.469`  
+- F1_all = 0.469  
 - No regression detected  
-- Two tracked versions with rollback support  
+- Multiple tracked model versions with rollback support  
 
-This instrumentation ensures model evolution is auditable and controlled.
+This ensures model evolution remains auditable and controlled.
 
 ---
 
-## Responsible & Conservative AI Design
+## Multimodal Extension Roadmap
+
+MedGemma 1.5 introduces high-dimensional imaging support (CT, MRI, histopathology, advanced 2D interpretation). medBillDozer is architected for future multimodal validation.
+
+Potential extensions include:
+
+- Fracture casting validation against radiographic evidence  
+- CT justification review based on imaging findings  
+- Left/right anatomical consistency verification  
+
+The current system focuses on governed text-based reasoning while maintaining compatibility with imaging-based clinical validation.
+
+---
+
+## Responsible AI Design
 
 The system enforces:
 
 - Evidence-grounded findings only  
-- No speculative insurance outcomes  
-- Conservative estimation logic  
-- Deterministic validation of high-risk detections  
-- Confidence scoring on all findings  
+- Conservative reasoning policies  
+- Deterministic validation for high-risk categories  
+- Confidence scoring on all outputs  
 
-The demonstration environment uses synthetic and redacted data and stores no user information.
+All demonstrations use synthetic or redacted data and store no user information.
 
 ---
 
 ## Conclusion
 
-medBillDozer operationalizes a healthcare-aligned open-weight model into a governed, monitored system capable of detecting clinically inconsistent billing patterns.
-
-By clearly defining evaluation metrics, isolating clinical reasoning performance (Domain Detection: 63.1%, HES: 0.523), and incorporating regression safeguards and version tracking, this project demonstrates transparent and responsible deployment of healthcare AI.
+medBillDozer operationalizes a healthcare-aligned open-weight model into a governed, monitored system for detecting clinically inconsistent billing patterns. By isolating domain reasoning performance (Domain Detection: 63.1%, HES: 0.523), performing category-level analysis, and integrating regression safeguards, the project demonstrates transparent and responsible deployment of healthcare AI. The architecture supports future multimodal expansion while maintaining evaluation rigor and governance controls.
 
 ---
 
-## Footnotes
+### References
 
-[^1]: OrbDoc industry summary: https://orbdoc.com/blog/medical-bill-errors-80-percent-problem/  
-[^2]: ABC News reporting on hospital billing errors: https://abcnews.go.com/Health/hospital-bill-errors-cost/story?id=11819214  
-[^3]: Himmelstein, D. U., et al. "Medical Bankruptcy: Still Common Despite the Affordable Care Act." *American Journal of Public Health*, 2019.
+1. https://orbdoc.com/blog
+2. https://abcnews.go.com/Health/hospital-bill-errors-cost/story?id=11819214  
+3. Himmelstein et al., *American Journal of Public Health*, 2019.
