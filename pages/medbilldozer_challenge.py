@@ -8,6 +8,7 @@ import json
 from datetime import datetime
 from typing import Dict, List, Optional
 import time
+from medbilldozer.ui.doc_assistant import render_assistant_avatar
 
 # Page configuration
 st.set_page_config(
@@ -18,7 +19,7 @@ st.set_page_config(
 
 # Initialize session state
 if "challenge_patient" not in st.session_state:
-    st.session_state.challenge_patient = "Billie"
+    st.session_state.challenge_patient = "Sarah"
 if "chat_messages" not in st.session_state:
     st.session_state.chat_messages = []
 if "challenge_stage" not in st.session_state:
@@ -30,8 +31,8 @@ if "dispute_sent" not in st.session_state:
 
 # Avatar mapping
 AVATARS = {
-    "Billie": "👩‍⚕️",
-    "Billy": "👨‍⚕️",
+    "Sarah": "👩‍⚕️",
+    "Marcus": "👨‍⚕️",
     "Provider": "🏥",
     "Insurance": "🏢",
     "Arbitrator": "⚖️"
@@ -40,11 +41,11 @@ AVATARS = {
 # Sample medical documents with errors
 MEDICAL_DOCUMENTS = {
     "patient_story": {
-        "Billie": """
-        **Patient Story: Billie's 2026 Medical Journey**
+        "Sarah": """
+        **Patient Story: Sarah's 2026 Medical Journey**
         
-        In March 2026, I visited Dr. Sarah Chen at Metro Medical Center for persistent headaches. 
-        After a thorough examination, Dr. Chen ordered an MRI scan which was performed on March 15, 2026.
+        In March 2026, I visited Dr. Jennifer Wu at Metro Medical Center for persistent headaches. 
+        After a thorough examination, Dr. Wu ordered an MRI scan which was performed on March 15, 2026.
         The MRI cost was $1,200 and was deemed medically necessary.
         
         I have Blue Cross Gold Plan insurance with a $1,500 deductible (already met $800 from earlier visits)
@@ -53,8 +54,8 @@ MEDICAL_DOCUMENTS = {
         The diagnosis was tension headaches, and I was prescribed physical therapy (10 sessions at $150 each).
         I completed 8 sessions between April and May 2026.
         """,
-        "Billy": """
-        **Patient Story: Billy's 2026 Medical Journey**
+        "Marcus": """
+        **Patient Story: Marcus's 2026 Medical Journey**
         
         In February 2026, I had an emergency room visit at City Hospital for severe abdominal pain.
         The ER physician, Dr. Michael Torres, ordered a CT scan and bloodwork on February 20, 2026.
@@ -68,7 +69,7 @@ MEDICAL_DOCUMENTS = {
         """
     },
     "provider_bill_1": {
-        "Billie": {
+        "Sarah": {
             "date": "2026-03-20",
             "provider": "Metro Medical Center",
             "items": [
@@ -80,7 +81,7 @@ MEDICAL_DOCUMENTS = {
             ],
             "total": 4200.00
         },
-        "Billy": {
+        "Marcus": {
             "date": "2026-02-25",
             "provider": "City Hospital Emergency Department",
             "items": [
@@ -95,7 +96,7 @@ MEDICAL_DOCUMENTS = {
         }
     },
     "insurance_eob": {
-        "Billie": {
+        "Sarah": {
             "date": "2026-04-10",
             "plan": "Blue Cross Gold Plan",
             "items": [
@@ -107,7 +108,7 @@ MEDICAL_DOCUMENTS = {
             "total_paid": 1660.00,
             "patient_owes": 1140.00
         },
-        "Billy": {
+        "Marcus": {
             "date": "2026-03-15",
             "plan": "Aetna Silver Plan",
             "items": [
@@ -183,7 +184,7 @@ def analyze_bills_with_medgemma():
     
     # Simulated analysis results
     issues = {
-        "Billie": [
+        "Sarah": [
             {
                 "id": "B1",
                 "severity": "High",
@@ -212,7 +213,7 @@ def analyze_bills_with_medgemma():
                 "potential_savings": 200.00
             }
         ],
-        "Billy": [
+        "Marcus": [
             {
                 "id": "BY1",
                 "severity": "High",
@@ -254,26 +255,52 @@ def analyze_bills_with_medgemma():
     
     return issues[patient]
 
+# Sidebar - Patient Selection
+with st.sidebar:
+    # Render the assistant avatar at the top
+    render_assistant_avatar()
+    
+    # Toggle button for character switch
+    current_character = st.session_state.get("avatar_character", "billy")
+    other_character = "billie" if current_character == "billy" else "billy"
+    button_label = f"Switch to {other_character.capitalize()}"
+
+    if st.button(button_label, key="challenge_character_toggle"):
+        st.session_state.avatar_character = other_character
+        st.rerun()
+    
+    st.markdown("---")
+    st.markdown("## Select Patient")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("👩‍⚕️ Sarah", use_container_width=True, type="primary" if st.session_state.challenge_patient == "Sarah" else "secondary"):
+            if st.session_state.challenge_patient != "Sarah":
+                st.session_state.challenge_patient = "Sarah"
+                st.session_state.chat_messages = []
+                st.session_state.challenge_stage = "start"
+                st.session_state.flagged_issues = {}
+                st.session_state.dispute_sent = False
+                st.rerun()
+    
+    with col2:
+        if st.button("👨‍⚕️ Marcus", use_container_width=True, type="primary" if st.session_state.challenge_patient == "Marcus" else "secondary"):
+            if st.session_state.challenge_patient != "Marcus":
+                st.session_state.challenge_patient = "Marcus"
+                st.session_state.chat_messages = []
+                st.session_state.challenge_stage = "start"
+                st.session_state.flagged_issues = {}
+                st.session_state.dispute_sent = False
+                st.rerun()
+    
+    st.markdown("---")
+    st.markdown(f"### Current Patient")
+    st.markdown(f"# {AVATARS[st.session_state.challenge_patient]} {st.session_state.challenge_patient}")
+
 # Main UI
 st.title("💰 MedBillDozer Challenge")
 st.markdown("### Navigate the complex world of medical billing disputes")
-
-# Patient toggle
-col1, col2 = st.columns([1, 4])
-with col1:
-    patient_choice = st.toggle("Switch Patient", value=(st.session_state.challenge_patient == "Billy"))
-    new_patient = "Billy" if patient_choice else "Billie"
-    
-    if new_patient != st.session_state.challenge_patient:
-        st.session_state.challenge_patient = new_patient
-        st.session_state.chat_messages = []
-        st.session_state.challenge_stage = "start"
-        st.session_state.flagged_issues = {}
-        st.session_state.dispute_sent = False
-        st.rerun()
-
-with col2:
-    st.markdown(f"## Current Patient: {st.session_state.challenge_patient} {AVATARS[st.session_state.challenge_patient]}")
 
 # Document accordion
 st.markdown("---")
@@ -392,8 +419,10 @@ if st.session_state.challenge_stage == "updated_bill":
             issues = analyze_bills_with_medgemma()
             
             # Display analysis results in chat
+            patient_name = st.session_state.challenge_patient
+            avatar_character = st.session_state.get("avatar_character", "billy").capitalize()
             analysis_text = f"""
-**🤖 MedGemma Ensemble Analysis Complete**
+**{avatar_character}: I just analyzed the bills using MedGemma-Ensemble and here is what I found...**
 
 Found {len(issues)} potential billing issues:
 
@@ -407,7 +436,7 @@ Found {len(issues)} potential billing issues:
             
             analysis_text += f"\n**Total Potential Savings: ${total_potential_savings:.2f}**"
             
-            add_message(st.session_state.challenge_patient, analysis_text, "🤖")
+            add_message(st.session_state.challenge_patient, analysis_text, AVATARS[st.session_state.challenge_patient])
             st.session_state.flagged_issues = {issue['id']: 'flag' for issue in issues}
             st.session_state.analysis_results = issues
             st.session_state.challenge_stage = "analyzed"
