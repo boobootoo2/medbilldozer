@@ -136,18 +136,34 @@ class DocumentationAssistant:
             for filename, content in self.docs_cache.items()
         ])
 
-        prompt = f"""You are a helpful assistant for medBillDozer, an AI-powered medical bill auditing application.
+        prompt = f"""You are Billy, a helpful and friendly assistant for medBillDozer, an AI-powered medical bill auditing application.
 
-Your role is to help users by answering questions based ONLY on the official documentation provided below.
+Your role is to help patients understand how to use medBillDozer and answer their questions based ONLY on the official documentation provided below.
 
 IMPORTANT GUIDELINES:
-1. Answer questions using ONLY information from the documentation below
-2. Be concise and helpful - users want quick answers
-3. If the documentation doesn't cover the topic, say so clearly
-4. Provide specific section references when helpful (e.g., "See Quick Start Guide")
-5. Use a friendly, supportive tone
-6. For technical issues, suggest checking the Troubleshooting section
-7. Always remind users of important disclaimers when relevant
+1. Answer questions using ONLY information from the documentation below - never make up features or capabilities
+2. Be warm, supportive, and patient-focused - many users are stressed about medical bills
+3. Structure your answers clearly with numbered steps or bullet points when appropriate
+4. Include specific, actionable advice that users can implement immediately
+5. When discussing savings, always clarify these are estimates, not guarantees
+6. When discussing privacy, be reassuring but honest about how data flows to AI providers
+7. For technical issues, provide the most common solutions first (API keys, network issues)
+8. Use emoji sparingly but effectively to make answers more scannable (✅ ❌ 💡 ⚠️)
+9. End complex answers with a clear next step or call-to-action
+10. If the question requires information not in the docs, acknowledge this and suggest where they might find help
+
+RESPONSE STRUCTURE FOR "QUICK HELP" QUESTIONS:
+- Start with a direct, one-sentence answer
+- Follow with clear, numbered steps or organized sections
+- Include practical examples where helpful
+- End with a summary or next step
+- Keep total length under 400 words unless question specifically asks for detail
+
+TONE EXAMPLES:
+✅ Good: "Great question! Here's how to get started..."
+✅ Good: "I understand that's confusing. Let me break it down..."
+❌ Avoid: "The documentation states that..." (too formal)
+❌ Avoid: "Unfortunately, I cannot..." (too negative)
 
 DOCUMENTATION:
 {full_docs}
@@ -155,7 +171,7 @@ DOCUMENTATION:
 USER QUESTION:
 {user_question}
 
-Please provide a helpful, accurate answer based on the documentation above. If the question isn't covered in the docs, politely say so and suggest what the user might do instead.
+Please provide a helpful, well-structured answer based on the documentation above. Remember: you're helping real people who may be worried about medical bills, so be empathetic and clear.
 """
         return prompt
 
@@ -556,24 +572,38 @@ def render_doc_assistant():
 
     with col1:
         if st.button("🚀 Getting Started", key="quick_help_getting_started"):
-            question = "How do I use medBillDozer to analyze my medical bills as a patient?"
+            question = """I'm a new user who wants to get started with medBillDozer. Please provide a concise step-by-step guide that covers:
+1. How to accept the privacy policy
+2. How to try a demo document first (which demo should I try?)
+3. The basic 3-step process to analyze a bill
+4. What AI provider should I choose as a beginner
+5. What I'll see in the results
+
+Keep the answer practical and actionable for someone using the app for the first time. Reference the Getting Started documentation."""
             dispatch_billy_event("BILLY_TALK_START")
             answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
             dispatch_billy_event("BILLY_TALK_STOP")
             st.session_state.assistant_history.append({
-                "question": question,
+                "question": "🚀 Getting Started - How do I use medBillDozer?",
                 "answer": answer,
             })
             st.rerun()
 
     with col2:
         if st.button("🔒 Privacy Info", key="quick_help_privacy"):
-            question = "Is my medical bill data private and secure when I use this app?"
+            question = """I need to understand how my medical bill data is handled for privacy and security. Please explain:
+1. What data is stored or collected when I use medBillDozer?
+2. Where does my medical bill information go when I analyze it?
+3. Is this HIPAA compliant and what does that mean for me?
+4. What are the privacy differences between AI providers (MedGemma, GPT-4, Gemini, Local Heuristic)?
+5. What personal information should I remove before analyzing a bill?
+
+Be clear and reassuring, citing specific information from the Privacy documentation. Focus on what users need to know to feel confident using the tool."""
             dispatch_billy_event("BILLY_TALK_START")
             answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
             dispatch_billy_event("BILLY_TALK_STOP")
             st.session_state.assistant_history.append({
-                "question": question,
+                "question": "🔒 Privacy Info - Is my data safe?",
                 "answer": answer,
             })
             st.rerun()
@@ -582,24 +612,38 @@ def render_doc_assistant():
 
     with col3:
         if st.button("💰 Savings", key="quick_help_savings"):
-            question = "What do the savings estimates mean and how accurate are they?"
+            question = """I see savings estimates in my results and want to understand them better. Please explain:
+1. What does "potential savings" mean - is it guaranteed?
+2. How are savings calculated? Why is it different from the billed amount?
+3. What do the confidence levels (High/Medium/Low) mean for savings?
+4. What types of billing errors lead to the biggest savings?
+5. What should I do to actually recover these savings?
+
+Give practical examples and set realistic expectations. Reference the Savings Guide documentation and explain the difference between estimated and actual savings."""
             dispatch_billy_event("BILLY_TALK_START")
             answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
             dispatch_billy_event("BILLY_TALK_STOP")
             st.session_state.assistant_history.append({
-                "question": question,
+                "question": "💰 Savings - Understanding my potential savings",
                 "answer": answer,
             })
             st.rerun()
 
     with col4:
         if st.button("❓ Troubleshoot", key="quick_help_troubleshoot"):
-            question = "The analysis didn't work or I got an error. What should I try?"
+            question = """I'm having trouble with medBillDozer. Please provide troubleshooting help covering the most common issues:
+1. What if the analysis fails or shows errors?
+2. What if I get "API key not found" or authentication errors?
+3. What if the analysis completes but shows no results or issues?
+4. What if the results don't make sense or seem wrong?
+5. What should I try first before asking for help?
+
+Provide practical, step-by-step solutions. Reference the Troubleshooting documentation and prioritize the most common problems users encounter. Include quick fixes that solve 80% of issues."""
             dispatch_billy_event("BILLY_TALK_START")
             answer = st.session_state.doc_assistant.get_answer(question, ai_provider)
             dispatch_billy_event("BILLY_TALK_STOP")
             st.session_state.assistant_history.append({
-                "question": question,
+                "question": "❓ Troubleshoot - Fixing common problems",
                 "answer": answer,
             })
             st.rerun()
@@ -654,13 +698,72 @@ def render_doc_assistant():
         "For technical support, see the troubleshooting guide."
     )
 
-    # Documentation links
-    with st.sidebar.expander("📚 View Documentation"):
-        st.markdown("""
-        - [Quick Start Guide](docs/QUICKSTART.md)
-        - [User Guide](docs/USER_GUIDE.md)
-        - [Documentation Index](docs/INDEX.md)
-        """)
+    # Documentation quick access
+    with st.sidebar.expander("📚 User Documentation"):
+        doc_choice = st.selectbox(
+            "Choose a guide:",
+            [
+                "🚀 Getting Started",
+                "🔒 Privacy & Security",
+                "💰 Understanding Savings",
+                "❓ Troubleshooting",
+                "📖 Full User Guide"
+            ],
+            label_visibility="collapsed"
+        )
+        
+        # Map choices to file paths
+        doc_files = {
+            "🚀 Getting Started": "docs/GETTING_STARTED.md",
+            "🔒 Privacy & Security": "docs/PRIVACY.md",
+            "💰 Understanding Savings": "docs/SAVINGS_GUIDE.md",
+            "❓ Troubleshooting": "docs/TROUBLESHOOTING.md",
+            "📖 Full User Guide": "docs/USER_GUIDE.md"
+        }
+        
+        if st.button("📖 View Guide", key="open_doc_sidebar", use_container_width=True):
+            # Store the selected doc in session state to display it
+            st.session_state['sidebar_doc_view'] = doc_files[doc_choice]
+            st.session_state['sidebar_doc_title'] = doc_choice
+            st.rerun()
+    
+    # Display selected documentation in main area (not sidebar - too long)
+    if 'sidebar_doc_view' in st.session_state:
+        doc_path = st.session_state['sidebar_doc_view']
+        doc_title = st.session_state.get('sidebar_doc_title', 'Documentation')
+        
+        # Create a container in the main area for documentation
+        with st.container():
+            st.markdown("---")
+            col1, col2 = st.columns([6, 1])
+            with col1:
+                st.markdown(f"## {doc_title}")
+            with col2:
+                if st.button("✖ Close", key="close_doc_viewer"):
+                    del st.session_state['sidebar_doc_view']
+                    if 'sidebar_doc_title' in st.session_state:
+                        del st.session_state['sidebar_doc_title']
+                    st.rerun()
+            
+            try:
+                with open(doc_path, 'r') as f:
+                    doc_content = f.read()
+                st.markdown(doc_content)
+                
+                if st.button("✖ Close Document", key="close_doc_viewer_bottom"):
+                    del st.session_state['sidebar_doc_view']
+                    if 'sidebar_doc_title' in st.session_state:
+                        del st.session_state['sidebar_doc_title']
+                    st.rerun()
+                    
+            except FileNotFoundError:
+                st.error(f"📄 Document not found: {doc_path}")
+                st.info("This documentation file may not have been restored yet.")
+                if st.button("✖ Close", key="close_doc_viewer_error"):
+                    del st.session_state['sidebar_doc_view']
+                    if 'sidebar_doc_title' in st.session_state:
+                        del st.session_state['sidebar_doc_title']
+                    st.rerun()
 
 
 def render_contextual_help(context: str):
