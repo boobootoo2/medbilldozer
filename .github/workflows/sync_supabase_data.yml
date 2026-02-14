@@ -1,0 +1,79 @@
+name: Sync Supabase Data
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (simulate without making changes)'
+        required: false
+        type: boolean
+        default: false
+      tables:
+        description: 'Tables to sync (comma-separated, leave empty for all)'
+        required: false
+        type: string
+        default: ''
+  schedule:
+    # Run daily at 3 AM UTC
+    - cron: '0 3 * * *'
+
+jobs:
+  sync-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install supabase
+    
+    - name: Run sync script
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        SUPABASE_BETA_URL: ${{ secrets.SUPABASE_BETA_URL }}
+        SUPABASE_BETA_KEY: ${{ secrets.SUPABASE_BETA_KEY }}
+      run: |
+        if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+          DRY_RUN_FLAG="--dry-run"
+        else
+          DRY_RUN_FLAG=""
+        fi
+        
+        if [ -n "${{ github.event.inputs.tables }}" ]; then
+          TABLES_FLAG="--tables ${{ github.event.inputs.tables }}"
+        else
+          TABLES_FLAG=""
+        fi
+        
+        python scripts/sync_supabase_data.py $DRY_RUN_FLAG $TABLES_FLAG --verbose
+    
+    - name: Report status
+      if: always()
+      run: |
+        if [ $? -eq 0 ]; then
+          echo "✅ Supabase data sync completed successfully"
+        else
+          echo "❌ Supabase data sync failed"
+          exit 1
+        fi
+    
+    - name: Create summary
+      if: always()
+      run: |
+        echo "## Supabase Data Sync" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Dry Run**: ${{ github.event.inputs.dry_run || 'false' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tables**: ${{ github.event.inputs.tables || 'all default tables' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status**: $([ $? -eq 0 ] && echo '✅ Success' || echo '❌ Failed')" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
