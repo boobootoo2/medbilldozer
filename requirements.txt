@@ -79,7 +79,7 @@ multidict==6.7.0
 narwhals==2.15.0
 nest-asyncio==1.6.0
 numpy==2.4.1
-openai==2.9.0
+openai==2.21.0
 packaging==25.0
 pandas==2.3.3
 parso==0.8.5
