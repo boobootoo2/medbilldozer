@@ -22,6 +22,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import sys
 import os
+import json
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -29,7 +30,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Add scripts to path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(PROJECT_ROOT / 'scripts'))
 
 try:
     from benchmark_data_access import BenchmarkDataAccess, format_metric, calculate_delta
@@ -60,6 +62,15 @@ st.markdown("""
 
 st.title("🚨 Production Stability")
 st.markdown("Real-time ML model performance tracking and regression detection")
+
+# ============================================================================
+# BETA Mode Check
+# ============================================================================
+
+BETA_MODE = os.getenv('BETA', 'false').lower() in ('true', '1', 'yes')
+
+if BETA_MODE:
+    st.info("🧪 **BETA Mode Enabled**: Clinical Validation Dashboard now available!")
 
 # ============================================================================
 # Initialize Data Access
@@ -131,14 +142,505 @@ st.sidebar.markdown("**Last Updated:** " + datetime.now().strftime("%Y-%m-%d %H:
 # Tab Layout
 # ============================================================================
 
-tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🏥 Clinical Reasoning Evaluation",
-    "📊 System Health Overview",
-    "📈 Reliability Over Time",
-    "⚖️ Model Effectiveness Comparison",
-    "🚨 Performance Stability Monitor",
-    "🕐 Snapshot History"
-])
+if BETA_MODE:
+    tab_clinical, tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "🏥 Clinical Validation (BETA)",
+        "🏥 Clinical Reasoning Evaluation",
+        "📊 System Health Overview",
+        "📈 Reliability Over Time",
+        "⚖️ Model Effectiveness Comparison",
+        "🚨 Performance Stability Monitor",
+        "🕐 Snapshot History"
+    ])
+else:
+    tab_clinical = None
+    tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "🏥 Clinical Reasoning Evaluation",
+        "📊 System Health Overview",
+        "📈 Reliability Over Time",
+        "⚖️ Model Effectiveness Comparison",
+        "🚨 Performance Stability Monitor",
+        "🕐 Snapshot History"
+    ])
+
+# ============================================================================
+# TAB CLINICAL: Clinical Validation (BETA Mode Only)
+# ============================================================================
+
+if BETA_MODE and tab_clinical:
+    with tab_clinical:
+        st.header("🏥 Clinical Validation Benchmarks")
+        st.markdown("Multi-modal clinical error detection performance using real medical images")
+        
+        # Initialize Beta Data Access
+        @st.cache_resource
+        def get_beta_data_access():
+            """Initialize beta database access for clinical validation."""
+            try:
+                url = os.getenv('SUPABASE_BETA_URL', 'https://zrhlpitzonhftigmdvgz.supabase.co')
+                key = os.getenv('SUPABASE_BETA_KEY')
+                if not key:
+                    st.warning("🔑 SUPABASE_BETA_KEY not set. Clinical validation data unavailable.")
+                    return None
+                return BenchmarkDataAccess(supabase_url=url, supabase_key=key)
+            except Exception as e:
+                st.error(f"Failed to connect to beta database: {e}")
+                return None
+        
+        beta_data_access = get_beta_data_access()
+        
+        if beta_data_access:
+            # Fetch latest clinical validation snapshot
+            try:
+                # Query clinical_validation_snapshots table directly
+                response = beta_data_access.client.table('clinical_validation_snapshots') \
+                    .select('*') \
+                    .eq('environment', 'beta') \
+                    .order('created_at', desc=True) \
+                    .limit(30) \
+                    .execute()
+                
+                snapshots = response.data if response.data else []
+            
+            except Exception as table_error:
+                # Table might not exist yet
+                if 'does not exist' in str(table_error).lower() or 'relation' in str(table_error).lower():
+                    st.info("📊 Clinical validation table not set up yet. Run benchmarks first to create data.")
+                    snapshots = []
+                else:
+                    raise table_error
+            
+            try:
+                
+                if snapshots:
+                    latest = snapshots[0]
+                    
+                    # Extract metrics (they're nested in 'metrics' field)
+                    metrics = latest.get('metrics', latest)  # Fallback to latest if no 'metrics' key
+                    
+                    # Header Info
+                    col_h1, col_h2, col_h3 = st.columns([2, 2, 2])
+                    with col_h1:
+                        timestamp = latest.get('created_at') or latest.get('timestamp', 'Unknown')
+                        st.markdown(f"**Latest Run:** `{timestamp}`")
+                    with col_h2:
+                        st.markdown(f"**Model:** `{latest.get('model_version', 'Unknown')}`")
+                    with col_h3:
+                        total = metrics.get('total_scenarios', 0)
+                        st.markdown(f"**Scenarios:** `{total}`")
+                    
+                    st.markdown("---")
+                    
+                    # Key Metrics
+                    st.subheader("📊 Performance Metrics")
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        accuracy = metrics.get('accuracy', 0) * 100
+                        st.metric("🎯 Accuracy", f"{accuracy:.1f}%")
+                    
+                    with col2:
+                        error_rate = metrics.get('error_detection_rate', 0) * 100
+                        st.metric("🔍 Error Detection", f"{error_rate:.1f}%", 
+                                 help="Percentage of actual errors correctly identified")
+                    
+                    with col3:
+                        fpr = metrics.get('false_positive_rate', 0) * 100
+                        st.metric("⚠️ False Positive Rate", f"{fpr:.1f}%",
+                                 help="Percentage of correct treatments incorrectly flagged as errors")
+                    
+                    with col4:
+                        cost = metrics.get('total_cost_savings_potential', 0)
+                        if cost >= 1000:
+                            st.metric("💰 Cost Savings Potential", f"${cost/1000:.0f}K")
+                        else:
+                            st.metric("💰 Cost Savings Potential", f"${cost:.0f}")
+                    
+                    # Modality Breakdown
+                    st.markdown("---")
+                    st.subheader("🔬 Performance by Modality")
+                    modality_data = metrics.get('modality_breakdown', {})
+                    
+                    if modality_data:
+                        mod_rows = []
+                        for mod, stats in modality_data.items():
+                            mod_rows.append({
+                                'Modality': mod.title(),
+                                'Accuracy': f"{stats.get('accuracy', 0) * 100:.1f}%",
+                                'Scenarios': stats.get('total_scenarios', 0),
+                                'Errors Detected': stats.get('errors_detected', 0),
+                                'False Positives': stats.get('false_positives', 0)
+                            })
+                        
+                        mod_df = pd.DataFrame(mod_rows)
+                        st.dataframe(mod_df, use_container_width=True, hide_index=True)
+                        
+                        # Visualize accuracy by modality
+                        fig = px.bar(
+                            mod_df,
+                            x='Modality',
+                            y='Accuracy',
+                            title='Accuracy by Medical Imaging Modality',
+                            labels={'Accuracy': 'Accuracy (%)'},
+                            color='Modality'
+                        )
+                        # Convert "XX.X%" to float for plotting
+                        mod_df['Accuracy_num'] = mod_df['Accuracy'].str.rstrip('%').astype(float)
+                        fig = px.bar(
+                            mod_df,
+                            x='Modality',
+                            y='Accuracy_num',
+                            title='Accuracy by Medical Imaging Modality',
+                            labels={'Accuracy_num': 'Accuracy (%)'},
+                            color='Modality'
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        st.info("No modality breakdown available.")
+                    
+                    # Historical Trend
+                    if len(snapshots) > 1:
+                        st.markdown("---")
+                        st.subheader("📈 Accuracy Trend (Last 30 Days)")
+                        df = pd.DataFrame([
+                            {
+                                'timestamp': pd.to_datetime(s.get('created_at') or s.get('timestamp')),
+                                'accuracy': (s.get('metrics', s).get('accuracy', 0)) * 100,
+                                'model': s.get('model_version', 'Unknown')
+                            }
+                            for s in snapshots
+                        ])
+                        
+                        fig = px.line(
+                            df,
+                            x='timestamp',
+                            y='accuracy',
+                            color='model',
+                            title='Clinical Validation Accuracy Over Time',
+                            labels={'accuracy': 'Accuracy (%)', 'timestamp': 'Date', 'model': 'Model'},
+                            markers=True
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        # Show all models stats
+                        st.markdown("---")
+                        st.subheader("🤖 Model Comparison")
+                        model_stats = df.groupby('model').agg({
+                            'accuracy': ['mean', 'min', 'max', 'count']
+                        }).round(1)
+                        model_stats.columns = ['Avg Accuracy (%)', 'Min (%)', 'Max (%)', '# Runs']
+                        st.dataframe(model_stats, use_container_width=True)
+                    
+                    # Cost Impact Analysis
+                    st.markdown("---")
+                    st.subheader("💰 Cost Impact Analysis")
+                    st.markdown(f"""
+                    **Total Potential Savings from Detected Errors:** ${metrics.get('total_cost_savings_potential', 0):,.0f}
+                    
+                    Each detected clinical error prevents unnecessary or inappropriate treatments:
+                    - **Unnecessary Antibiotics**: ~$15,000 per case
+                    - **Unnecessary Biopsy**: ~$8,000 per case
+                    - **Unnecessary Craniotomy**: ~$85,000 per case
+                    - **Unnecessary Chemotherapy**: ~$150,000 per case
+                    
+                    Early AI-assisted detection of billing and clinical errors can save healthcare systems millions annually.
+                    """)
+                    
+                    # Detection Rate Heatmaps
+                    st.markdown("---")
+                    st.subheader("🎯 Detection Performance by Modality")
+                    st.markdown("Detection accuracy for true positives (valid treatments) and true negatives (inappropriate treatments) across imaging modalities.")
+                    
+                    # Load latest clinical validation results to build heatmaps
+                    results_dir = PROJECT_ROOT / 'benchmarks/clinical_validation_results'
+                    
+                    if results_dir.exists():
+                        try:
+                            import numpy as np
+                            from collections import defaultdict
+                            
+                            # Load latest results for each model
+                            models = ['gpt-4o-mini', 'gpt-4o', 'medgemma', 'medgemma-ensemble']
+                            modalities = ['xray', 'histopathology', 'mri', 'ultrasound']
+                            
+                            model_results = {}
+                            for model in models:
+                                model_files = sorted(results_dir.glob(f'{model}_*.json'), reverse=True)
+                                if model_files:
+                                    import json
+                                    with open(model_files[0], 'r') as f:
+                                        model_results[model] = json.load(f)
+                            
+                            if model_results:
+                                # Calculate detection rates
+                                tp_rates = defaultdict(lambda: defaultdict(lambda: {'correct': 0, 'total': 0}))
+                                tn_rates = defaultdict(lambda: defaultdict(lambda: {'correct': 0, 'total': 0}))
+                                
+                                for model, data in model_results.items():
+                                    for scenario in data.get('scenario_results', []):
+                                        modality = scenario['modality']
+                                        expected = scenario['expected'].upper()
+                                        is_correct = scenario.get('correct', False)
+                                        
+                                        is_positive_case = 'CORRECT' in expected
+                                        is_negative_case = 'ERROR' in expected
+                                        
+                                        if is_positive_case:
+                                            tp_rates[model][modality]['total'] += 1
+                                            if is_correct:
+                                                tp_rates[model][modality]['correct'] += 1
+                                        elif is_negative_case:
+                                            tn_rates[model][modality]['total'] += 1
+                                            if is_correct:
+                                                tn_rates[model][modality]['correct'] += 1
+                                
+                                # Build matrices
+                                available_models = [m for m in models if m in model_results]
+                                
+                                def rates_to_matrix(rates, models_list, modalities_list):
+                                    matrix = []
+                                    for model in models_list:
+                                        row = []
+                                        for modality in modalities_list:
+                                            stats = rates[model][modality]
+                                            if stats['total'] > 0:
+                                                row.append((stats['correct'] / stats['total']) * 100)
+                                            else:
+                                                row.append(None)
+                                        matrix.append(row)
+                                    return matrix
+                                
+                                tp_matrix = rates_to_matrix(tp_rates, available_models, modalities)
+                                tn_matrix = rates_to_matrix(tn_rates, available_models, modalities)
+                                
+                                # Display heatmaps side by side
+                                col_tp, col_tn = st.columns(2)
+                                
+                                with col_tp:
+                                    st.markdown("**True Positive Detection**")
+                                    st.caption("Correctly identifying valid treatments")
+                                    
+                                    # Create DataFrame for display
+                                    tp_df = pd.DataFrame(
+                                        tp_matrix,
+                                        index=[m.upper() for m in available_models],
+                                        columns=[m.title() for m in modalities]
+                                    )
+                                    
+                                    fig_tp = px.imshow(
+                                        tp_df.values,
+                                        labels=dict(x="Modality", y="Model", color="Rate (%)"),
+                                        x=tp_df.columns,
+                                        y=tp_df.index,
+                                        color_continuous_scale='RdYlGn',
+                                        aspect='auto',
+                                        text_auto='.0f',
+                                        zmin=0,
+                                        zmax=100
+                                    )
+                                    fig_tp.update_layout(
+                                        height=max(300, len(available_models) * 60),
+                                        xaxis={'side': 'bottom'},
+                                        yaxis={'side': 'left'}
+                                    )
+                                    st.plotly_chart(fig_tp, use_container_width=True, key="tp_heatmap")
+                                
+                                with col_tn:
+                                    st.markdown("**True Negative Detection**")
+                                    st.caption("Correctly identifying inappropriate treatments")
+                                    
+                                    # Create DataFrame for display
+                                    tn_df = pd.DataFrame(
+                                        tn_matrix,
+                                        index=[m.upper() for m in available_models],
+                                        columns=[m.title() for m in modalities]
+                                    )
+                                    
+                                    fig_tn = px.imshow(
+                                        tn_df.values,
+                                        labels=dict(x="Modality", y="Model", color="Rate (%)"),
+                                        x=tn_df.columns,
+                                        y=tn_df.index,
+                                        color_continuous_scale='RdYlGn',
+                                        aspect='auto',
+                                        text_auto='.0f',
+                                        zmin=0,
+                                        zmax=100
+                                    )
+                                    fig_tn.update_layout(
+                                        height=max(300, len(available_models) * 60),
+                                        xaxis={'side': 'bottom'},
+                                        yaxis={'side': 'left'}
+                                    )
+                                    st.plotly_chart(fig_tn, use_container_width=True, key="tn_heatmap")
+                                
+                                # Summary statistics
+                                st.markdown("**Summary:**")
+                                col1, col2 = st.columns(2)
+                                
+                                with col1:
+                                    # Best TP modality
+                                    tp_avg = np.nanmean(tp_df.values, axis=0)
+                                    best_tp_idx = np.nanargmax(tp_avg)
+                                    st.metric(
+                                        "Best Valid Treatment Detection",
+                                        tp_df.columns[best_tp_idx],
+                                        f"{tp_avg[best_tp_idx]:.0f}% avg"
+                                    )
+                                
+                                with col2:
+                                    # Best TN modality
+                                    tn_avg = np.nanmean(tn_df.values, axis=0)
+                                    best_tn_idx = np.nanargmax(tn_avg)
+                                    st.metric(
+                                        "Best Error Detection",
+                                        tn_df.columns[best_tn_idx],
+                                        f"{tn_avg[best_tn_idx]:.0f}% avg"
+                                    )
+                                
+                            else:
+                                st.info("No detailed results available for heatmap generation. Run benchmarks to collect data.")
+                        
+                        except Exception as hm_error:
+                            st.warning(f"Could not generate heatmaps: {hm_error}")
+                            import traceback
+                            with st.expander("Show Error Details"):
+                                st.code(traceback.format_exc())
+                    else:
+                        st.info("Results directory not found. Run clinical validation benchmarks first.")
+                    
+                else:
+                    st.info("📊 No clinical validation data available yet. Benchmarks run daily at midnight UTC.")
+                    st.markdown("""
+                    **Clinical Validation Benchmarks Test:**
+                    - 🩺 Multi-modal medical imaging (X-ray, MRI, Histopathology, Ultrasound)
+                    - ⚠️ Error detection scenarios (overtreatment, unnecessary procedures)
+                    - ✅ Correct treatment validation
+                    - 💰 Cost impact analysis
+                    
+                    Results will appear here after the first automated run.
+                    """)
+            
+            except Exception as e:
+                st.error(f"Error loading clinical validation data: {e}")
+                import traceback
+                with st.expander("Show Error Details"):
+                    st.code(traceback.format_exc())
+        
+        # Clinical Data Sets Section (always show, regardless of beta_data_access)
+        st.markdown("---")
+        with st.expander("📚 Clinical Data Sets", expanded=False):
+            st.markdown("""
+            Medical images used in clinical validation benchmarks. All images are sourced from 
+            publicly available Kaggle datasets with proper attribution and licensing.
+            """)
+            
+            # Load manifest
+            manifest_path = PROJECT_ROOT / 'benchmarks/clinical_images/kaggle_datasets/selected/manifest.json'
+            images_dir = PROJECT_ROOT / 'benchmarks/clinical_images/kaggle_datasets/selected'
+            
+            if manifest_path.exists():
+                try:
+                    with open(manifest_path) as f:
+                        manifest = json.load(f)
+                    
+                    st.markdown(f"**Total Images:** {manifest.get('total_images', 0)} | "
+                               f"**Modalities:** {', '.join([m.title() for m in manifest.get('modalities', [])])}")
+                    st.markdown("---")
+                    
+                    # Create table with thumbnails
+                    for img_data in manifest.get('images', []):
+                        col1, col2, col3 = st.columns([1, 3, 1])
+                        
+                        with col1:
+                            # Display thumbnail
+                            img_path = images_dir / img_data['filename']
+                            if img_path.exists():
+                                try:
+                                    import PIL.Image
+                                    img = PIL.Image.open(img_path)
+                                    
+                                    # Create a unique key for modal
+                                    modal_key = f"modal_{img_data['filename'].replace('.', '_')}"
+                                    
+                                    # Display small thumbnail (clickable)
+                                    st.image(img, width=100, use_container_width=False)
+                                    
+                                    # Modal button
+                                    if st.button("🔍 View Full", key=f"btn_{modal_key}"):
+                                        st.session_state[modal_key] = True
+                                    
+                                    # Modal dialog
+                                    if st.session_state.get(modal_key, False):
+                                        with st.container():
+                                            st.markdown("---")
+                                            st.image(img, use_container_width=True)
+                                            
+                                            # Attribution caption
+                                            st.caption(f"""
+                                            **Source:** {img_data.get('dataset_name', 'Unknown')}  
+                                            **License:** {img_data.get('license', 'Unknown')}  
+                                            **URL:** {img_data.get('dataset_url', 'N/A')}  
+                                            **Citation:** {img_data.get('citation', 'N/A')}
+                                            """)
+                                            
+                                            if st.button("✖ Close", key=f"close_{modal_key}"):
+                                                st.session_state[modal_key] = False
+                                                st.rerun()
+                                            st.markdown("---")
+                                
+                                except Exception as e:
+                                    st.error(f"Could not load image: {e}")
+                            else:
+                                st.warning("Image not found")
+                        
+                        with col2:
+                            # Description
+                            st.markdown(f"**{img_data['filename']}**")
+                            st.markdown(f"**Modality:** {img_data['modality'].title()}")
+                            st.markdown(f"**Diagnosis:** {img_data['diagnosis'].title()}")
+                            st.markdown(f"**Dataset:** {img_data.get('dataset_name', 'Unknown')}")
+                            
+                            with st.expander("📄 Full Attribution"):
+                                st.markdown(f"""
+                                **Dataset Name:** {img_data.get('dataset_name', 'N/A')}  
+                                **License:** {img_data.get('license', 'N/A')}  
+                                **Dataset URL:** [{img_data.get('dataset_url', 'N/A')}]({img_data.get('dataset_url', '#')})  
+                                **Citation:** {img_data.get('citation', 'N/A')}  
+                                **Source File:** `{img_data.get('source_file', 'N/A')}`
+                                """)
+                        
+                        with col3:
+                            # Quick stats
+                            st.metric("Class", img_data['diagnosis'].upper())
+                        
+                        st.markdown("---")
+                    
+                except Exception as e:
+                    st.error(f"Error loading manifest: {e}")
+                    import traceback
+                    with st.expander("Show Error Details"):
+                        st.code(traceback.format_exc())
+            else:
+                st.warning(f"""
+                📁 Manifest file not found at: `{manifest_path}`
+                
+                Run the download script to fetch clinical images:
+                ```bash
+                python3 scripts/download_kaggle_medical_images.py --select-images
+                ```
+                """)
+        
+        if not beta_data_access:
+            st.warning("""
+            ### 🔧 Configuration Required
+            
+            Clinical validation dashboard is unavailable. Please configure:
+            - `SUPABASE_BETA_KEY`: API key for beta database
+            - `SUPABASE_BETA_URL`: Database URL (default: https://zrhlpitzonhftigmdvgz.supabase.co)
+            
+            Add these to your `.env` file or environment variables.
+            """)
 
 # ============================================================================
 # TAB 1: System Health Overview

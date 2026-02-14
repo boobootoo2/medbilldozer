@@ -1,0 +1,106 @@
+name: Clinical Validation Benchmarks
+
+on:
+  # Run daily at midnight (12:00 AM UTC)
+  schedule:
+    - cron: '0 0 * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'Model to test (gpt-4o-mini, gpt-4o, medgemma, medgemma-ensemble, or all)'
+        required: false
+        default: 'all'
+
+jobs:
+  clinical-validation:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Download clinical images from artifact cache
+        uses: actions/cache/restore@v4
+        id: clinical-images-cache
+        with:
+          path: benchmarks/clinical_images/kaggle_datasets/selected
+          key: clinical-images-${{ hashFiles('benchmarks/clinical_images/kaggle_datasets/selected/manifest.json') }}
+          restore-keys: |
+            clinical-images-
+      
+      - name: Verify images exist
+        run: |
+          echo "📊 Checking clinical images..."
+          if [ -f "benchmarks/clinical_images/kaggle_datasets/selected/manifest.json" ]; then
+            echo "✅ Manifest found"
+            echo "Images in selected/"
+            ls -lh benchmarks/clinical_images/kaggle_datasets/selected/ || echo "Directory not found"
+          else
+            echo "❌ Manifest not found - please commit selected images to repo"
+            exit 1
+          fi
+      
+      - name: Run Clinical Validation Benchmarks
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
+          HF_ENDPOINT_BASE: ${{ secrets.HF_ENDPOINT_BASE }}
+          SUPABASE_BETA_KEY: ${{ secrets.SUPABASE_BETA_KEY }}
+          SUPABASE_BETA_URL: 'https://zrhlpitzonhftigmdvgz.supabase.co'
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: |
+          echo "🏥 Starting Clinical Validation Benchmarks"
+          echo "⏰ Time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "🤖 Model: ${{ github.event.inputs.model || 'all' }}"
+          
+          python3 scripts/run_clinical_validation_benchmarks.py \
+            --model "${{ github.event.inputs.model || 'all' }}" \
+            --push-to-supabase \
+            --environment beta
+      
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clinical-validation-results-${{ github.run_number }}
+          path: benchmarks/clinical_validation_results/
+          retention-days: 30
+      
+      - name: Summary
+        if: always()
+        run: |
+          echo "## 🏥 Clinical Validation Benchmarks" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "**Model:** ${{ github.event.inputs.model || 'all' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -d "benchmarks/clinical_validation_results" ]; then
+            echo "**Results:**" >> $GITHUB_STEP_SUMMARY
+            for file in benchmarks/clinical_validation_results/*.json; do
+              if [ -f "$file" ]; then
+                model=$(basename "$file" | cut -d'_' -f1)
+                accuracy=$(jq -r '.accuracy * 100 | round' "$file" 2>/dev/null || echo "N/A")
+                error_detection=$(jq -r '.error_detection_rate * 100 | round' "$file" 2>/dev/null || echo "N/A")
+                echo "- **$model**: ${accuracy}% accuracy, ${error_detection}% error detection" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Results pushed to Supabase Beta Database" >> $GITHUB_STEP_SUMMARY

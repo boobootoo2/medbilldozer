@@ -1,0 +1,258 @@
+[
+  {
+    "id": "xray_004_covid_appropriate_treatment",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 62\n- Gender: Male\n- Complaint: Shortness of breath, fever\n\n**Clinical Finding:**\nBilateral ground-glass opacities consistent with COVID-19 pneumonia\n\n**Prescribed Treatment:**\nSupplemental oxygen + antiviral therapy + supportive care\n\n**Your Assessment:**",
+    "output": "CORRECT - Treatment matches imaging findings",
+    "image_file": "xray_positive.png",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/xray_positive.png",
+    "metadata": {
+      "scenario_id": "clinical_004",
+      "modality": "xray",
+      "image_type": "positive",
+      "error_type": "none",
+      "severity": "none",
+      "cost_impact": 0
+    }
+  },
+  {
+    "id": "xray_002_normal_lung_unnecessary_steroids",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 38\n- Gender: Male\n- Complaint: Mild cough for 2 days\n\n**Clinical Finding:**\nNormal lung parenchyma, clear costophrenic angles\n\n**Prescribed Treatment:**\nHigh-dose corticosteroids + bronchodilators\n\n**Your Assessment:**",
+    "output": "ERROR - Treatment does not match imaging",
+    "image_file": "xray_negative_2.png",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/xray_negative_2.png",
+    "metadata": {
+      "scenario_id": "clinical_002",
+      "modality": "xray",
+      "image_type": "negative",
+      "error_type": "overtreatment",
+      "severity": "moderate",
+      "cost_impact": 5000
+    }
+  },
+  {
+    "id": "xray_003_normal_chest_unnecessary_ct",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 52\n- Gender: Female\n- Complaint: Resolved chest pain\n\n**Clinical Finding:**\nClear bilateral lung fields, normal cardiac silhouette\n\n**Prescribed Treatment:**\nCT angiography for pulmonary embolism\n\n**Your Assessment:**",
+    "output": "ERROR - Advanced imaging not indicated",
+    "image_file": "xray_negative_3.png",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/xray_negative_3.png",
+    "metadata": {
+      "scenario_id": "clinical_003",
+      "modality": "xray",
+      "image_type": "negative",
+      "error_type": "unnecessary_procedure",
+      "severity": "moderate",
+      "cost_impact": 12000
+    }
+  },
+  {
+    "id": "xray_005_pneumonia_appropriate_antibiotics",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 71\n- Gender: Female\n- Complaint: Productive cough, fever 3 days\n\n**Clinical Finding:**\nRight lower lobe consolidation consistent with bacterial pneumonia\n\n**Prescribed Treatment:**\nBroad-spectrum antibiotics + respiratory support\n\n**Your Assessment:**",
+    "output": "CORRECT - Treatment matches imaging findings",
+    "image_file": "xray_positive_2.png",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/xray_positive_2.png",
+    "metadata": {
+      "scenario_id": "clinical_005",
+      "modality": "xray",
+      "image_type": "positive",
+      "error_type": "none",
+      "severity": "none",
+      "cost_impact": 0
+    }
+  },
+  {
+    "id": "histopath_004_adenocarcinoma_appropriate_treatment",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 65\n- Gender: Male\n- Complaint: Persistent cough, weight loss\n\n**Clinical Finding:**\nAdenocarcinoma with atypical glands and nuclear atypia\n\n**Prescribed Treatment:**\nSurgical resection + adjuvant chemotherapy\n\n**Your Assessment:**",
+    "output": "CORRECT - Treatment matches pathology findings",
+    "image_file": "histopathology_positive.jpeg",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/histopathology_positive.jpeg",
+    "metadata": {
+      "scenario_id": "clinical_010",
+      "modality": "histopathology",
+      "image_type": "positive",
+      "error_type": "none",
+      "severity": "none",
+      "cost_impact": 0
+    }
+  },
+  {
+    "id": "histopath_001_benign_tissue_unnecessary_chemo",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 58\n- Gender: Female\n- Complaint: Lung nodule found on CT\n\n**Clinical Finding:**\nBenign lung tissue with normal cellular architecture\n\n**Prescribed Treatment:**\nChemotherapy regimen (4 cycles) + radiation therapy\n\n**Your Assessment:**",
+    "output": "ERROR - Treatment does not match pathology",
+    "image_file": "histopathology_negative.jpeg",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/histopathology_negative.jpeg",
+    "metadata": {
+      "scenario_id": "clinical_007",
+      "modality": "histopathology",
+      "image_type": "negative",
+      "error_type": "overtreatment",
+      "severity": "critical",
+      "cost_impact": 150000
+    }
+  },
+  {
+    "id": "histopath_003_benign_inflammation_unnecessary_resection",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 54\n- Gender: Female\n- Complaint: Chronic cough\n\n**Clinical Finding:**\nBenign reactive changes, mild inflammation, no dysplasia\n\n**Prescribed Treatment:**\nSurgical resection + adjuvant therapy\n\n**Your Assessment:**",
+    "output": "ERROR - Treatment does not match pathology",
+    "image_file": "histopathology_negative_3.jpeg",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/histopathology_negative_3.jpeg",
+    "metadata": {
+      "scenario_id": "clinical_009",
+      "modality": "histopathology",
+      "image_type": "negative",
+      "error_type": "overtreatment",
+      "severity": "critical",
+      "cost_impact": 180000
+    }
+  },
+  {
+    "id": "histopath_005_squamous_cell_appropriate_treatment",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 68\n- Gender: Male\n- Complaint: Hemoptysis, 50 pack-year smoking history\n\n**Clinical Finding:**\nPoorly differentiated adenocarcinoma, high mitotic index\n\n**Prescribed Treatment:**\nNeoadjuvant chemotherapy + surgical resection\n\n**Your Assessment:**",
+    "output": "CORRECT - Treatment matches pathology findings",
+    "image_file": "histopathology_positive_2.jpeg",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/histopathology_positive_2.jpeg",
+    "metadata": {
+      "scenario_id": "clinical_011",
+      "modality": "histopathology",
+      "image_type": "positive",
+      "error_type": "none",
+      "severity": "none",
+      "cost_impact": 0
+    }
+  },
+  {
+    "id": "mri_004_glioma_appropriate_surgery",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 54\n- Gender: Male\n- Complaint: Seizures, progressive weakness\n\n**Clinical Finding:**\nLarge heterogeneously enhancing mass in left frontal lobe consistent with high-grade glioma\n\n**Prescribed Treatment:**\nSurgical resection + radiation + chemotherapy\n\n**Your Assessment:**",
+    "output": "CORRECT - Treatment matches MRI findings",
+    "image_file": "mri_positive.jpg",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/mri_positive.jpg",
+    "metadata": {
+      "scenario_id": "clinical_016",
+      "modality": "mri",
+      "image_type": "positive",
+      "error_type": "none",
+      "severity": "none",
+      "cost_impact": 0
+    }
+  },
+  {
+    "id": "mri_002_normal_brain_unnecessary_radiation",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 37\n- Gender: Male\n- Complaint: Occasional headaches\n\n**Clinical Finding:**\nNormal brain anatomy, no masses, no edema, no midline shift\n\n**Prescribed Treatment:**\nStereotactic radiosurgery\n\n**Your Assessment:**",
+    "output": "ERROR - Radiation not indicated by imaging",
+    "image_file": "mri_negative_2.jpg",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/mri_negative_2.jpg",
+    "metadata": {
+      "scenario_id": "clinical_014",
+      "modality": "mri",
+      "image_type": "negative",
+      "error_type": "overtreatment",
+      "severity": "critical",
+      "cost_impact": 45000
+    }
+  },
+  {
+    "id": "mri_003_normal_scan_unnecessary_biopsy",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 50\n- Gender: Female\n- Complaint: Dizziness\n\n**Clinical Finding:**\nNo intracranial mass, normal gray-white differentiation\n\n**Prescribed Treatment:**\nStereotactic brain biopsy\n\n**Your Assessment:**",
+    "output": "ERROR - Biopsy not indicated by imaging",
+    "image_file": "mri_negative_3.jpg",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/mri_negative_3.jpg",
+    "metadata": {
+      "scenario_id": "clinical_015",
+      "modality": "mri",
+      "image_type": "negative",
+      "error_type": "unnecessary_procedure",
+      "severity": "high",
+      "cost_impact": 35000
+    }
+  },
+  {
+    "id": "mri_001_no_tumor_unnecessary_surgery",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 42\n- Gender: Female\n- Complaint: Headaches\n\n**Clinical Finding:**\nNo mass lesion, no abnormal enhancement, normal brain parenchyma\n\n**Prescribed Treatment:**\nCraniotomy for tumor resection\n\n**Your Assessment:**",
+    "output": "ERROR - Surgery not indicated by imaging",
+    "image_file": "mri_negative.jpg",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/mri_negative.jpg",
+    "metadata": {
+      "scenario_id": "clinical_013",
+      "modality": "mri",
+      "image_type": "negative",
+      "error_type": "unnecessary_procedure",
+      "severity": "critical",
+      "cost_impact": 85000
+    }
+  },
+  {
+    "id": "ultrasound_002_benign_cyst_unnecessary_surgery",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 44\n- Gender: Female\n- Complaint: Breast tenderness\n\n**Clinical Finding:**\nSimple cyst with smooth walls, BI-RADS 2 (benign finding)\n\n**Prescribed Treatment:**\nSurgical excision + axillary dissection\n\n**Your Assessment:**",
+    "output": "ERROR - Surgery not indicated for benign cyst",
+    "image_file": "ultrasound_negative_2.png",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/ultrasound_negative_2.png",
+    "metadata": {
+      "scenario_id": "clinical_020",
+      "modality": "ultrasound",
+      "image_type": "negative",
+      "error_type": "overtreatment",
+      "severity": "high",
+      "cost_impact": 25000
+    }
+  },
+  {
+    "id": "ultrasound_003_normal_tissue_unnecessary_mastectomy",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 41\n- Gender: Female\n- Complaint: Family history of breast cancer\n\n**Clinical Finding:**\nHomogeneous fibroglandular tissue, no suspicious findings, BI-RADS 1\n\n**Prescribed Treatment:**\nProphylactic mastectomy\n\n**Your Assessment:**",
+    "output": "ERROR - Mastectomy not indicated by imaging",
+    "image_file": "ultrasound_negative_3.png",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/ultrasound_negative_3.png",
+    "metadata": {
+      "scenario_id": "clinical_021",
+      "modality": "ultrasound",
+      "image_type": "negative",
+      "error_type": "overtreatment",
+      "severity": "critical",
+      "cost_impact": 50000
+    }
+  },
+  {
+    "id": "ultrasound_004_malignant_mass_appropriate_biopsy",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 52\n- Gender: Female\n- Complaint: Palpable breast lump\n\n**Clinical Finding:**\nIrregular hypoechoic mass with posterior shadowing, BI-RADS 5\n\n**Prescribed Treatment:**\nUltrasound-guided core biopsy for tissue diagnosis\n\n**Your Assessment:**",
+    "output": "CORRECT - Biopsy indicated by imaging",
+    "image_file": "ultrasound_positive.png",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/ultrasound_positive.png",
+    "metadata": {
+      "scenario_id": "clinical_022",
+      "modality": "ultrasound",
+      "image_type": "positive",
+      "error_type": "none",
+      "severity": "none",
+      "cost_impact": 0
+    }
+  },
+  {
+    "id": "ultrasound_005_suspicious_mass_appropriate_workup",
+    "instruction": "You are a medical AI assistant trained to detect clinical errors. \nReview the medical image and clinical information to determine if the prescribed treatment is appropriate.\n\nRespond with ONLY:\n- \"ERROR - Treatment does not match imaging\" if inappropriate\n- \"CORRECT - Treatment matches imaging findings\" if appropriate",
+    "input": "**Patient Information:**\n- Age: 58\n- Gender: Female\n- Complaint: Abnormal mammogram callback\n\n**Clinical Finding:**\nSpiculated mass with microlobulation, BI-RADS 4C\n\n**Prescribed Treatment:**\nCore needle biopsy + possible lumpectomy if malignant\n\n**Your Assessment:**",
+    "output": "CORRECT - Biopsy indicated by imaging",
+    "image_file": "ultrasound_positive_2.png",
+    "image_path": "/Users/jgs/Documents/GitHub/medbilldozer/benchmarks/clinical_images/kaggle_datasets/selected/ultrasound_positive_2.png",
+    "metadata": {
+      "scenario_id": "clinical_023",
+      "modality": "ultrasound",
+      "image_type": "positive",
+      "error_type": "none",
+      "severity": "none",
+      "cost_impact": 0
+    }
+  }
+]
