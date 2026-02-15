@@ -26,9 +26,10 @@ import json
 import os
 import sys
 import base64
+import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Callable, Any
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -66,6 +67,7 @@ CLINICAL_SCENARIOS = {
     # ========== X-RAY SCENARIOS (3 NEGATIVE + 3 POSITIVE) ==========
     "xray_001_normal_lung_unnecessary_treatment": {
         "id": "clinical_001",
+        "validation_type": "treatment_matching",
         "modality": "xray",
         "image_type": "negative",
         "image_file": "xray_negative.png",
@@ -85,6 +87,7 @@ CLINICAL_SCENARIOS = {
     
     "xray_002_normal_lung_unnecessary_steroids": {
         "id": "clinical_002",
+        "validation_type": "treatment_matching",
         "modality": "xray",
         "image_type": "negative",
         "image_file": "xray_negative_2.png",
@@ -104,6 +107,7 @@ CLINICAL_SCENARIOS = {
     
     "xray_003_normal_chest_unnecessary_ct": {
         "id": "clinical_003",
+        "validation_type": "treatment_matching",
         "modality": "xray",
         "image_type": "negative",
         "image_file": "xray_negative_3.png",
@@ -123,6 +127,7 @@ CLINICAL_SCENARIOS = {
     
     "xray_004_covid_appropriate_treatment": {
         "id": "clinical_004",
+        "validation_type": "treatment_matching",
         "modality": "xray",
         "image_type": "positive",
         "image_file": "xray_positive.png",
@@ -142,6 +147,7 @@ CLINICAL_SCENARIOS = {
     
     "xray_005_pneumonia_appropriate_antibiotics": {
         "id": "clinical_005",
+        "validation_type": "treatment_matching",
         "modality": "xray",
         "image_type": "positive",
         "image_file": "xray_positive_2.png",
@@ -161,6 +167,7 @@ CLINICAL_SCENARIOS = {
     
     "xray_006_viral_pneumonia_appropriate_care": {
         "id": "clinical_006",
+        "validation_type": "treatment_matching",
         "modality": "xray",
         "image_type": "positive",
         "image_file": "xray_positive_3.png",
@@ -181,6 +188,7 @@ CLINICAL_SCENARIOS = {
     # ========== HISTOPATHOLOGY SCENARIOS (3 NEGATIVE + 3 POSITIVE) ==========
     "histopath_001_benign_tissue_unnecessary_chemo": {
         "id": "clinical_007",
+        "validation_type": "treatment_matching",
         "modality": "histopathology",
         "image_type": "negative",
         "image_file": "histopathology_negative.jpeg",
@@ -200,6 +208,7 @@ CLINICAL_SCENARIOS = {
     
     "histopath_002_normal_tissue_unnecessary_surgery": {
         "id": "clinical_008",
+        "validation_type": "treatment_matching",
         "modality": "histopathology",
         "image_type": "negative",
         "image_file": "histopathology_negative_2.jpeg",
@@ -219,6 +228,7 @@ CLINICAL_SCENARIOS = {
     
     "histopath_003_benign_inflammation_unnecessary_resection": {
         "id": "clinical_009",
+        "validation_type": "treatment_matching",
         "modality": "histopathology",
         "image_type": "negative",
         "image_file": "histopathology_negative_3.jpeg",
@@ -238,6 +248,7 @@ CLINICAL_SCENARIOS = {
     
     "histopath_004_adenocarcinoma_appropriate_treatment": {
         "id": "clinical_010",
+        "validation_type": "treatment_matching",
         "modality": "histopathology",
         "image_type": "positive",
         "image_file": "histopathology_positive.jpeg",
@@ -257,6 +268,7 @@ CLINICAL_SCENARIOS = {
     
     "histopath_005_squamous_cell_appropriate_treatment": {
         "id": "clinical_011",
+        "validation_type": "treatment_matching",
         "modality": "histopathology",
         "image_type": "positive",
         "image_file": "histopathology_positive_2.jpeg",
@@ -276,6 +288,7 @@ CLINICAL_SCENARIOS = {
     
     "histopath_006_invasive_carcinoma_appropriate_chemo": {
         "id": "clinical_012",
+        "validation_type": "treatment_matching",
         "modality": "histopathology",
         "image_type": "positive",
         "image_file": "histopathology_positive_3.jpeg",
@@ -296,6 +309,7 @@ CLINICAL_SCENARIOS = {
     # ========== MRI SCENARIOS (3 NEGATIVE + 3 POSITIVE) ==========
     "mri_001_no_tumor_unnecessary_surgery": {
         "id": "clinical_013",
+        "validation_type": "treatment_matching",
         "modality": "mri",
         "image_type": "negative",
         "image_file": "mri_negative.jpg",
@@ -315,6 +329,7 @@ CLINICAL_SCENARIOS = {
     
     "mri_002_normal_brain_unnecessary_radiation": {
         "id": "clinical_014",
+        "validation_type": "treatment_matching",
         "modality": "mri",
         "image_type": "negative",
         "image_file": "mri_negative_2.jpg",
@@ -334,6 +349,7 @@ CLINICAL_SCENARIOS = {
     
     "mri_003_normal_scan_unnecessary_biopsy": {
         "id": "clinical_015",
+        "validation_type": "treatment_matching",
         "modality": "mri",
         "image_type": "negative",
         "image_file": "mri_negative_3.jpg",
@@ -353,6 +369,7 @@ CLINICAL_SCENARIOS = {
     
     "mri_004_glioma_appropriate_surgery": {
         "id": "clinical_016",
+        "validation_type": "treatment_matching",
         "modality": "mri",
         "image_type": "positive",
         "image_file": "mri_positive.jpg",
@@ -372,6 +389,7 @@ CLINICAL_SCENARIOS = {
     
     "mri_005_meningioma_appropriate_surgery": {
         "id": "clinical_017",
+        "validation_type": "treatment_matching",
         "modality": "mri",
         "image_type": "positive",
         "image_file": "mri_positive_2.jpg",
@@ -391,6 +409,7 @@ CLINICAL_SCENARIOS = {
     
     "mri_006_high_grade_glioma_appropriate_treatment": {
         "id": "clinical_018",
+        "validation_type": "treatment_matching",
         "modality": "mri",
         "image_type": "positive",
         "image_file": "mri_positive_3.jpg",
@@ -411,6 +430,7 @@ CLINICAL_SCENARIOS = {
     # ========== ULTRASOUND SCENARIOS (3 NEGATIVE + 3 POSITIVE) ==========
     "ultrasound_001_normal_breast_unnecessary_biopsy": {
         "id": "clinical_019",
+        "validation_type": "treatment_matching",
         "modality": "ultrasound",
         "image_type": "negative",
         "image_file": "ultrasound_negative.png",
@@ -430,6 +450,7 @@ CLINICAL_SCENARIOS = {
     
     "ultrasound_002_benign_cyst_unnecessary_surgery": {
         "id": "clinical_020",
+        "validation_type": "treatment_matching",
         "modality": "ultrasound",
         "image_type": "negative",
         "image_file": "ultrasound_negative_2.png",
@@ -449,6 +470,7 @@ CLINICAL_SCENARIOS = {
     
     "ultrasound_003_normal_tissue_unnecessary_mastectomy": {
         "id": "clinical_021",
+        "validation_type": "treatment_matching",
         "modality": "ultrasound",
         "image_type": "negative",
         "image_file": "ultrasound_negative_3.png",
@@ -468,6 +490,7 @@ CLINICAL_SCENARIOS = {
     
     "ultrasound_004_malignant_mass_appropriate_biopsy": {
         "id": "clinical_022",
+        "validation_type": "treatment_matching",
         "modality": "ultrasound",
         "image_type": "positive",
         "image_file": "ultrasound_positive.png",
@@ -487,6 +510,7 @@ CLINICAL_SCENARIOS = {
     
     "ultrasound_005_suspicious_mass_appropriate_workup": {
         "id": "clinical_023",
+        "validation_type": "treatment_matching",
         "modality": "ultrasound",
         "image_type": "positive",
         "image_file": "ultrasound_positive_2.png",
@@ -506,6 +530,7 @@ CLINICAL_SCENARIOS = {
     
     "ultrasound_006_confirmed_cancer_appropriate_surgery": {
         "id": "clinical_024",
+        "validation_type": "treatment_matching",
         "modality": "ultrasound",
         "image_type": "positive",
         "image_file": "ultrasound_positive_3.png",
@@ -522,7 +547,599 @@ CLINICAL_SCENARIOS = {
         "severity": "none",
         "cost_impact": 0
     },
+    
+    # ========== ICD CODE VALIDATION SCENARIOS (3 CORRECT + 3 INCORRECT PER MODALITY) ==========
+    
+    # X-RAY ICD VALIDATION
+    "xray_icd_001_covid_incorrect_code": {
+        "id": "icd_001",
+        "modality": "xray",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "xray_positive.png",
+        "patient_context": {
+            "age": 62,
+            "gender": "Male",
+            "chief_complaint": "Shortness of breath, fever"
+        },
+        "clinical_finding": "Bilateral ground-glass opacities consistent with COVID-19 pneumonia",
+        "diagnosis": "COVID-19 pneumonia",
+        "icd_code": "J18.9",
+        "icd_description": "Pneumonia, unspecified organism",
+        "expected_determination": "ERROR - ICD code does not match diagnosis",
+        "correct_code": "U07.1 (COVID-19)",
+        "error_type": "incorrect_icd",
+        "severity": "moderate",
+        "cost_impact": 5000
+    },
+    
+    "xray_icd_002_normal_incorrect_code": {
+        "id": "icd_002",
+        "modality": "xray",
+        "validation_type": "icd_coding",
+        "image_type": "negative",
+        "image_file": "xray_negative.png",
+        "patient_context": {
+            "age": 45,
+            "gender": "Female",
+            "chief_complaint": "Routine checkup"
+        },
+        "clinical_finding": "Clear lung fields, no infiltrates, no effusion",
+        "diagnosis": "Normal chest X-ray",
+        "icd_code": "J18.1",
+        "icd_description": "Lobar pneumonia, unspecified organism",
+        "expected_determination": "ERROR - ICD code does not match diagnosis",
+        "correct_code": "Z00.00 (Encounter for general adult medical examination)",
+        "error_type": "incorrect_icd",
+        "severity": "high",
+        "cost_impact": 8000
+    },
+    
+    "xray_icd_003_pneumonia_nonspecific": {
+        "id": "icd_003",
+        "modality": "xray",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "xray_positive_2.png",
+        "patient_context": {
+            "age": 71,
+            "gender": "Female",
+            "chief_complaint": "Productive cough, fever"
+        },
+        "clinical_finding": "Right lower lobe consolidation consistent with bacterial pneumonia",
+        "diagnosis": "Right lower lobe bacterial pneumonia",
+        "icd_code": "J15.9",
+        "icd_description": "Unspecified bacterial pneumonia",
+        "expected_determination": "ERROR - ICD code does not match diagnosis",
+        "correct_code": "J18.1 (Lobar pneumonia) or more specific bacterial code",
+        "error_type": "incorrect_icd",
+        "severity": "moderate",
+        "cost_impact": 3000
+    },
+    
+    "xray_icd_004_covid_correct_code": {
+        "id": "icd_004",
+        "modality": "xray",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "xray_positive.png",
+        "patient_context": {
+            "age": 62,
+            "gender": "Male",
+            "chief_complaint": "Shortness of breath, fever"
+        },
+        "clinical_finding": "Bilateral ground-glass opacities consistent with COVID-19 pneumonia",
+        "diagnosis": "COVID-19 with pneumonia",
+        "icd_code": "U07.1",
+        "icd_description": "COVID-19",
+        "expected_determination": "CORRECT - ICD code matches diagnosis",
+        "error_type": "none",
+        "severity": "none",
+        "cost_impact": 0
+    },
+    
+    "xray_icd_005_pneumonia_correct_code": {
+        "id": "icd_005",
+        "modality": "xray",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "xray_positive_2.png",
+        "patient_context": {
+            "age": 71,
+            "gender": "Female",
+            "chief_complaint": "Productive cough, fever"
+        },
+        "clinical_finding": "Right lower lobe consolidation consistent with bacterial pneumonia",
+        "diagnosis": "Bacterial pneumonia, right lower lobe",
+        "icd_code": "J18.1",
+        "icd_description": "Lobar pneumonia, unspecified organism",
+        "expected_determination": "CORRECT - ICD code matches diagnosis",
+        "error_type": "none",
+        "severity": "none",
+        "cost_impact": 0
+    },
+    
+    "xray_icd_006_normal_correct_code": {
+        "id": "icd_006",
+        "modality": "xray",
+        "validation_type": "icd_coding",
+        "image_type": "negative",
+        "image_file": "xray_negative.png",
+        "patient_context": {
+            "age": 45,
+            "gender": "Female",
+            "chief_complaint": "Routine checkup"
+        },
+        "clinical_finding": "Clear lung fields, normal cardiac silhouette",
+        "diagnosis": "Normal chest examination",
+        "icd_code": "Z00.00",
+        "icd_description": "Encounter for general adult medical examination without abnormal findings",
+        "expected_determination": "CORRECT - ICD code matches diagnosis",
+        "error_type": "none",
+        "severity": "none",
+        "cost_impact": 0
+    },
+    
+    # HISTOPATHOLOGY ICD VALIDATION
+    "histopath_icd_001_benign_cancer_code": {
+        "id": "icd_007",
+        "modality": "histopathology",
+        "validation_type": "icd_coding",
+        "image_type": "negative",
+        "image_file": "histopathology_negative.jpeg",
+        "patient_context": {
+            "age": 58,
+            "gender": "Female",
+            "chief_complaint": "Lung nodule found on CT"
+        },
+        "clinical_finding": "Benign lung tissue with normal cellular architecture",
+        "diagnosis": "Benign lung nodule",
+        "icd_code": "C34.90",
+        "icd_description": "Malignant neoplasm of unspecified part of unspecified bronchus or lung",
+        "expected_determination": "ERROR - ICD code does not match diagnosis",
+        "correct_code": "R91.1 (Solitary pulmonary nodule) or D14.3 (Benign neoplasm of bronchus and lung)",
+        "error_type": "incorrect_icd",
+        "severity": "critical",
+        "cost_impact": 150000
+    },
+    
+    "histopath_icd_002_normal_tissue_dysplasia_code": {
+        "id": "icd_008",
+        "modality": "histopathology",
+        "validation_type": "icd_coding",
+        "image_type": "negative",
+        "image_file": "histopathology_negative_2.jpeg",
+        "patient_context": {
+            "age": 49,
+            "gender": "Male",
+            "chief_complaint": "Incidental lung opacity"
+        },
+        "clinical_finding": "Normal lung parenchyma, no malignant cells identified",
+        "diagnosis": "Normal lung tissue",
+        "icd_code": "D02.2",
+        "icd_description": "Carcinoma in situ of bronchus and lung",
+        "expected_determination": "ERROR - ICD code does not match diagnosis",
+        "correct_code": "Z03.89 (Encounter for observation for other suspected diseases)",
+        "error_type": "incorrect_icd",
+        "severity": "critical",
+        "cost_impact": 100000
+    },
+    
+    "histopath_icd_003_inflammation_neoplasm_code": {
+        "id": "icd_009",
+        "modality": "histopathology",
+        "validation_type": "icd_coding",
+        "image_type": "negative",
+        "image_file": "histopathology_negative_3.jpeg",
+        "patient_context": {
+            "age": 54,
+            "gender": "Female",
+            "chief_complaint": "Chronic cough"
+        },
+        "clinical_finding": "Benign reactive changes, mild inflammation, no dysplasia",
+        "diagnosis": "Chronic inflammation, benign",
+        "icd_code": "D14.30",
+        "icd_description": "Benign neoplasm of bronchus and lung, unspecified",
+        "expected_determination": "ERROR - ICD code does not match diagnosis",
+        "correct_code": "J98.4 (Other disorders of lung)",
+        "error_type": "incorrect_icd",
+        "severity": "high",
+        "cost_impact": 50000
+    },
+    
+    "histopath_icd_004_adenocarcinoma_correct": {
+        "id": "icd_010",
+        "modality": "histopathology",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "histopathology_positive.jpeg",
+        "patient_context": {
+            "age": 65,
+            "gender": "Male",
+            "chief_complaint": "Persistent cough, weight loss"
+        },
+        "clinical_finding": "Adenocarcinoma with atypical glands and nuclear atypia",
+        "diagnosis": "Lung adenocarcinoma",
+        "icd_code": "C34.90",
+        "icd_description": "Malignant neoplasm of unspecified part of unspecified bronchus or lung",
+        "expected_determination": "CORRECT - ICD code matches diagnosis",
+        "error_type": "none",
+        "severity": "none",
+        "cost_impact": 0
+    },
+    
+    "histopath_icd_005_squamous_cell_correct": {
+        "id": "icd_011",
+        "modality": "histopathology",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "histopathology_positive_2.jpeg",
+        "patient_context": {
+            "age": 68,
+            "gender": "Male",
+            "chief_complaint": "Hemoptysis"
+        },
+        "clinical_finding": "Poorly differentiated adenocarcinoma, high mitotic index",
+        "diagnosis": "Poorly differentiated lung carcinoma",
+        "icd_code": "C34.91",
+        "icd_description": "Malignant neoplasm of unspecified part of right bronchus or lung",
+        "expected_determination": "CORRECT - ICD code matches diagnosis",
+        "error_type": "none",
+        "severity": "none",
+        "cost_impact": 0
+    },
+    
+    "histopath_icd_006_invasive_carcinoma_correct": {
+        "id": "icd_012",
+        "modality": "histopathology",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "histopathology_positive_3.jpeg",
+        "patient_context": {
+            "age": 59,
+            "gender": "Female",
+            "chief_complaint": "Progressive dyspnea"
+        },
+        "clinical_finding": "Invasive adenocarcinoma with lymphovascular invasion",
+        "diagnosis": "Invasive lung adenocarcinoma with lymphovascular invasion",
+        "icd_code": "C34.92",
+        "icd_description": "Malignant neoplasm of unspecified part of left bronchus or lung",
+        "expected_determination": "CORRECT - ICD code matches diagnosis",
+        "error_type": "none",
+        "severity": "none",
+        "cost_impact": 0
+    },
+    
+    # MRI ICD VALIDATION
+    "mri_icd_001_normal_glioma_code": {
+        "id": "icd_013",
+        "modality": "mri",
+        "validation_type": "icd_coding",
+        "image_type": "negative",
+        "image_file": "mri_negative.jpg",
+        "patient_context": {
+            "age": 42,
+            "gender": "Female",
+            "chief_complaint": "Headaches"
+        },
+        "clinical_finding": "No mass lesion, no abnormal enhancement, normal brain parenchyma",
+        "diagnosis": "Normal brain MRI, primary headache",
+        "icd_code": "C71.9",
+        "icd_description": "Malignant neoplasm of brain, unspecified",
+        "expected_determination": "ERROR - ICD code does not match diagnosis",
+        "correct_code": "R51 (Headache) or G44.1 (Vascular headache)",
+        "error_type": "incorrect_icd",
+        "severity": "critical",
+        "cost_impact": 85000
+    },
+    
+    "mri_icd_002_normal_meningioma_code": {
+        "id": "icd_014",
+        "modality": "mri",
+        "validation_type": "icd_coding",
+        "image_type": "negative",
+        "image_file": "mri_negative_2.jpg",
+        "patient_context": {
+            "age": 37,
+            "gender": "Male",
+            "chief_complaint": "Occasional headaches"
+        },
+        "clinical_finding": "Normal brain anatomy, no masses, no edema, no midline shift",
+        "diagnosis": "Normal brain MRI",
+        "icd_code": "D32.9",
+        "icd_description": "Benign neoplasm of meninges, unspecified",
+        "expected_determination": "ERROR - ICD code does not match diagnosis",
+        "correct_code": "Z01.89 (Encounter for other specified special examinations)",
+        "error_type": "incorrect_icd",
+        "severity": "high",
+        "cost_impact": 45000
+    },
+    
+    "mri_icd_003_normal_tumor_code": {
+        "id": "icd_015",
+        "modality": "mri",
+        "validation_type": "icd_coding",
+        "image_type": "negative",
+        "image_file": "mri_negative_3.jpg",
+        "patient_context": {
+            "age": 50,
+            "gender": "Female",
+            "chief_complaint": "Dizziness"
+        },
+        "clinical_finding": "No intracranial mass, normal gray-white differentiation",
+        "diagnosis": "Normal brain MRI, benign positional vertigo",
+        "icd_code": "D33.2",
+        "icd_description": "Benign neoplasm of brain, unspecified",
+        "expected_determination": "ERROR - ICD code does not match diagnosis",
+        "correct_code": "H81.1 (Benign paroxysmal vertigo)",
+        "error_type": "incorrect_icd",
+        "severity": "moderate",
+        "cost_impact": 35000
+    },
+    
+    "mri_icd_004_glioblastoma_correct": {
+        "id": "icd_016",
+        "modality": "mri",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "mri_positive.jpg",
+        "patient_context": {
+            "age": 54,
+            "gender": "Male",
+            "chief_complaint": "Seizures, progressive weakness"
+        },
+        "clinical_finding": "Large heterogeneously enhancing mass in left frontal lobe consistent with high-grade glioma",
+        "diagnosis": "Glioblastoma, left frontal lobe",
+        "icd_code": "C71.1",
+        "icd_description": "Malignant neoplasm of frontal lobe",
+        "expected_determination": "CORRECT - ICD code matches diagnosis",
+        "error_type": "none",
+        "severity": "none",
+        "cost_impact": 0
+    },
+    
+    "mri_icd_005_meningioma_correct": {
+        "id": "icd_017",
+        "modality": "mri",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "mri_positive_2.jpg",
+        "patient_context": {
+            "age": 61,
+            "gender": "Female",
+            "chief_complaint": "Vision changes, headaches"
+        },
+        "clinical_finding": "Well-circumscribed enhancing mass with dural tail, consistent with brain tumor",
+        "diagnosis": "Meningioma",
+        "icd_code": "D32.0",
+        "icd_description": "Benign neoplasm of cerebral meninges",
+        "expected_determination": "CORRECT - ICD code matches diagnosis",
+        "error_type": "none",
+        "severity": "none",
+        "cost_impact": 0
+    },
+    
+    "mri_icd_006_glioma_correct": {
+        "id": "icd_018",
+        "modality": "mri",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "mri_positive_3.jpg",
+        "patient_context": {
+            "age": 48,
+            "gender": "Male",
+            "chief_complaint": "Cognitive decline, focal seizures"
+        },
+        "clinical_finding": "Ring-enhancing mass with central necrosis and perilesional edema, consistent with glioblastoma",
+        "diagnosis": "Glioblastoma multiforme",
+        "icd_code": "C71.9",
+        "icd_description": "Malignant neoplasm of brain, unspecified",
+        "expected_determination": "CORRECT - ICD code matches diagnosis",
+        "error_type": "none",
+        "severity": "none",
+        "cost_impact": 0
+    },
+    
+    # ULTRASOUND ICD VALIDATION
+    "ultrasound_icd_001_normal_cancer_code": {
+        "id": "icd_019",
+        "modality": "ultrasound",
+        "validation_type": "icd_coding",
+        "image_type": "negative",
+        "image_file": "ultrasound_negative.png",
+        "patient_context": {
+            "age": 38,
+            "gender": "Female",
+            "chief_complaint": "Routine breast screening"
+        },
+        "clinical_finding": "Normal breast tissue, no masses, BI-RADS 1",
+        "diagnosis": "Normal breast ultrasound",
+        "icd_code": "C50.919",
+        "icd_description": "Malignant neoplasm of unspecified site of unspecified female breast",
+        "expected_determination": "ERROR - ICD code does not match diagnosis",
+        "correct_code": "Z12.31 (Encounter for screening mammogram for malignant neoplasm of breast)",
+        "error_type": "incorrect_icd",
+        "severity": "critical",
+        "cost_impact": 50000
+    },
+    
+    "ultrasound_icd_002_cyst_malignancy_code": {
+        "id": "icd_020",
+        "modality": "ultrasound",
+        "validation_type": "icd_coding",
+        "image_type": "negative",
+        "image_file": "ultrasound_negative_2.png",
+        "patient_context": {
+            "age": 44,
+            "gender": "Female",
+            "chief_complaint": "Breast tenderness"
+        },
+        "clinical_finding": "Simple cyst with smooth walls, BI-RADS 2 (benign finding)",
+        "diagnosis": "Benign breast cyst",
+        "icd_code": "C50.911",
+        "icd_description": "Malignant neoplasm of unspecified site of right female breast",
+        "expected_determination": "ERROR - ICD code does not match diagnosis",
+        "correct_code": "N60.01 (Solitary cyst of right breast)",
+        "error_type": "incorrect_icd",
+        "severity": "critical",
+        "cost_impact": 25000
+    },
+    
+    "ultrasound_icd_003_normal_neoplasm_code": {
+        "id": "icd_021",
+        "modality": "ultrasound",
+        "validation_type": "icd_coding",
+        "image_type": "negative",
+        "image_file": "ultrasound_negative_3.png",
+        "patient_context": {
+            "age": 41,
+            "gender": "Female",
+            "chief_complaint": "Family history of breast cancer"
+        },
+        "clinical_finding": "Homogeneous fibroglandular tissue, no suspicious findings, BI-RADS 1",
+        "diagnosis": "Normal breast tissue",
+        "icd_code": "D24.9",
+        "icd_description": "Benign neoplasm of breast, unspecified",
+        "expected_determination": "ERROR - ICD code does not match diagnosis",
+        "correct_code": "Z80.3 (Family history of malignant neoplasm of breast)",
+        "error_type": "incorrect_icd",
+        "severity": "moderate",
+        "cost_impact": 8000
+    },
+    
+    "ultrasound_icd_004_malignant_mass_correct": {
+        "id": "icd_022",
+        "modality": "ultrasound",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "ultrasound_positive.png",
+        "patient_context": {
+            "age": 52,
+            "gender": "Female",
+            "chief_complaint": "Palpable breast lump"
+        },
+        "clinical_finding": "Irregular hypoechoic mass with posterior shadowing, BI-RADS 5",
+        "diagnosis": "Suspicious breast mass, BI-RADS 5 (highly suspicious for malignancy)",
+        "icd_code": "R92.8",
+        "icd_description": "Other abnormal and inconclusive findings on diagnostic imaging of breast",
+        "expected_determination": "CORRECT - ICD code matches diagnosis",
+        "error_type": "none",
+        "severity": "none",
+        "cost_impact": 0
+    },
+    
+    "ultrasound_icd_005_suspicious_mass_correct": {
+        "id": "icd_023",
+        "modality": "ultrasound",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "ultrasound_positive_2.png",
+        "patient_context": {
+            "age": 58,
+            "gender": "Female",
+            "chief_complaint": "Abnormal mammogram callback"
+        },
+        "clinical_finding": "Spiculated mass with microlobulation, BI-RADS 4C",
+        "diagnosis": "Suspicious breast mass, BI-RADS 4C",
+        "icd_code": "R92.8",
+        "icd_description": "Other abnormal and inconclusive findings on diagnostic imaging of breast",
+        "expected_determination": "CORRECT - ICD code matches diagnosis",
+        "error_type": "none",
+        "severity": "none",
+        "cost_impact": 0
+    },
+    
+    "ultrasound_icd_006_confirmed_cancer_correct": {
+        "id": "icd_024",
+        "modality": "ultrasound",
+        "validation_type": "icd_coding",
+        "image_type": "positive",
+        "image_file": "ultrasound_positive_3.png",
+        "patient_context": {
+            "age": 63,
+            "gender": "Female",
+            "chief_complaint": "Biopsy-proven breast cancer"
+        },
+        "clinical_finding": "Irregular mass with vascular flow, BI-RADS 6 (known malignancy)",
+        "diagnosis": "Breast carcinoma, biopsy-proven",
+        "icd_code": "C50.919",
+        "icd_description": "Malignant neoplasm of unspecified site of unspecified female breast",
+        "expected_determination": "CORRECT - ICD code matches diagnosis",
+        "error_type": "none",
+        "severity": "none",
+        "cost_impact": 0
+    },
 }
+
+
+def exponential_backoff_retry(
+    max_retries: int = 5,
+    base_delay: float = 1.0,
+    max_delay: float = 60.0,
+    exponential_base: float = 2.0
+) -> Callable:
+    """
+    Decorator that implements exponential backoff retry logic for rate-limited API calls.
+    
+    Args:
+        max_retries: Maximum number of retry attempts (default: 5)
+        base_delay: Initial delay in seconds (default: 1.0)
+        max_delay: Maximum delay between retries in seconds (default: 60.0)
+        exponential_base: Base for exponential backoff calculation (default: 2.0)
+    
+    Returns:
+        Decorated function with retry logic
+    """
+    def decorator(func: Callable) -> Callable:
+        def wrapper(*args, **kwargs) -> Any:
+            retries = 0
+            while retries <= max_retries:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    error_str = str(e)
+                    
+                    # Check if this is a rate limit error
+                    is_rate_limit = (
+                        'rate limit' in error_str.lower() or
+                        'rate_limit' in error_str.lower() or
+                        '429' in error_str or
+                        'too many requests' in error_str.lower()
+                    )
+                    
+                    if is_rate_limit and retries < max_retries:
+                        # Calculate delay with exponential backoff
+                        delay = min(base_delay * (exponential_base ** retries), max_delay)
+                        
+                        # Extract wait time from error message if available (OpenAI format)
+                        if 'please try again in' in error_str.lower():
+                            try:
+                                # Parse "Please try again in 289ms" or similar
+                                import re
+                                match = re.search(r'try again in (\d+(?:\.\d+)?)(ms|s)', error_str, re.IGNORECASE)
+                                if match:
+                                    wait_time = float(match.group(1))
+                                    unit = match.group(2).lower()
+                                    if unit == 'ms':
+                                        wait_time = wait_time / 1000.0
+                                    # Use the API's suggested wait time if it's reasonable
+                                    if wait_time < max_delay:
+                                        delay = wait_time + 0.5  # Add 0.5s buffer
+                            except:
+                                pass
+                        
+                        retries += 1
+                        print(f"  ⏳ Rate limit hit. Retry {retries}/{max_retries} after {delay:.1f}s...")
+                        time.sleep(delay)
+                    else:
+                        # Not a rate limit error or max retries exceeded
+                        raise
+            
+            # Should not reach here, but just in case
+            raise Exception(f"Max retries ({max_retries}) exceeded")
+        
+        return wrapper
+    return decorator
 
 
 def encode_image_to_base64(image_path: Path) -> str:
@@ -556,8 +1173,42 @@ Respond with ONLY one of these two formats:
 Do NOT provide any other explanation. Just state whether it's CORRECT or ERROR."""
 
 
+def create_icd_prompt(scenario: Dict) -> str:
+    """Create prompt for ICD code validation."""
+    return f"""You are a medical AI assistant reviewing ICD-10 coding accuracy.
+
+**Patient Context:**
+- Age: {scenario['patient_context'].get('age', 'Unknown')}
+- Gender: {scenario['patient_context'].get('gender', 'Unknown')}
+- Chief Complaint: {scenario['patient_context'].get('chief_complaint', 'Not specified')}
+
+**Clinical Finding (from imaging):**
+{scenario['clinical_finding']}
+
+**Diagnosis:**
+{scenario.get('diagnosis', 'Not specified')}
+
+**ICD-10 Code Used:**
+{scenario.get('icd_code', 'Not specified')} - {scenario.get('icd_description', '')}
+
+**Task:**
+Based on the medical image and clinical information, determine if the ICD-10 code accurately represents the diagnosis.
+
+Respond with ONLY one of these two formats:
+- "CORRECT - ICD code matches diagnosis" (if coding is accurate)
+- "ERROR - ICD code does not match diagnosis" (if coding is incorrect/mismatched)
+
+Do NOT provide any other explanation. Just state whether it's CORRECT or ERROR."""
+
+
+@exponential_backoff_retry(max_retries=5, base_delay=1.0, max_delay=60.0)
 def call_openai_vision(image_path: Path, prompt: str, model: str = "gpt-4o-mini") -> str:
-    """Call OpenAI vision model."""
+    """
+    Call OpenAI vision model with exponential backoff retry.
+    
+    Automatically retries up to 5 times on rate limit errors with exponential backoff.
+    Initial delay: 1s, max delay: 60s.
+    """
     if not OpenAI:
         raise ImportError("OpenAI package not installed")
     
@@ -653,8 +1304,20 @@ def call_gemini_vision(image_path: Path, prompt: str, model: str = "gemini-2.0-f
     return response.text.strip()
 
 
-def call_medgemma(image_path: Path, prompt: str, ensemble: bool = False) -> str:
-    """Call MedGemma model via HuggingFace inference endpoint."""
+def call_medgemma(image_path: Path, prompt: str, ensemble: bool = False, scenario: Dict = None) -> str:
+    """Call MedGemma model via HuggingFace inference endpoint.
+    
+    In ensemble mode, uses GPT-4O-Mini backup for histopathology cases.
+    """
+    # ENSEMBLE MODE: Use OpenAI for histopathology (known weakness)
+    if ensemble and scenario and scenario.get('modality') == 'histopathology':
+        print(f"  🔄 Ensemble mode: Using GPT-4O-Mini for histopathology")
+        try:
+            return call_openai_vision(image_path, prompt, "gpt-4o-mini")
+        except Exception as e:
+            print(f"  ⚠️  GPT-4O-Mini failed, falling back to text heuristics: {e}")
+            # Fall through to text-based analysis
+    
     # MedGemma doesn't support vision natively, so we'll use text-only analysis
     # Extract clinical findings from the prompt to make a text-based assessment
     
@@ -705,7 +1368,7 @@ def call_medgemma(image_path: Path, prompt: str, ensemble: bool = False) -> str:
         return "ERROR - Treatment does not match imaging"
 
 
-def call_model(model: str, image_path: Path, prompt: str) -> str:
+def call_model(model: str, image_path: Path, prompt: str, scenario: Dict = None) -> str:
     """Route to appropriate model API."""
     try:
         if model.startswith('gpt-'):
@@ -715,9 +1378,9 @@ def call_model(model: str, image_path: Path, prompt: str) -> str:
         elif model.startswith('gemini-'):
             return call_gemini_vision(image_path, prompt, model)
         elif model == 'medgemma':
-            return call_medgemma(image_path, prompt, ensemble=False)
+            return call_medgemma(image_path, prompt, ensemble=False, scenario=scenario)
         elif model == 'medgemma-ensemble':
-            return call_medgemma(image_path, prompt, ensemble=True)
+            return call_medgemma(image_path, prompt, ensemble=True, scenario=scenario)
         else:
             raise ValueError(f"Unknown model: {model}")
     except Exception as e:
@@ -770,26 +1433,52 @@ def run_clinical_validation(model: str, scenarios: Dict, manifest: Dict) -> Dict
         'timestamp': datetime.now().isoformat(),
         'total_scenarios': len(scenarios),
         'scenarios_by_modality': {},
+        'scenarios_by_validation_type': {},
         'correct_determinations': 0,
         'incorrect_determinations': 0,
         'error_detection_rate': 0.0,
         'false_positive_rate': 0.0,
         'accuracy': 0.0,
         'total_cost_savings_potential': 0,
-        'scenario_results': []
+        'scenario_results': [],
+        # Separate metrics for validation types
+        'treatment_validation': {
+            'total': 0,
+            'correct': 0,
+            'accuracy': 0.0
+        },
+        'icd_validation': {
+            'total': 0,
+            'correct': 0,
+            'accuracy': 0.0
+        }
     }
     
-    # Count scenarios by modality
+    # Count scenarios by modality and validation type
     for scenario in scenarios.values():
         modality = scenario['modality']
         results['scenarios_by_modality'][modality] = results['scenarios_by_modality'].get(modality, 0) + 1
+        
+        validation_type = scenario.get('validation_type', 'treatment_matching')
+        results['scenarios_by_validation_type'][validation_type] = results['scenarios_by_validation_type'].get(validation_type, 0) + 1
     
     # Process each scenario
     for scenario_id, scenario in scenarios.items():
+        # Detect validation type
+        validation_type = scenario.get('validation_type', 'treatment_matching')
+        
         print(f"Processing: {scenario_id}")
+        print(f"  Validation Type: {validation_type}")
         print(f"  Modality: {scenario['modality']}")
         print(f"  Finding: {scenario['clinical_finding']}")
-        print(f"  Treatment: {scenario['prescribed_treatment']}")
+        
+        # Display appropriate context based on validation type
+        if validation_type == 'icd_coding':
+            print(f"  Diagnosis: {scenario.get('diagnosis', 'N/A')}")
+            print(f"  ICD Code: {scenario.get('icd_code', 'N/A')} - {scenario.get('icd_description', 'N/A')}")
+        else:
+            print(f"  Treatment: {scenario.get('prescribed_treatment', 'N/A')}")
+        
         print(f"  Expected: {scenario['expected_determination']}")
         
         # Get image path
@@ -803,9 +1492,13 @@ def run_clinical_validation(model: str, scenarios: Dict, manifest: Dict) -> Dict
             None
         )
         
-        # Create prompt and call AI model
-        prompt = create_clinical_prompt(scenario)
-        model_determination = call_model(model, image_path, prompt)
+        # Create appropriate prompt based on validation type
+        if validation_type == 'icd_coding':
+            prompt = create_icd_prompt(scenario)
+        else:
+            prompt = create_clinical_prompt(scenario)
+        
+        model_determination = call_model(model, image_path, prompt, scenario=scenario)
         
         # Handle API failures
         if model_determination is None:
@@ -828,6 +1521,16 @@ def run_clinical_validation(model: str, scenarios: Dict, manifest: Dict) -> Dict
         else:
             results['incorrect_determinations'] += 1
         
+        # Track validation type specific metrics
+        if validation_type == 'icd_coding':
+            results['icd_validation']['total'] += 1
+            if is_correct:
+                results['icd_validation']['correct'] += 1
+        else:
+            results['treatment_validation']['total'] += 1
+            if is_correct:
+                results['treatment_validation']['correct'] += 1
+        
         # Track error detection
         if scenario['error_type'] != 'none' and 'ERROR' in model_determination:
             results['total_cost_savings_potential'] += scenario['cost_impact']
@@ -835,6 +1538,7 @@ def run_clinical_validation(model: str, scenarios: Dict, manifest: Dict) -> Dict
         scenario_result = {
             'scenario_id': scenario['id'],
             'modality': scenario['modality'],
+            'validation_type': validation_type,
             'image_file': scenario['image_file'],
             'expected': scenario['expected_determination'],
             'model_response': model_determination,
@@ -851,6 +1555,12 @@ def run_clinical_validation(model: str, scenarios: Dict, manifest: Dict) -> Dict
     # Calculate metrics
     total = results['total_scenarios']
     results['accuracy'] = results['correct_determinations'] / total if total > 0 else 0
+    
+    # Calculate validation-type specific accuracies
+    if results['treatment_validation']['total'] > 0:
+        results['treatment_validation']['accuracy'] = results['treatment_validation']['correct'] / results['treatment_validation']['total']
+    if results['icd_validation']['total'] > 0:
+        results['icd_validation']['accuracy'] = results['icd_validation']['correct'] / results['icd_validation']['total']
     
     # Error detection rate (how many errors were caught)
     error_scenarios = [s for s in scenarios.values() if s['error_type'] != 'none']
@@ -898,7 +1608,10 @@ def push_to_supabase(results: Dict, environment: str = "beta"):
                 'total_scenarios': results['total_scenarios'],
                 'correct_determinations': results['correct_determinations'],
                 'scenarios_by_modality': results['scenarios_by_modality'],
-                'total_cost_savings_potential': results['total_cost_savings_potential']
+                'total_cost_savings_potential': results['total_cost_savings_potential'],
+                'treatment_validation': results.get('treatment_validation', {}),
+                'icd_validation': results.get('icd_validation', {}),
+                'scenario_results': results['scenario_results']
             },
             'scenario_results': results['scenario_results'],
             'created_at': results['timestamp'],
@@ -979,11 +1692,14 @@ def main():
         print(f"\n{'='*70}")
         print(f"Results for {model}")
         print(f"{'='*70}")
-        print(f"Accuracy: {results['accuracy']:.2%}")
+        print(f"Overall Accuracy: {results['accuracy']:.2%}")
         print(f"Error Detection Rate: {results['error_detection_rate']:.2%}")
         print(f"False Positive Rate: {results['false_positive_rate']:.2%}")
         print(f"Potential Cost Savings: ${results['total_cost_savings_potential']:,}")
-        print(f"Scenarios by Modality:")
+        print(f"\nValidation Type Breakdown:")
+        print(f"  Treatment Matching: {results['treatment_validation']['correct']}/{results['treatment_validation']['total']} ({results['treatment_validation']['accuracy']:.2%})")
+        print(f"  ICD Code Validation: {results['icd_validation']['correct']}/{results['icd_validation']['total']} ({results['icd_validation']['accuracy']:.2%})")
+        print(f"\nScenarios by Modality:")
         for modality, count in results['scenarios_by_modality'].items():
             print(f"  - {modality}: {count}")
         
