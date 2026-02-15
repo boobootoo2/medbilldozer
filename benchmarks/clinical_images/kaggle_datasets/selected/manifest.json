@@ -1,0 +1,1204 @@
+{
+  "created": "2026-02-14T13:39:40.967303",
+  "description": "Medical imaging dataset with attributions",
+  "total_images": 23,
+  "modalities": [
+    "ultrasound",
+    "mri",
+    "histopathology",
+    "xray"
+  ],
+  "images": [
+    {
+      "filename": "xray_positive.png",
+      "modality": "xray",
+      "diagnosis": "positive",
+      "class": "COVID",
+      "source_file": "xray/COVID-19_Radiography_Dataset/COVID/images/COVID-1.png",
+      "dataset": "COVID-19 Radiography Database",
+      "dataset_url": "https://www.kaggle.com/datasets/tawsifurrahman/covid19-radiography-database",
+      "license": "CC BY 4.0",
+      "citation": "M.E.H. Chowdhury et al. \"Can AI help in screening Viral and COVID-19 pneumonia?\" IEEE Access, 2020.",
+      "scenarios": [
+        {
+          "scenario_id": "xray_004_covid_appropriate_treatment",
+          "validation_type": "treatment_matching",
+          "modality": "xray",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 62,
+            "gender": "Male",
+            "chief_complaint": "Shortness of breath, fever",
+            "vital_signs": "Fever 101.5\u00b0F, SpO2 92%"
+          },
+          "clinical_finding": "Bilateral ground-glass opacities consistent with COVID-19 pneumonia",
+          "prescribed_treatment": "Supplemental oxygen + antiviral therapy + supportive care",
+          "expected_determination": "CORRECT - Treatment matches imaging findings",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0
+        },
+        {
+          "scenario_id": "xray_icd_001_covid_incorrect_code",
+          "validation_type": "icd_coding",
+          "modality": "xray",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 62,
+            "gender": "Male",
+            "chief_complaint": "Shortness of breath, fever"
+          },
+          "clinical_finding": "Bilateral ground-glass opacities consistent with COVID-19 pneumonia",
+          "prescribed_treatment": null,
+          "expected_determination": "ERROR - ICD code does not match diagnosis",
+          "error_type": "incorrect_icd",
+          "severity": "moderate",
+          "cost_impact": 5000,
+          "diagnosis": "COVID-19 pneumonia",
+          "icd_code": "J18.9",
+          "icd_description": "Pneumonia, unspecified organism",
+          "correct_code": "U07.1 (COVID-19)"
+        },
+        {
+          "scenario_id": "xray_icd_004_covid_correct_code",
+          "validation_type": "icd_coding",
+          "modality": "xray",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 62,
+            "gender": "Male",
+            "chief_complaint": "Shortness of breath, fever"
+          },
+          "clinical_finding": "Bilateral ground-glass opacities consistent with COVID-19 pneumonia",
+          "prescribed_treatment": null,
+          "expected_determination": "CORRECT - ICD code matches diagnosis",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0,
+          "diagnosis": "COVID-19 with pneumonia",
+          "icd_code": "U07.1",
+          "icd_description": "COVID-19"
+        }
+      ]
+    },
+    {
+      "filename": "histopathology_positive.jpeg",
+      "modality": "histopathology",
+      "diagnosis": "positive",
+      "class": "lung_aca",
+      "source_file": "histopathology/lung_colon_image_set/lung_image_sets/lung_aca/lungaca2296.jpeg",
+      "dataset": "LC25000 - Lung and Colon Cancer",
+      "dataset_url": "https://www.kaggle.com/datasets/andrewmvd/lung-and-colon-cancer-histopathological-images",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Borkowski AA et al. \"Lung and Colon Cancer Histopathological Image Dataset (LC25000).\" arXiv:1912.12142v1, 2019.",
+      "scenarios": [
+        {
+          "scenario_id": "histopath_004_adenocarcinoma_appropriate_treatment",
+          "validation_type": "treatment_matching",
+          "modality": "histopathology",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 65,
+            "gender": "Male",
+            "chief_complaint": "Persistent cough, weight loss",
+            "biopsy_site": "Right lower lobe"
+          },
+          "clinical_finding": "Adenocarcinoma with atypical glands and nuclear atypia",
+          "prescribed_treatment": "Surgical resection + adjuvant chemotherapy",
+          "expected_determination": "CORRECT - Treatment matches pathology findings",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0
+        },
+        {
+          "scenario_id": "histopath_icd_004_adenocarcinoma_correct",
+          "validation_type": "icd_coding",
+          "modality": "histopathology",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 65,
+            "gender": "Male",
+            "chief_complaint": "Persistent cough, weight loss"
+          },
+          "clinical_finding": "Adenocarcinoma with atypical glands and nuclear atypia",
+          "prescribed_treatment": null,
+          "expected_determination": "CORRECT - ICD code matches diagnosis",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0,
+          "diagnosis": "Lung adenocarcinoma",
+          "icd_code": "C34.90",
+          "icd_description": "Malignant neoplasm of unspecified part of unspecified bronchus or lung"
+        }
+      ]
+    },
+    {
+      "filename": "histopathology_negative.jpeg",
+      "modality": "histopathology",
+      "diagnosis": "negative",
+      "class": "lung_n",
+      "source_file": "histopathology/lung_colon_image_set/lung_image_sets/lung_n/lungn2037.jpeg",
+      "dataset": "LC25000 - Lung and Colon Cancer",
+      "dataset_url": "https://www.kaggle.com/datasets/andrewmvd/lung-and-colon-cancer-histopathological-images",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Borkowski AA et al. \"Lung and Colon Cancer Histopathological Image Dataset (LC25000).\" arXiv:1912.12142v1, 2019.",
+      "scenarios": [
+        {
+          "scenario_id": "histopath_001_benign_tissue_unnecessary_chemo",
+          "validation_type": "treatment_matching",
+          "modality": "histopathology",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 58,
+            "gender": "Female",
+            "chief_complaint": "Lung nodule found on CT",
+            "biopsy_site": "Left upper lobe"
+          },
+          "clinical_finding": "Benign lung tissue with normal cellular architecture",
+          "prescribed_treatment": "Chemotherapy regimen (4 cycles) + radiation therapy",
+          "expected_determination": "ERROR - Treatment does not match pathology",
+          "error_type": "overtreatment",
+          "severity": "critical",
+          "cost_impact": 150000
+        },
+        {
+          "scenario_id": "histopath_icd_001_benign_cancer_code",
+          "validation_type": "icd_coding",
+          "modality": "histopathology",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 58,
+            "gender": "Female",
+            "chief_complaint": "Lung nodule found on CT"
+          },
+          "clinical_finding": "Benign lung tissue with normal cellular architecture",
+          "prescribed_treatment": null,
+          "expected_determination": "ERROR - ICD code does not match diagnosis",
+          "error_type": "incorrect_icd",
+          "severity": "critical",
+          "cost_impact": 150000,
+          "diagnosis": "Benign lung nodule",
+          "icd_code": "C34.90",
+          "icd_description": "Malignant neoplasm of unspecified part of unspecified bronchus or lung",
+          "correct_code": "R91.1 (Solitary pulmonary nodule) or D14.3 (Benign neoplasm of bronchus and lung)"
+        }
+      ]
+    },
+    {
+      "filename": "mri_positive.jpg",
+      "modality": "mri",
+      "diagnosis": "positive",
+      "class": "glioma",
+      "source_file": "mri/Testing/glioma/Te-gl_218.jpg",
+      "dataset": "Brain Tumor MRI Dataset",
+      "dataset_url": "https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset",
+      "license": "Unknown",
+      "citation": "Brain Tumor MRI Dataset (Kaggle)",
+      "scenarios": [
+        {
+          "scenario_id": "mri_004_glioma_appropriate_surgery",
+          "validation_type": "treatment_matching",
+          "modality": "mri",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 54,
+            "gender": "Male",
+            "chief_complaint": "Seizures, progressive weakness",
+            "scan_type": "Brain MRI with contrast"
+          },
+          "clinical_finding": "Large heterogeneously enhancing mass in left frontal lobe consistent with high-grade glioma",
+          "prescribed_treatment": "Surgical resection + radiation + chemotherapy",
+          "expected_determination": "CORRECT - Treatment matches MRI findings",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0
+        },
+        {
+          "scenario_id": "mri_icd_004_glioblastoma_correct",
+          "validation_type": "icd_coding",
+          "modality": "mri",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 54,
+            "gender": "Male",
+            "chief_complaint": "Seizures, progressive weakness"
+          },
+          "clinical_finding": "Large heterogeneously enhancing mass in left frontal lobe consistent with high-grade glioma",
+          "prescribed_treatment": null,
+          "expected_determination": "CORRECT - ICD code matches diagnosis",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0,
+          "diagnosis": "Glioblastoma, left frontal lobe",
+          "icd_code": "C71.1",
+          "icd_description": "Malignant neoplasm of frontal lobe"
+        }
+      ]
+    },
+    {
+      "filename": "mri_negative.jpg",
+      "modality": "mri",
+      "diagnosis": "negative",
+      "class": "notumor",
+      "source_file": "mri/Testing/notumor/Te-no_200.jpg",
+      "dataset": "Brain Tumor MRI Dataset",
+      "dataset_url": "https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset",
+      "license": "Unknown",
+      "citation": "Brain Tumor MRI Dataset (Kaggle)",
+      "scenarios": [
+        {
+          "scenario_id": "mri_001_no_tumor_unnecessary_surgery",
+          "validation_type": "treatment_matching",
+          "modality": "mri",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 42,
+            "gender": "Female",
+            "chief_complaint": "Headaches",
+            "scan_type": "Brain MRI with contrast"
+          },
+          "clinical_finding": "No mass lesion, no abnormal enhancement, normal brain parenchyma",
+          "prescribed_treatment": "Craniotomy for tumor resection",
+          "expected_determination": "ERROR - Surgery not indicated by imaging",
+          "error_type": "unnecessary_procedure",
+          "severity": "critical",
+          "cost_impact": 85000
+        },
+        {
+          "scenario_id": "mri_icd_001_normal_glioma_code",
+          "validation_type": "icd_coding",
+          "modality": "mri",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 42,
+            "gender": "Female",
+            "chief_complaint": "Headaches"
+          },
+          "clinical_finding": "No mass lesion, no abnormal enhancement, normal brain parenchyma",
+          "prescribed_treatment": null,
+          "expected_determination": "ERROR - ICD code does not match diagnosis",
+          "error_type": "incorrect_icd",
+          "severity": "critical",
+          "cost_impact": 85000,
+          "diagnosis": "Normal brain MRI, primary headache",
+          "icd_code": "C71.9",
+          "icd_description": "Malignant neoplasm of brain, unspecified",
+          "correct_code": "R51 (Headache) or G44.1 (Vascular headache)"
+        }
+      ]
+    },
+    {
+      "filename": "ultrasound_positive.png",
+      "modality": "ultrasound",
+      "diagnosis": "positive",
+      "class": "malignant",
+      "source_file": "ultrasound/Dataset_BUSI_with_GT/malignant/malignant (185)_mask.png",
+      "dataset": "Breast Ultrasound Images",
+      "dataset_url": "https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Al-Dhabyani W et al. \"Dataset of breast ultrasound images.\" Data in Brief, 2020.",
+      "scenarios": [
+        {
+          "scenario_id": "ultrasound_004_malignant_mass_appropriate_biopsy",
+          "validation_type": "treatment_matching",
+          "modality": "ultrasound",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 52,
+            "gender": "Female",
+            "chief_complaint": "Palpable breast lump",
+            "scan_type": "Breast ultrasound"
+          },
+          "clinical_finding": "Irregular hypoechoic mass with posterior shadowing, BI-RADS 5",
+          "prescribed_treatment": "Ultrasound-guided core biopsy for tissue diagnosis",
+          "expected_determination": "CORRECT - Biopsy indicated by imaging",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0
+        },
+        {
+          "scenario_id": "ultrasound_icd_004_malignant_mass_correct",
+          "validation_type": "icd_coding",
+          "modality": "ultrasound",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 52,
+            "gender": "Female",
+            "chief_complaint": "Palpable breast lump"
+          },
+          "clinical_finding": "Irregular hypoechoic mass with posterior shadowing, BI-RADS 5",
+          "prescribed_treatment": null,
+          "expected_determination": "CORRECT - ICD code matches diagnosis",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0,
+          "diagnosis": "Suspicious breast mass, BI-RADS 5 (highly suspicious for malignancy)",
+          "icd_code": "R92.8",
+          "icd_description": "Other abnormal and inconclusive findings on diagnostic imaging of breast"
+        }
+      ]
+    },
+    {
+      "filename": "ultrasound_negative.png",
+      "modality": "ultrasound",
+      "diagnosis": "negative",
+      "class": "normal",
+      "source_file": "ultrasound/Dataset_BUSI_with_GT/benign/benign (246)_mask.png",
+      "dataset": "Breast Ultrasound Images",
+      "dataset_url": "https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Al-Dhabyani W et al. \"Dataset of breast ultrasound images.\" Data in Brief, 2020.",
+      "scenarios": [
+        {
+          "scenario_id": "ultrasound_001_normal_breast_unnecessary_biopsy",
+          "validation_type": "treatment_matching",
+          "modality": "ultrasound",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 38,
+            "gender": "Female",
+            "chief_complaint": "Routine breast screening",
+            "scan_type": "Breast ultrasound"
+          },
+          "clinical_finding": "Normal breast tissue, no masses, BI-RADS 1",
+          "prescribed_treatment": "Core needle biopsy + possible lumpectomy",
+          "expected_determination": "ERROR - Invasive procedure not indicated",
+          "error_type": "unnecessary_procedure",
+          "severity": "moderate",
+          "cost_impact": 8000
+        },
+        {
+          "scenario_id": "ultrasound_icd_001_normal_cancer_code",
+          "validation_type": "icd_coding",
+          "modality": "ultrasound",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 38,
+            "gender": "Female",
+            "chief_complaint": "Routine breast screening"
+          },
+          "clinical_finding": "Normal breast tissue, no masses, BI-RADS 1",
+          "prescribed_treatment": null,
+          "expected_determination": "ERROR - ICD code does not match diagnosis",
+          "error_type": "incorrect_icd",
+          "severity": "critical",
+          "cost_impact": 50000,
+          "diagnosis": "Normal breast ultrasound",
+          "icd_code": "C50.919",
+          "icd_description": "Malignant neoplasm of unspecified site of unspecified female breast",
+          "correct_code": "Z12.31 (Encounter for screening mammogram for malignant neoplasm of breast)"
+        }
+      ]
+    },
+    {
+      "filename": "xray_positive_2.png",
+      "modality": "xray",
+      "diagnosis": "positive",
+      "class": "COVID",
+      "source_file": "xray/COVID-19_Radiography_Dataset/COVID/images/COVID-2.png",
+      "dataset": "COVID-19 Radiography Database",
+      "dataset_url": "https://www.kaggle.com/datasets/tawsifurrahman/covid19-radiography-database",
+      "license": "CC BY 4.0",
+      "citation": "M.E.H. Chowdhury et al. \"Can AI help in screening Viral and COVID-19 pneumonia?\" IEEE Access, 2020.",
+      "scenarios": [
+        {
+          "scenario_id": "xray_005_pneumonia_appropriate_antibiotics",
+          "validation_type": "treatment_matching",
+          "modality": "xray",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 71,
+            "gender": "Female",
+            "chief_complaint": "Productive cough, fever 3 days",
+            "vital_signs": "Fever 102.3\u00b0F, tachypneic"
+          },
+          "clinical_finding": "Right lower lobe consolidation consistent with bacterial pneumonia",
+          "prescribed_treatment": "Broad-spectrum antibiotics + respiratory support",
+          "expected_determination": "CORRECT - Treatment matches imaging findings",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0
+        },
+        {
+          "scenario_id": "xray_icd_003_pneumonia_nonspecific",
+          "validation_type": "icd_coding",
+          "modality": "xray",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 71,
+            "gender": "Female",
+            "chief_complaint": "Productive cough, fever"
+          },
+          "clinical_finding": "Right lower lobe consolidation consistent with bacterial pneumonia",
+          "prescribed_treatment": null,
+          "expected_determination": "ERROR - ICD code does not match diagnosis",
+          "error_type": "incorrect_icd",
+          "severity": "moderate",
+          "cost_impact": 3000,
+          "diagnosis": "Right lower lobe bacterial pneumonia",
+          "icd_code": "J15.9",
+          "icd_description": "Unspecified bacterial pneumonia",
+          "correct_code": "J18.1 (Lobar pneumonia) or more specific bacterial code"
+        },
+        {
+          "scenario_id": "xray_icd_005_pneumonia_correct_code",
+          "validation_type": "icd_coding",
+          "modality": "xray",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 71,
+            "gender": "Female",
+            "chief_complaint": "Productive cough, fever"
+          },
+          "clinical_finding": "Right lower lobe consolidation consistent with bacterial pneumonia",
+          "prescribed_treatment": null,
+          "expected_determination": "CORRECT - ICD code matches diagnosis",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0,
+          "diagnosis": "Bacterial pneumonia, right lower lobe",
+          "icd_code": "J18.1",
+          "icd_description": "Lobar pneumonia, unspecified organism"
+        }
+      ]
+    },
+    {
+      "filename": "xray_negative_2.png",
+      "modality": "xray",
+      "diagnosis": "negative",
+      "class": "Normal",
+      "source_file": "xray/COVID-19_Radiography_Dataset/Normal/images/Normal-2.png",
+      "dataset": "COVID-19 Radiography Database",
+      "dataset_url": "https://www.kaggle.com/datasets/tawsifurrahman/covid19-radiography-database",
+      "license": "CC BY 4.0",
+      "citation": "M.E.H. Chowdhury et al. \"Can AI help in screening Viral and COVID-19 pneumonia?\" IEEE Access, 2020.",
+      "scenarios": [
+        {
+          "scenario_id": "xray_002_normal_lung_unnecessary_steroids",
+          "validation_type": "treatment_matching",
+          "modality": "xray",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 38,
+            "gender": "Male",
+            "chief_complaint": "Mild cough for 2 days",
+            "vital_signs": "Normal, SpO2 98%"
+          },
+          "clinical_finding": "Normal lung parenchyma, clear costophrenic angles",
+          "prescribed_treatment": "High-dose corticosteroids + bronchodilators",
+          "expected_determination": "ERROR - Treatment does not match imaging",
+          "error_type": "overtreatment",
+          "severity": "moderate",
+          "cost_impact": 5000
+        }
+      ]
+    },
+    {
+      "filename": "xray_positive_3.png",
+      "modality": "xray",
+      "diagnosis": "positive",
+      "class": "COVID",
+      "source_file": "xray/COVID-19_Radiography_Dataset/COVID/images/COVID-3.png",
+      "dataset": "COVID-19 Radiography Database",
+      "dataset_url": "https://www.kaggle.com/datasets/tawsifurrahman/covid19-radiography-database",
+      "license": "CC BY 4.0",
+      "citation": "M.E.H. Chowdhury et al. \"Can AI help in screening Viral and COVID-19 pneumonia?\" IEEE Access, 2020.",
+      "scenarios": [
+        {
+          "scenario_id": "xray_006_viral_pneumonia_appropriate_care",
+          "validation_type": "treatment_matching",
+          "modality": "xray",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 55,
+            "gender": "Male",
+            "chief_complaint": "Worsening dyspnea, dry cough",
+            "vital_signs": "SpO2 89%, respiratory distress"
+          },
+          "clinical_finding": "Diffuse bilateral infiltrates consistent with viral pneumonia",
+          "prescribed_treatment": "Oxygen therapy + ventilatory support + antivirals",
+          "expected_determination": "CORRECT - Treatment matches imaging findings",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0
+        }
+      ]
+    },
+    {
+      "filename": "xray_negative_3.png",
+      "modality": "xray",
+      "diagnosis": "negative",
+      "class": "Normal",
+      "source_file": "xray/COVID-19_Radiography_Dataset/Normal/images/Normal-3.png",
+      "dataset": "COVID-19 Radiography Database",
+      "dataset_url": "https://www.kaggle.com/datasets/tawsifurrahman/covid19-radiography-database",
+      "license": "CC BY 4.0",
+      "citation": "M.E.H. Chowdhury et al. \"Can AI help in screening Viral and COVID-19 pneumonia?\" IEEE Access, 2020.",
+      "scenarios": [
+        {
+          "scenario_id": "xray_003_normal_chest_unnecessary_ct",
+          "validation_type": "treatment_matching",
+          "modality": "xray",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 52,
+            "gender": "Female",
+            "chief_complaint": "Resolved chest pain",
+            "vital_signs": "Stable"
+          },
+          "clinical_finding": "Clear bilateral lung fields, normal cardiac silhouette",
+          "prescribed_treatment": "CT angiography for pulmonary embolism",
+          "expected_determination": "ERROR - Advanced imaging not indicated",
+          "error_type": "unnecessary_procedure",
+          "severity": "moderate",
+          "cost_impact": 12000
+        }
+      ]
+    },
+    {
+      "filename": "histopathology_positive_2.jpeg",
+      "modality": "histopathology",
+      "diagnosis": "positive",
+      "class": "lung_aca",
+      "source_file": "histopathology/lung_colon_image_set/lung_image_sets/lung_aca/lungaca2297.jpeg",
+      "dataset": "LC25000 - Lung and Colon Cancer",
+      "dataset_url": "https://www.kaggle.com/datasets/andrewmvd/lung-and-colon-cancer-histopathological-images",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Borkowski AA et al. \"Lung and Colon Cancer Histopathological Image Dataset (LC25000).\" arXiv:1912.12142v1, 2019.",
+      "scenarios": [
+        {
+          "scenario_id": "histopath_005_squamous_cell_appropriate_treatment",
+          "validation_type": "treatment_matching",
+          "modality": "histopathology",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 68,
+            "gender": "Male",
+            "chief_complaint": "Hemoptysis, 50 pack-year smoking history",
+            "biopsy_site": "Right upper lobe"
+          },
+          "clinical_finding": "Poorly differentiated adenocarcinoma, high mitotic index",
+          "prescribed_treatment": "Neoadjuvant chemotherapy + surgical resection",
+          "expected_determination": "CORRECT - Treatment matches pathology findings",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0
+        },
+        {
+          "scenario_id": "histopath_icd_005_squamous_cell_correct",
+          "validation_type": "icd_coding",
+          "modality": "histopathology",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 68,
+            "gender": "Male",
+            "chief_complaint": "Hemoptysis"
+          },
+          "clinical_finding": "Poorly differentiated adenocarcinoma, high mitotic index",
+          "prescribed_treatment": null,
+          "expected_determination": "CORRECT - ICD code matches diagnosis",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0,
+          "diagnosis": "Poorly differentiated lung carcinoma",
+          "icd_code": "C34.91",
+          "icd_description": "Malignant neoplasm of unspecified part of right bronchus or lung"
+        }
+      ]
+    },
+    {
+      "filename": "histopathology_negative_2.jpeg",
+      "modality": "histopathology",
+      "diagnosis": "negative",
+      "class": "lung_n",
+      "source_file": "histopathology/lung_colon_image_set/lung_image_sets/lung_n/lungn2038.jpeg",
+      "dataset": "LC25000 - Lung and Colon Cancer",
+      "dataset_url": "https://www.kaggle.com/datasets/andrewmvd/lung-and-colon-cancer-histopathological-images",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Borkowski AA et al. \"Lung and Colon Cancer Histopathological Image Dataset (LC25000).\" arXiv:1912.12142v1, 2019.",
+      "scenarios": [
+        {
+          "scenario_id": "histopath_002_normal_tissue_unnecessary_surgery",
+          "validation_type": "treatment_matching",
+          "modality": "histopathology",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 49,
+            "gender": "Male",
+            "chief_complaint": "Incidental lung opacity",
+            "biopsy_site": "Right middle lobe"
+          },
+          "clinical_finding": "Normal lung parenchyma, no malignant cells identified",
+          "prescribed_treatment": "Lobectomy + lymph node dissection",
+          "expected_determination": "ERROR - Surgery not indicated by pathology",
+          "error_type": "unnecessary_procedure",
+          "severity": "critical",
+          "cost_impact": 120000
+        },
+        {
+          "scenario_id": "histopath_icd_002_normal_tissue_dysplasia_code",
+          "validation_type": "icd_coding",
+          "modality": "histopathology",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 49,
+            "gender": "Male",
+            "chief_complaint": "Incidental lung opacity"
+          },
+          "clinical_finding": "Normal lung parenchyma, no malignant cells identified",
+          "prescribed_treatment": null,
+          "expected_determination": "ERROR - ICD code does not match diagnosis",
+          "error_type": "incorrect_icd",
+          "severity": "critical",
+          "cost_impact": 100000,
+          "diagnosis": "Normal lung tissue",
+          "icd_code": "D02.2",
+          "icd_description": "Carcinoma in situ of bronchus and lung",
+          "correct_code": "Z03.89 (Encounter for observation for other suspected diseases)"
+        }
+      ]
+    },
+    {
+      "filename": "histopathology_positive_3.jpeg",
+      "modality": "histopathology",
+      "diagnosis": "positive",
+      "class": "lung_aca",
+      "source_file": "histopathology/lung_colon_image_set/lung_image_sets/lung_aca/lungaca2298.jpeg",
+      "dataset": "LC25000 - Lung and Colon Cancer",
+      "dataset_url": "https://www.kaggle.com/datasets/andrewmvd/lung-and-colon-cancer-histopathological-images",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Borkowski AA et al. \"Lung and Colon Cancer Histopathological Image Dataset (LC25000).\" arXiv:1912.12142v1, 2019.",
+      "scenarios": [
+        {
+          "scenario_id": "histopath_006_invasive_carcinoma_appropriate_chemo",
+          "validation_type": "treatment_matching",
+          "modality": "histopathology",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 59,
+            "gender": "Female",
+            "chief_complaint": "Progressive dyspnea",
+            "biopsy_site": "Left upper lobe"
+          },
+          "clinical_finding": "Invasive adenocarcinoma with lymphovascular invasion",
+          "prescribed_treatment": "Chemotherapy + targeted therapy + immunotherapy",
+          "expected_determination": "CORRECT - Treatment matches pathology findings",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0
+        },
+        {
+          "scenario_id": "histopath_icd_006_invasive_carcinoma_correct",
+          "validation_type": "icd_coding",
+          "modality": "histopathology",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 59,
+            "gender": "Female",
+            "chief_complaint": "Progressive dyspnea"
+          },
+          "clinical_finding": "Invasive adenocarcinoma with lymphovascular invasion",
+          "prescribed_treatment": null,
+          "expected_determination": "CORRECT - ICD code matches diagnosis",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0,
+          "diagnosis": "Invasive lung adenocarcinoma with lymphovascular invasion",
+          "icd_code": "C34.92",
+          "icd_description": "Malignant neoplasm of unspecified part of left bronchus or lung"
+        }
+      ]
+    },
+    {
+      "filename": "histopathology_negative_3.jpeg",
+      "modality": "histopathology",
+      "diagnosis": "negative",
+      "class": "lung_n",
+      "source_file": "histopathology/lung_colon_image_set/lung_image_sets/lung_n/lungn2039.jpeg",
+      "dataset": "LC25000 - Lung and Colon Cancer",
+      "dataset_url": "https://www.kaggle.com/datasets/andrewmvd/lung-and-colon-cancer-histopathological-images",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Borkowski AA et al. \"Lung and Colon Cancer Histopathological Image Dataset (LC25000).\" arXiv:1912.12142v1, 2019.",
+      "scenarios": [
+        {
+          "scenario_id": "histopath_003_benign_inflammation_unnecessary_resection",
+          "validation_type": "treatment_matching",
+          "modality": "histopathology",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 54,
+            "gender": "Female",
+            "chief_complaint": "Chronic cough",
+            "biopsy_site": "Left lower lobe"
+          },
+          "clinical_finding": "Benign reactive changes, mild inflammation, no dysplasia",
+          "prescribed_treatment": "Surgical resection + adjuvant therapy",
+          "expected_determination": "ERROR - Treatment does not match pathology",
+          "error_type": "overtreatment",
+          "severity": "critical",
+          "cost_impact": 180000
+        },
+        {
+          "scenario_id": "histopath_icd_003_inflammation_neoplasm_code",
+          "validation_type": "icd_coding",
+          "modality": "histopathology",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 54,
+            "gender": "Female",
+            "chief_complaint": "Chronic cough"
+          },
+          "clinical_finding": "Benign reactive changes, mild inflammation, no dysplasia",
+          "prescribed_treatment": null,
+          "expected_determination": "ERROR - ICD code does not match diagnosis",
+          "error_type": "incorrect_icd",
+          "severity": "high",
+          "cost_impact": 50000,
+          "diagnosis": "Chronic inflammation, benign",
+          "icd_code": "D14.30",
+          "icd_description": "Benign neoplasm of bronchus and lung, unspecified",
+          "correct_code": "J98.4 (Other disorders of lung)"
+        }
+      ]
+    },
+    {
+      "filename": "mri_positive_2.jpg",
+      "modality": "mri",
+      "diagnosis": "positive",
+      "class": "glioma",
+      "source_file": "mri/Testing/glioma/Te-gl_219.jpg",
+      "dataset": "Brain Tumor MRI Dataset",
+      "dataset_url": "https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset",
+      "license": "Unknown",
+      "citation": "Brain Tumor MRI Dataset (Kaggle)",
+      "scenarios": [
+        {
+          "scenario_id": "mri_005_meningioma_appropriate_surgery",
+          "validation_type": "treatment_matching",
+          "modality": "mri",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 61,
+            "gender": "Female",
+            "chief_complaint": "Vision changes, headaches",
+            "scan_type": "Brain MRI with contrast"
+          },
+          "clinical_finding": "Well-circumscribed enhancing mass with dural tail, consistent with brain tumor",
+          "prescribed_treatment": "Surgical resection",
+          "expected_determination": "CORRECT - Treatment matches MRI findings",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0
+        },
+        {
+          "scenario_id": "mri_icd_005_meningioma_correct",
+          "validation_type": "icd_coding",
+          "modality": "mri",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 61,
+            "gender": "Female",
+            "chief_complaint": "Vision changes, headaches"
+          },
+          "clinical_finding": "Well-circumscribed enhancing mass with dural tail, consistent with brain tumor",
+          "prescribed_treatment": null,
+          "expected_determination": "CORRECT - ICD code matches diagnosis",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0,
+          "diagnosis": "Meningioma",
+          "icd_code": "D32.0",
+          "icd_description": "Benign neoplasm of cerebral meninges"
+        }
+      ]
+    },
+    {
+      "filename": "mri_negative_2.jpg",
+      "modality": "mri",
+      "diagnosis": "negative",
+      "class": "notumor",
+      "source_file": "mri/Testing/notumor/Te-no_201.jpg",
+      "dataset": "Brain Tumor MRI Dataset",
+      "dataset_url": "https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset",
+      "license": "Unknown",
+      "citation": "Brain Tumor MRI Dataset (Kaggle)",
+      "scenarios": [
+        {
+          "scenario_id": "mri_002_normal_brain_unnecessary_radiation",
+          "validation_type": "treatment_matching",
+          "modality": "mri",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 37,
+            "gender": "Male",
+            "chief_complaint": "Occasional headaches",
+            "scan_type": "Brain MRI with contrast"
+          },
+          "clinical_finding": "Normal brain anatomy, no masses, no edema, no midline shift",
+          "prescribed_treatment": "Stereotactic radiosurgery",
+          "expected_determination": "ERROR - Radiation not indicated by imaging",
+          "error_type": "overtreatment",
+          "severity": "critical",
+          "cost_impact": 45000
+        },
+        {
+          "scenario_id": "mri_icd_002_normal_meningioma_code",
+          "validation_type": "icd_coding",
+          "modality": "mri",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 37,
+            "gender": "Male",
+            "chief_complaint": "Occasional headaches"
+          },
+          "clinical_finding": "Normal brain anatomy, no masses, no edema, no midline shift",
+          "prescribed_treatment": null,
+          "expected_determination": "ERROR - ICD code does not match diagnosis",
+          "error_type": "incorrect_icd",
+          "severity": "high",
+          "cost_impact": 45000,
+          "diagnosis": "Normal brain MRI",
+          "icd_code": "D32.9",
+          "icd_description": "Benign neoplasm of meninges, unspecified",
+          "correct_code": "Z01.89 (Encounter for other specified special examinations)"
+        }
+      ]
+    },
+    {
+      "filename": "mri_positive_3.jpg",
+      "modality": "mri",
+      "diagnosis": "positive",
+      "class": "glioma",
+      "source_file": "mri/Testing/glioma/Te-gl_220.jpg",
+      "dataset": "Brain Tumor MRI Dataset",
+      "dataset_url": "https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset",
+      "license": "Unknown",
+      "citation": "Brain Tumor MRI Dataset (Kaggle)",
+      "scenarios": [
+        {
+          "scenario_id": "mri_006_high_grade_glioma_appropriate_treatment",
+          "validation_type": "treatment_matching",
+          "modality": "mri",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 48,
+            "gender": "Male",
+            "chief_complaint": "Cognitive decline, focal seizures",
+            "scan_type": "Brain MRI with contrast"
+          },
+          "clinical_finding": "Ring-enhancing mass with central necrosis and perilesional edema, consistent with glioblastoma",
+          "prescribed_treatment": "Maximal safe resection + concurrent chemoradiation",
+          "expected_determination": "CORRECT - Treatment matches MRI findings",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0
+        },
+        {
+          "scenario_id": "mri_icd_006_glioma_correct",
+          "validation_type": "icd_coding",
+          "modality": "mri",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 48,
+            "gender": "Male",
+            "chief_complaint": "Cognitive decline, focal seizures"
+          },
+          "clinical_finding": "Ring-enhancing mass with central necrosis and perilesional edema, consistent with glioblastoma",
+          "prescribed_treatment": null,
+          "expected_determination": "CORRECT - ICD code matches diagnosis",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0,
+          "diagnosis": "Glioblastoma multiforme",
+          "icd_code": "C71.9",
+          "icd_description": "Malignant neoplasm of brain, unspecified"
+        }
+      ]
+    },
+    {
+      "filename": "mri_negative_3.jpg",
+      "modality": "mri",
+      "diagnosis": "negative",
+      "class": "notumor",
+      "source_file": "mri/Testing/notumor/Te-no_202.jpg",
+      "dataset": "Brain Tumor MRI Dataset",
+      "dataset_url": "https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset",
+      "license": "Unknown",
+      "citation": "Brain Tumor MRI Dataset (Kaggle)",
+      "scenarios": [
+        {
+          "scenario_id": "mri_003_normal_scan_unnecessary_biopsy",
+          "validation_type": "treatment_matching",
+          "modality": "mri",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 50,
+            "gender": "Female",
+            "chief_complaint": "Dizziness",
+            "scan_type": "Brain MRI with contrast"
+          },
+          "clinical_finding": "No intracranial mass, normal gray-white differentiation",
+          "prescribed_treatment": "Stereotactic brain biopsy",
+          "expected_determination": "ERROR - Biopsy not indicated by imaging",
+          "error_type": "unnecessary_procedure",
+          "severity": "high",
+          "cost_impact": 35000
+        },
+        {
+          "scenario_id": "mri_icd_003_normal_tumor_code",
+          "validation_type": "icd_coding",
+          "modality": "mri",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 50,
+            "gender": "Female",
+            "chief_complaint": "Dizziness"
+          },
+          "clinical_finding": "No intracranial mass, normal gray-white differentiation",
+          "prescribed_treatment": null,
+          "expected_determination": "ERROR - ICD code does not match diagnosis",
+          "error_type": "incorrect_icd",
+          "severity": "moderate",
+          "cost_impact": 35000,
+          "diagnosis": "Normal brain MRI, benign positional vertigo",
+          "icd_code": "D33.2",
+          "icd_description": "Benign neoplasm of brain, unspecified",
+          "correct_code": "H81.1 (Benign paroxysmal vertigo)"
+        }
+      ]
+    },
+    {
+      "filename": "ultrasound_positive_2.png",
+      "modality": "ultrasound",
+      "diagnosis": "positive",
+      "class": "malignant",
+      "source_file": "ultrasound/Dataset_BUSI_with_GT/malignant/malignant (186)_mask.png",
+      "dataset": "Breast Ultrasound Images",
+      "dataset_url": "https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Al-Dhabyani W et al. \"Dataset of breast ultrasound images.\" Data in Brief, 2020.",
+      "scenarios": [
+        {
+          "scenario_id": "ultrasound_005_suspicious_mass_appropriate_workup",
+          "validation_type": "treatment_matching",
+          "modality": "ultrasound",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 58,
+            "gender": "Female",
+            "chief_complaint": "Abnormal mammogram callback",
+            "scan_type": "Breast ultrasound"
+          },
+          "clinical_finding": "Spiculated mass with microlobulation, BI-RADS 4C",
+          "prescribed_treatment": "Core needle biopsy + possible lumpectomy if malignant",
+          "expected_determination": "CORRECT - Biopsy indicated by imaging",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0
+        },
+        {
+          "scenario_id": "ultrasound_icd_005_suspicious_mass_correct",
+          "validation_type": "icd_coding",
+          "modality": "ultrasound",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 58,
+            "gender": "Female",
+            "chief_complaint": "Abnormal mammogram callback"
+          },
+          "clinical_finding": "Spiculated mass with microlobulation, BI-RADS 4C",
+          "prescribed_treatment": null,
+          "expected_determination": "CORRECT - ICD code matches diagnosis",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0,
+          "diagnosis": "Suspicious breast mass, BI-RADS 4C",
+          "icd_code": "R92.8",
+          "icd_description": "Other abnormal and inconclusive findings on diagnostic imaging of breast"
+        }
+      ]
+    },
+    {
+      "filename": "ultrasound_negative_2.png",
+      "modality": "ultrasound",
+      "diagnosis": "negative",
+      "class": "benign",
+      "source_file": "ultrasound/Dataset_BUSI_with_GT/benign/benign (247)_mask.png",
+      "dataset": "Breast Ultrasound Images",
+      "dataset_url": "https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Al-Dhabyani W et al. \"Dataset of breast ultrasound images.\" Data in Brief, 2020.",
+      "scenarios": [
+        {
+          "scenario_id": "ultrasound_002_benign_cyst_unnecessary_surgery",
+          "validation_type": "treatment_matching",
+          "modality": "ultrasound",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 44,
+            "gender": "Female",
+            "chief_complaint": "Breast tenderness",
+            "scan_type": "Breast ultrasound"
+          },
+          "clinical_finding": "Simple cyst with smooth walls, BI-RADS 2 (benign finding)",
+          "prescribed_treatment": "Surgical excision + axillary dissection",
+          "expected_determination": "ERROR - Surgery not indicated for benign cyst",
+          "error_type": "overtreatment",
+          "severity": "high",
+          "cost_impact": 25000
+        },
+        {
+          "scenario_id": "ultrasound_icd_002_cyst_malignancy_code",
+          "validation_type": "icd_coding",
+          "modality": "ultrasound",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 44,
+            "gender": "Female",
+            "chief_complaint": "Breast tenderness"
+          },
+          "clinical_finding": "Simple cyst with smooth walls, BI-RADS 2 (benign finding)",
+          "prescribed_treatment": null,
+          "expected_determination": "ERROR - ICD code does not match diagnosis",
+          "error_type": "incorrect_icd",
+          "severity": "critical",
+          "cost_impact": 25000,
+          "diagnosis": "Benign breast cyst",
+          "icd_code": "C50.911",
+          "icd_description": "Malignant neoplasm of unspecified site of right female breast",
+          "correct_code": "N60.01 (Solitary cyst of right breast)"
+        }
+      ]
+    },
+    {
+      "filename": "ultrasound_positive_3.png",
+      "modality": "ultrasound",
+      "diagnosis": "positive",
+      "class": "malignant",
+      "source_file": "ultrasound/Dataset_BUSI_with_GT/malignant/malignant (187)_mask.png",
+      "dataset": "Breast Ultrasound Images",
+      "dataset_url": "https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Al-Dhabyani W et al. \"Dataset of breast ultrasound images.\" Data in Brief, 2020.",
+      "scenarios": [
+        {
+          "scenario_id": "ultrasound_006_confirmed_cancer_appropriate_surgery",
+          "validation_type": "treatment_matching",
+          "modality": "ultrasound",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 63,
+            "gender": "Female",
+            "chief_complaint": "Biopsy-proven breast cancer",
+            "scan_type": "Breast ultrasound"
+          },
+          "clinical_finding": "Irregular mass with vascular flow, BI-RADS 6 (known malignancy)",
+          "prescribed_treatment": "Lumpectomy + sentinel lymph node biopsy + adjuvant therapy",
+          "expected_determination": "CORRECT - Treatment matches imaging findings",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0
+        },
+        {
+          "scenario_id": "ultrasound_icd_006_confirmed_cancer_correct",
+          "validation_type": "icd_coding",
+          "modality": "ultrasound",
+          "image_type": "positive",
+          "patient_context": {
+            "age": 63,
+            "gender": "Female",
+            "chief_complaint": "Biopsy-proven breast cancer"
+          },
+          "clinical_finding": "Irregular mass with vascular flow, BI-RADS 6 (known malignancy)",
+          "prescribed_treatment": null,
+          "expected_determination": "CORRECT - ICD code matches diagnosis",
+          "error_type": "none",
+          "severity": "none",
+          "cost_impact": 0,
+          "diagnosis": "Breast carcinoma, biopsy-proven",
+          "icd_code": "C50.919",
+          "icd_description": "Malignant neoplasm of unspecified site of unspecified female breast"
+        }
+      ]
+    },
+    {
+      "filename": "ultrasound_negative_3.png",
+      "modality": "ultrasound",
+      "diagnosis": "negative",
+      "class": "benign",
+      "source_file": "ultrasound/Dataset_BUSI_with_GT/benign/benign (248)_mask.png",
+      "dataset": "Breast Ultrasound Images",
+      "dataset_url": "https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Al-Dhabyani W et al. \"Dataset of breast ultrasound images.\" Data in Brief, 2020.",
+      "scenarios": [
+        {
+          "scenario_id": "ultrasound_003_normal_tissue_unnecessary_mastectomy",
+          "validation_type": "treatment_matching",
+          "modality": "ultrasound",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 41,
+            "gender": "Female",
+            "chief_complaint": "Family history of breast cancer",
+            "scan_type": "Breast ultrasound"
+          },
+          "clinical_finding": "Homogeneous fibroglandular tissue, no suspicious findings, BI-RADS 1",
+          "prescribed_treatment": "Prophylactic mastectomy",
+          "expected_determination": "ERROR - Mastectomy not indicated by imaging",
+          "error_type": "overtreatment",
+          "severity": "critical",
+          "cost_impact": 50000
+        },
+        {
+          "scenario_id": "ultrasound_icd_003_normal_neoplasm_code",
+          "validation_type": "icd_coding",
+          "modality": "ultrasound",
+          "image_type": "negative",
+          "patient_context": {
+            "age": 41,
+            "gender": "Female",
+            "chief_complaint": "Family history of breast cancer"
+          },
+          "clinical_finding": "Homogeneous fibroglandular tissue, no suspicious findings, BI-RADS 1",
+          "prescribed_treatment": null,
+          "expected_determination": "ERROR - ICD code does not match diagnosis",
+          "error_type": "incorrect_icd",
+          "severity": "moderate",
+          "cost_impact": 8000,
+          "diagnosis": "Normal breast tissue",
+          "icd_code": "D24.9",
+          "icd_description": "Benign neoplasm of breast, unspecified",
+          "correct_code": "Z80.3 (Family history of malignant neoplasm of breast)"
+        }
+      ]
+    }
+  ],
+  "datasets_used": {
+    "COVID-19 Radiography Database": {
+      "url": "https://www.kaggle.com/datasets/tawsifurrahman/covid19-radiography-database",
+      "license": "CC BY 4.0",
+      "citation": "M.E.H. Chowdhury et al. \"Can AI help in screening Viral and COVID-19 pneumonia?\" IEEE Access, 2020.",
+      "images_count": 5
+    },
+    "LC25000 - Lung and Colon Cancer": {
+      "url": "https://www.kaggle.com/datasets/andrewmvd/lung-and-colon-cancer-histopathological-images",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Borkowski AA et al. \"Lung and Colon Cancer Histopathological Image Dataset (LC25000).\" arXiv:1912.12142v1, 2019.",
+      "images_count": 6
+    },
+    "Brain Tumor MRI Dataset": {
+      "url": "https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset",
+      "license": "Unknown",
+      "citation": "Brain Tumor MRI Dataset (Kaggle)",
+      "images_count": 6
+    },
+    "Breast Ultrasound Images": {
+      "url": "https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset",
+      "license": "CC BY-NC-SA 4.0",
+      "citation": "Al-Dhabyani W et al. \"Dataset of breast ultrasound images.\" Data in Brief, 2020.",
+      "images_count": 6
+    }
+  },
+  "updated": "2026-02-14T15:00:53.743664"
+}

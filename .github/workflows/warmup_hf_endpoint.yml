@@ -1,9 +1,9 @@
 name: Warmup HuggingFace Endpoint
 
 on:
-  # Run 1 hour before benchmarks (1am UTC, benchmarks at 2am UTC)
+  # Run 1 hour before clinical validation (11pm UTC, validation at 12am UTC)
   schedule:
-    - cron: '0 1 * * *'
+    - cron: '0 23 * * *'
   
   # Allow manual trigger for testing
   workflow_dispatch:

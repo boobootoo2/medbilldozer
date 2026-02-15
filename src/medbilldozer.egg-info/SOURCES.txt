@@ -1,4 +1,5 @@
 LICENSE
+README.md
 pyproject.toml
 src/medbilldozer/__init__.py
 src/medbilldozer.egg-info/PKG-INFO
@@ -33,13 +34,16 @@ src/medbilldozer/prompts/medical_line_item_prompt.py
 src/medbilldozer/prompts/receipt_line_item_prompt.py
 src/medbilldozer/providers/__init__.py
 src/medbilldozer/providers/gemini_analysis_provider.py
+src/medbilldozer/providers/gemma3_hosted_provider.py
 src/medbilldozer/providers/llm_interface.py
+src/medbilldozer/providers/medgemma_ensemble_provider.py
 src/medbilldozer/providers/medgemma_hosted_provider.py
 src/medbilldozer/providers/openai_analysis_provider.py
 src/medbilldozer/providers/provider_registry.py
 src/medbilldozer/ui/__init__.py
 src/medbilldozer/ui/api_docs_page.py
 src/medbilldozer/ui/audio_controls.py
+src/medbilldozer/ui/audio_preference_dialog.py
 src/medbilldozer/ui/billdozer_widget.py
 src/medbilldozer/ui/bootstrap.py
 src/medbilldozer/ui/doc_assistant.py
@@ -61,6 +65,7 @@ src/medbilldozer/utils/image_paths.py
 src/medbilldozer/utils/runtime_flags.py
 src/medbilldozer/utils/sanitize.py
 src/medbilldozer/utils/serialization.py
+tests/test_advanced_metrics.py
 tests/test_config.py
 tests/test_image_paths.py
 tests/test_orchestrator_agent.py

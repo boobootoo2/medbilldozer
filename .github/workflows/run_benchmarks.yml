@@ -59,7 +59,7 @@ jobs:
           # Run patient benchmarks for all models using v2 script with parallel workers
           # NOTE: Only running OpenAI in CI since HF Inference Endpoint auto-pauses
           # Run MedGemma models locally when needed, or manually start HF endpoint before workflow
-          python3 scripts/run_benchmarks_v2.py --model openai --workers 2 
+          python3 scripts/run_benchmarks_v2.py --model all
       
       - name: Convert results to monitoring format
         if: always()

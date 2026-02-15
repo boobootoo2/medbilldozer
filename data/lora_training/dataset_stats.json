@@ -1,0 +1,23 @@
+{
+  "created_at": "2026-02-14T15:57:16.692247",
+  "total_examples": 24,
+  "train_size": 16,
+  "val_size": 8,
+  "modalities": {
+    "xray": 6,
+    "histopathology": 6,
+    "mri": 6,
+    "ultrasound": 6
+  },
+  "error_types": {
+    "none": 12,
+    "overtreatment": 7,
+    "unnecessary_procedure": 5
+  },
+  "severity_distribution": {
+    "none": 12,
+    "moderate": 3,
+    "critical": 6,
+    "high": 3
+  }
+}

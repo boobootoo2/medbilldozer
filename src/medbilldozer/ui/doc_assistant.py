@@ -499,8 +499,9 @@ def render_assistant_avatar():
 def render_doc_assistant():
     """Render the documentation assistant in the sidebar."""
     
-    # Render avatar at the top
-    render_assistant_avatar()
+    # Render avatar at the top (in sidebar)
+    with st.sidebar:
+        render_assistant_avatar()
 
     # Toggle button for character switch
     current_character = st.session_state.avatar_character

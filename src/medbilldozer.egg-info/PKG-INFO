@@ -1,4 +1,4 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: medbilldozer
 Version: 0.2.0
 Summary: Medical Bill Analysis and Error Detection System
@@ -29,3 +29,427 @@ Requires-Dist: numpy>=1.24; extra == "benchmarks"
 Provides-Extra: monitoring
 Requires-Dist: plotly>=5.0; extra == "monitoring"
 Requires-Dist: streamlit>=1.28; extra == "monitoring"
+Dynamic: license-file
+
+# medBillDozer
+
+[![Run Tests](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml/badge.svg)](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml)
+[![CodeQL](https://github.com/boobootoo2/medbilldozer/actions/workflows/codeql.yml/badge.svg)](https://github.com/boobootoo2/medbilldozer/actions/workflows/codeql.yml)
+[![Security Audit](https://github.com/boobootoo2/medbilldozer/actions/workflows/security.yml/badge.svg)](https://github.com/boobootoo2/medbilldozer/actions/workflows/security.yml)
+[![Run Benchmarks](https://github.com/boobootoo2/medbilldozer/actions/workflows/run_benchmarks.yml/badge.svg)](https://github.com/boobootoo2/medbilldozer/actions/workflows/run_benchmarks.yml)
+
+**medBillDozer** is an AI-powered assistant that helps patients audit medical bills and explanations of benefits (EOBs) by detecting likely billing errors and explaining them in plain language.
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.11 or higher
+- pip (Python package installer)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/boobootoo2/medbilldozer.git
+   cd medbilldozer
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Set up environment variables** (Optional)
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API keys (see Configuration section)
+   ```
+
+4. **Configure features** (Optional)
+   ```bash
+   cp app_config.example.yaml app_config.yaml
+   # Edit app_config.yaml to enable/disable features
+   ```
+
+5. **Launch the application**
+   ```bash
+   streamlit run medBillDozer.py
+   ```
+
+6. **Open your browser**
+   - Navigate to `http://localhost:8501`
+   - Accept the privacy policy
+   - Start analyzing documents!
+
+---
+
+## 🏥 What Can medBillDozer Analyze?
+
+✅ **Medical Bills** - Procedure bills with CPT codes  
+✅ **Dental Bills** - Treatment bills with CDT codes  
+✅ **Pharmacy Receipts** - Prescription medication receipts  
+✅ **Insurance EOBs** - Explanation of Benefits statements  
+✅ **FSA/HSA Claims** - Flexible/Health Spending Account statements  
+
+---
+
+## 🧠 Using MedGemma
+
+**MedGemma** is Google's medical domain-specific language model designed for healthcare applications. medBillDozer integrates MedGemma to provide specialized medical billing analysis.
+
+### What is MedGemma?
+
+MedGemma (google/medgemma-4b-it) is a 4 billion parameter model fine-tuned for medical use cases, offering:
+- **Medical terminology expertise** - Better understanding of CPT/CDT codes, procedures, and medical language
+- **Healthcare-aligned outputs** - Conservative, factual analysis following healthcare best practices
+- **Cost-effective processing** - Smaller model size means faster, cheaper inference
+
+### How to Use MedGemma
+
+#### Option 1: Select MedGemma from Analysis Engine (Simple)
+
+1. Launch the app: `streamlit run medBillDozer.py`
+2. In the main dashboard, look for the **"Analysis Engine"** dropdown
+3. Select an engine that uses MedGemma (if available in ENGINE_OPTIONS)
+4. Paste your medical documents
+5. Click **"Analyze with medBillDozer"**
+
+#### Option 2: Enable Debug Mode for Direct Provider Selection
+
+1. **Enable debug mode** in `app_config.yaml`:
+   ```yaml
+   features:
+     debug:
+       enabled: true
+   ```
+
+2. **Or** add `?debug=1` to your URL:
+   ```
+   http://localhost:8501?debug=1
+   ```
+
+3. In the sidebar, you'll see **"🧪 Debug Mode"** controls
+4. Under **"Analysis Model"**, select **"medgemma-4b-it"**
+5. Analyze your documents as normal
+
+#### Option 3: Set Up Hosted MedGemma
+
+MedGemma can be accessed through Hugging Face's inference API:
+
+1. **Get a Hugging Face API token**
+   - Visit [Hugging Face Settings](https://huggingface.co/settings/tokens)
+   - Create a new token with read access
+
+2. **Set environment variables** in your `.env` file:
+   ```bash
+   HF_API_TOKEN=your_huggingface_token_here
+   HF_MODEL_ID=google/medgemma-4b-it
+   HF_MODEL_URL=https://router.huggingface.co/v1/chat/completions
+   ```
+
+3. **Restart the application**
+   ```bash
+   streamlit run medBillDozer.py
+   ```
+
+4. MedGemma will now be available as an analysis provider
+
+### MedGemma Benefits for Medical Billing
+
+- **Precise code detection** - Better identification of CPT/CDT procedure codes
+- **Contextual understanding** - Understands relationships between diagnoses and procedures
+- **Conservative estimates** - Only suggests savings when clearly supported by document evidence
+- **Medical terminology** - Correctly interprets medical jargon and abbreviations
+
+---
+
+## 📊 Using the Dashboard
+
+medBillDozer provides two workflows:
+
+### 🧪 Demo POC Workflow (Tab 1)
+
+The **POC (Proof of Concept)** workflow is ideal for quick analysis and testing:
+
+1. **Select Analysis Engine**
+   - Choose from available engines (Smart, OpenAI, Gemini, MedGemma)
+   - "Smart" automatically selects the best available provider
+
+2. **Input Documents**
+   - **Demo Documents**: Check pre-loaded examples (Colonoscopy, Dental, Pharmacy, etc.)
+   - **Paste Your Own**: Copy/paste text from bills, EOBs, or receipts
+   - **Upload Files**: Upload document images or PDFs (if enabled)
+
+3. **Health Profile** (Optional)
+   - Select patient profile for personalized analysis
+   - System considers patient-specific insurance and coverage
+
+4. **Analyze**
+   - Click **"Analyze with medBillDozer"**
+   - Wait for AI to process documents (usually 10-30 seconds)
+   - Review detected issues and potential savings
+
+5. **Review Results**
+   - **Savings Summary**: Total potential patient savings across all documents
+   - **Issues by Document**: Detailed findings per document
+   - **Issue Cards**: Each error/opportunity explained in plain language
+   - **Confidence Levels**: High/Medium/Low confidence ratings
+
+### 🏭 Demo Prod Workflow (Tab 2)
+
+The **Production Workflow** is profile-based for ongoing monitoring:
+
+1. **Select/Create Health Profile**
+   - Choose existing patient profile
+   - Or create new profile with insurance details
+
+2. **Upload Receipts**
+   - Batch upload medical receipts
+   - System organizes by patient profile
+
+3. **Continuous Monitoring**
+   - Dashboard tracks all documents for this profile
+   - Alerts on new issues or savings opportunities
+
+4. **Historical Analysis**
+   - Review past analyses
+   - Track savings over time
+
+---
+
+## 🐛 Debug Mode
+
+Debug Mode provides advanced controls and detailed visibility into medBillDozer's analysis process.
+
+### Enabling Debug Mode
+
+#### Method 1: Configuration File (Persistent)
+
+Edit `app_config.yaml`:
+```yaml
+features:
+  debug:
+    enabled: true
+```
+
+Restart the app for changes to take effect.
+
+#### Method 2: URL Parameter (Session Only)
+
+Add `?debug=1` to your browser URL:
+```
+http://localhost:8501?debug=1
+```
+
+This enables debug mode for the current session only.
+
+### Debug Features
+
+When debug mode is enabled, you'll see additional controls in the **sidebar**:
+
+#### 1. **Model Selection**
+- **Fact Extraction Model**: Choose which model extracts billing facts
+  - `gpt-4o-mini`: OpenAI's efficient model
+  - `gemini-3-flash-preview`: Google's fast Gemini
+  - `heuristic`: Local rule-based extraction (offline)
+  - `Agent decides`: Let orchestrator choose automatically
+
+- **Analysis Model**: Choose which model performs analysis
+  - `gpt-4o-mini`: OpenAI GPT-4 Omni Mini
+  - `medgemma-4b-it`: Google MedGemma 4B Instruct
+  - `Agent decides`: Let orchestrator choose automatically
+
+#### 2. **Document Inspection**
+View raw document structure:
+```json
+{
+  "document_id": "doc_001",
+  "document_type": "medical_bill",
+  "text": "...",
+  "extracted_facts": {...}
+}
+```
+
+#### 3. **Orchestration Decisions**
+See how the orchestrator agent decided which models to use:
+```json
+{
+  "doc_001": {
+    "extractor_used": "gpt-4o-mini",
+    "analyzer_used": "medgemma-4b-it",
+    "reasoning": "Selected MedGemma for medical domain expertise"
+  }
+}
+```
+
+#### 4. **Aggregate Metrics**
+View analysis performance metrics:
+```json
+{
+  "total_documents": 3,
+  "total_issues": 5,
+  "total_savings": 247.50,
+  "processing_time_ms": 8420
+}
+```
+
+#### 5. **Session State**
+Inspect complete Streamlit session state:
+- Authentication status
+- Tour progress
+- Cached results
+- Provider registry status
+
+#### 6. **Transaction Details**
+For financial analysis:
+- **Normalized Transactions**: Standardized transaction format
+- **Transaction Provenance**: Source tracking for each transaction
+
+### Debug Mode Use Cases
+
+#### Testing Model Performance
+Compare different models on the same document:
+1. Enable debug mode
+2. Analyze document with `gpt-4o-mini`
+3. Note the issues found and savings
+4. Clear history
+5. Analyze same document with `medgemma-4b-it`
+6. Compare results
+
+#### Troubleshooting Analysis Issues
+When an analysis doesn't look right:
+1. Enable debug mode
+2. Check **Documents** section for raw input
+3. Review **Orchestration Decisions** to see model selection
+4. Inspect **Session State** for any errors or warnings
+5. Check **Aggregate Metrics** for processing anomalies
+
+#### Development and Testing
+For developers extending medBillDozer:
+1. Use debug mode to verify new extractors/analyzers
+2. Monitor session state during feature development
+3. Validate transaction normalization logic
+4. Test model fallback behavior
+
+---
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Key environment variables (see `.env.example` for full list):
+
+```bash
+# Access Control
+APP_ACCESS_PASSWORD=your_password_here
+
+# AI Provider API Keys
+OPENAI_API_KEY=sk-...
+GOOGLE_API_KEY=AI...
+
+# MedGemma Hosted Setup
+HF_API_TOKEN=hf_...
+HF_MODEL_ID=google/medgemma-4b-it
+
+# Feature Flags
+GUIDED_TOUR=TRUE
+PROFILE_EDITOR_ENABLED=TRUE
+```
+
+### Feature Configuration
+
+Edit `app_config.yaml` to enable/disable features:
+
+```yaml
+features:
+  # AI Assistant sidebar
+  assistant:
+    enabled: true
+  
+  # Pipeline visualization
+  dag:
+    enabled: false
+  
+  # Debug mode
+  debug:
+    enabled: false
+  
+  # Interactive guided tour
+  guided_tour:
+    enabled: true
+  
+  # Privacy dialog
+  privacy_ui:
+    enabled: true
+  
+  # Coverage matrix display
+  coverage_matrix:
+    enabled: true
+```
+
+---
+
+## 🔐 Privacy & Security
+
+Your data stays private:
+- ✅ **No data storage** - Documents processed in-memory only
+- ✅ **Session-only** - Data cleared when you close browser
+- ✅ **No user accounts** - No registration or tracking
+- ✅ **Local processing option** - Use heuristic mode for offline analysis
+
+**Note**: When using AI providers (OpenAI, Google, Hugging Face), document text is sent to their APIs for analysis. Review their privacy policies if handling sensitive information.
+
+---
+
+## 📚 Additional Resources
+
+- **[API Documentation](docs/API.md)** - Developer API reference
+- **[Module Documentation](docs/MODULES.md)** - Architecture and modules
+- **[Dependencies](docs/DEPENDENCIES.md)** - Third-party libraries
+- **[Benchmarks](benchmarks/README.md)** - Performance benchmarks and testing
+- **[Contributing](DOCUMENTATION.md)** - How to contribute
+
+---
+
+## ⚠️ Disclaimer
+
+This project is a **prototype for educational purposes only**.
+
+medBillDozer does **NOT** provide:
+- Medical, legal, or financial advice
+- HIPAA-compliant healthcare services
+- Guaranteed savings or outcomes
+- Professional billing review services
+
+**Always verify findings** with your insurance company and healthcare provider. Consult qualified professionals for billing disputes and medical advice.
+
+---
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE) file for details.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please see our [contribution guidelines](DOCUMENTATION.md) for details on:
+- Code standards
+- Testing requirements
+- Documentation expectations
+- Pull request process
+
+---
+
+## 💡 Support
+
+- **Issues**: [GitHub Issues](https://github.com/boobootoo2/medbilldozer/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/boobootoo2/medbilldozer/discussions)
+- **Documentation**: [docs/](docs/)
+
+---
+
+**Built with ❤️ for patients navigating the complex world of medical billing.**
