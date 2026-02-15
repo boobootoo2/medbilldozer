@@ -1125,8 +1125,8 @@ def exponential_backoff_retry(
                                     # Use the API's suggested wait time if it's reasonable
                                     if wait_time < max_delay:
                                         delay = wait_time + 0.5  # Add 0.5s buffer
-                            except:
-                                pass
+                            except Exception:  # nosec B110 - Safe: intentionally ignoring parse errors for rate limit headers
+                                pass  # Fallback to exponential backoff if header parsing fails
                         
                         retries += 1
                         print(f"  ⏳ Rate limit hit. Retry {retries}/{max_retries} after {delay:.1f}s...")

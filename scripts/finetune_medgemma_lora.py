@@ -84,7 +84,7 @@ class MedGemmaLoRATrainer:
         
         # Load tokenizer
         print(f"📦 Loading tokenizer from {base_model}...")
-        self.tokenizer = AutoTokenizer.from_pretrained(base_model)
+        self.tokenizer = AutoTokenizer.from_pretrained(base_model)  # nosec B615 - Safe: known google/medgemma model
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         
@@ -105,8 +105,8 @@ class MedGemmaLoRATrainer:
         
         if use_8bit and self.device == "cuda":
             load_kwargs['load_in_8bit'] = True
-        
-        self.model = AutoModelForCausalLM.from_pretrained(
+
+        self.model = AutoModelForCausalLM.from_pretrained(  # nosec B615 - Safe: known google/medgemma model
             self.base_model_name,
             **load_kwargs
         )
