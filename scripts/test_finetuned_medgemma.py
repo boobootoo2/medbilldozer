@@ -39,15 +39,13 @@ class FineTunedMedGemma:
         
         # Load tokenizer
         print(f"📦 Loading tokenizer...")
-        # nosec B615 - Safe: loading from known model 'google/medgemma-4b-it' for testing purposes
-        self.tokenizer = AutoTokenizer.from_pretrained(base_model)
+        self.tokenizer = AutoTokenizer.from_pretrained(base_model)  # nosec B615 - Safe: known google/medgemma model
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
         # Load base model
         print(f"🧠 Loading base model...")
-        # nosec B615 - Safe: loading from known model 'google/medgemma-4b-it' for testing purposes
-        self.base_model = AutoModelForCausalLM.from_pretrained(
+        self.base_model = AutoModelForCausalLM.from_pretrained(  # nosec B615 - Safe: known google/medgemma model
             base_model,
             torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
             device_map='auto' if self.device == "cuda" else None

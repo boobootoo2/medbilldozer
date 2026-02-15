@@ -125,8 +125,7 @@ def check_kaggle_setup() -> bool:
         return False
     
     try:
-        # nosec B603, B607 - Safe: using list form (no shell injection), calling trusted kaggle CLI tool
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B603, B607 - Safe: list form, trusted kaggle CLI, no user input
             ['kaggle', '--version'],
             capture_output=True,
             text=True,
@@ -164,8 +163,7 @@ def download_dataset(modality: str, dataset_info: Dict, base_dir: Path) -> bool:
     
     try:
         print("\nDownloading from Kaggle...")
-        # nosec B603, B607 - Safe: using list form (no shell injection), dataset_id from trusted config
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B603, B607 - Safe: list form, dataset_id from trusted config
             [
                 'kaggle', 'datasets', 'download', '-d',
                 dataset_info['kaggle_id'],
