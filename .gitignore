@@ -43,6 +43,9 @@ benchmarks/clinical_validation_heatmaps/
 !benchmarks/clinical_images/kaggle_datasets/selected/*.png
 !benchmarks/clinical_images/kaggle_datasets/selected/*.jpg
 !benchmarks/clinical_images/kaggle_datasets/selected/*.jpeg
+!benchmarks/clinical_images/kaggle_datasets/selected/*.tif
+!benchmarks/clinical_validation_heatmaps/*.png
+!benchmarks/clinical_validation_heatmaps/*.txt
 
 # Build artifacts directory
 .artifacts/
