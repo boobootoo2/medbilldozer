@@ -33,11 +33,26 @@ load_dotenv()
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / 'scripts'))
 
+# Add src to path for medbilldozer imports
+src_path = PROJECT_ROOT / "src"
+if src_path.exists() and str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
 try:
     from benchmark_data_access import BenchmarkDataAccess, format_metric, calculate_delta
 except ImportError:
     st.error("Could not import benchmark_data_access. Please ensure the module exists.")
     st.stop()
+
+# Import benchmark assistant
+try:
+    from medbilldozer.ui.benchmark_assistant import render_benchmark_assistant
+    from medbilldozer.ui.doc_assistant import render_assistant_avatar
+    from medbilldozer.utils.config import is_assistant_enabled
+except ImportError as e:
+    st.warning(f"Benchmark assistant not available: {e}")
+    render_benchmark_assistant = None
+    is_assistant_enabled = lambda: False
 
 # ============================================================================
 # Page Configuration
@@ -81,6 +96,13 @@ def get_data_access():
         st.stop()
 
 data_access = get_data_access()
+
+# ============================================================================
+# Benchmark Assistant (sidebar)
+# ============================================================================
+
+if is_assistant_enabled() and render_benchmark_assistant is not None:
+    render_benchmark_assistant()
 
 # ============================================================================
 # Sidebar Filters
@@ -3397,6 +3419,50 @@ with tab6:
                     - {best['model_version']} outperforms {worst['model_version']} by {gap:.1f}% in domain detection
                     - Medical domain knowledge is critical for accurate billing issue detection
                     """)
+
+# ============================================================================
+# Documentation Viewer (triggered from sidebar assistant)
+# ============================================================================
+
+if 'benchmark_sidebar_doc_view' in st.session_state:
+    doc_path = PROJECT_ROOT / st.session_state['benchmark_sidebar_doc_view']
+    doc_title = st.session_state.get('benchmark_sidebar_doc_title', 'Documentation')
+
+    # Create a container in the main area for documentation
+    st.markdown("---")
+    col1, col2 = st.columns([6, 1])
+    with col1:
+        st.markdown(f"## {doc_title}")
+    with col2:
+        if st.button("✖ Close", key="close_benchmark_doc_viewer"):
+            del st.session_state['benchmark_sidebar_doc_view']
+            if 'benchmark_sidebar_doc_title' in st.session_state:
+                del st.session_state['benchmark_sidebar_doc_title']
+            st.rerun()
+
+    try:
+        with open(doc_path, 'r', encoding='utf-8') as f:
+            doc_content = f.read()
+        st.markdown(doc_content)
+
+        if st.button("✖ Close Document", key="close_benchmark_doc_viewer_bottom"):
+            del st.session_state['benchmark_sidebar_doc_view']
+            if 'benchmark_sidebar_doc_title' in st.session_state:
+                del st.session_state['benchmark_sidebar_doc_title']
+            st.rerun()
+
+    except FileNotFoundError:
+        st.error(f"📄 Document not found: {doc_path}")
+        st.info("This documentation file may not be available.")
+        if st.button("✖ Close", key="close_benchmark_doc_viewer_error"):
+            del st.session_state['benchmark_sidebar_doc_view']
+            if 'benchmark_sidebar_doc_title' in st.session_state:
+                del st.session_state['benchmark_sidebar_doc_title']
+            st.rerun()
+
+# ============================================================================
+# Footer
+# ============================================================================
 
 st.markdown("---")
 st.markdown("""
