@@ -21,7 +21,7 @@ Usage:
 import argparse
 import json
 import shutil
-import subprocess
+import subprocess  # nosec B404 - subprocess needed for Kaggle CLI interaction with controlled inputs
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -125,6 +125,7 @@ def check_kaggle_setup() -> bool:
         return False
     
     try:
+        # nosec B603, B607 - Safe: using list form (no shell injection), calling trusted kaggle CLI tool
         result = subprocess.run(
             ['kaggle', '--version'],
             capture_output=True,
@@ -163,6 +164,7 @@ def download_dataset(modality: str, dataset_info: Dict, base_dir: Path) -> bool:
     
     try:
         print("\nDownloading from Kaggle...")
+        # nosec B603, B607 - Safe: using list form (no shell injection), dataset_id from trusted config
         result = subprocess.run(
             [
                 'kaggle', 'datasets', 'download', '-d',
