@@ -2,8 +2,8 @@
 
 **Release Date:** February 15, 2026  
 **Branch:** v0.2 → main  
-**Total Commits:** 25  
-**Files Changed:** 338 files (92,853 insertions, 3,685 deletions)
+**Total Commits:** 26  
+**Files Changed:** 369 files (94,156 insertions, 3,685 deletions)
 
 ---
 
@@ -31,6 +31,14 @@ Version 0.2.0 represents a major advancement in medBillDozer's clinical validati
   - True positive detection heatmap (by error severity and model)
   - True negative detection heatmap (false positive tracking)
   - Summary statistics and detection rate reports
+
+- **Clinical Imaging Dataset**: Curated collection of 26 medical images
+  - **4 Modalities**: X-ray, MRI, Histopathology, Ultrasound, CT
+  - **Positive/Negative Examples**: 3 examples per modality for balanced testing
+  - **Comprehensive Manifest**: Full attribution, licensing (CC BY 4.0), and scenario metadata
+  - **Size-Optimized**: 4.8MB selected subset (vs full multi-GB dataset)
+  - **1200+ Test Scenarios**: ICD coding, treatment matching, gender/age appropriateness
+  - **Kaggle Sourced**: All images from verified public datasets with proper citations
 
 ### 📊 Dashboard Enhancements
 
@@ -222,8 +230,10 @@ Version 0.2.0 represents a major advancement in medBillDozer's clinical validati
 - **Code Additions**: 92,853 lines
 - **Code Deletions**: 3,685 lines
 - **Files Modified**: 338 files
-- **Commits**: 25 commits
+- **Commits**: 26 commits
 - **Patient Profiles**: 61 synthetic test cases
+- **Clinical Images**: 26 medical images (4.8MB) across 4 modalities
+- **Image Scenarios**: 1200+ test scenarios with expected outcomes
 - **Test Cases**: 200+ cross-document validation scenarios
 - **Methodology Accordions**: 13 transparency sections
 - **Documentation Files**: 20+ updated/new markdown files
