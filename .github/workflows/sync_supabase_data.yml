@@ -1,4 +1,9 @@
-name: Sync Supabase Data
+name: Sync Supabase Data (DEPRECATED)
+
+# ⚠️  DEPRECATION NOTICE (2026-02-15):
+# This workflow is deprecated. Clinical validation now uses production Supabase only.
+# Beta database is no longer maintained. This workflow will be removed in a future release.
+# For one-time migration, use: python scripts/migrate_beta_to_prod.py
 
 on:
   workflow_dispatch:
@@ -13,15 +18,32 @@ on:
         required: false
         type: string
         default: ''
-  schedule:
-    # Run daily at 3 AM UTC
-    - cron: '0 3 * * *'
+  # Removed automatic schedule - manual trigger only for legacy support
+  # schedule:
+  #   - cron: '0 3 * * *'
 
 jobs:
   sync-data:
     runs-on: ubuntu-latest
-    
+
     steps:
+    - name: Deprecation Warning
+      run: |
+        echo "⚠️  =========================================="
+        echo "⚠️  WARNING: This workflow is DEPRECATED!"
+        echo "⚠️  =========================================="
+        echo ""
+        echo "Clinical validation now uses production Supabase only."
+        echo "Beta database is no longer maintained."
+        echo ""
+        echo "📋 Migration steps:"
+        echo "  1. Use scripts/migrate_beta_to_prod.py for one-time migration"
+        echo "  2. Update secrets to use SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY"
+        echo "  3. Remove SUPABASE_BETA_* secrets after migration"
+        echo ""
+        echo "Continuing with sync for backward compatibility..."
+        echo ""
+
     - name: Checkout code
       uses: actions/checkout@v4
     

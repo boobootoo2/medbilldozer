@@ -64,15 +64,6 @@ st.title("🚨 Production Stability")
 st.markdown("Real-time ML model performance tracking and regression detection")
 
 # ============================================================================
-# BETA Mode Check
-# ============================================================================
-
-BETA_MODE = os.getenv('BETA', 'false').lower() in ('true', '1', 'yes')
-
-if BETA_MODE:
-    st.info("🧪 **BETA Mode Enabled**: Clinical Validation Dashboard now available!")
-
-# ============================================================================
 # Initialize Data Access
 # ============================================================================
 
@@ -142,58 +133,48 @@ st.sidebar.markdown("**Last Updated:** " + datetime.now().strftime("%Y-%m-%d %H:
 # Tab Layout
 # ============================================================================
 
-if BETA_MODE:
-    tab_clinical, tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "🏥 Clinical Validation (BETA)",
-        "🏥 Clinical Reasoning Evaluation",
-        "📊 System Health Overview",
-        "📈 Reliability Over Time",
-        "⚖️ Model Effectiveness Comparison",
-        "🚨 Performance Stability Monitor",
-        "🕐 Snapshot History"
-    ])
-else:
-    tab_clinical = None
-    tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "🏥 Clinical Reasoning Evaluation",
-        "📊 System Health Overview",
-        "📈 Reliability Over Time",
-        "⚖️ Model Effectiveness Comparison",
-        "🚨 Performance Stability Monitor",
-        "🕐 Snapshot History"
-    ])
+tab_clinical, tab6, tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "🏥 Clinical Validation",
+    "🏥 Clinical Reasoning Evaluation",
+    "📊 System Health Overview",
+    "📈 Reliability Over Time",
+    "⚖️ Model Effectiveness Comparison",
+    "🚨 Performance Stability Monitor",
+    "🕐 Snapshot History"
+])
 
 # ============================================================================
-# TAB CLINICAL: Clinical Validation (BETA Mode Only)
+# TAB CLINICAL: Clinical Validation
 # ============================================================================
 
-if BETA_MODE and tab_clinical:
+if tab_clinical:
     with tab_clinical:
         st.header("🏥 Clinical Validation Benchmarks")
         st.markdown("Multi-modal clinical error detection performance using real medical images")
         
-        # Initialize Beta Data Access
+        # Initialize Clinical Validation Data Access
         @st.cache_resource
-        def get_beta_data_access():
-            """Initialize beta database access for clinical validation."""
+        def get_clinical_data_access():
+            """Initialize database access for clinical validation."""
             try:
-                url = os.getenv('SUPABASE_BETA_URL', 'https://zrhlpitzonhftigmdvgz.supabase.co')
-                key = os.getenv('SUPABASE_BETA_KEY')
+                # Support both new and legacy (BETA) environment variable names for backward compatibility
+                url = os.getenv('SUPABASE_CLINICAL_URL') or os.getenv('SUPABASE_BETA_URL', 'https://zrhlpitzonhftigmdvgz.supabase.co')
+                key = os.getenv('SUPABASE_CLINICAL_KEY') or os.getenv('SUPABASE_BETA_KEY')
                 if not key:
-                    st.warning("🔑 SUPABASE_BETA_KEY not set. Clinical validation data unavailable.")
+                    st.warning("🔑 SUPABASE_CLINICAL_KEY not set. Clinical validation data unavailable.")
                     return None
                 return BenchmarkDataAccess(supabase_url=url, supabase_key=key)
             except Exception as e:
-                st.error(f"Failed to connect to beta database: {e}")
+                st.error(f"Failed to connect to clinical validation database: {e}")
                 return None
-        
-        beta_data_access = get_beta_data_access()
-        
-        if beta_data_access:
+
+        clinical_data_access = get_clinical_data_access()
+
+        if clinical_data_access:
             # Fetch latest clinical validation snapshot
             try:
                 # Query clinical_validation_snapshots table directly
-                response = beta_data_access.client.table('clinical_validation_snapshots') \
+                response = clinical_data_access.client.table('clinical_validation_snapshots') \
                     .select('*') \
                     .eq('environment', 'beta') \
                     .order('created_at', desc=True) \
@@ -1081,7 +1062,7 @@ if BETA_MODE and tab_clinical:
                 with st.expander("Show Error Details"):
                     st.code(traceback.format_exc())
         
-        # Clinical Data Sets Section (always show, regardless of beta_data_access)
+        # Clinical Data Sets Section (always show, regardless of clinical_data_access)
         st.markdown("---")
         with st.expander("📚 Clinical Data Sets", expanded=False):
             st.markdown("""
@@ -1261,14 +1242,14 @@ if BETA_MODE and tab_clinical:
                 ```
                 """)
         
-        if not beta_data_access:
+        if not clinical_data_access:
             st.warning("""
             ### 🔧 Configuration Required
-            
+
             Clinical validation dashboard is unavailable. Please configure:
-            - `SUPABASE_BETA_KEY`: API key for beta database
-            - `SUPABASE_BETA_URL`: Database URL (default: https://zrhlpitzonhftigmdvgz.supabase.co)
-            
+            - `SUPABASE_CLINICAL_KEY` (or legacy `SUPABASE_BETA_KEY`): API key for clinical validation database
+            - `SUPABASE_CLINICAL_URL` (or legacy `SUPABASE_BETA_URL`): Database URL (default: https://zrhlpitzonhftigmdvgz.supabase.co)
+
             Add these to your `.env` file or environment variables.
             """)
 
