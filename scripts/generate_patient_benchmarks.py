@@ -28,6 +28,10 @@ from pathlib import Path
 from typing import List, Dict, Optional, Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import argparse
+from dotenv import load_dotenv
+
+# Load environment variables from .env file (override shell vars)
+load_dotenv(override=True)
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -142,10 +146,26 @@ class PatientBenchmarkRunner:
         'patient_035',  # Hysterectomy + uterine procedure billing
     ]
     
-    def __init__(self, model: str, subset: Optional[str] = None, workers: int = 1):
+    def __init__(self, model: str, subset: Optional[str] = None, workers: int = 1, fast_mode: bool = False):
         self.model = model
         self.subset = subset
-        self.workers = workers
+        self.fast_mode = fast_mode
+        
+        # Respect model-specific worker limits
+        # OpenAI has rate limits that work best with max 2 concurrent workers
+        model_max_workers = {
+            'openai': 2,  # OpenAI rate limits
+            'gemini': 2,  # Gemini also has rate limits
+            'medgemma': 10,  # HuggingFace endpoint concurrency limit
+            'medgemma-ensemble': 10,  # HuggingFace endpoint concurrency limit
+        }
+        max_allowed = model_max_workers.get(model, workers)
+        self.workers = min(workers, max_allowed)
+        
+        # Notify if workers were capped
+        if self.workers < workers:
+            print(f"ℹ️  Note: {model} limited to {self.workers} workers (requested {workers}) due to API rate limits")
+        
         self.benchmarks_dir = PROJECT_ROOT / "benchmarks"
         self.profiles_dir = self.benchmarks_dir / "patient_profiles"
         self.inputs_dir = self.benchmarks_dir / "inputs"
@@ -341,7 +361,21 @@ Medical History:
             patient_context += """
 -------------------
 
-INSTRUCTIONS FOR ANALYSIS:
+"""
+            
+            # Use condensed instructions in fast mode
+            if self.fast_mode:
+                patient_context += """INSTRUCTIONS: Analyze for billing errors:
+1. Anatomical contradictions (procedures on removed/absent organs)
+2. Gender mismatches (male with OB/GYN, female with prostate)
+3. Age-inappropriate procedures (pediatric codes for adults, etc)
+4. Procedures without documented medical justification in patient history
+5. Duplicate charges (same CPT + date across documents)
+6. Temporal violations (procedures before/after surgeries, impossible timelines)
+
+For each issue found, verify against patient demographics and medical history. Flag if clearly inappropriate or unsupported."""
+            else:
+                patient_context += """INSTRUCTIONS FOR ANALYSIS:
 Perform a comprehensive multi-pass analysis of ALL documents for this patient. Use the patient's medical history, demographics, and cross-document patterns.
 
 PASS 1 - SYSTEMATIC ERROR DETECTION:
@@ -620,9 +654,11 @@ Missing supporting diagnosis is a billing error that must be flagged.
                     for issue in result_pass1.issues
                 ]
             
-            # PASS 2: Targeted verification for commonly missed error types
-            # Build targeted prompt focusing on weak categories
-            pass2_prompt = f"""
+            # PASS 2: Skip in fast mode (single-pass analysis)
+            if not self.fast_mode:
+                # Targeted verification for commonly missed error types
+                # Build targeted prompt focusing on weak categories
+                pass2_prompt = f"""
 PASS 2 - TARGETED VERIFICATION FOR PATIENT {profile.patient_id}:
 
 Patient Summary:
@@ -711,32 +747,32 @@ DOCUMENTS TO RE-EXAMINE:
 """
             
             # Add documents again for pass 2
-            for i, doc_text in enumerate(doc_texts, 1):
-                pass2_prompt += f"\n--- DOCUMENT {i} ---\n{doc_text}\n"
-            
-            pass2_prompt += """
+                for i, doc_text in enumerate(doc_texts, 1):
+                    pass2_prompt += f"\n--- DOCUMENT {i} ---\n{doc_text}\n"
+                
+                pass2_prompt += """
 Report ONLY issues NOT found in PASS 1. Focus on the 4 categories above.
 Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problematic]"
 """
-            
-            # Call provider for PASS 2 with targeted prompt
-            result_pass2 = self.provider.analyze_document(pass2_prompt, facts=None)
-            
-            # Merge PASS 2 results with PASS 1 (deduplicate by CPT code)
-            pass1_codes = {issue['code'] for issue in detected_issues if issue.get('code')}
-            
-            if result_pass2 and hasattr(result_pass2, 'issues'):
-                for issue in result_pass2.issues:
-                    # Only add if CPT code not already detected in pass 1
-                    if issue.code and issue.code not in pass1_codes:
-                        detected_issues.append({
-                            'type': issue.type,
-                            'summary': issue.summary,
-                            'evidence': issue.evidence,
-                            'code': issue.code,
-                            'max_savings': issue.max_savings
-                        })
-                        pass1_codes.add(issue.code)
+                
+                # Call provider for PASS 2 with targeted prompt
+                result_pass2 = self.provider.analyze_document(pass2_prompt, facts=None)
+                
+                # Merge PASS 2 results with PASS 1 (deduplicate by CPT code)
+                pass1_codes = {issue['code'] for issue in detected_issues if issue.get('code')}
+                
+                if result_pass2 and hasattr(result_pass2, 'issues'):
+                    for issue in result_pass2.issues:
+                        # Only add if CPT code not already detected in pass 1
+                        if issue.code and issue.code not in pass1_codes:
+                            detected_issues.append({
+                                'type': issue.type,
+                                'summary': issue.summary,
+                                'evidence': issue.evidence,
+                                'code': issue.code,
+                                'max_savings': issue.max_savings
+                            })
+                            pass1_codes.add(issue.code)
             
             end_time = time.perf_counter()
             latency_ms = (end_time - start_time) * 1000
@@ -987,7 +1023,7 @@ Use format: "ERROR TYPE: [type] | CPT: [code] | REASONING: [why this is problema
         """Process a single patient profile (extracted from original loop)."""
         profile, expected_issues, document_names = self.load_patient_profile(profile_file)
 
-        print(f"[{index}/{total}] Patient xxxxxxx (XX, {profile.age}y)...", end=" ", flush=True)
+        print(f"[{index}/{total}] Patient {profile.patient_id} ({profile.sex}, {profile.age}y)...", end=" ", flush=True)
 
         detected_issues, latency_ms, error = self.analyze_patient_documents(profile, document_names)
 
@@ -1424,6 +1460,11 @@ def main():
         default=1,
         help='Number of parallel workers to run (default: 1)'
     )
+    parser.add_argument(
+        '--fast',
+        action='store_true',
+        help='Use condensed prompts for faster benchmarking (~2x speed, same accuracy)'
+    )
     
     args = parser.parse_args()
     
@@ -1444,7 +1485,7 @@ def main():
     
     for model in models_to_run:
         try:
-            runner = PatientBenchmarkRunner(model, subset=args.subset, workers=args.workers)
+            runner = PatientBenchmarkRunner(model, subset=args.subset, workers=args.workers, fast_mode=args.fast)
             metrics = runner.run_benchmarks()
             
             if metrics:

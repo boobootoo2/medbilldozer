@@ -1,110 +1,82 @@
-# Documentation Scripts
+# Scripts Directory
 
-## Automatic Documentation Generator
+24 production-ready scripts for benchmarks, analysis, and utilities.
 
-The `generate_docs.py` script automatically generates comprehensive documentation by analyzing the codebase itself. No manual documentation writing required!
-
-### Features
-
-- **AST-based Analysis**: Parses Python source code using Abstract Syntax Trees to extract facts
-- **Comprehensive Coverage**: Documents modules, classes, functions, dependencies, and APIs
-- **Multiple Output Formats**: Generates Markdown docs and JSON manifest
-- **Dependency Tracking**: Maps internal dependencies between modules
-- **Zero Configuration**: Works out of the box, no setup needed
-
-### Usage
+## 🎯 Quick Start
 
 ```bash
-# Generate all documentation
-python3 scripts/generate_docs.py
+# Run benchmarks
+python3 scripts/generate_patient_benchmarks.py --model medgemma-ensemble --workers 2
 
-# Or use the convenience commands
-make docs          # Generate documentation
-make docs-view     # Generate and view in browser
+# Push to database
+python3 scripts/push_patient_benchmarks.py --input benchmarks/results/patient_benchmark_medgemma.json
+
+# Verify results
+python3 scripts/verify_supabase_results.py --limit 10
 ```
 
-### Git Pre-Commit Hook
+## 📊 Core Scripts
 
-To ensure documentation stays up-to-date automatically, install the pre-commit hook:
+**Benchmarks**
+- `generate_patient_benchmarks.py` - Generate patient-based benchmarks
+- `annotate_benchmarks.py` - Ground truth annotation
+- `push_patient_benchmarks.py` - Push results to Supabase
 
+**Analysis**
+- `calculate_roi_metrics.py` - ROI and cost savings
+- `patient_failure_analysis.py` - Failure pattern analysis
+- `analyze_failure_modes.py` - Error category analysis
+
+**Utilities**
+- `verify_supabase_results.py` - Verify database contents
+- `check_snapshots.py` - Check database snapshots
+- `generate_docs.py` - Auto-generate documentation
+
+## 📁 Full Script List
+
+<details>
+<summary>View all 24 scripts by category</summary>
+
+### Production (8)
+- `generate_patient_benchmarks.py`
+- `annotate_benchmarks.py`
+- `push_patient_benchmarks.py`
+- `push_to_supabase.py`
+- `convert_benchmark_to_monitoring.py`
+- `benchmark_data_access.py`
+- `advanced_metrics.py`
+- `calculate_roi_metrics.py`
+
+### Analysis (4)
+- `patient_failure_analysis.py`
+- `analyze_failure_modes.py`
+- `export_dashboard_summary.py`
+- `export_error_type_performance.py`
+
+### Verification (4)
+- `verify_supabase_results.py`
+- `verify_cost_savings.py`
+- `check_snapshots.py`
+- `get_supabase_transactions.py`
+
+### UI & Dev (5)
+- `generate_splash_audio.py`
+- `generate_tour_audio.py`
+- `generate_docs.py`
+- `install-hooks.sh`
+- `push_local_benchmarks.sh`
+
+</details>
+
+## 📚 More Info
+
+Run any script with `--help` for usage details:
 ```bash
-# Install the hook
-make install-hooks
-
-# Or manually
-bash scripts/install-hooks.sh
+python3 scripts/generate_patient_benchmarks.py --help
 ```
 
-Once installed, documentation will be automatically regenerated and staged with every commit. The hook:
+**Related Docs**: [Benchmarks](../benchmarks/README.md) | [API](../docs/API.md) | [Technical](../docs/TECHNICAL_WRITEUP.md)
 
-- Runs `make docs` before each commit
-- Detects if documentation files changed
-- Automatically stages updated docs with your commit
-- Ensures docs never fall out of sync with code
+---
 
-To skip the hook temporarily (not recommended):
-```bash
-git commit --no-verify
-```
-
-### Generated Documentation
-
-The script creates the following files in the `docs/` directory:
-
-1. **README.md** - Project overview and module categorization
-2. **MODULES.md** - Detailed documentation for each module
-3. **API.md** - Public API reference for key interfaces
-4. **DEPENDENCIES.md** - Module dependency graph
-5. **manifest.json** - Machine-readable metadata for programmatic access
-
-### What Gets Documented
-
-The generator extracts these facts from the code:
-
-- Module docstrings and descriptions
-- Function signatures (name, parameters, return types)
-- Class definitions (inheritance, attributes, methods)
-- Decorators and async functions
-- Module-level constants
-- Internal dependencies (_modules imports)
-- File locations and line numbers
-
-### Philosophy
-
-**Documentation is derived from code-owned facts, not written by hand.**
-
-This ensures:
-- Documentation stays in sync with code
-- No documentation drift or staleness
-- Single source of truth (the code)
-- Automated updates on every change
-- Consistent format and structure
-
-### Extending the Generator
-
-To add new documentation sections, extend the `DocumentationGenerator` class:
-
-```python
-def generate_custom_section(self) -> str:
-    """Add your custom documentation logic"""
-    lines = ["## Custom Section", ""]
-    # Your logic here
-    return "\n".join(lines)
-```
-
-Then call it in the `generate_all()` method.
-
-### Integration with CI/CD
-
-Add to your CI pipeline to auto-generate docs on every commit:
-
-```yaml
-# .github/workflows/docs.yml
-- name: Generate Documentation
-  run: python3 scripts/generate_docs.py
-  
-- name: Commit Updated Docs
-  run: |
-    git add docs/
-    git commit -m "Auto-update documentation [skip ci]" || true
-```
+*Last cleanup: February 2026 - Removed 13 debug/obsolete scripts. See [docs/REPOSITORY_CLEANUP_2026.md](../docs/REPOSITORY_CLEANUP_2026.md) for details.*

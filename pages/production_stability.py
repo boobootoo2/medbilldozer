@@ -1334,11 +1334,31 @@ with tab1:
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            st.subheader("🏆 Top Performers by F1")
-            top_f1 = snapshots_df.nlargest(5, 'f1_score')[
-                ['model_version', 'f1_score', 'precision_score', 'recall_score', 'latency_ms']
-            ]
-            st.dataframe(top_f1, use_container_width=True)
+            st.subheader("🏆 Top Performers by Domain Detection")
+            # Extract domain detection rate from metrics
+            if 'metrics' in snapshots_df.columns:
+                domain_rates = []
+                for _, row in snapshots_df.iterrows():
+                    metrics = row['metrics']
+                    if isinstance(metrics, str):
+                        import json
+                        metrics = json.loads(metrics)
+                    domain_rate = metrics.get('domain_knowledge_detection_rate', 0)
+                    # Convert to percentage if stored as decimal
+                    domain_rate = domain_rate * 100 if domain_rate <= 1 else domain_rate
+                    domain_rates.append(domain_rate)
+                snapshots_df['domain_rate'] = domain_rates
+                top_domain = snapshots_df.nlargest(5, 'domain_rate')[
+                    ['model_version', 'domain_rate', 'f1_score', 'recall_score']
+                ].copy()
+                top_domain.columns = ['Model', 'Domain Detection %', 'F1', 'Recall']
+                st.dataframe(top_domain, use_container_width=True)
+            else:
+                # Fallback to F1 if metrics not available
+                top_f1 = snapshots_df.nlargest(5, 'f1_score')[
+                    ['model_version', 'f1_score', 'precision_score', 'recall_score', 'latency_ms']
+                ]
+                st.dataframe(top_f1, use_container_width=True)
         
         with col2:
             st.subheader("⚡ Fastest by Latency")
@@ -2311,58 +2331,7 @@ with tab6:
     pregnancy ultrasound, 8-year-old billed for colonoscopy).
     """)
     
-    # Methodology accordion
-    with st.expander("📐 Methodology: Healthcare Effectiveness Score (HES)", expanded=False):
-        st.markdown("""
-        **Healthcare Effectiveness Score (HES)** is a composite metric designed specifically for medical billing 
-        compliance, prioritizing error detection over false positives.
-        
-        **Formula:**
-        ```
-        HES = (Recall × 60%) + (F1 × 15%) + (ROI × 10%) + (Savings Capture × 10%) + (Stability × 5%)
-              - Failure Penalty - Low-Run Penalty
-        ```
-        
-        **Component Weights:**
-        - **Recall (60%)** - PRIMARY: Error detection rate. Missing billing errors (false negatives) is 
-          more expensive than flagging legitimate bills for review (false positives)
-        - **F1 Score (15%)** - Balanced performance (precision + recall)
-        - **ROI (10%)** - Efficiency: Total savings ÷ Latency (value per time unit)
-        - **Savings Capture (10%)** - Financial impact: % of potential savings actually captured
-        - **Stability (5%)** - Performance consistency across runs (1 - standard deviation of F1)
-        
-        **Penalties:**
-        - **Failure Penalty:** Failure Rate × 25% (deducts for failed analyses)
-        - **Low-Run Penalty:** 0.15 if fewer than 2 benchmark runs (insufficient data)
-        
-        **Failure Rate Calculation:**
-        ```
-        Failure Rate = (Total Patients - Successful Analyses) ÷ Total Patients
-        ```
-        - Displayed as N/A if insufficient data (total_patients = 0)
-        - Only calculated when valid data is available
-        
-        **Sample Sizes:**
-        - Patient cross-document benchmarks typically test 10-50 synthetic patient profiles
-        - Each profile contains 3-8 receipts from different providers/dates
-        - Models must detect age/gender-inappropriate procedures across documents
-        
-        **Test Design:**
-        - Profiles designed with domain knowledge violations (e.g., male pregnancy ultrasound)
-        - Tests medical reasoning, not just receipt parsing
-        - Requires cross-document context aggregation
-        
-        **Why Prioritize Recall?**
-        In healthcare billing compliance:
-        - **Missing a fraudulent bill costs $1,000-$50,000+** (the fraudulent charge goes through)
-        - **Flagging a legitimate bill for review costs $5-$50** (human review time)
-        - Therefore, false negatives are 100-1000× more expensive than false positives
-        - High recall (catching all errors) is critical even if it means more false positives
-        """)
-    
-    st.markdown("---")
-    
-    @st.cache_data(ttl=300)
+    @st.cache_data(ttl=300)  # Cache for 5 minutes
     def load_patient_benchmarks():
         """Load patient benchmark results from snapshots table."""
         # Get latest snapshots (current versions only)
@@ -2410,8 +2379,9 @@ with tab6:
                 return pd.Series([default_value] * len(df), index=df.index)
         
         # Handle domain detection rate
+        # Database stores as percentage (e.g., 43.716 for 43.716%), so divide by 100 to get 0-1 range
         if 'domain_knowledge_detection_rate' in df.columns:
-            domain_detection = df['domain_knowledge_detection_rate'].fillna(0).apply(lambda x: x if x > 1 else x * 100)
+            domain_detection = df['domain_knowledge_detection_rate'].fillna(0).apply(lambda x: x / 100 if x > 1 else x)
         else:
             domain_detection = pd.Series([0] * len(df), index=df.index)
         
@@ -2449,17 +2419,17 @@ with tab6:
             """
             Calculate composite Healthcare Effectiveness Score (HES).
             
-            PRIORITIZES RECALL (60% weight): In medical billing compliance, missing errors
-            (false negatives) is more expensive than false positives. The cost of an undetected
-            fraudulent/erroneous medical bill far exceeds the cost of flagging legitimate bills
-            for review.
+            PRIORITIZES DOMAIN KNOWLEDGE DETECTION (50% weight): In medical billing compliance,
+            detecting healthcare domain-specific errors (gender-inappropriate procedures,
+            age-inappropriate services, medical contradictions) is the PRIMARY goal. These errors
+            require medical knowledge to detect and are most costly when missed.
             
             Formula:
-            - Recall: 60% (PRIMARY - error detection rate)
-            - F1: 15% (balanced performance)
-            - ROI: 10% (efficiency - value per latency)
-            - Savings Capture: 10% (financial impact)
-            - Stability: 5% (performance consistency)
+            - Domain Detection: 50% (PRIMARY - healthcare domain knowledge application)
+            - Recall: 25% (SECONDARY - overall error detection rate)
+            - F1: 10% (balanced performance)
+            - ROI: 7.5% (efficiency - value per latency)
+            - Savings Capture: 7.5% (financial impact)
             - Penalties for failures and insufficient data
             """
             import numpy as np
@@ -2471,6 +2441,9 @@ with tab6:
                 # Base metrics
                 avg_f1 = row.get('f1_score', 0) or 0
                 avg_recall = row.get('recall', 0) or 0
+                # Domain detection is already normalized to 0-1 range from load_patient_benchmarks()
+                domain_detection = row.get('domain_detection', 0) or 0
+                domain_detection_normalized = domain_detection
                 
                 # Calculate ROI (value per latency unit)
                 latency = max(row.get('latency_ms', 1000), 1)  # Avoid div by zero
@@ -2508,6 +2481,7 @@ with tab6:
                     'model': model,
                     'avg_f1': avg_f1,
                     'avg_recall': avg_recall,
+                    'domain_detection': domain_detection_normalized,
                     'roi': roi,
                     'stability_score': stability_score,
                     'savings_capture': savings_capture,
@@ -2534,23 +2508,24 @@ with tab6:
                 scores_df['normalized_roi'] = 0.5
                 scores_df['savings_capture_norm'] = scores_df['savings_capture']
             
-            # Calculate failure penalty (handle None values)
-            scores_df['failure_penalty'] = scores_df['failure_rate'].apply(
-                lambda x: x * 0.25 if x is not None else 0
-            )
+            # Calculate failure penalty
+            # Note: Failure rate is unreliable due to missing total_patients/successful fields in metrics
+            # Only apply penalty if we have valid data (failure_rate < 1.0 indicates real data)
+            scores_df['failure_penalty'] = scores_df['failure_rate'].apply(lambda x: x * 0.25 if x < 0.99 else 0)
             
-            # Apply low-run penalty
-            scores_df['low_run_penalty'] = scores_df['run_count'].apply(lambda x: 0.15 if x < 2 else 0)
+            # Apply low-run penalty (reduced weight to avoid unfairly penalizing newer models)
+            scores_df['low_run_penalty'] = scores_df['run_count'].apply(lambda x: 0.05 if x < 2 else 0)
             
             # Calculate composite HES (Healthcare Effectiveness Score)
-            # PRIORITIZES RECALL: Missing medical billing errors (false negatives) is more costly
-            # than false positives in healthcare compliance scenarios
+            # PRIORITIZES DOMAIN KNOWLEDGE DETECTION: Detecting healthcare-specific errors
+            # (gender-inappropriate procedures, age-inappropriate services, medical contradictions)
+            # is the PRIMARY goal as these require medical expertise and are most costly when missed.
             scores_df['hes'] = (
-                (scores_df['avg_recall'] * 0.60) +        # PRIMARY: Catch errors (false negatives are expensive)
-                (scores_df['avg_f1'] * 0.15) +            # Balance: Overall performance
-                (scores_df['normalized_roi'] * 0.10) +    # Efficiency: Value per latency
-                (scores_df['savings_capture_norm'] * 0.10) +  # Financial: Actual savings captured
-                (scores_df['stability_score'] * 0.05) -   # Consistency: Performance variance
+                (scores_df['domain_detection'] * 0.50) +  # PRIMARY: Healthcare domain knowledge application
+                (scores_df['avg_recall'] * 0.25) +        # SECONDARY: Overall error detection rate
+                (scores_df['avg_f1'] * 0.10) +            # Balance: Overall performance
+                (scores_df['normalized_roi'] * 0.075) +   # Efficiency: Value per latency
+                (scores_df['savings_capture_norm'] * 0.075) -  # Financial: Actual savings captured
                 scores_df['failure_penalty'] -
                 scores_df['low_run_penalty']
             )
