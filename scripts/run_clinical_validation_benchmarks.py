@@ -1577,23 +1577,39 @@ def run_clinical_validation(model: str, scenarios: Dict, manifest: Dict) -> Dict
     return results
 
 
-def push_to_supabase(results: Dict, environment: str = "beta"):
-    """Push clinical validation results to Supabase beta database."""
+def push_to_supabase(results: Dict, environment: str = "production"):
+    """Push clinical validation results to Supabase production database.
+
+    Args:
+        results: Benchmark results dictionary
+        environment: Environment label for the snapshot (default: 'production')
+
+    Note:
+        Supports both new (SUPABASE_URL/SERVICE_ROLE_KEY) and legacy
+        (SUPABASE_BETA_URL/KEY) environment variables for backward compatibility.
+    """
     if not BenchmarkDataAccess:
         print("⚠️  BenchmarkDataAccess not available, skipping Supabase push")
         return
-    
+
     try:
-        # Use beta database
-        beta_url = "https://zrhlpitzonhftigmdvgz.supabase.co"
-        beta_key = os.getenv('SUPABASE_BETA_KEY')
-        
-        if not beta_key:
-            print("⚠️  SUPABASE_BETA_KEY not found, skipping push")
+        # Try production credentials first, fall back to legacy beta credentials
+        db_url = os.getenv('SUPABASE_URL') or os.getenv('SUPABASE_BETA_URL')
+        db_key = (os.getenv('SUPABASE_SERVICE_ROLE_KEY') or
+                  os.getenv('SUPABASE_ANON_KEY') or
+                  os.getenv('SUPABASE_BETA_KEY'))
+
+        if not db_url or not db_key:
+            print("⚠️  Supabase credentials not found. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY")
+            print("     (or legacy SUPABASE_BETA_URL and SUPABASE_BETA_KEY)")
             return
-        
-        print(f"\n📤 Pushing to Supabase Beta Database...")
-        
+
+        # Determine which database we're using
+        is_beta = 'zrhlpitzonhftigmdvgz' in db_url
+        db_label = "Beta" if is_beta else "Production"
+
+        print(f"\n📤 Pushing to Supabase {db_label} Database...")
+
         # Format snapshot for database
         snapshot = {
             'model_version': results['model_version'],
@@ -1617,19 +1633,19 @@ def push_to_supabase(results: Dict, environment: str = "beta"):
             'created_at': results['timestamp'],
             'triggered_by': os.getenv('GITHUB_ACTOR', 'manual')
         }
-        
+
         # Push to database
-        data_access = BenchmarkDataAccess(supabase_url=beta_url, supabase_key=beta_key)
-        
+        data_access = BenchmarkDataAccess(supabase_url=db_url, supabase_key=db_key)
+
         # Insert into clinical_validation_snapshots table
         response = data_access.client.table('clinical_validation_snapshots').insert(snapshot).execute()
-        
-        print(f"✅ Pushed to Supabase Beta")
+
+        print(f"✅ Pushed to Supabase {db_label}")
         print(f"  Model: {results['model_version']}")
         print(f"  Accuracy: {results['accuracy']:.2%}")
         print(f"  Error Detection: {results['error_detection_rate']:.2%}")
         print(f"  Record ID: {response.data[0]['id'] if response.data else 'Unknown'}")
-        
+
     except Exception as e:
         print(f"❌ Error pushing to Supabase: {e}")
 
