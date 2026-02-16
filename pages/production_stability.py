@@ -79,6 +79,37 @@ st.title("🚨 Production Stability")
 st.markdown("Real-time ML model performance tracking and regression detection")
 
 # ============================================================================
+# BETA Mode Check
+# ============================================================================
+
+BETA_MODE = os.getenv('BETA', 'false').lower() in ('true', '1', 'yes')
+
+if BETA_MODE:
+    st.info("🧪 **BETA Mode Enabled**: Clinical Validation Dashboard now available!")
+
+# ============================================================================
+# Assistant Notification
+# ============================================================================
+
+# Show dismissible assistant notification (only once per session)
+if (is_assistant_enabled() and
+    render_benchmark_assistant is not None and
+    not st.session_state.get('benchmark_assistant_notification_dismissed', False)):
+
+    col1, col2 = st.columns([20, 1])
+
+    with col1:
+        st.info(
+            "💡 **New!** Billy & Billie the document assistants are available in the left side panel to help answer questions about metrics, regressions, and model performance.",
+            icon="🤖"
+        )
+
+    with col2:
+        if st.button("✕", key="dismiss_benchmark_assistant_notification", help="Dismiss"):
+            st.session_state.benchmark_assistant_notification_dismissed = True
+            st.rerun()
+
+# ============================================================================
 # Initialize Data Access
 # ============================================================================
 
