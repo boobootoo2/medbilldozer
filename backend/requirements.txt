@@ -1,0 +1,32 @@
+# Core FastAPI
+fastapi==0.110.0
+uvicorn[standard]==0.27.1
+pydantic==2.6.1
+pydantic-settings==2.2.1
+python-multipart==0.0.9
+
+# Authentication
+firebase-admin==6.4.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Google Cloud
+google-cloud-storage==2.14.0
+google-cloud-secret-manager==2.18.2
+
+# Database
+supabase==2.3.4
+asyncpg==0.29.0
+
+# HTTP Client
+httpx==0.26.0
+
+# Existing MedBillDozer dependencies (reuse from main requirements.txt)
+openai==2.9.0
+google-generativeai==1.59.0
+google-genai==1.59.0
+anthropic==0.19.0
+faker==24.0.0
+
+# Utilities
+python-dotenv==1.2.1

@@ -1,0 +1,149 @@
+{
+  "scenario_id": "scenario_002_marcus_billing",
+  "patient_name": "Marcus",
+  "patient_avatar": "\ud83d\udc68\u200d\u2695\ufe0f",
+  "patient_profile": {
+    "age": 42,
+    "gender": "Male",
+    "insurance": "Aetna Silver Plan",
+    "deductible": 2000,
+    "deductible_met": 300
+  },
+  "clinical_images": [],
+  "patient_story": "**Patient Story: Marcus's 2026 Medical Journey**\n\nIn February 2026, I had an emergency room visit at City Hospital for severe abdominal pain.\nThe ER physician, Dr. Michael Torres, ordered a CT scan and bloodwork on February 20, 2026.\nThe total ER visit cost was $3,500, including a $200 CT scan and $150 lab work.\n\nI have Aetna Silver Plan with a $2,000 deductible (only $300 met previously) and 70/30 coinsurance.\nMy out-of-pocket maximum is $6,500 annually.\n\nThe diagnosis was gastritis, and I was prescribed medication (Omeprazole) for 3 months.\nI also had a follow-up visit with a gastroenterologist in March ($250 specialist visit).",
+  "provider_bill": {
+    "date": "2026-02-25",
+    "provider": "City Hospital Emergency Department",
+    "items": [
+      {
+        "service": "ER Visit - Level 5",
+        "code": "99285",
+        "charge": 2500.0,
+        "error": null
+      },
+      {
+        "service": "CT Abdomen without contrast",
+        "code": "74150",
+        "charge": 1200.0,
+        "error": "Should be $200"
+      },
+      {
+        "service": "CT Abdomen with contrast",
+        "code": "74160",
+        "charge": 950.0,
+        "error": "Not performed"
+      },
+      {
+        "service": "Blood Work - Comprehensive",
+        "code": "80053",
+        "charge": 150.0,
+        "error": null
+      },
+      {
+        "service": "IV Administration",
+        "code": "96374",
+        "charge": 300.0,
+        "error": null
+      },
+      {
+        "service": "Gastroenterology Consult",
+        "code": "99253",
+        "charge": 450.0,
+        "error": "This was a separate follow-up, not ER"
+      }
+    ],
+    "total": 5550.0
+  },
+  "insurance_eob": {
+    "date": "2026-03-15",
+    "plan": "Aetna Silver Plan",
+    "items": [
+      {
+        "service": "ER Visit - Level 5",
+        "billed": 2500.0,
+        "allowed": 2000.0,
+        "paid": 200.0,
+        "patient_responsibility": 1800.0
+      },
+      {
+        "service": "CT Abdomen without contrast",
+        "billed": 1200.0,
+        "allowed": 200.0,
+        "paid": 0.0,
+        "patient_responsibility": 200.0
+      },
+      {
+        "service": "CT Abdomen with contrast",
+        "billed": 950.0,
+        "allowed": 800.0,
+        "paid": 130.0,
+        "patient_responsibility": 670.0
+      },
+      {
+        "service": "Blood Work",
+        "billed": 150.0,
+        "allowed": 120.0,
+        "paid": 0.0,
+        "patient_responsibility": 120.0
+      },
+      {
+        "service": "IV Administration",
+        "billed": 300.0,
+        "allowed": 250.0,
+        "paid": 0.0,
+        "patient_responsibility": 250.0
+      },
+      {
+        "service": "Gastroenterology Consult",
+        "billed": 450.0,
+        "allowed": 250.0,
+        "paid": 0.0,
+        "patient_responsibility": 250.0
+      }
+    ],
+    "total_paid": 330.0,
+    "patient_owes": 3290.0
+  },
+  "billing_errors": [
+    {
+      "id": "BY1",
+      "severity": "High",
+      "category": "Service Not Rendered",
+      "description": "CT scan with contrast ($950) was not performed - only CT without contrast was done per medical records.",
+      "provider_charge": 950.0,
+      "insurance_paid": 130.0,
+      "potential_savings": 950.0
+    },
+    {
+      "id": "BY2",
+      "severity": "High",
+      "category": "Price Inflation",
+      "description": "CT Abdomen without contrast billed at $1,200 but patient story indicates actual cost was $200. 600% markup.",
+      "provider_charge": 1200.0,
+      "insurance_paid": 0.0,
+      "potential_savings": 1000.0
+    },
+    {
+      "id": "BY3",
+      "severity": "High",
+      "category": "Unbundling/Separate Visit",
+      "description": "Gastroenterology consult ($450) was a separate follow-up appointment in March, not part of February ER visit.",
+      "provider_charge": 450.0,
+      "insurance_paid": 0.0,
+      "potential_savings": 250.0
+    }
+  ],
+  "has_billing_errors": true,
+  "clinical_errors": [],
+  "has_clinical_errors": false,
+  "malpractice": null,
+  "difficulty": "medium",
+  "category": "billing_only",
+  "tags": [
+    "price_inflation",
+    "unbundling",
+    "gastritis"
+  ],
+  "max_score": 1200,
+  "time_bonus_threshold": 300
+}

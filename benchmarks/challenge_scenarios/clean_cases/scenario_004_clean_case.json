@@ -1,0 +1,81 @@
+{
+  "scenario_id": "scenario_004_clean_case",
+  "patient_name": "David",
+  "patient_avatar": "\ud83d\udc68",
+  "patient_profile": {
+    "age": 55,
+    "gender": "Male",
+    "insurance": "Kaiser Permanente HMO",
+    "deductible": 500,
+    "deductible_met": 500
+  },
+  "clinical_images": [],
+  "patient_story": "**Patient Story: David's Routine Care**\n\nIn March 2026, I had my annual physical exam with Dr. Sarah Chen at Kaiser Permanente.\nEverything went smoothly - routine blood work, blood pressure check, and cholesterol screening.\n\nAll my tests came back normal, and my doctor said to continue my current medication regimen.\nThe billing was straightforward and matched exactly what was performed.",
+  "provider_bill": {
+    "date": "2026-03-10",
+    "provider": "Kaiser Permanente Medical Center",
+    "items": [
+      {
+        "service": "Annual Physical Exam",
+        "code": "99395",
+        "charge": 250.0,
+        "error": null
+      },
+      {
+        "service": "Lipid Panel",
+        "code": "80061",
+        "charge": 75.0,
+        "error": null
+      },
+      {
+        "service": "Complete Blood Count",
+        "code": "85025",
+        "charge": 50.0,
+        "error": null
+      }
+    ],
+    "total": 375.0
+  },
+  "insurance_eob": {
+    "date": "2026-03-20",
+    "plan": "Kaiser Permanente HMO",
+    "items": [
+      {
+        "service": "Annual Physical",
+        "billed": 250.0,
+        "allowed": 250.0,
+        "paid": 250.0,
+        "patient_responsibility": 0.0
+      },
+      {
+        "service": "Lipid Panel",
+        "billed": 75.0,
+        "allowed": 75.0,
+        "paid": 75.0,
+        "patient_responsibility": 0.0
+      },
+      {
+        "service": "CBC",
+        "billed": 50.0,
+        "allowed": 50.0,
+        "paid": 50.0,
+        "patient_responsibility": 0.0
+      }
+    ],
+    "total_paid": 375.0,
+    "patient_owes": 0.0
+  },
+  "billing_errors": [],
+  "has_billing_errors": false,
+  "clinical_errors": [],
+  "has_clinical_errors": false,
+  "malpractice": null,
+  "difficulty": "easy",
+  "category": "clean_case",
+  "tags": [
+    "preventive_care",
+    "clean"
+  ],
+  "max_score": 500,
+  "time_bonus_threshold": 300
+}

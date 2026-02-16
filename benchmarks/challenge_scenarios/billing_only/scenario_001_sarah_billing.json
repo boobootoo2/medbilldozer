@@ -1,0 +1,120 @@
+{
+  "scenario_id": "scenario_001_sarah_billing",
+  "patient_name": "Sarah",
+  "patient_avatar": "\ud83d\udc69\u200d\u2695\ufe0f",
+  "patient_profile": {
+    "age": 35,
+    "gender": "Female",
+    "insurance": "Blue Cross Gold Plan",
+    "deductible": 1500,
+    "deductible_met": 800
+  },
+  "clinical_images": [],
+  "patient_story": "**Patient Story: Sarah's 2026 Medical Journey**\n\nIn March 2026, I visited Dr. Jennifer Wu at Metro Medical Center for persistent headaches.\nAfter a thorough examination, Dr. Wu ordered an MRI scan which was performed on March 15, 2026.\nThe MRI cost was $1,200 and was deemed medically necessary.\n\nI have Blue Cross Gold Plan insurance with a $1,500 deductible (already met $800 from earlier visits)\nand 80/20 coinsurance after deductible. My out-of-pocket maximum is $5,000.\n\nThe diagnosis was tension headaches, and I was prescribed physical therapy (10 sessions at $150 each).\nI completed 8 sessions between April and May 2026.",
+  "provider_bill": {
+    "date": "2026-03-20",
+    "provider": "Metro Medical Center",
+    "items": [
+      {
+        "service": "Office Visit - Level 4",
+        "code": "99214",
+        "charge": 250.0,
+        "error": null
+      },
+      {
+        "service": "MRI Brain without contrast",
+        "code": "70551",
+        "charge": 1200.0,
+        "error": null
+      },
+      {
+        "service": "MRI Brain with contrast",
+        "code": "70553",
+        "charge": 800.0,
+        "error": "Not performed - duplicate billing"
+      },
+      {
+        "service": "Physical Therapy - 8 sessions",
+        "code": "97110",
+        "charge": 1200.0,
+        "error": null
+      },
+      {
+        "service": "Physical Therapy - 5 sessions",
+        "code": "97110",
+        "charge": 750.0,
+        "error": "Only 8 sessions total, not 13"
+      }
+    ],
+    "total": 4200.0
+  },
+  "insurance_eob": {
+    "date": "2026-04-10",
+    "plan": "Blue Cross Gold Plan",
+    "items": [
+      {
+        "service": "Office Visit - Level 4",
+        "billed": 250.0,
+        "allowed": 200.0,
+        "paid": 120.0,
+        "patient_responsibility": 80.0
+      },
+      {
+        "service": "MRI Brain without contrast",
+        "billed": 1200.0,
+        "allowed": 800.0,
+        "paid": 100.0,
+        "patient_responsibility": 700.0
+      },
+      {
+        "service": "MRI Brain with contrast",
+        "billed": 800.0,
+        "allowed": 600.0,
+        "paid": 480.0,
+        "patient_responsibility": 120.0
+      },
+      {
+        "service": "Physical Therapy - 13 sessions",
+        "billed": 1950.0,
+        "allowed": 1200.0,
+        "paid": 960.0,
+        "patient_responsibility": 240.0
+      }
+    ],
+    "total_paid": 1660.0,
+    "patient_owes": 1140.0
+  },
+  "billing_errors": [
+    {
+      "id": "B1",
+      "severity": "High",
+      "category": "Duplicate Billing",
+      "description": "MRI with contrast ($800) was not performed according to patient story, but was billed and partially paid by insurance.",
+      "provider_charge": 800.0,
+      "insurance_paid": 480.0,
+      "potential_savings": 800.0
+    },
+    {
+      "id": "B2",
+      "severity": "High",
+      "category": "Quantity Mismatch",
+      "description": "Physical therapy billed for 13 sessions (5+8) but patient only received 8 sessions according to medical records.",
+      "provider_charge": 750.0,
+      "insurance_paid": 960.0,
+      "potential_savings": 750.0
+    }
+  ],
+  "has_billing_errors": true,
+  "clinical_errors": [],
+  "has_clinical_errors": false,
+  "malpractice": null,
+  "difficulty": "medium",
+  "category": "billing_only",
+  "tags": [
+    "duplicate_billing",
+    "quantity_mismatch",
+    "headaches"
+  ],
+  "max_score": 1000,
+  "time_bonus_threshold": 300
+}

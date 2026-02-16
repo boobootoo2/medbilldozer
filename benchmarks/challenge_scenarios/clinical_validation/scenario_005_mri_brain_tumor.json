@@ -1,0 +1,102 @@
+{
+  "scenario_id": "scenario_005_mri_brain_tumor",
+  "patient_name": "Robert",
+  "patient_avatar": "\ud83d\udc68\u200d\ud83e\uddb3",
+  "patient_profile": {
+    "age": 58,
+    "gender": "Male",
+    "insurance": "Medicare",
+    "deductible": 500,
+    "deductible_met": 500
+  },
+  "clinical_images": [
+    {
+      "file_path": "mri_positive.jpg",
+      "modality": "mri",
+      "finding": "Mass lesion in right frontal lobe consistent with glioma",
+      "is_abnormal": true
+    }
+  ],
+  "patient_story": "**Patient Story: Robert's Headache Investigation**\n\nIn February 2026, I began experiencing severe headaches and occasional dizziness.\nMy neurologist, Dr. Sarah Mitchell, ordered an MRI which revealed a concerning mass in my brain.\n\nThe MRI showed a glioma (brain tumor) that requires immediate attention.\nDr. Mitchell recommended surgical consultation and radiation therapy planning.",
+  "provider_bill": {
+    "date": "2026-02-20",
+    "provider": "Neurology Associates",
+    "items": [
+      {
+        "service": "Neurology Consultation",
+        "code": "99244",
+        "charge": 350.0,
+        "error": null
+      },
+      {
+        "service": "MRI Brain with contrast",
+        "code": "70553",
+        "charge": 2500.0,
+        "error": null
+      },
+      {
+        "service": "Neurosurgery Consultation",
+        "code": "99244",
+        "charge": 400.0,
+        "error": null
+      },
+      {
+        "service": "Radiation Therapy Planning",
+        "code": "77295",
+        "charge": 1800.0,
+        "error": null
+      }
+    ],
+    "total": 5050.0
+  },
+  "insurance_eob": {
+    "date": "2026-03-10",
+    "plan": "Medicare Part B",
+    "items": [
+      {
+        "service": "Neurology Consult",
+        "billed": 350.0,
+        "allowed": 300.0,
+        "paid": 240.0,
+        "patient_responsibility": 60.0
+      },
+      {
+        "service": "MRI Brain",
+        "billed": 2500.0,
+        "allowed": 2000.0,
+        "paid": 1600.0,
+        "patient_responsibility": 400.0
+      },
+      {
+        "service": "Neurosurgery Consult",
+        "billed": 400.0,
+        "allowed": 350.0,
+        "paid": 280.0,
+        "patient_responsibility": 70.0
+      },
+      {
+        "service": "Radiation Planning",
+        "billed": 1800.0,
+        "allowed": 1500.0,
+        "paid": 1200.0,
+        "patient_responsibility": 300.0
+      }
+    ],
+    "total_paid": 3320.0,
+    "patient_owes": 830.0
+  },
+  "billing_errors": [],
+  "has_billing_errors": false,
+  "clinical_errors": [],
+  "has_clinical_errors": false,
+  "malpractice": null,
+  "difficulty": "medium",
+  "category": "clinical_validation",
+  "tags": [
+    "mri",
+    "brain",
+    "oncology"
+  ],
+  "max_score": 1000,
+  "time_bonus_threshold": 300
+}
