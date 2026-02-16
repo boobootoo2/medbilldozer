@@ -311,17 +311,19 @@ def calculate_blink_probability() -> bool:
     return fourier_value > blink_threshold
 
 
-def render_doc_assistant():
+def render_assistant_avatar():
+    """Render the Billy/Billie avatar with animations.
+    
+    Can be used standalone in any page that needs the avatar.
+    """
     if "assistant_talking" not in st.session_state:
         st.session_state.assistant_talking = False
 
     # Initialize avatar character selection
     if "avatar_character" not in st.session_state:
         st.session_state.avatar_character = "billy"
-
-    """Render the documentation assistant in the sidebar."""
-
-    def render_assistant_avatar():
+    
+    def _render_avatar_html():
         talking = st.session_state.assistant_talking
         character = st.session_state.avatar_character
         character_name = character.capitalize()
@@ -489,11 +491,17 @@ def render_doc_assistant():
 
         """
 
-        with st.sidebar:
-            components.html(avatar_html, height=140)
+        components.html(avatar_html, height=140)
 
-    # Render avatar at the top
-    render_assistant_avatar()
+    _render_avatar_html()
+
+
+def render_doc_assistant():
+    """Render the documentation assistant in the sidebar."""
+    
+    # Render avatar at the top (in sidebar)
+    with st.sidebar:
+        render_assistant_avatar()
 
     # Toggle button for character switch
     current_character = st.session_state.avatar_character
