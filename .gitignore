@@ -57,3 +57,4 @@ examples/output/
 examples/*.log
 
 
+.streamlit/secrets.toml

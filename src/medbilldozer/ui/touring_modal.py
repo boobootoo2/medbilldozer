@@ -227,6 +227,22 @@ def touring_modal_dialog():
     if not current_step:
         return
 
+    # Add custom CSS for column sizing
+    st.markdown("""
+        <style>
+        /* Make avatar column adapt to image size, text column fill remaining space */
+        div[data-testid="stDialog"] .stColumn:has(img) {
+            width: fit-content !important;
+            flex: 0 0 fit-content !important;
+            min-width: fit-content !important;
+        }
+        div[data-testid="stDialog"] .stColumn:not(:has(img)) {
+            flex: 1 1 0 !important;
+            width: 100% !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     # Get character and avatar
     character = get_character_for_step(current_step.id)
     avatar_url = get_avatar_url(f"{character}__eyes_open__ready.png")
@@ -324,7 +340,7 @@ def render_minimized_sticky_header():
         }}
 
         /* Style the button container */
-        div[data-testid="stHorizontalBlock"]:has(button[key*="minimized_"]) {{
+        div[data-testid="stHorizontalBlock"]:has([class*="st-key-minimized_"]) {{
             position: fixed !important;
             top: 80px !important;
             right: 20px !important;
@@ -334,11 +350,11 @@ def render_minimized_sticky_header():
             padding: 8px 12px !important;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
             gap: 8px !important;
-            margin-top: 12px !important;
+            width: auto;
         }}
 
         /* Style individual buttons */
-        button[key*="minimized_"] {{
+        div[data-testid="stHorizontalBlock"]:has([class*="st-key-minimized_"]) button {{
             background: rgba(255, 255, 255, 0.25) !important;
             border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
             color: white !important;
@@ -346,10 +362,9 @@ def render_minimized_sticky_header():
             border-radius: 8px !important;
             font-size: 14px !important;
             font-weight: 600 !important;
-            margin-top: 12px;
         }}
 
-        button[key*="minimized_"]:hover {{
+        div[data-testid="stHorizontalBlock"]:has([class*="st-key-minimized_"]) button:hover {{
             background: rgba(255, 255, 255, 0.35) !important;
         }}
 
@@ -361,7 +376,7 @@ def render_minimized_sticky_header():
                 max-width: calc(50% - 20px);
             }}
 
-            div[data-testid="stHorizontalBlock"]:has(button[key*="minimized_"]) {{
+            div[data-testid="stHorizontalBlock"]:has([class*="st-key-minimized_"]) {{
                 right: 10px !important;
                 top: 80px !important;
             }}

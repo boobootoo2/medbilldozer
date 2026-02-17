@@ -91,9 +91,8 @@ if BETA_MODE:
 # Assistant Notification
 # ============================================================================
 
-# Show dismissible assistant notification (only once per session)
-if (is_assistant_enabled() and
-    render_benchmark_assistant is not None and
+# Show dismissible assistant notification (always visible, regardless of BETA mode)
+if (render_benchmark_assistant is not None and
     not st.session_state.get('benchmark_assistant_notification_dismissed', False)):
 
     col1, col2 = st.columns([20, 1])
