@@ -1,6 +1,7 @@
 """Supabase database service."""
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+import uuid
 from supabase import create_client, Client
 from app.config import settings
 
@@ -26,40 +27,42 @@ class DBService:
         display_name: Optional[str] = None,
         avatar_url: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Create or update user profile."""
+        """Create or update user profile - using simple select/insert to avoid PostgREST cache issues."""
         try:
-            # Try to find existing user
-            result = self.client.table("user_profiles")\
+            print(f"🔄 Checking if user exists: {firebase_uid}")
+
+            # Check if user already exists
+            existing = self.client.table("user_profiles")\
                 .select("*")\
                 .eq("firebase_uid", firebase_uid)\
                 .execute()
 
-            if result.data:
-                # Update existing
-                user = self.client.table("user_profiles")\
-                    .update({
-                        "email": email,
-                        "display_name": display_name,
-                        "avatar_url": avatar_url,
-                        "last_login_at": datetime.utcnow().isoformat()
-                    })\
-                    .eq("firebase_uid", firebase_uid)\
-                    .execute()
-                return user.data[0]
+            if existing and existing.data and len(existing.data) > 0:
+                print(f"✅ User already exists: {email}")
+                # Skip updating last_login_at due to PostgREST cache issue
+                # Just return the existing user
+                return existing.data[0]
             else:
-                # Create new
-                user = self.client.table("user_profiles")\
+                print(f"🔄 Creating new user with minimal fields: {email}")
+                # Generate user_id in Python since PostgREST cache won't use the database default
+                user_id = str(uuid.uuid4())
+                new_user = self.client.table("user_profiles")\
                     .insert({
+                        "user_id": user_id,
                         "firebase_uid": firebase_uid,
-                        "email": email,
-                        "display_name": display_name,
-                        "avatar_url": avatar_url,
-                        "last_login_at": datetime.utcnow().isoformat()
+                        "email": email
                     })\
                     .execute()
-                return user.data[0]
+
+                if new_user.data:
+                    print(f"✅ Created minimal user profile: {email}")
+                    return new_user.data[0]
+                else:
+                    raise Exception("Insert returned no data")
+
         except Exception as e:
-            raise Exception(f"Error creating/updating user: {e}")
+            print(f"❌ User creation error: {e}")
+            raise Exception(f"Failed to create/update user: {e}")
 
     async def get_user_by_firebase_uid(self, firebase_uid: str) -> Optional[Dict[str, Any]]:
         """Get user by Firebase UID."""

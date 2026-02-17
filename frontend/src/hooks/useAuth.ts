@@ -1,7 +1,7 @@
 /**
  * Authentication hook with Firebase Auth integration
  */
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   signInWithPopup,
   signOut,
@@ -15,12 +15,32 @@ import { LoginResponse } from '../types';
 
 export const useAuth = () => {
   const { user, accessToken, loading, error, setUser, setAccessToken, setLoading, setError, logout } = useAuthStore();
+  const isProcessingRef = useRef(false);
 
   useEffect(() => {
+
     // Listen for auth state changes from Firebase
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      // Prevent concurrent authentication attempts
+      if (isProcessingRef.current) {
+        console.log('⏭️  Skipping - authentication already in progress');
+        return;
+      }
+
       if (firebaseUser) {
+        // Check if we already have a valid token in localStorage
+        const existingToken = localStorage.getItem('access_token');
+        if (existingToken && user) {
+          console.log('✅ Already authenticated - using existing session');
+          setLoading(false);
+          return;
+        }
+
+        isProcessingRef.current = true;
+        setLoading(true);
+
         try {
+          console.log('🔄 Authenticating with backend...');
           // Get Firebase ID token
           const idToken = await firebaseUser.getIdToken();
 
@@ -39,13 +59,20 @@ export const useAuth = () => {
           setUser(backendUser);
           setAccessToken(access_token);
           setLoading(false);
+          console.log('✅ Authentication successful!');
         } catch (err: any) {
           console.error('Backend authentication failed:', err);
           setError(err.message || 'Authentication failed');
           setLoading(false);
+          // Sign out from Firebase on backend auth failure
+          await signOut(auth);
+        } finally {
+          isProcessingRef.current = false;
         }
       } else {
         // User logged out
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
         setUser(null);
         setAccessToken(null);
         setLoading(false);

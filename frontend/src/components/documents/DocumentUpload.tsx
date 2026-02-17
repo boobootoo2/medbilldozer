@@ -59,7 +59,8 @@ export const DocumentUpload = ({ onUploadComplete }: DocumentUploadProps) => {
     onDrop,
     accept: {
       'application/pdf': ['.pdf'],
-      'image/*': ['.png', '.jpg', '.jpeg']
+      'image/*': ['.png', '.jpg', '.jpeg'],
+      'text/plain': ['.txt']
     },
     multiple: false,
     disabled: uploading
@@ -89,7 +90,7 @@ export const DocumentUpload = ({ onUploadComplete }: DocumentUploadProps) => {
                   {isDragActive ? 'Drop file here' : 'Drag & drop your medical bill'}
                 </p>
                 <p className="text-sm text-gray-500">
-                  or click to browse (PDF, PNG, JPG)
+                  or click to browse (PDF, PNG, JPG, TXT)
                 </p>
               </div>
             </>
@@ -138,7 +139,7 @@ export const DocumentUpload = ({ onUploadComplete }: DocumentUploadProps) => {
       )}
 
       <div className="mt-4 text-sm text-gray-500">
-        <p>Supported formats: PDF, PNG, JPG (max 10MB)</p>
+        <p>Supported formats: PDF, PNG, JPG, TXT (max 10MB)</p>
       </div>
     </div>
   );

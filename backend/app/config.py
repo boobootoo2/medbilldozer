@@ -1,6 +1,8 @@
 """Application configuration using Pydantic settings."""
 from pydantic_settings import BaseSettings
+from pydantic import Field
 from typing import Optional
+import os
 
 
 class Settings(BaseSettings):
@@ -24,9 +26,13 @@ class Settings(BaseSettings):
     gcs_bucket_documents: str = "medbilldozer-documents"
     gcs_bucket_clinical_images: str = "medbilldozer-clinical"
 
-    # Supabase
-    supabase_url: str
-    supabase_service_role_key: str
+    # Supabase - supports both beta and production env vars
+    supabase_url: str = Field(
+        default_factory=lambda: os.getenv("SUPABASE_BETA_URL") or os.getenv("SUPABASE_URL", "")
+    )
+    supabase_service_role_key: str = Field(
+        default_factory=lambda: os.getenv("SUPABASE_BETA_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+    )
 
     # AI Providers
     openai_api_key: str

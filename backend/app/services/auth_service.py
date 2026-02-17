@@ -13,10 +13,19 @@ class AuthService:
         """Initialize Firebase Admin SDK."""
         # Initialize Firebase Admin (only once)
         if not firebase_admin._apps:
-            # Use default credentials or service account
+            # Use service account credentials from settings
             try:
-                cred = credentials.ApplicationDefault()
+                # Create credentials from environment variables
+                cred_dict = {
+                    "type": "service_account",
+                    "project_id": settings.firebase_project_id,
+                    "private_key": settings.firebase_private_key.replace('\\n', '\n'),  # Handle escaped newlines
+                    "client_email": settings.firebase_client_email,
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                }
+                cred = credentials.Certificate(cred_dict)
                 firebase_admin.initialize_app(cred)
+                print(f"✅ Firebase Admin initialized for project: {settings.firebase_project_id}")
             except Exception as e:
                 print(f"⚠️  Warning: Could not initialize Firebase Admin: {e}")
 

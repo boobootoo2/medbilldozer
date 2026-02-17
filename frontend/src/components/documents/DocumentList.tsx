@@ -127,17 +127,17 @@ export const DocumentList = ({ onDocumentSelect, selectedDocuments = [] }: Docum
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 ml-4">
+              <div className="flex items-center gap-1 ml-4 bg-gray-100 rounded-lg p-1">
                 {doc.download_url && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       window.open(doc.download_url, '_blank');
                     }}
-                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Download"
+                    className="p-2 text-gray-700 hover:text-blue-600 hover:bg-white rounded-md transition-all shadow-sm hover:shadow"
+                    title="Download document"
                   >
-                    <Download size={18} />
+                    <Download size={16} />
                   </button>
                 )}
                 <button
@@ -145,10 +145,10 @@ export const DocumentList = ({ onDocumentSelect, selectedDocuments = [] }: Docum
                     e.stopPropagation();
                     handleDelete(doc.document_id);
                   }}
-                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Delete"
+                  className="p-2 text-gray-700 hover:text-red-600 hover:bg-white rounded-md transition-all shadow-sm hover:shadow"
+                  title="Delete document"
                 >
-                  <Trash2 size={18} />
+                  <Trash2 size={16} />
                 </button>
               </div>
             </div>

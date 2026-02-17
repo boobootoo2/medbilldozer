@@ -26,10 +26,12 @@ async def login(
     5. Backend returns JWT access token + sets refresh token cookie
     """
     try:
+        print(f"🔍 Login attempt - verifying Firebase token...")
         # Verify Firebase token
         firebase_user = await auth_service.verify_firebase_token(
             request.firebase_id_token
         )
+        print(f"✅ Token verified for: {firebase_user.get('email')}")
 
         # Extract user info
         firebase_uid = firebase_user['uid']
@@ -55,12 +57,14 @@ async def login(
         refresh_token = auth_service.create_refresh_token(user_data)
 
         # Set refresh token in httpOnly cookie
+        # secure=False for local development (HTTP), True for production (HTTPS)
+        from app.config import settings
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            secure=True,  # HTTPS only
-            samesite="strict",
+            secure=not settings.debug,  # Only require HTTPS in production
+            samesite="lax" if settings.debug else "strict",  # More permissive for local dev
             max_age=7 * 24 * 60 * 60  # 7 days
         )
 
@@ -76,6 +80,9 @@ async def login(
         )
 
     except Exception as e:
+        print(f"❌ Login failed: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Authentication failed: {str(e)}"

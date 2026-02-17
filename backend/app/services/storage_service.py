@@ -10,8 +10,23 @@ class StorageService:
 
     def __init__(self):
         """Initialize GCS client."""
-        # Initialize with default credentials or service account
-        self.client = storage.Client(project=settings.gcs_project_id)
+        # Create credentials from Firebase service account
+        try:
+            credentials_dict = {
+                "type": "service_account",
+                "project_id": settings.firebase_project_id,
+                "private_key": settings.firebase_private_key.replace('\\n', '\n'),
+                "client_email": settings.firebase_client_email,
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+            credentials = service_account.Credentials.from_service_account_info(credentials_dict)
+            self.client = storage.Client(project=settings.gcs_project_id, credentials=credentials)
+            print(f"✅ GCS initialized with bucket: {settings.gcs_bucket_documents}")
+        except Exception as e:
+            print(f"⚠️  Warning: Could not initialize GCS: {e}")
+            # Fallback to default credentials
+            self.client = storage.Client(project=settings.gcs_project_id)
+
         self.documents_bucket = settings.gcs_bucket_documents
         self.clinical_bucket = settings.gcs_bucket_clinical_images
 
