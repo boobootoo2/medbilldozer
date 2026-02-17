@@ -1,0 +1,122 @@
+{
+  "scenario_id": "scenario_003_xray_overtreatment",
+  "patient_name": "Jennifer",
+  "patient_avatar": "\ud83d\udc69",
+  "patient_profile": {
+    "age": 45,
+    "gender": "Female",
+    "insurance": "UnitedHealthcare PPO",
+    "deductible": 1000,
+    "deductible_met": 600
+  },
+  "clinical_images": [
+    {
+      "file_path": "xray_negative.png",
+      "modality": "xray",
+      "finding": "Clear lung fields, no infiltrates, no effusion",
+      "is_abnormal": false
+    }
+  ],
+  "patient_story": "**Patient Story: Jennifer's Routine Checkup**\n\nIn January 2026, I visited my primary care physician for a routine annual checkup.\nI mentioned having a mild cough for a couple of days, but no fever or other symptoms.\n\nThe doctor ordered a chest X-ray as a precaution, which came back completely normal.\nHowever, the doctor prescribed IV antibiotics for pneumonia and recommended hospitalization.",
+  "provider_bill": {
+    "date": "2026-01-15",
+    "provider": "Community Health Center",
+    "items": [
+      {
+        "service": "Office Visit - Level 3",
+        "code": "99213",
+        "charge": 200.0,
+        "error": null
+      },
+      {
+        "service": "Chest X-ray",
+        "code": "71046",
+        "charge": 150.0,
+        "error": null
+      },
+      {
+        "service": "IV Antibiotic Administration",
+        "code": "96365",
+        "charge": 500.0,
+        "error": "Not medically necessary"
+      },
+      {
+        "service": "Hospital Admission",
+        "code": "99221",
+        "charge": 800.0,
+        "error": "Not medically necessary"
+      }
+    ],
+    "total": 1650.0
+  },
+  "insurance_eob": {
+    "date": "2026-02-01",
+    "plan": "UnitedHealthcare PPO",
+    "items": [
+      {
+        "service": "Office Visit",
+        "billed": 200.0,
+        "allowed": 180.0,
+        "paid": 144.0,
+        "patient_responsibility": 36.0
+      },
+      {
+        "service": "Chest X-ray",
+        "billed": 150.0,
+        "allowed": 130.0,
+        "paid": 104.0,
+        "patient_responsibility": 26.0
+      },
+      {
+        "service": "IV Antibiotics",
+        "billed": 500.0,
+        "allowed": 450.0,
+        "paid": 360.0,
+        "patient_responsibility": 90.0
+      },
+      {
+        "service": "Hospital Admission",
+        "billed": 800.0,
+        "allowed": 700.0,
+        "paid": 560.0,
+        "patient_responsibility": 140.0
+      }
+    ],
+    "total_paid": 1168.0,
+    "patient_owes": 292.0
+  },
+  "billing_errors": [],
+  "has_billing_errors": false,
+  "clinical_errors": [
+    {
+      "id": "C1",
+      "severity": "Critical",
+      "category": "Overtreatment",
+      "description": "X-ray shows clear lungs, but IV antibiotics and hospitalization were prescribed for pneumonia that doesn't exist.",
+      "provider_charge": 1300.0,
+      "insurance_paid": 920.0,
+      "potential_savings": 1300.0,
+      "image_finding": "Normal chest X-ray",
+      "prescribed_treatment": "IV antibiotics + hospitalization"
+    }
+  ],
+  "has_clinical_errors": true,
+  "malpractice": {
+    "is_malpractice": true,
+    "harm_severity": "moderate",
+    "outcome_description": "Patient received unnecessary IV antibiotics which could lead to antibiotic resistance and allergic reactions.",
+    "wrong_treatment": true,
+    "wrong_diagnosis": true,
+    "unnecessary_procedure": true,
+    "patient_harm": "Potential adverse drug reactions, unnecessary hospitalization"
+  },
+  "difficulty": "hard",
+  "category": "clinical_validation",
+  "tags": [
+    "overtreatment",
+    "xray",
+    "respiratory"
+  ],
+  "max_score": 1500,
+  "time_bonus_threshold": 300
+}

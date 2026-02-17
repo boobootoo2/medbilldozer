@@ -36,6 +36,11 @@ from medbilldozer.ui.guided_tour import (
     initialize_tour_state,
     maybe_launch_tour,
 )
+from medbilldozer.ui.touring_modal import (
+    should_show_touring_modal,
+    render_touring_modal,
+    initialize_touring_modal_state,
+)
 from medbilldozer.ui.health_profile import (
     render_profile_selector,
     render_profile_details,
@@ -111,11 +116,30 @@ def main():
         return  # Stop rendering until audio preference is set
 
     # --------------------------------------------------
-    # Splash Screen (before everything if tour enabled)
+    # Guided Tour Initialization
+    # --------------------------------------------------
+    if should_enable_guided_tour():
+        initialize_tour_state()
+
+    # --------------------------------------------------
+    # Splash Screen (blocks everything until dismissed)
     # --------------------------------------------------
     if should_enable_guided_tour() and should_show_splash_screen():
         render_splash_screen()
         return  # Stop rendering until splash is dismissed
+
+    # --------------------------------------------------
+    # Touring Modal (ONLY after splash is fully dismissed)
+    # --------------------------------------------------
+    if should_enable_guided_tour():
+        # Launch tour only after splash screen has been dismissed
+        maybe_launch_tour()
+
+        initialize_touring_modal_state()
+
+        if should_show_touring_modal():
+            render_touring_modal()
+            # Modal floats on top with z-index: 9999, main page stays in DOM
 
     # --------------------------------------------------
     # Minimal Bootstrap (for all pages)
@@ -142,13 +166,6 @@ def main():
     # Register Providers (needed for both workflows)
     # --------------------------------------------------
     register_providers()
-
-    # --------------------------------------------------
-    # Guided Tour Initialization
-    # --------------------------------------------------
-    if should_enable_guided_tour():
-        initialize_tour_state()
-        maybe_launch_tour()
 
     # --------------------------------------------------
     # Privacy (session-scoped)

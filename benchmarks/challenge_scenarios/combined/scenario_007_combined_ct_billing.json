@@ -1,0 +1,127 @@
+{
+  "scenario_id": "scenario_007_combined_ct_billing",
+  "patient_name": "Michael",
+  "patient_avatar": "\ud83d\udc68",
+  "patient_profile": {
+    "age": 65,
+    "gender": "Male",
+    "insurance": "Medicare Advantage",
+    "deductible": 2000,
+    "deductible_met": 1500
+  },
+  "clinical_images": [],
+  "patient_story": "**Patient Story: Michael's Abdominal Pain**\n\nIn January 2026, I went to the ER with severe abdominal pain.\nThe ER doctor ordered a CT scan which showed diverticulitis (inflammation).\n\nI was treated with antibiotics and pain medication, then discharged.\nHowever, the bill included several unexpected charges.",
+  "provider_bill": {
+    "date": "2026-01-25",
+    "provider": "City General Hospital ER",
+    "items": [
+      {
+        "service": "ER Visit - Level 4",
+        "code": "99284",
+        "charge": 1800.0,
+        "error": null
+      },
+      {
+        "service": "CT Abdomen with contrast",
+        "code": "74160",
+        "charge": 2200.0,
+        "error": null
+      },
+      {
+        "service": "CT Abdomen without contrast",
+        "code": "74150",
+        "charge": 1900.0,
+        "error": "Duplicate - only one CT performed"
+      },
+      {
+        "service": "IV Antibiotics",
+        "code": "96365",
+        "charge": 450.0,
+        "error": null
+      },
+      {
+        "service": "Surgical Consultation",
+        "code": "99253",
+        "charge": 600.0,
+        "error": "Not performed"
+      }
+    ],
+    "total": 6950.0
+  },
+  "insurance_eob": {
+    "date": "2026-02-15",
+    "plan": "Medicare Advantage",
+    "items": [
+      {
+        "service": "ER Visit",
+        "billed": 1800.0,
+        "allowed": 1500.0,
+        "paid": 1200.0,
+        "patient_responsibility": 300.0
+      },
+      {
+        "service": "CT with contrast",
+        "billed": 2200.0,
+        "allowed": 1800.0,
+        "paid": 1440.0,
+        "patient_responsibility": 360.0
+      },
+      {
+        "service": "CT without contrast",
+        "billed": 1900.0,
+        "allowed": 1600.0,
+        "paid": 1280.0,
+        "patient_responsibility": 320.0
+      },
+      {
+        "service": "IV Antibiotics",
+        "billed": 450.0,
+        "allowed": 400.0,
+        "paid": 320.0,
+        "patient_responsibility": 80.0
+      },
+      {
+        "service": "Surgical Consult",
+        "billed": 600.0,
+        "allowed": 500.0,
+        "paid": 400.0,
+        "patient_responsibility": 100.0
+      }
+    ],
+    "total_paid": 4640.0,
+    "patient_owes": 1160.0
+  },
+  "billing_errors": [
+    {
+      "id": "B1",
+      "severity": "High",
+      "category": "Duplicate Billing",
+      "description": "Billed for both CT with and without contrast, but medical records show only one CT scan was performed.",
+      "provider_charge": 1900.0,
+      "insurance_paid": 1280.0,
+      "potential_savings": 1900.0
+    },
+    {
+      "id": "B2",
+      "severity": "High",
+      "category": "Service Not Rendered",
+      "description": "Billed for surgical consultation that was never performed. Patient was seen only by ER physician.",
+      "provider_charge": 600.0,
+      "insurance_paid": 400.0,
+      "potential_savings": 600.0
+    }
+  ],
+  "has_billing_errors": true,
+  "clinical_errors": [],
+  "has_clinical_errors": false,
+  "malpractice": null,
+  "difficulty": "medium",
+  "category": "combined",
+  "tags": [
+    "duplicate_billing",
+    "emergency",
+    "ct_scan"
+  ],
+  "max_score": 1200,
+  "time_bonus_threshold": 300
+}

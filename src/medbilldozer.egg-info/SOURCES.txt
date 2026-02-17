@@ -8,13 +8,17 @@ src/medbilldozer.egg-info/dependency_links.txt
 src/medbilldozer.egg-info/requires.txt
 src/medbilldozer.egg-info/top_level.txt
 src/medbilldozer/core/__init__.py
+src/medbilldozer/core/achievements.py
 src/medbilldozer/core/analysis_runner.py
 src/medbilldozer/core/auth.py
+src/medbilldozer/core/clinical_validator.py
 src/medbilldozer/core/coverage_matrix.py
 src/medbilldozer/core/document_identity.py
 src/medbilldozer/core/orchestrator_agent.py
+src/medbilldozer/core/scenario_selector.py
 src/medbilldozer/core/transaction_normalization.py
 src/medbilldozer/data/__init__.py
+src/medbilldozer/data/challenge_scenarios.py
 src/medbilldozer/data/fictional_entities.py
 src/medbilldozer/data/health_data_ingestion.py
 src/medbilldozer/data/portal_templates.py
@@ -44,6 +48,7 @@ src/medbilldozer/ui/__init__.py
 src/medbilldozer/ui/api_docs_page.py
 src/medbilldozer/ui/audio_controls.py
 src/medbilldozer/ui/audio_preference_dialog.py
+src/medbilldozer/ui/benchmark_assistant.py
 src/medbilldozer/ui/billdozer_widget.py
 src/medbilldozer/ui/bootstrap.py
 src/medbilldozer/ui/doc_assistant.py
@@ -55,6 +60,7 @@ src/medbilldozer/ui/privacy_ui.py
 src/medbilldozer/ui/prod_workflow.py
 src/medbilldozer/ui/profile_editor.py
 src/medbilldozer/ui/splash_screen.py
+src/medbilldozer/ui/touring_modal.py
 src/medbilldozer/ui/ui.py
 src/medbilldozer/ui/ui_coverage_matrix.py
 src/medbilldozer/ui/ui_documents.py
@@ -68,6 +74,7 @@ src/medbilldozer/utils/serialization.py
 tests/test_advanced_metrics.py
 tests/test_config.py
 tests/test_image_paths.py
+tests/test_json_robustness.py
 tests/test_orchestrator_agent.py
 tests/test_privacy_ui.py
 tests/test_redos_protection.py

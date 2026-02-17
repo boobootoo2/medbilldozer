@@ -1,0 +1,109 @@
+{
+  "scenario_id": "scenario_006_ultrasound_unnecessary_biopsy",
+  "patient_name": "Emily",
+  "patient_avatar": "\ud83d\udc69\u200d\ud83e\uddb0",
+  "patient_profile": {
+    "age": 42,
+    "gender": "Female",
+    "insurance": "Cigna PPO",
+    "deductible": 1500,
+    "deductible_met": 800
+  },
+  "clinical_images": [
+    {
+      "file_path": "ultrasound_negative.png",
+      "modality": "ultrasound",
+      "finding": "Simple cyst, benign appearance, BI-RADS 2",
+      "is_abnormal": false
+    }
+  ],
+  "patient_story": "**Patient Story: Emily's Breast Screening**\n\nDuring my annual mammogram in March 2026, a small lump was detected.\nThe radiologist ordered a follow-up breast ultrasound to evaluate the finding.\n\nThe ultrasound showed a simple, benign-appearing cyst (BI-RADS 2 - benign).\nDespite the benign findings, the doctor recommended an immediate surgical biopsy.",
+  "provider_bill": {
+    "date": "2026-03-15",
+    "provider": "Women's Imaging Center",
+    "items": [
+      {
+        "service": "Breast Ultrasound",
+        "code": "76642",
+        "charge": 450.0,
+        "error": null
+      },
+      {
+        "service": "Surgical Breast Biopsy",
+        "code": "19101",
+        "charge": 2800.0,
+        "error": "Not indicated for BI-RADS 2"
+      },
+      {
+        "service": "Pathology Analysis",
+        "code": "88305",
+        "charge": 650.0,
+        "error": "Not indicated for BI-RADS 2"
+      }
+    ],
+    "total": 3900.0
+  },
+  "insurance_eob": {
+    "date": "2026-04-01",
+    "plan": "Cigna PPO",
+    "items": [
+      {
+        "service": "Ultrasound",
+        "billed": 450.0,
+        "allowed": 400.0,
+        "paid": 320.0,
+        "patient_responsibility": 80.0
+      },
+      {
+        "service": "Surgical Biopsy",
+        "billed": 2800.0,
+        "allowed": 2400.0,
+        "paid": 1920.0,
+        "patient_responsibility": 480.0
+      },
+      {
+        "service": "Pathology",
+        "billed": 650.0,
+        "allowed": 550.0,
+        "paid": 440.0,
+        "patient_responsibility": 110.0
+      }
+    ],
+    "total_paid": 2680.0,
+    "patient_owes": 670.0
+  },
+  "billing_errors": [],
+  "has_billing_errors": false,
+  "clinical_errors": [
+    {
+      "id": "C1",
+      "severity": "High",
+      "category": "Unnecessary Procedure",
+      "description": "Ultrasound shows simple benign cyst (BI-RADS 2). Surgical biopsy is not indicated and represents overtreatment.",
+      "provider_charge": 3450.0,
+      "insurance_paid": 2360.0,
+      "potential_savings": 3450.0,
+      "image_finding": "Benign simple cyst",
+      "prescribed_treatment": "Surgical biopsy + pathology"
+    }
+  ],
+  "has_clinical_errors": true,
+  "malpractice": {
+    "is_malpractice": true,
+    "harm_severity": "moderate",
+    "outcome_description": "Patient underwent unnecessary surgical procedure with risks of infection, bleeding, and scarring.",
+    "wrong_treatment": true,
+    "wrong_diagnosis": false,
+    "unnecessary_procedure": true,
+    "patient_harm": "Surgical risks, anxiety, and unnecessary costs for benign finding"
+  },
+  "difficulty": "hard",
+  "category": "clinical_validation",
+  "tags": [
+    "ultrasound",
+    "unnecessary_procedure",
+    "breast"
+  ],
+  "max_score": 1500,
+  "time_bonus_threshold": 300
+}
