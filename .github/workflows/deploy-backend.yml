@@ -1,15 +1,17 @@
 name: Deploy Backend to Cloud Run
 
+# TEMPORARILY DISABLED - Enable when GCP credentials are configured
+# To enable: uncomment the 'on:' section below and set up GCP_CREDENTIALS_JSON secret
 on:
-  push:
-    branches:
-      - main
-      - v0.3
-    paths:
-      - 'backend/**'
-      - 'src/medbilldozer/**'
-      - '.github/workflows/deploy-backend.yml'
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger only
+  # push:
+  #   branches:
+  #     - main
+  #     - v0.3
+  #   paths:
+  #     - 'backend/**'
+  #     - 'src/medbilldozer/**'
+  #     - '.github/workflows/deploy-backend.yml'
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -31,8 +33,11 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          # Option 1: Service Account JSON (less secure, but simpler)
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
+          # Option 2: Workload Identity Federation (more secure - uncomment below and comment out credentials_json)
+          # workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          # service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
