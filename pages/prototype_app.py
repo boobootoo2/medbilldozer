@@ -159,9 +159,25 @@ def main():
     if not check_password():
         st.stop()
 
+    # Legal Disclaimer
+    st.error("""
+    ⚠️ **IMPORTANT LEGAL DISCLAIMER - PROTOTYPE SYSTEM**
+
+    **This is a PROTOTYPE system that has NOT undergone legal or regulatory review.**
+
+    - ❌ **DO NOT post any personal medical information (PHI) or personally identifiable information (PII)**
+    - ❌ **NO data protection guarantees** - This system is NOT HIPAA-compliant
+    - ⚠️ **Data will be periodically purged** from this system without notice
+    - ⚠️ **NO service guarantees** - System may be unavailable, modified, or discontinued at any time
+    - ⚠️ **FOR DEMONSTRATION PURPOSES ONLY** - Do not use for actual medical billing decisions
+
+    *This system uses AI models that may produce inaccurate or incomplete results.
+    Always consult qualified medical billing professionals and legal counsel for actual billing matters.*
+    """)
+
     # Show logged in interface
-    st.title("💊 MedBillDozer - Production Interface")
-    st.markdown("### AI-Powered Medical Billing Analysis")
+    st.title("💊 MedBillDozer - Prototype Interface")
+    st.markdown("### AI-Powered Medical Billing Analysis Demo")
 
     # Check backend health
     try:
@@ -180,7 +196,7 @@ def main():
         # Simple auth status
         if "firebase_token" not in st.session_state:
             st.info("📱 For full features, log in via the web app:")
-            st.markdown(f"[Open Web App](https://frontend-five-umber-24.vercel.app)")
+            st.markdown(f"[Open Web App](https://medbilldozer.vercel.app)")
 
             # Alternative: Guest mode
             if st.button("Continue as Guest"):
@@ -225,7 +241,7 @@ def main():
     with tab2:
         st.header("Your Documents")
         st.info("🔗 View and manage documents in the web app")
-        st.markdown(f"[Open Document Manager](https://frontend-five-umber-24.vercel.app)")
+        st.markdown(f"[Open Document Manager](https://medbilldozer.vercel.app)")
 
     with tab3:
         st.header("Full Web Application")
@@ -237,13 +253,13 @@ def main():
         - ✅ AI Analysis
         - ✅ Interactive Dashboard
 
-        **Visit:** [https://frontend-five-umber-24.vercel.app](https://frontend-five-umber-24.vercel.app)
+        **Visit:** [https://medbilldozer.vercel.app](https://medbilldozer.vercel.app)
         """)
 
         # Embed the web app in iframe (optional)
         if st.checkbox("Embed Web App Here"):
             st.components.v1.iframe(
-                "https://frontend-five-umber-24.vercel.app",
+                "https://medbilldozer.vercel.app",
                 height=800,
                 scrolling=True
             )

@@ -31,9 +31,19 @@ export const useAuth = () => {
         // Check if we already have a valid token in localStorage
         const existingToken = localStorage.getItem('access_token');
         if (existingToken && user) {
-          console.log('✅ Already authenticated - using existing session');
-          setLoading(false);
-          return;
+          // Verify token is not expired
+          try {
+            const payload = JSON.parse(atob(existingToken.split('.')[1]));
+            const isExpired = Date.now() > payload.exp * 1000;
+            if (!isExpired) {
+              console.log('✅ Already authenticated - using existing valid session');
+              setLoading(false);
+              return;
+            }
+            console.log('⚠️  Token expired - re-authenticating with backend...');
+          } catch (e) {
+            console.log('⚠️  Invalid token - re-authenticating with backend...');
+          }
         }
 
         isProcessingRef.current = true;

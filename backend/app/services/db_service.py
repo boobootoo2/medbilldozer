@@ -72,6 +72,14 @@ class DBService:
             .execute()
         return result.data[0] if result.data else None
 
+    async def get_user_by_id(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get user by user ID."""
+        result = self.client.table("user_profiles")\
+            .select("*")\
+            .eq("user_id", user_id)\
+            .execute()
+        return result.data[0] if result.data else None
+
     # ========================================================================
     # DOCUMENTS
     # ========================================================================
@@ -255,6 +263,105 @@ class DBService:
             .insert(issues_data)\
             .execute()
         return result.data
+
+    async def get_issue(self, issue_id: str) -> Optional[Dict[str, Any]]:
+        """Get single issue by ID."""
+        result = self.client.table("issues")\
+            .select("*")\
+            .eq("issue_id", issue_id)\
+            .execute()
+        return result.data[0] if result.data else None
+
+    async def get_issues_by_analysis(
+        self,
+        analysis_id: str,
+        status_filter: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Get all issues for an analysis, optionally filtered by status."""
+        query = self.client.table("issues")\
+            .select("*")\
+            .eq("analysis_id", analysis_id)\
+            .order("created_at", desc=True)
+
+        if status_filter:
+            query = query.eq("status", status_filter)
+
+        result = query.execute()
+        return result.data
+
+    async def update_issue_status(
+        self,
+        issue_id: str,
+        status: str,
+        notes: Optional[str] = None,
+        updated_by: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Update issue status and optionally add notes."""
+        update_data = {
+            "status": status,
+            "status_updated_at": datetime.utcnow().isoformat()
+        }
+
+        if notes is not None:
+            update_data["notes"] = notes
+
+        if updated_by:
+            update_data["status_updated_by"] = updated_by
+
+        result = self.client.table("issues")\
+            .update(update_data)\
+            .eq("issue_id", issue_id)\
+            .execute()
+        return result.data[0] if result.data else {}
+
+    async def update_issue_notes(
+        self,
+        issue_id: str,
+        notes: str
+    ) -> Dict[str, Any]:
+        """Update notes for an issue."""
+        result = self.client.table("issues")\
+            .update({"notes": notes})\
+            .eq("issue_id", issue_id)\
+            .execute()
+        return result.data[0] if result.data else {}
+
+    async def get_issue_statistics(
+        self,
+        analysis_id: str
+    ) -> Dict[str, Any]:
+        """Get issue statistics for an analysis."""
+        # Get all issues for the analysis
+        issues = await self.get_issues_by_analysis(analysis_id)
+
+        # Calculate statistics
+        stats = {
+            "open_count": 0,
+            "follow_up_count": 0,
+            "resolved_count": 0,
+            "ignored_count": 0,
+            "open_potential_savings": 0,
+            "follow_up_potential_savings": 0,
+            "resolved_savings": 0
+        }
+
+        for issue in issues:
+            status = issue.get('status', 'open')
+            savings = float(issue.get('max_savings', 0) or 0)
+
+            if status == 'open':
+                stats['open_count'] += 1
+                stats['open_potential_savings'] += savings
+            elif status == 'follow_up':
+                stats['follow_up_count'] += 1
+                stats['follow_up_potential_savings'] += savings
+            elif status == 'resolved':
+                stats['resolved_count'] += 1
+                stats['resolved_savings'] += savings
+            elif status == 'ignored':
+                stats['ignored_count'] += 1
+
+        return stats
 
 
 # Singleton instance

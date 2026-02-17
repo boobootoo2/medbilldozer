@@ -3,10 +3,11 @@
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play } from 'lucide-react';
+import { Play, Link as LinkIcon } from 'lucide-react';
 import { UserMenu } from '../components/auth/UserMenu';
-import { DocumentUpload } from '../components/documents/DocumentUpload';
+import { MultiFileUpload } from '../components/documents/MultiFileUpload';
 import { DocumentList } from '../components/documents/DocumentList';
+import { InsuranceConnectionModal } from '../components/insurance/InsuranceConnectionModal';
 import { analysisService } from '../services/analysis.service';
 
 export const HomePage = () => {
@@ -14,6 +15,7 @@ export const HomePage = () => {
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showInsuranceModal, setShowInsuranceModal] = useState(false);
 
   const handleDocumentSelect = (documentId: string) => {
     setSelectedDocuments(prev =>
@@ -73,7 +75,36 @@ export const HomePage = () => {
                 Upload medical bills, insurance EOBs, or receipts for analysis
               </p>
             </div>
-            <DocumentUpload onUploadComplete={handleUploadComplete} />
+            <MultiFileUpload onUploadComplete={(documentIds) => {
+              handleUploadComplete();
+              // Show success message
+              if (documentIds.length > 0) {
+                alert(`Successfully uploaded ${documentIds.length} document(s)!`);
+              }
+            }} />
+
+            {/* Insurance Connection Button */}
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+                  <LinkIcon className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 mb-1">
+                    Connect Insurance or Provider (Demo)
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    See what automatic data import would look like
+                  </p>
+                  <button
+                    onClick={() => setShowInsuranceModal(true)}
+                    className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    View Demo Integration
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Documents & Analysis */}
@@ -147,6 +178,17 @@ export const HomePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Insurance Connection Modal */}
+      <InsuranceConnectionModal
+        isOpen={showInsuranceModal}
+        onClose={() => setShowInsuranceModal(false)}
+        onConnect={(providerId) => {
+          console.log('Connected to:', providerId);
+          alert(`Demo: Successfully connected to ${providerId}. In production, this would import your medical bills and claims automatically.`);
+          setShowInsuranceModal(false);
+        }}
+      />
     </div>
   );
 };

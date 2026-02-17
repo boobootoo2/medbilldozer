@@ -33,6 +33,11 @@ async def get_current_user(
     try:
         # Verify JWT access token
         token = credentials.credentials
+
+        # Debug logging
+        print(f"🔍 Token received - length: {len(token)}, starts with: {token[:50] if len(token) >= 50 else token}...")
+        print(f"🔍 Token has {token.count('.')} dots (should be 2 for valid JWT)")
+
         payload = auth_service.verify_access_token(token)
 
         # Get user from database

@@ -105,8 +105,8 @@ async def refresh_token(
         payload = auth_service.verify_refresh_token(request.refresh_token)
         user_id = payload.get("sub")
 
-        # Get user from database
-        user = await db_service.get_user_by_firebase_uid(payload.get("firebase_uid"))
+        # Get user from database by user_id (not firebase_uid, which isn't in refresh token)
+        user = await db_service.get_user_by_id(user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

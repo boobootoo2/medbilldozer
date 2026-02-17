@@ -67,7 +67,7 @@ export const documentsService = {
    * List all documents for current user
    */
   async listDocuments(limit = 50, offset = 0): Promise<Document[]> {
-    const response = await api.get<{ documents: Document[] }>('/api/documents', {
+    const response = await api.get<{ documents: Document[] }>('/api/documents/', {
       params: { limit, offset }
     });
     return response.data.documents;

@@ -6,10 +6,12 @@ import { InviteCodeGate } from './components/auth/InviteCodeGate';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { HomePage } from './pages/HomePage';
 import { AnalysisDashboard } from './components/analysis/AnalysisDashboard';
+import { DisclaimerModal } from './components/DisclaimerModal';
 
 function App() {
   return (
     <BrowserRouter>
+      <DisclaimerModal />
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<InviteCodeGate />} />

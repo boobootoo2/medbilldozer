@@ -155,6 +155,25 @@ TOUR_STEPS = [
         target="production_workflow",
         position="top"
     ),
+
+    TourStep(
+        id=8,
+        title="Streamlit Prototype Interface",
+        description=(
+            "🖥️ The Streamlit prototype interface provides an alternative way to interact with MedBillDozer. "
+            "This password-protected interface connects directly to the production Cloud Run backend, "
+            "allowing document upload and management. It's designed for quick access and testing, "
+            "with integration links to the full web application at medbilldozer.vercel.app for complete functionality."
+        ),
+        narration=(
+            "The Streamlit prototype interface provides an alternative way to interact with MedBillDozer. "
+            "This password-protected interface connects directly to the production Cloud Run backend, "
+            "allowing document upload and management. It's designed for quick access and testing, "
+            "with integration links to the full web application for complete functionality."
+        ),
+        target="prototype_interface",
+        position="top"
+    ),
 ]
 
 

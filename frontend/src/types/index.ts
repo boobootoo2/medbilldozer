@@ -37,15 +37,22 @@ export interface UploadUrlResponse {
 }
 
 export interface Issue {
-  issue_id?: string;
+  issue_id: string;
+  analysis_id: string;
+  document_id?: string;
   issue_type: string;
   summary: string;
   evidence?: string;
   code?: string;
   recommended_action?: string;
   max_savings: number;
-  confidence: 'high' | 'medium' | 'low';
-  source: 'llm' | 'deterministic' | 'clinical';
+  confidence?: 'high' | 'medium' | 'low';
+  source?: 'llm' | 'deterministic' | 'clinical' | 'text_analysis' | 'image_analysis' | 'cross_reference';
+  status: 'open' | 'follow_up' | 'resolved' | 'ignored';
+  status_updated_at?: string;
+  status_updated_by?: string;
+  notes?: string;
+  created_at: string;
   metadata?: Record<string, any>;
 }
 

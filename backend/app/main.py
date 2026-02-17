@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from app.config import settings
-from app.api import auth, documents, analyze, profile
+from app.api import auth, documents, analyze, profile, issues
 # from app.middleware.auth_middleware import AuthMiddleware
 
 
@@ -81,6 +81,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(profile.router, prefix="/api/profile", tags=["Profile"])
 app.include_router(documents.router, prefix="/api/documents", tags=["Documents"])
 app.include_router(analyze.router, prefix="/api/analyze", tags=["Analysis"])
+app.include_router(issues.router, prefix="/api/issues", tags=["Issues"])
 
 
 @app.exception_handler(Exception)
