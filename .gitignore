@@ -58,3 +58,5 @@ examples/*.log
 
 
 .streamlit/secrets.toml
+.vercel
+node_modules/

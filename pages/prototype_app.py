@@ -8,13 +8,22 @@ import requests
 from typing import Optional
 import os
 
-# Configuration - Load from Streamlit secrets (preferred) or environment variables
-try:
-    API_BASE_URL = st.secrets.get("API_BASE_URL", "https://medbilldozer-api-360553024921.us-central1.run.app")
-    APP_PASSWORD = st.secrets.get("APP_ACCESS_PASSWORD", os.getenv("APP_ACCESS_PASSWORD"))
-except Exception:
-    API_BASE_URL = "https://medbilldozer-api-360553024921.us-central1.run.app"
-    APP_PASSWORD = os.getenv("APP_ACCESS_PASSWORD")
+# Configuration - Prioritize environment variables for local dev, fall back to secrets for cloud
+API_BASE_URL = os.getenv("API_BASE_URL")
+APP_PASSWORD = os.getenv("APP_ACCESS_PASSWORD")
+
+# Fall back to Streamlit secrets if environment variables not set
+if not API_BASE_URL:
+    try:
+        API_BASE_URL = st.secrets.get("API_BASE_URL", "https://medbilldozer-api-360553024921.us-central1.run.app")
+    except Exception:
+        API_BASE_URL = "https://medbilldozer-api-360553024921.us-central1.run.app"
+
+if not APP_PASSWORD:
+    try:
+        APP_PASSWORD = st.secrets.get("APP_ACCESS_PASSWORD")
+    except Exception:
+        APP_PASSWORD = None
 
 # Validate that password is set
 if not APP_PASSWORD or APP_PASSWORD == "CHANGE_THIS_TO_YOUR_SECURE_PASSWORD":
