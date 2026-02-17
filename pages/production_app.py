@@ -91,7 +91,8 @@ def upload_document(file, token: str):
                 "filename": file.name,
                 "content_type": file.type
             },
-            headers=headers
+            headers=headers,
+            timeout=30  # 30 second timeout for API call
         )
 
         if response.status_code != 200:
@@ -106,7 +107,8 @@ def upload_document(file, token: str):
         upload_response = requests.put(
             upload_url,
             data=file.getvalue(),
-            headers={"Content-Type": file.type}
+            headers={"Content-Type": file.type},
+            timeout=120  # 120 second timeout for file upload (can be large files)
         )
 
         if upload_response.status_code != 200:
@@ -121,7 +123,8 @@ def upload_document(file, token: str):
                 "gcs_path": data["gcs_path"],
                 "size_bytes": len(file.getvalue())
             },
-            headers=headers
+            headers=headers,
+            timeout=30  # 30 second timeout for API call
         )
 
         if confirm_response.status_code != 200:

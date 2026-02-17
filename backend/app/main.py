@@ -99,7 +99,7 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
-        port=8080,
+        host=settings.server_host,
+        port=settings.server_port,
         reload=settings.debug
     )

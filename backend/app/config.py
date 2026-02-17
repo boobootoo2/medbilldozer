@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     app_version: str = "1.0.0"
     debug: bool = False
 
+    # Server Configuration
+    server_host: str = "127.0.0.1"  # Default to localhost for security; use 0.0.0.0 for containers
+    server_port: int = 8080
+
     # CORS
     allowed_origins: str = "http://localhost:5173,http://localhost:3000"
 
