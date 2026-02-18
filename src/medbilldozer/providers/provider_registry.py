@@ -14,6 +14,11 @@ try:
 except Exception:
     Gemma3HostedProvider = None
 
+try:
+    from medbilldozer.providers.medgemma_ensemble_provider import MedGemmaEnsembleProvider
+except Exception:
+    MedGemmaEnsembleProvider = None
+
 
 # Engine options for user-facing selection
 ENGINE_OPTIONS = {
@@ -27,9 +32,20 @@ ENGINE_OPTIONS = {
 def register_providers():
     """Register available LLM analysis providers.
 
-    Attempts to register MedGemma, Gemma-3, Gemini, and OpenAI providers.
+    Attempts to register MedGemma, Gemma-3, Gemini, OpenAI, and ensemble providers.
     Only registers providers that pass health checks.
     """
+    # --- MedGemma Ensemble (PRIORITY) ---
+    # This is the primary provider used by the React frontend
+    try:
+        if MedGemmaEnsembleProvider:
+            ensemble_provider = MedGemmaEnsembleProvider()
+            if ensemble_provider.health_check():
+                ProviderRegistry.register("medgemma-ensemble", ensemble_provider)
+                print("[medgemma-ensemble] provider registered successfully")
+    except Exception as e:
+        print(f"[medgemma-ensemble] provider registration failed: {e}")
+
     # --- MedGemma 4B ---
     try:
         if MedGemmaHostedProvider:
