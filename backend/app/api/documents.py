@@ -90,6 +90,7 @@ async def confirm_upload(
             "document_id": request.document_id,
             "user_id": current_user['user_id'],
             "filename": request.filename,
+            "original_filename": request.filename,  # Store original filename
             "gcs_path": request.gcs_path,
             "content_type": "application/pdf",  # TODO: get from request
             "size_bytes": request.size_bytes,
