@@ -31,8 +31,13 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // If 401 and we haven't retried yet, try to refresh token
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Skip token refresh for auth endpoints (login, refresh, logout)
+    const isAuthEndpoint = originalRequest.url?.includes('/api/auth/login') ||
+                          originalRequest.url?.includes('/api/auth/refresh') ||
+                          originalRequest.url?.includes('/api/auth/logout');
+
+    // If 401 and we haven't retried yet, try to refresh token (but not for auth endpoints)
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
 
       try {
