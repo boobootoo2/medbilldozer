@@ -14,9 +14,19 @@ interface AnalysisProgressProps {
   onBack?: () => void;
 }
 
+interface ErrorDetails {
+  message: string;
+  correlationId?: string;
+  error?: string;
+  path?: string;
+  method?: string;
+  help?: string;
+  statusCode?: number;
+}
+
 export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) => {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ErrorDetails | null>(null);
 
   useEffect(() => {
     if (!analysisId) return;
@@ -30,7 +40,31 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
           }
         );
       } catch (err: any) {
-        setError(err.message || 'Failed to load analysis');
+        console.error('Analysis polling error:', err);
+
+        // Extract detailed error information
+        const errorDetails: ErrorDetails = {
+          message: err.message || 'Failed to load analysis',
+          statusCode: err.response?.status
+        };
+
+        // If the error response has detailed information
+        if (err.response?.data) {
+          const data = err.response.data;
+          if (typeof data === 'object') {
+            errorDetails.error = data.error;
+            errorDetails.correlationId = data.correlation_id;
+            errorDetails.path = data.path;
+            errorDetails.method = data.method;
+            errorDetails.help = data.help;
+            // Use the detailed message if available
+            if (data.message) {
+              errorDetails.message = data.message;
+            }
+          }
+        }
+
+        setError(errorDetails);
       }
     };
 
@@ -93,11 +127,62 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
 
       {/* Error Display */}
       {error && (
-        <div className="p-6 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-          <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
-          <div>
-            <h3 className="text-lg font-semibold text-red-900">Error</h3>
-            <p className="text-red-700 mt-1">{error}</p>
+        <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-red-900">
+                {error.statusCode ? `Error ${error.statusCode}` : 'Error'}
+              </h3>
+              <p className="text-red-700 mt-1">{error.message}</p>
+
+              {/* Additional error details */}
+              {error.help && (
+                <div className="mt-3 p-3 bg-red-100 rounded border border-red-300">
+                  <p className="text-sm text-red-800">
+                    <strong>💡 Help:</strong> {error.help}
+                  </p>
+                </div>
+              )}
+
+              {/* Debug information (collapsible) */}
+              {(error.correlationId || error.path || error.method || error.error) && (
+                <details className="mt-4 text-sm">
+                  <summary className="cursor-pointer text-red-800 hover:text-red-900 font-medium">
+                    🔍 Debug Information
+                  </summary>
+                  <div className="mt-2 p-3 bg-white rounded border border-red-200 font-mono text-xs space-y-1">
+                    {error.correlationId && (
+                      <div>
+                        <span className="text-gray-600">Correlation ID:</span>{' '}
+                        <span className="text-gray-900">{error.correlationId}</span>
+                      </div>
+                    )}
+                    {error.error && (
+                      <div>
+                        <span className="text-gray-600">Error Type:</span>{' '}
+                        <span className="text-gray-900">{error.error}</span>
+                      </div>
+                    )}
+                    {error.method && error.path && (
+                      <div>
+                        <span className="text-gray-600">Request:</span>{' '}
+                        <span className="text-gray-900">{error.method} {error.path}</span>
+                      </div>
+                    )}
+                    {error.statusCode && (
+                      <div>
+                        <span className="text-gray-600">Status Code:</span>{' '}
+                        <span className="text-gray-900">{error.statusCode}</span>
+                      </div>
+                    )}
+                    <div className="mt-2 pt-2 border-t border-red-200 text-gray-600">
+                      Include the Correlation ID when reporting this issue for faster support.
+                    </div>
+                  </div>
+                </details>
+              )}
+            </div>
           </div>
         </div>
       )}

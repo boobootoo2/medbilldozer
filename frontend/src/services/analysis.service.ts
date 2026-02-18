@@ -20,7 +20,7 @@ export const analysisService = {
    * Get analysis results (for polling)
    */
   async getAnalysis(analysisId: string): Promise<Analysis> {
-    const response = await api.get<Analysis>(`/api/analyze/${analysisId}/`);
+    const response = await api.get<Analysis>(`/api/analyze/${analysisId}`);
     return response.data;
   },
 

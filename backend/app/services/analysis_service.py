@@ -10,6 +10,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from app.services.storage_service import get_storage_service
 from app.services.db_service import get_db_service
+from app.utils import get_logger, log_with_context
+
+logger = get_logger(__name__)
 
 
 class AnalysisService:
@@ -20,16 +23,16 @@ class AnalysisService:
 
     def __init__(self):
         """Initialize analysis service."""
-        print("🔧 Initializing AnalysisService...")
+        logger.info("🔧 Initializing AnalysisService...")
         self.storage = get_storage_service()
-        print("  ✓ StorageService initialized")
+        logger.info("  ✓ StorageService initialized")
         self.db = get_db_service()
-        print("  ✓ DBService initialized")
+        logger.info("  ✓ DBService initialized")
         from app.services.multimodal_analysis_service import MultimodalAnalysisService
-        print("  ⏳ Initializing MultimodalAnalysisService...")
+        logger.info("  ⏳ Initializing MultimodalAnalysisService...")
         self.multimodal_service = MultimodalAnalysisService()
-        print("  ✓ MultimodalAnalysisService initialized")
-        print("✅ AnalysisService ready")
+        logger.info("  ✓ MultimodalAnalysisService initialized")
+        logger.info("✅ AnalysisService ready")
 
     async def run_analysis(
         self,
@@ -51,14 +54,37 @@ class AnalysisService:
             Analysis results dict
         """
         try:
+            log_with_context(
+                logger, 20,
+                f"🚀 Starting analysis workflow",
+                analysis_id=analysis_id,
+                user_id=user_id,
+                document_count=len(document_ids),
+                provider=provider
+            )
+
             # Update status to processing
             await self.db.update_analysis_status(analysis_id, "processing")
+            log_with_context(
+                logger, 20,
+                f"📝 Updated analysis status to 'processing'",
+                analysis_id=analysis_id,
+                user_id=user_id
+            )
 
             # Check if any documents are images (multimodal analysis needed)
             has_images = await self._check_for_images(document_ids, user_id)
+            log_with_context(
+                logger, 20,
+                f"🔍 Checked for images: {has_images}",
+                analysis_id=analysis_id,
+                user_id=user_id,
+                has_images=has_images
+            )
 
             # Use multimodal service if images are present
             if has_images:
+                logger.info(f"📷 Using multimodal analysis for analysis {analysis_id}")
                 return await self._run_multimodal_analysis(
                     analysis_id, document_ids, user_id, provider
                 )
@@ -72,13 +98,29 @@ class AnalysisService:
             # Ensure provider is registered
             register_providers()
             if provider not in ProviderRegistry.list():
+                log_with_context(
+                    logger, 30,
+                    f"⚠️  Provider '{provider}' not registered, falling back to 'smart'",
+                    analysis_id=analysis_id,
+                    user_id=user_id,
+                    requested_provider=provider
+                )
                 provider = "smart"  # Fallback to smart mode
+
+            logger.info(f"📚 Downloading {len(document_ids)} document(s) from storage...")
 
             # Download documents from GCS and prepare for analysis
             documents = []
             for doc_id in document_ids:
                 doc_meta = await self.db.get_document(doc_id, user_id)
                 if not doc_meta:
+                    log_with_context(
+                        logger, 30,
+                        f"⚠️  Document not found in database",
+                        analysis_id=analysis_id,
+                        user_id=user_id,
+                        document_id=doc_id
+                    )
                     continue
 
                 # Download raw text from GCS
@@ -87,8 +129,22 @@ class AnalysisService:
                         bucket_name=self.storage.documents_bucket,
                         blob_path=doc_meta['gcs_path']
                     )
+                    log_with_context(
+                        logger, 20,
+                        f"✅ Downloaded document from GCS",
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                        filename=doc_meta['filename']
+                    )
                 except Exception as e:
                     # If download fails, use extracted_text from metadata
+                    log_with_context(
+                        logger, 30,
+                        f"⚠️  GCS download failed, using extracted_text fallback",
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                        error=str(e)
+                    )
                     raw_text = doc_meta.get('extracted_text', '')
 
                 documents.append({
@@ -100,6 +156,12 @@ class AnalysisService:
                 })
 
             if not documents:
+                log_with_context(
+                    logger, 40,
+                    f"❌ No documents could be loaded for analysis",
+                    analysis_id=analysis_id,
+                    user_id=user_id
+                )
                 await self.db.update_analysis_status(
                     analysis_id,
                     "failed",
@@ -107,11 +169,28 @@ class AnalysisService:
                 )
                 return {"status": "failed", "error": "No documents found"}
 
+            log_with_context(
+                logger, 20,
+                f"📄 Prepared {len(documents)} document(s) for analysis",
+                analysis_id=analysis_id,
+                user_id=user_id,
+                document_count=len(documents)
+            )
+
             # Run orchestrator for each document (REUSE EXISTING CODE)
             results = []
             for idx, doc in enumerate(documents, 1):
                 doc_id = doc['document_id']
                 doc_started_at = datetime.utcnow().isoformat()
+
+                log_with_context(
+                    logger, 20,
+                    f"🔬 Analyzing document {idx}/{len(documents)}",
+                    analysis_id=analysis_id,
+                    document_id=doc_id,
+                    filename=doc['filename'],
+                    provider=provider
+                )
 
                 try:
                     orchestrator = OrchestratorAgent(
@@ -123,6 +202,13 @@ class AnalysisService:
                     def progress_callback(workflow_log, step_status):
                         """Update database with current phase."""
                         try:
+                            log_with_context(
+                                logger, 20,
+                                f"📊 Analysis progress: {step_status}",
+                                analysis_id=analysis_id,
+                                document_id=doc_id,
+                                phase=step_status
+                            )
                             # Use asyncio to call async method from sync callback
                             import asyncio
                             loop = asyncio.new_event_loop()
@@ -137,7 +223,13 @@ class AnalysisService:
                             )
                             loop.close()
                         except Exception as e:
-                            print(f"⚠️  Progress update failed: {e}")
+                            log_with_context(
+                                logger, 30,
+                                f"⚠️  Progress update failed",
+                                analysis_id=analysis_id,
+                                document_id=doc_id,
+                                error=str(e)
+                            )
 
                     # Initialize progress as "starting"
                     await self.db.update_document_progress(
@@ -158,6 +250,14 @@ class AnalysisService:
                         started_at=doc_started_at
                     )
 
+                    log_with_context(
+                        logger, 20,
+                        f"✅ Document analysis completed successfully",
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                        filename=doc['filename']
+                    )
+
                     results.append({
                         "document_id": doc_id,
                         "filename": doc['filename'],
@@ -171,6 +271,16 @@ class AnalysisService:
                         }
                     })
                 except Exception as e:
+                    log_with_context(
+                        logger, 40,
+                        f"❌ Document analysis failed: {type(e).__name__}",
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                        filename=doc['filename'],
+                        error=str(e)
+                    )
+                    logger.exception(f"Document {doc_id} analysis failed")
+
                     # Mark as failed
                     await self.db.update_document_progress(
                         analysis_id=analysis_id,
@@ -196,9 +306,16 @@ class AnalysisService:
             coverage_matrix = None
             try:
                 if len(results) > 1:
+                    logger.info(f"🔗 Building coverage matrix for {len(results)} documents...")
                     coverage_matrix = build_coverage_matrix(results)
+                    logger.info(f"✅ Coverage matrix built successfully")
             except Exception as e:
-                print(f"Coverage matrix failed: {e}")
+                log_with_context(
+                    logger, 30,
+                    f"⚠️  Coverage matrix build failed",
+                    analysis_id=analysis_id,
+                    error=str(e)
+                )
 
             # Calculate total savings and issue count
             total_savings = 0
@@ -212,6 +329,15 @@ class AnalysisService:
                         if isinstance(savings, (int, float)):
                             total_savings += savings
 
+            log_with_context(
+                logger, 20,
+                f"💾 Saving analysis results",
+                analysis_id=analysis_id,
+                total_savings=total_savings,
+                issues_count=len(all_issues),
+                documents_analyzed=len(results)
+            )
+
             # Save results to database
             await self.db.save_analysis_results(
                 analysis_id=analysis_id,
@@ -223,6 +349,7 @@ class AnalysisService:
 
             # Insert individual issues
             if all_issues:
+                logger.info(f"💾 Inserting {len(all_issues)} issues into database...")
                 issues_to_insert = []
                 for i, issue in enumerate(all_issues):
                     # Find which document this issue belongs to
@@ -246,6 +373,17 @@ class AnalysisService:
                     })
 
                 await self.db.insert_issues(analysis_id, issues_to_insert)
+                logger.info(f"✅ Issues inserted successfully")
+
+            log_with_context(
+                logger, 20,
+                f"🎉 Analysis completed successfully!",
+                analysis_id=analysis_id,
+                user_id=user_id,
+                total_savings=total_savings,
+                issues_count=len(all_issues),
+                documents_analyzed=len(results)
+            )
 
             return {
                 "analysis_id": analysis_id,
@@ -256,6 +394,15 @@ class AnalysisService:
             }
 
         except Exception as e:
+            log_with_context(
+                logger, 40,
+                f"❌ Analysis workflow failed: {type(e).__name__}",
+                analysis_id=analysis_id,
+                user_id=user_id,
+                error=str(e)
+            )
+            logger.exception("Analysis workflow failed")
+
             # Save error to database
             await self.db.update_analysis_status(
                 analysis_id,
@@ -276,7 +423,12 @@ class AnalysisService:
                 if doc and doc.get('content_type', '').startswith('image/'):
                     return True
             except Exception as e:
-                print(f"Error checking document {doc_id}: {e}")
+                log_with_context(
+                    logger, 30,
+                    f"⚠️  Error checking document type",
+                    document_id=doc_id,
+                    error=str(e)
+                )
                 continue
         return False
 
@@ -375,6 +527,15 @@ class AnalysisService:
             }
 
         except Exception as e:
+            log_with_context(
+                logger, 40,
+                f"❌ Multimodal analysis failed: {type(e).__name__}",
+                analysis_id=analysis_id,
+                user_id=user_id,
+                error=str(e)
+            )
+            logger.exception("Multimodal analysis failed")
+
             # Save error to database
             await self.db.update_analysis_status(
                 analysis_id,

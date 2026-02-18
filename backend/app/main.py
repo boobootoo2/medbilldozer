@@ -20,25 +20,32 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.api import auth, documents, analyze, profile, issues
+from app.utils import setup_logging, get_logger
+from app.middleware.logging_middleware import LoggingMiddleware
 # from app.middleware.auth_middleware import AuthMiddleware
+
+# Setup structured logging
+setup_logging(json_logs=False)  # Set to True for production JSON logs
+logger = get_logger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events."""
     # Startup: Initialize providers
-    print("🚀 Initializing MedBillDozer providers...")
+    logger.info("🚀 Initializing MedBillDozer providers...")
     try:
         from medbilldozer.providers.provider_registry import register_providers, ProviderRegistry
         register_providers()
-        print(f"✅ Registered providers: {list(ProviderRegistry.list())}")
+        providers = list(ProviderRegistry.list())
+        logger.info(f"✅ Registered providers: {providers}")
     except Exception as e:
-        print(f"⚠️  Warning: Could not initialize provider registry: {e}")
+        logger.warning(f"⚠️  Warning: Could not initialize provider registry: {e}")
 
     yield
 
     # Shutdown
-    print("👋 Shutting down MedBillDozer API...")
+    logger.info("👋 Shutting down MedBillDozer API...")
 
 
 app = FastAPI(
@@ -51,6 +58,9 @@ app = FastAPI(
     redirect_slashes=False  # Prevent 307 redirects that lose Authorization headers
 )
 
+# Request/Response logging middleware
+app.add_middleware(LoggingMiddleware)
+
 # CORS middleware for React frontend
 origins = settings.allowed_origins.split(",")
 app.add_middleware(
@@ -59,6 +69,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Correlation-ID"],  # Expose correlation ID to frontend
 )
 
 # Custom authentication middleware
@@ -96,12 +107,25 @@ app.include_router(issues.router, prefix="/api/issues", tags=["Issues"])
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     """Global exception handler."""
+    from app.utils import get_correlation_id
+
+    correlation_id = get_correlation_id()
+    logger.exception(f"Unhandled exception in request: {type(exc).__name__}")
+
+    error_response = {
+        "error": "Internal server error",
+        "message": str(exc) if settings.debug else "An unexpected error occurred",
+        "correlation_id": correlation_id,
+        "path": str(request.url.path),
+        "method": request.method
+    }
+
+    if settings.debug:
+        error_response["exception_type"] = type(exc).__name__
+
     return JSONResponse(
         status_code=500,
-        content={
-            "error": "Internal server error",
-            "message": str(exc) if settings.debug else "An unexpected error occurred"
-        }
+        content=error_response
     )
 
 
