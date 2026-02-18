@@ -30,10 +30,14 @@ async def trigger_analysis(
     5. Client polls GET /analyze/{analysis_id} for results
     """
     try:
+        print(f"📊 ANALYZE REQUEST: user={current_user['user_id']}, docs={request.document_ids}, provider={request.provider}")
+
         # Generate analysis ID
         analysis_id = str(uuid4())
+        print(f"📊 Generated analysis_id: {analysis_id}")
 
         # Validate documents belong to user
+        print(f"📊 Validating {len(request.document_ids)} documents...")
         for doc_id in request.document_ids:
             doc = await db.get_document(doc_id, current_user['user_id'])
             if not doc:

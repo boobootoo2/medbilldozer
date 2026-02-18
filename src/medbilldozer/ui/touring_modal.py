@@ -332,6 +332,8 @@ def render_minimized_sticky_header():
             border-radius: 50%;
             border: 2px solid white;
             object-fit: cover;
+            /* Light coffee tone overlay for skin */
+            filter: sepia(0.25) saturate(1.1) hue-rotate(-5deg) brightness(1.02);
         }}
 
         .touring-minimized-header .message {{
@@ -509,6 +511,8 @@ def render_fullscreen_modal(step: TourStep):
         background: white;
         border: 2px solid rgba(255, 255, 255, 0.9);
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        /* Light coffee tone overlay for skin */
+        filter: sepia(0.25) saturate(1.1) hue-rotate(-5deg) brightness(1.02);
     }}
 
     .touring-speech-bubble {{
@@ -924,6 +928,8 @@ def render_minimized_modal(step: TourStep):
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid white;
+        /* Light coffee tone overlay for skin */
+        filter: sepia(0.25) saturate(1.1) hue-rotate(-5deg) brightness(1.02);
     }}
 
     .mini-message {{

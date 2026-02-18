@@ -11,9 +11,9 @@ import tempfile
 import logging
 
 from app.services.storage_service import StorageService
-from src.medbilldozer.core.clinical_validator import ClinicalValidator
-from src.medbilldozer.core.orchestrator_agent import OrchestratorAgent
-from src.medbilldozer.providers.registry import ProviderRegistry
+from medbilldozer.core.clinical_validator import ClinicalValidator
+from medbilldozer.core.orchestrator_agent import OrchestratorAgent
+from medbilldozer.providers.provider_registry import register_providers, ProviderRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,8 @@ class MultimodalAnalysisService:
     def __init__(self):
         self.storage_service = StorageService()
         self.clinical_validator = ClinicalValidator(model="gpt-4o-mini")
-        self.provider_registry = ProviderRegistry()
+        # Register providers on initialization
+        register_providers()
 
     async def analyze_documents(
         self,
@@ -130,7 +131,7 @@ class MultimodalAnalysisService:
 
         # Use orchestrator for comprehensive analysis
         orchestrator = OrchestratorAgent(
-            llm_provider=self.provider_registry.get_provider(provider)
+            llm_provider=ProviderRegistry.get(provider)
         )
 
         all_issues = []

@@ -19,10 +19,16 @@ class AnalysisService:
 
     def __init__(self):
         """Initialize analysis service."""
+        print("🔧 Initializing AnalysisService...")
         self.storage = get_storage_service()
+        print("  ✓ StorageService initialized")
         self.db = get_db_service()
+        print("  ✓ DBService initialized")
         from app.services.multimodal_analysis_service import MultimodalAnalysisService
+        print("  ⏳ Initializing MultimodalAnalysisService...")
         self.multimodal_service = MultimodalAnalysisService()
+        print("  ✓ MultimodalAnalysisService initialized")
+        print("✅ AnalysisService ready")
 
     async def run_analysis(
         self,
@@ -58,13 +64,13 @@ class AnalysisService:
 
             # Otherwise, continue with text-only analysis
             # Import existing medbilldozer modules
-            from src.medbilldozer.core.orchestrator_agent import OrchestratorAgent
-            from src.medbilldozer.core.coverage_matrix import build_coverage_matrix
-            from src.medbilldozer.providers.provider_registry import get_provider_registry
+            from medbilldozer.core.orchestrator_agent import OrchestratorAgent
+            from medbilldozer.core.coverage_matrix import build_coverage_matrix
+            from medbilldozer.providers.provider_registry import register_providers, ProviderRegistry
 
             # Ensure provider is registered
-            registry = get_provider_registry()
-            if provider not in registry.list_providers():
+            register_providers()
+            if provider not in ProviderRegistry.list():
                 provider = "smart"  # Fallback to smart mode
 
             # Download documents from GCS and prepare for analysis
