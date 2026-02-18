@@ -8,7 +8,7 @@ export const analysisService = {
   /**
    * Trigger analysis for documents
    */
-  async triggerAnalysis(documentIds: string[], provider = 'medgemma-ensemble'): Promise<{ analysis_id: string }> {
+  async triggerAnalysis(documentIds: string[], provider = 'medgemma-4b-it'): Promise<{ analysis_id: string }> {
     const response = await api.post<{ analysis_id: string }>('/api/analyze/', {
       document_ids: documentIds,
       provider

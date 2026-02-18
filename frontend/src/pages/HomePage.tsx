@@ -40,7 +40,7 @@ export const HomePage = () => {
       setAnalyzing(true);
       const { analysis_id } = await analysisService.triggerAnalysis(
         selectedDocuments,
-        'medgemma-ensemble'
+        'medgemma-4b-it'
       );
 
       // Show analysis progress inline (no navigation)
