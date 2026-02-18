@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 from app.services.storage_service import get_storage_service
 from app.services.db_service import get_db_service
 from app.utils import get_logger, log_with_context
+from medbilldozer.core.document_identity import maybe_enhance_identity
 
 logger = get_logger(__name__)
 
@@ -258,7 +259,8 @@ class AnalysisService:
                         filename=doc['filename']
                     )
 
-                    results.append({
+                    # Build document result with facts and analysis
+                    doc_result = {
                         "document_id": doc_id,
                         "filename": doc['filename'],
                         "facts": result.get('facts', {}),
@@ -269,7 +271,29 @@ class AnalysisService:
                             "started_at": doc_started_at,
                             "completed_at": datetime.utcnow().isoformat()
                         }
-                    })
+                    }
+
+                    # Enhance document with identity fingerprint (same as Streamlit app)
+                    # This adds canonical fingerprint and friendly document ID
+                    try:
+                        maybe_enhance_identity(doc_result)
+                        log_with_context(
+                            logger, 20,
+                            f"✅ Document identity enhanced",
+                            analysis_id=analysis_id,
+                            document_id=doc_id,
+                            friendly_id=doc_result.get('document_id'),
+                            fingerprint=doc_result.get('internal_id')
+                        )
+                    except Exception as e:
+                        log_with_context(
+                            logger, 30,
+                            f"⚠️  Document identity enhancement failed: {str(e)}",
+                            analysis_id=analysis_id,
+                            document_id=doc_id
+                        )
+
+                    results.append(doc_result)
                 except Exception as e:
                     log_with_context(
                         logger, 40,
