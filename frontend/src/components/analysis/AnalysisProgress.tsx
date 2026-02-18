@@ -16,7 +16,6 @@ interface AnalysisProgressProps {
 
 export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) => {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,15 +27,10 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
           analysisId,
           (updatedAnalysis) => {
             setAnalysis(updatedAnalysis);
-            setLoading(
-              updatedAnalysis.status === 'queued' ||
-              updatedAnalysis.status === 'processing'
-            );
           }
         );
       } catch (err: any) {
         setError(err.message || 'Failed to load analysis');
-        setLoading(false);
       }
     };
 
