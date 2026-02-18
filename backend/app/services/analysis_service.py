@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import asyncio
+from datetime import datetime
 
 # Add parent directory to path for importing medbilldozer modules
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
@@ -108,29 +109,87 @@ class AnalysisService:
 
             # Run orchestrator for each document (REUSE EXISTING CODE)
             results = []
-            for doc in documents:
+            for idx, doc in enumerate(documents, 1):
+                doc_id = doc['document_id']
+                doc_started_at = datetime.utcnow().isoformat()
+
                 try:
                     orchestrator = OrchestratorAgent(
                         analyzer_override=provider,
                         profile_context=None  # TODO: load user profile from DB
                     )
 
-                    # Run analysis
-                    result = orchestrator.run(doc['raw_text'])
+                    # Create progress callback that updates database
+                    def progress_callback(workflow_log, step_status):
+                        """Update database with current phase."""
+                        try:
+                            # Use asyncio to call async method from sync callback
+                            import asyncio
+                            loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(loop)
+                            loop.run_until_complete(
+                                self.db.update_document_progress(
+                                    analysis_id=analysis_id,
+                                    document_id=doc_id,
+                                    phase=step_status,
+                                    started_at=doc_started_at
+                                )
+                            )
+                            loop.close()
+                        except Exception as e:
+                            print(f"⚠️  Progress update failed: {e}")
+
+                    # Initialize progress as "starting"
+                    await self.db.update_document_progress(
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                        phase="pre_extraction_active",
+                        started_at=doc_started_at
+                    )
+
+                    # Run analysis with progress callback
+                    result = orchestrator.run(doc['raw_text'], progress_callback=progress_callback)
+
+                    # Mark as complete
+                    await self.db.update_document_progress(
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                        phase="complete",
+                        started_at=doc_started_at
+                    )
 
                     results.append({
-                        "document_id": doc['document_id'],
+                        "document_id": doc_id,
                         "filename": doc['filename'],
                         "facts": result.get('facts', {}),
                         "analysis": result.get('analysis', {}),
-                        "orchestration": result.get('_orchestration', {})
+                        "orchestration": result.get('_orchestration', {}),
+                        "progress": {
+                            "phase": "complete",
+                            "started_at": doc_started_at,
+                            "completed_at": datetime.utcnow().isoformat()
+                        }
                     })
                 except Exception as e:
+                    # Mark as failed
+                    await self.db.update_document_progress(
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                        phase="failed",
+                        started_at=doc_started_at
+                    )
+
                     results.append({
-                        "document_id": doc['document_id'],
+                        "document_id": doc_id,
                         "filename": doc['filename'],
                         "error": str(e),
-                        "status": "failed"
+                        "status": "failed",
+                        "progress": {
+                            "phase": "failed",
+                            "started_at": doc_started_at,
+                            "failed_at": datetime.utcnow().isoformat(),
+                            "error_message": str(e)
+                        }
                     })
 
             # Build coverage matrix (REUSE EXISTING CODE)

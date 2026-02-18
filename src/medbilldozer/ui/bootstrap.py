@@ -1,6 +1,7 @@
 """UI bootstrap and initialization functions."""
 
 import os
+import streamlit as st
 from medbilldozer.ui.ui import setup_page, inject_css, render_header, render_demo_documents
 from medbilldozer.ui.doc_assistant import render_contextual_help
 from medbilldozer.utils.config import is_guided_tour_enabled

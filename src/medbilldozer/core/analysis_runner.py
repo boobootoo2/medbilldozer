@@ -33,6 +33,11 @@ from medbilldozer.utils.config import (
     is_dag_enabled,
     is_coverage_matrix_enabled,
 )
+from medbilldozer.ui.document_status_cards import (
+    initialize_document_status,
+    create_status_card_placeholder,
+    update_status_card,
+)
 
 
 def render_total_savings_summary(total_potential_savings: float, per_document_savings: dict):
@@ -106,11 +111,23 @@ def run_document_analysis(
         dispatch_widget_message("billie", "Bill Dozing Statements")
         st.session_state.billdozer_analysis_started = True
 
+    # Initialize status tracking
+    st.session_state.setdefault('doc_status_tracking', {})
+    status_placeholders = {}
+
     for idx, doc in enumerate(documents, 1):
         speaker = "billie" if idx % 2 == 1 else "billy"
 
         # Use index-based ID initially (will be replaced with friendly ID after facts extraction)
         initial_doc_id = f"Document {idx}"
+
+        # Initialize status tracking for this document
+        doc_key = f"doc_{idx}"
+        initialize_document_status(doc_key, initial_doc_id)
+
+        # Create status card placeholder (rendered before header)
+        status_placeholder = create_status_card_placeholder(doc_key)
+        status_placeholders[doc_key] = status_placeholder
 
         # Render document header first
         st.markdown(f"## 📄 {initial_doc_id}")
@@ -120,18 +137,39 @@ def run_document_analysis(
         if is_dag_enabled():
             dag_expander, dag_placeholder = create_pipeline_dag_container(document_id=str(idx))
 
-        # Progress callback for real-time DAG updates
+        # Progress callback for real-time status updates
         def progress_callback(workflow_log, step_status):
+            # Update status card (NEW)
+            if status_placeholder:
+                update_status_card(status_placeholder, doc_key, step_status, workflow_log)
+
+            # Update DAG (existing)
             if dag_placeholder and is_dag_enabled():
                 update_pipeline_dag(dag_placeholder, workflow_log, document_id=str(idx), step_status=step_status)
 
-        # Run analysis with progress callback
-        result = agent.run(doc["raw_text"], progress_callback=progress_callback)
+        # Run analysis with progress callback (wrapped in try-except for error handling)
+        try:
+            result = agent.run(doc["raw_text"], progress_callback=progress_callback)
 
-        dispatch_widget_message(
-            speaker,
-            f"Finished analyzing {initial_doc_id}"
-        )
+            # Mark complete
+            st.session_state.doc_status_tracking[doc_key]["status"] = "complete"
+            st.session_state.doc_status_tracking[doc_key]["current_phase"] = "complete"
+            update_status_card(status_placeholder, doc_key, "complete")
+
+            dispatch_widget_message(
+                speaker,
+                f"Finished analyzing {initial_doc_id}"
+            )
+        except Exception as e:
+            # Mark failed
+            st.session_state.doc_status_tracking[doc_key]["status"] = "failed"
+            st.session_state.doc_status_tracking[doc_key]["current_phase"] = "failed"
+            st.session_state.doc_status_tracking[doc_key]["error_message"] = str(e)
+            update_status_card(status_placeholder, doc_key, "failed")
+
+            # Show error to user
+            show_analysis_error(str(e))
+            continue  # Skip to next document
 
         # Session persistence (in-memory, per run)
         st.session_state.setdefault("workflow_logs", {})
@@ -146,6 +184,12 @@ def run_document_analysis(
 
         # Identity AFTER facts
         maybe_enhance_identity(doc)
+
+        # Update friendly name in status tracking
+        if doc.get("document_id") != initial_doc_id:
+            st.session_state.doc_status_tracking[doc_key]["friendly_name"] = doc["document_id"]
+            # Refresh status card with new name
+            update_status_card(status_placeholder, doc_key, "complete")
 
         # Update DAG again with friendly document name now that we have it
         if is_dag_enabled() and dag_placeholder:
