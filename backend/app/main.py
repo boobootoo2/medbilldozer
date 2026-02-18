@@ -2,8 +2,16 @@
 import sys
 from pathlib import Path
 
-# Add parent directory to Python path to import medbilldozer modules
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# Add paths for medbilldozer modules
+app_root = Path(__file__).parent.parent  # /app
+src_dir = app_root / "src"  # /app/src
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
+    print(f"✅ Added {src_dir} to Python path")
+if str(app_root) not in sys.path:
+    sys.path.insert(0, str(app_root))
+    print(f"✅ Added {app_root} to Python path")
+print(f"🐍 Python path: {sys.path[:5]}...")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,9 +29,9 @@ async def lifespan(app: FastAPI):
     # Startup: Initialize providers
     print("🚀 Initializing MedBillDozer providers...")
     try:
-        from src.medbilldozer.providers.provider_registry import get_provider_registry
-        registry = get_provider_registry()
-        print(f"✅ Registered providers: {list(registry.list_providers())}")
+        from medbilldozer.providers.provider_registry import register_providers, ProviderRegistry
+        register_providers()
+        print(f"✅ Registered providers: {list(ProviderRegistry.list())}")
     except Exception as e:
         print(f"⚠️  Warning: Could not initialize provider registry: {e}")
 
@@ -39,7 +47,8 @@ app = FastAPI(
     description="AI-powered medical billing analysis API",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan
+    lifespan=lifespan,
+    redirect_slashes=False  # Prevent 307 redirects that lose Authorization headers
 )
 
 # CORS middleware for React frontend
