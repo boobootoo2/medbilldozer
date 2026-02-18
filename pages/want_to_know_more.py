@@ -167,8 +167,29 @@ def render_recaptcha_v3(site_key: str) -> str:
             }}
         }});
     </script>
-    <div style="text-align: center; padding: 10px;">
-        <small style="color: #888;">
+    <style>
+        .recaptcha-notice {{
+            text-align: center;
+            padding: 10px;
+        }}
+        .recaptcha-notice small {{
+            color: #888;
+        }}
+        .recaptcha-notice a {{
+            color: #1a73e8;
+            text-decoration: none;
+        }}
+        .recaptcha-notice a:hover {{
+            text-decoration: underline;
+        }}
+        @media (prefers-color-scheme: dark) {{
+            .recaptcha-notice a {{
+                color: #8ab4f8;
+            }}
+        }}
+    </style>
+    <div class="recaptcha-notice">
+        <small>
             🔒 This site is protected by reCAPTCHA and the Google
             <a href="https://policies.google.com/privacy">Privacy Policy</a> and
             <a href="https://policies.google.com/terms">Terms of Service</a> apply.
@@ -300,24 +321,6 @@ def main():
                             st.balloons()
                         else:
                             st.error("❌ Failed to send message. Please try again or contact us directly at john.g.shultz@gmail.com")
-
-    # Divider
-    st.divider()
-
-    # Additional contact information
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.markdown("### 📧 Email")
-        st.markdown(f"[{RECIPIENT_EMAIL}](mailto:{RECIPIENT_EMAIL})")
-
-    with col2:
-        st.markdown("### 🌐 Website")
-        st.markdown("[medbilldozer.vercel.app](https://medbilldozer.vercel.app)")
-
-    with col3:
-        st.markdown("### 💊 Demo")
-        st.markdown("[Try the Prototype](https://medbilldozer.vercel.app)")
 
     # Footer
     st.markdown("---")
