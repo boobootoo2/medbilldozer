@@ -87,7 +87,7 @@ Our current benchmarks show **MedGemma-Ensemble achieves 78% detection rate** wi
 |---------|------|--------|-----------|
 | v0.1 | Feb 13, 2026 | ✅ Released | Initial proof of concept - Streamlit prototype |
 | v0.2 | Feb 15, 2026 | ✅ Released | Clinical imaging dataset & MedGemma benchmarks |
-| v0.3 | Feb 17, 2026 | 🚧 Current | Production deployment - FastAPI backend, React frontend |
+| v0.3 | Feb 17, 2026 | ✅ Released | Production deployment - FastAPI backend, React frontend |
 
 **Roadmap:**
 | Phase | Timeline | Objective | Funding Gate |
