@@ -506,6 +506,8 @@ class AnalysisService:
             }
 
         except Exception as e:
+            import traceback
+            tb_str = traceback.format_exc()
             log_with_context(
                 logger, 40,
                 f"❌ Analysis workflow failed: {type(e).__name__}",
@@ -513,6 +515,7 @@ class AnalysisService:
                 user_id=user_id,
                 error=str(e)
             )
+            logger.error(f"Full traceback:\n{tb_str}")
             logger.exception("Analysis workflow failed")
 
             # Save error to database
