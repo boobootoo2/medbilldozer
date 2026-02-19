@@ -35,12 +35,15 @@ async def trigger_analysis(
     correlation_id = get_correlation_id()
 
     try:
+        # Convert provider enum to string value (already validated by Pydantic)
+        provider_str = request.provider.value if request.provider else "medgemma-ensemble"
+
         log_with_context(
             logger, 20,
             f"📊 Analysis requested for {len(request.document_ids)} document(s)",
             user_id=user_id,
             document_count=len(request.document_ids),
-            provider=request.provider or "medgemma-ensemble"
+            provider=provider_str
         )
 
         # Generate analysis ID
@@ -79,7 +82,7 @@ async def trigger_analysis(
             analysis_id=analysis_id,
             user_id=user_id,
             document_ids=request.document_ids,
-            provider=request.provider or "medgemma-ensemble"
+            provider=provider_str
         )
         log_with_context(
             logger, 20,
@@ -94,7 +97,7 @@ async def trigger_analysis(
             analysis_id=analysis_id,
             document_ids=request.document_ids,
             user_id=user_id,
-            provider=request.provider or "medgemma-ensemble"
+            provider=provider_str
         )
         log_with_context(
             logger, 20,
