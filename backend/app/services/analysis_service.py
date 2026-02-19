@@ -205,7 +205,7 @@ class AnalysisService:
                     f"🔬 Analyzing document {idx}/{len(documents)}",
                     analysis_id=analysis_id,
                     document_id=doc_id,
-                    filename=doc['filename'],
+                    document_filename=doc['filename'],
                     provider=provider
                 )
 
@@ -284,7 +284,7 @@ class AnalysisService:
                         f"✅ Document analysis completed successfully",
                         analysis_id=analysis_id,
                         document_id=doc_id,
-                        filename=doc['filename'],
+                        document_filename=doc['filename'],
                         result_keys=list(result.keys()) if isinstance(result, dict) else "not-a-dict"
                     )
 
@@ -329,7 +329,7 @@ class AnalysisService:
                         f"❌ Document analysis failed: {type(e).__name__}",
                         analysis_id=analysis_id,
                         document_id=doc_id,
-                        filename=doc['filename'],
+                        document_filename=doc['filename'],
                         error=str(e)
                     )
                     logger.exception(f"Document {doc_id} analysis failed")
