@@ -229,7 +229,7 @@ class DBService:
         if not result.data:
             return {}
 
-        current_results = result.data[0].get("results", [])
+        current_results = result.data[0].get("results") or []
 
         # Find or create document entry in results
         doc_found = False
