@@ -1,4 +1,4 @@
-Metadata-Version: 2.4
+Metadata-Version: 2.1
 Name: medbilldozer
 Version: 0.2.0
 Summary: Medical Bill Analysis and Error Detection System
@@ -29,7 +29,6 @@ Requires-Dist: numpy>=1.24; extra == "benchmarks"
 Provides-Extra: monitoring
 Requires-Dist: plotly>=5.0; extra == "monitoring"
 Requires-Dist: streamlit>=1.28; extra == "monitoring"
-Dynamic: license-file
 
 # medBillDozer
 

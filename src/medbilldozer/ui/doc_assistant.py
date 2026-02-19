@@ -366,6 +366,8 @@ def render_assistant_avatar():
                 object-fit: cover;
                 background: white;
                 border: 2px solid rgba(255, 255, 255, 0.8);
+                /* Light coffee tone overlay for skin */
+                filter: sepia(0.25) saturate(1.1) hue-rotate(-5deg) brightness(1.02);
             }}
 
             .child-div.nameplate::after {{

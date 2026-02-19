@@ -33,11 +33,26 @@ load_dotenv()
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / 'scripts'))
 
+# Add src to path for medbilldozer imports
+src_path = PROJECT_ROOT / "src"
+if src_path.exists() and str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
 try:
     from benchmark_data_access import BenchmarkDataAccess, format_metric, calculate_delta
 except ImportError:
     st.error("Could not import benchmark_data_access. Please ensure the module exists.")
     st.stop()
+
+# Import benchmark assistant
+try:
+    from medbilldozer.ui.benchmark_assistant import render_benchmark_assistant
+    from medbilldozer.ui.doc_assistant import render_assistant_avatar
+    from medbilldozer.utils.config import is_assistant_enabled
+except ImportError as e:
+    st.warning(f"Benchmark assistant not available: {e}")
+    render_benchmark_assistant = None
+    is_assistant_enabled = lambda: False
 
 # ============================================================================
 # Page Configuration
@@ -64,6 +79,36 @@ st.title("🚨 Production Stability")
 st.markdown("Real-time ML model performance tracking and regression detection")
 
 # ============================================================================
+# BETA Mode Check
+# ============================================================================
+
+BETA_MODE = os.getenv('BETA', 'false').lower() in ('true', '1', 'yes')
+
+if BETA_MODE:
+    st.info("🧪 **BETA Mode Enabled**: Clinical Validation Dashboard now available!")
+
+# ============================================================================
+# Assistant Notification
+# ============================================================================
+
+# Show dismissible assistant notification (always visible, regardless of BETA mode)
+if (render_benchmark_assistant is not None and
+    not st.session_state.get('benchmark_assistant_notification_dismissed', False)):
+
+    col1, col2 = st.columns([20, 1])
+
+    with col1:
+        st.info(
+            "💡 **New!** Billy & Billie the document assistants are available in the left side panel to help answer questions about metrics, regressions, and model performance.",
+            icon="🤖"
+        )
+
+    with col2:
+        if st.button("✕", key="dismiss_benchmark_assistant_notification", help="Dismiss"):
+            st.session_state.benchmark_assistant_notification_dismissed = True
+            st.rerun()
+
+# ============================================================================
 # Initialize Data Access
 # ============================================================================
 
@@ -81,6 +126,13 @@ def get_data_access():
         st.stop()
 
 data_access = get_data_access()
+
+# ============================================================================
+# Benchmark Assistant (sidebar)
+# ============================================================================
+
+if is_assistant_enabled() and render_benchmark_assistant is not None:
+    render_benchmark_assistant()
 
 # ============================================================================
 # Sidebar Filters
@@ -834,26 +886,70 @@ if tab_clinical:
                     st.markdown("Detection accuracy for true positives (valid treatments) and true negatives (inappropriate treatments) across imaging modalities.")
                     
                     # Load latest clinical validation results to build heatmaps
-                    results_dir = PROJECT_ROOT / 'benchmarks/clinical_validation_results'
-                    
-                    if results_dir.exists():
+                    import numpy as np
+                    from collections import defaultdict
+
+                    # Load latest results for each model
+                    models = ['gpt-4o-mini', 'gpt-4o', 'medgemma', 'medgemma-ensemble']
+                    modalities = ['xray', 'histopathology', 'mri', 'ultrasound']
+
+                    model_results = {}
+                    data_source = "Unknown"
+
+                    # Try loading from Supabase first (check both production and beta environments)
+                    try:
+                        if clinical_data_access:
+                            # Try production first, then beta
+                            for env in ['production', 'beta']:
+                                if model_results:
+                                    break
+
+                                response = clinical_data_access.client.table('clinical_validation_snapshots') \
+                                    .select('*') \
+                                    .eq('environment', env) \
+                                    .order('created_at', desc=True) \
+                                    .limit(100) \
+                                    .execute()
+
+                                if response.data:
+                                    # Group by model and get latest for each
+                                    model_snapshots = {}
+                                    for snapshot in response.data:
+                                        model = snapshot.get('model_version', '')
+                                        if model in models and model not in model_snapshots:
+                                            model_snapshots[model] = snapshot
+
+                                    # Extract scenario_results from metrics
+                                    for model, snapshot in model_snapshots.items():
+                                        metrics = snapshot.get('metrics', {})
+                                        scenario_results = metrics.get('scenario_results', [])
+                                        if scenario_results:
+                                            model_results[model] = {'scenario_results': scenario_results}
+
+                                    if model_results:
+                                        data_source = f"Supabase {env.title()} Database"
+                    except Exception as db_error:
+                        st.warning(f"Could not load from Supabase: {db_error}")
+
+                    # Fall back to local files if Supabase didn't work
+                    if not model_results:
+                        results_dir = PROJECT_ROOT / 'benchmarks/clinical_validation_results'
+                        if results_dir.exists():
+                            try:
+                                for model in models:
+                                    model_files = sorted(results_dir.glob(f'{model}_*.json'), reverse=True)
+                                    if model_files:
+                                        import json
+                                        with open(model_files[0], 'r') as f:
+                                            model_results[model] = json.load(f)
+                                if model_results:
+                                    data_source = "Local Files"
+                            except Exception as file_error:
+                                st.warning(f"Could not load from local files: {file_error}")
+
+                    # Process results if we have any
+                    if model_results:
                         try:
-                            import numpy as np
-                            from collections import defaultdict
-                            
-                            # Load latest results for each model
-                            models = ['gpt-4o-mini', 'gpt-4o', 'medgemma', 'medgemma-ensemble']
-                            modalities = ['xray', 'histopathology', 'mri', 'ultrasound']
-                            
-                            model_results = {}
-                            for model in models:
-                                model_files = sorted(results_dir.glob(f'{model}_*.json'), reverse=True)
-                                if model_files:
-                                    import json
-                                    with open(model_files[0], 'r') as f:
-                                        model_results[model] = json.load(f)
-                            
-                            if model_results:
                                 # Calculate detection rates
                                 tp_rates = defaultdict(lambda: defaultdict(lambda: {'correct': 0, 'total': 0}))
                                 tn_rates = defaultdict(lambda: defaultdict(lambda: {'correct': 0, 'total': 0}))
@@ -982,10 +1078,11 @@ if tab_clinical:
                                 
                                 # Add methodology accordion
                                 with st.expander("📊 Analysis Methodology & Sample Sizes"):
-                                    st.markdown("""
-                                    **Data Source:**
+                                    st.markdown(f"""
+                                    **Data Source:** {data_source}
                                     - Latest clinical validation benchmark results per model
-                                    - Results loaded from `benchmarks/clinical_validation_results/*.json`
+                                    - Primary: Supabase Production Database (automatic updates)
+                                    - Fallback: Local files at `benchmarks/clinical_validation_results/*.json`
                                     - Models analyzed: `gpt-4o-mini`, `gpt-4o`, `medgemma`, `medgemma-ensemble`
                                     - Modalities tested: X-ray, Histopathology, MRI, Ultrasound
                                     
@@ -1033,16 +1130,14 @@ if tab_clinical:
                                     - Scenarios span: Emergency care, chronic conditions, preventive care, procedural codes
                                     """)
                                 
-                            else:
-                                st.info("No detailed results available for heatmap generation. Run benchmarks to collect data.")
-                        
                         except Exception as hm_error:
                             st.warning(f"Could not generate heatmaps: {hm_error}")
                             import traceback
                             with st.expander("Show Error Details"):
                                 st.code(traceback.format_exc())
                     else:
-                        st.info("Results directory not found. Run clinical validation benchmarks first.")
+                        st.info("No clinical validation results available. Run benchmarks to collect data.")
+                        st.caption("Data sources checked: Supabase Production Database and Local Files")
                     
                 else:
                     st.info("📊 No clinical validation data available yet. Benchmarks run daily at midnight UTC.")
@@ -3397,6 +3492,50 @@ with tab6:
                     - {best['model_version']} outperforms {worst['model_version']} by {gap:.1f}% in domain detection
                     - Medical domain knowledge is critical for accurate billing issue detection
                     """)
+
+# ============================================================================
+# Documentation Viewer (triggered from sidebar assistant)
+# ============================================================================
+
+if 'benchmark_sidebar_doc_view' in st.session_state:
+    doc_path = PROJECT_ROOT / st.session_state['benchmark_sidebar_doc_view']
+    doc_title = st.session_state.get('benchmark_sidebar_doc_title', 'Documentation')
+
+    # Create a container in the main area for documentation
+    st.markdown("---")
+    col1, col2 = st.columns([6, 1])
+    with col1:
+        st.markdown(f"## {doc_title}")
+    with col2:
+        if st.button("✖ Close", key="close_benchmark_doc_viewer"):
+            del st.session_state['benchmark_sidebar_doc_view']
+            if 'benchmark_sidebar_doc_title' in st.session_state:
+                del st.session_state['benchmark_sidebar_doc_title']
+            st.rerun()
+
+    try:
+        with open(doc_path, 'r', encoding='utf-8') as f:
+            doc_content = f.read()
+        st.markdown(doc_content)
+
+        if st.button("✖ Close Document", key="close_benchmark_doc_viewer_bottom"):
+            del st.session_state['benchmark_sidebar_doc_view']
+            if 'benchmark_sidebar_doc_title' in st.session_state:
+                del st.session_state['benchmark_sidebar_doc_title']
+            st.rerun()
+
+    except FileNotFoundError:
+        st.error(f"📄 Document not found: {doc_path}")
+        st.info("This documentation file may not be available.")
+        if st.button("✖ Close", key="close_benchmark_doc_viewer_error"):
+            del st.session_state['benchmark_sidebar_doc_view']
+            if 'benchmark_sidebar_doc_title' in st.session_state:
+                del st.session_state['benchmark_sidebar_doc_title']
+            st.rerun()
+
+# ============================================================================
+# Footer
+# ============================================================================
 
 st.markdown("---")
 st.markdown("""

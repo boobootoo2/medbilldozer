@@ -19,10 +19,20 @@ from medbilldozer.extractors.gemini_langextractor import (
     extract_facts_gemini,
     run_prompt_gemini,
 )
-from medbilldozer.ui.billdozer_widget import (
-    install_billdozer_bridge,
-    dispatch_widget_message,
-)
+
+# Optional Streamlit UI imports (not required for API mode)
+try:
+    from medbilldozer.ui.billdozer_widget import (
+        install_billdozer_bridge,
+        dispatch_widget_message,
+    )
+    STREAMLIT_AVAILABLE = True
+except ImportError:
+    # Running in API mode without Streamlit
+    STREAMLIT_AVAILABLE = False
+    def dispatch_widget_message(*args, **kwargs):
+        """No-op placeholder when Streamlit not available."""
+        pass
 
 from medbilldozer.providers.llm_interface import ProviderRegistry, Issue
 from medbilldozer.extractors.local_heuristic_extractor import extract_facts_local

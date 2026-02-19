@@ -1,0 +1,32 @@
+# Core FastAPI
+fastapi
+uvicorn[standard]
+pydantic>=2.0
+pydantic-settings
+python-multipart
+
+# Authentication
+firebase-admin
+python-jose[cryptography]
+passlib[bcrypt]
+
+# Google Cloud
+google-cloud-storage
+google-cloud-secret-manager
+
+# Database
+supabase
+asyncpg
+psycopg2-binary
+
+# HTTP Client
+httpx
+
+# AI Provider dependencies
+openai>=2.9.0
+google-generativeai>=0.8.0
+anthropic
+pillow>=12.0.0
+
+# Utilities
+python-dotenv>=1.0.0

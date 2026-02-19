@@ -2,9 +2,9 @@ name: Run Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, v0.3 ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, v0.3 ]
   workflow_dispatch:  # Allow manual trigger
 
 jobs:

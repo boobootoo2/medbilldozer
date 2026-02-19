@@ -117,6 +117,63 @@ TOUR_STEPS = [
         target="logo",
         position="top"
     ),
+
+    TourStep(
+        id=6,
+        title="MedBillDozer Challenge",
+        description=(
+            "🏆 Test your skills with the MedBillDozer Challenge! We've curated real-world "
+            "medical billing scenarios with hidden errors, duplicate charges, and discrepancies. "
+            "See if you can identify all the issues before the AI does. Challenge datasets are "
+            "available in the demo section with increasing difficulty levels."
+        ),
+        narration=(
+            "Test your skills with the MedBillDozer Challenge! We've curated real-world "
+            "medical billing scenarios with hidden errors, duplicate charges, and discrepancies. "
+            "See if you can identify all the issues before the AI does. Challenge datasets are "
+            "available in the demo section with increasing difficulty levels."
+        ),
+        target="demo_section",
+        position="top"
+    ),
+
+    TourStep(
+        id=7,
+        title="Production Stability Benchmarks",
+        description=(
+            "📊 MedBillDozer maintains production stability through continuous benchmarking. "
+            "Every pipeline component is validated against test cases with known outcomes. "
+            "Performance metrics track processing speed, accuracy rates, and error detection "
+            "sensitivity. View real-time benchmarks to understand system reliability and data quality."
+        ),
+        narration=(
+            "MedBillDozer maintains production stability through continuous benchmarking. "
+            "Every pipeline component is validated against test cases with known outcomes. "
+            "Performance metrics track processing speed, accuracy rates, and error detection "
+            "sensitivity. View real-time benchmarks to understand system reliability and data quality."
+        ),
+        target="production_workflow",
+        position="top"
+    ),
+
+    TourStep(
+        id=8,
+        title="Full Web Application",
+        description=(
+            "🖥️ The production web application at medbilldozer.vercel.app provides the complete MedBillDozer experience. "
+            "Built with React and a FastAPI backend deployed on Cloud Run, the full application offers "
+            "document upload, advanced analysis features, and comprehensive workflow management. "
+            "It's designed for seamless interaction with complete functionality and production-grade reliability."
+        ),
+        narration=(
+            "The production web application at medbilldozer.vercel.app provides the complete MedBillDozer experience. "
+            "Built with React and a FastAPI backend deployed on Cloud Run, the full application offers "
+            "document upload, advanced analysis features, and comprehensive workflow management. "
+            "It's designed for seamless interaction with complete functionality and production-grade reliability."
+        ),
+        target="prototype_interface",
+        position="top"
+    ),
 ]
 
 

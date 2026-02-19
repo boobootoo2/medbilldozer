@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedBillDozer Data Flow Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f1f5f9;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab:hover {
+            background: #e2e8f0;
+            color: #334155;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .flow-section {
+            display: none;
+        }
+        
+        .flow-section.active {
+            display: block;
+        }
+        
+        svg {
+            width: 100%;
+            height: auto;
+        }
+        
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node text {
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: inline !important;
+            pointer-events: none;
+        }
+
+        .node rect,
+        .node circle {
+            filter: brightness(1.1);
+            stroke-width: 3;
+        }
+        
+        .arrow {
+            animation: dash 20s linear infinite;
+        }
+        
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }
+        
+        .legend {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .description {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        
+        .description h3 {
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+        
+        .description p {
+            color: #475569;
+            line-height: 1.6;
+        }
+        
+        .step-list {
+            background: #fefce8;
+            border-left: 4px solid #eab308;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        
+        .step-list h4 {
+            color: #854d0e;
+            margin-bottom: 15px;
+        }
+        
+        .step-list ol {
+            margin-left: 20px;
+        }
+        
+        .step-list li {
+            color: #713f12;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .tech-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .tech-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #3b82f6;
+        }
+        
+        .tech-card h4 {
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .tech-card ul {
+            list-style: none;
+        }
+        
+        .tech-card li {
+            color: #64748b;
+            padding: 5px 0;
+            font-size: 14px;
+        }
+        
+        .tech-card li:before {
+            content: "→ ";
+            color: #3b82f6;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MedBillDozer Data Flow Architecture</h1>
+            <p>Comprehensive system architecture and data flow visualization</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('overview')">System Overview</div>
+            <div class="tab" onclick="showTab('upload')">Document Upload</div>
+            <div class="tab" onclick="showTab('analysis')">Analysis Flow</div>
+            <div class="tab" onclick="showTab('auth')">Authentication</div>
+        </div>
+
+        <div class="content">
+            <!-- OVERVIEW TAB -->
+            <div id="overview" class="flow-section active">
+                <div class="description">
+                    <h3>System Overview</h3>
+                    <p>MedBillDozer is a full-stack medical billing analysis platform that leverages AI to detect billing errors, overcharges, and insurance coverage issues. The system uses a modern three-tier architecture with React frontend, FastAPI backend,
+                        and Supabase/PostgreSQL database, complemented by Google Cloud Storage for document persistence.</p>
+                </div>
+
+                <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Background -->
+                    <defs>
+                        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#f8fafc;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#e2e8f0;stop-opacity:1" />
+                        </linearGradient>
+
+                        <filter id="shadow">
+                            <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.2"/>
+                        </filter>
+
+                        <!-- Arrow marker -->
+                        <marker id="arrowhead" markerWidth="6" markerHeight="6"
+                                refX="6" refY="3" orient="auto">
+                            <polygon points="0,0 6,3 0,6" fill="#e11d48" stroke="#e11d48" stroke-width="1"/>
+                        </marker>
+                    </defs>
+
+                    <rect width="1200" height="800" fill="url(#bgGradient)"/>
+
+                    <!-- Client Layer -->
+                    <g class="node">
+                        <rect x="400" y="50" width="400" height="100" rx="10" fill="#3b82f6" filter="url(#shadow)"/>
+                        <text x="600" y="90" text-anchor="middle" fill="white" font-size="20" font-weight="bold">CLIENT (Browser)</text>
+                        <text x="600" y="115" text-anchor="middle" fill="white" font-size="14">React SPA + TypeScript + Zustand</text>
+                    </g>
+
+                    <!-- Arrow -->
+                    <path d="M 600 150 L 600 220" stroke="#475569" stroke-width="4" fill="none" class="arrow" stroke-dasharray="10,5"/>
+                    <polygon points="600,220 595,210 605,210" fill="#475569"/>
+
+                    <!-- Backend Layer -->
+                    <g class="node">
+                        <rect x="350" y="220" width="500" height="120" rx="10" fill="#10b981" filter="url(#shadow)"/>
+                        <text x="600" y="260" text-anchor="middle" fill="white" font-size="20" font-weight="bold">BACKEND API</text>
+                        <text x="600" y="285" text-anchor="middle" fill="white" font-size="14">FastAPI + Python 3.11 + Uvicorn</text>
+                        <text x="600" y="310" text-anchor="middle" fill="white" font-size="12">JWT Auth | Async Processing | RESTful API</text>
+                    </g>
+
+                    <!-- Arrows to services -->
+                    <path d="M 450 340 L 200 450" stroke="#475569" stroke-width="2" fill="none"/>
+                    <polygon points="200,450 208,445 205,440" fill="#475569"/>
+
+                    <path d="M 520 340 L 400 450" stroke="#475569" stroke-width="2" fill="none"/>
+                    <polygon points="400,450 407,445 404,440" fill="#475569"/>
+
+                    <path d="M 680 340 L 800 450" stroke="#475569" stroke-width="2" fill="none"/>
+                    <polygon points="800,450 793,445 796,440" fill="#475569"/>
+
+                    <path d="M 750 340 L 1000 450" stroke="#475569" stroke-width="2" fill="none"/>
+                    <polygon points="1000,450 993,445 996,440" fill="#475569"/>
+
+                    <!-- Services Layer -->
+                    <!-- Firebase -->
+                    <g class="node">
+                        <rect x="50" y="450" width="200" height="100" rx="10" fill="#f59e0b" filter="url(#shadow)"/>
+                        <text x="150" y="490" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Firebase Auth</text>
+                        <text x="150" y="515" text-anchor="middle" fill="white" font-size="12">ID Token</text>
+                        <text x="150" y="535" text-anchor="middle" fill="white" font-size="12">Verification</text>
+                    </g>
+
+                    <!-- GCS -->
+                    <g class="node">
+                        <rect x="300" y="450" width="200" height="100" rx="10" fill="#ec4899" filter="url(#shadow)"/>
+                        <text x="400" y="490" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Google Cloud</text>
+                        <text x="400" y="515" text-anchor="middle" fill="white" font-size="12">Storage (GCS)</text>
+                        <text x="400" y="535" text-anchor="middle" fill="white" font-size="12">Signed URLs</text>
+                    </g>
+
+                    <!-- Supabase -->
+                    <g class="node">
+                        <rect x="700" y="450" width="200" height="100" rx="10" fill="#8b5cf6" filter="url(#shadow)"/>
+                        <text x="800" y="490" text-anchor="middle" fill="white" font-size="16" font-weight="bold">Supabase</text>
+                        <text x="800" y="515" text-anchor="middle" fill="white" font-size="12">PostgreSQL</text>
+                        <text x="800" y="535" text-anchor="middle" fill="white" font-size="12">Row Level Security</text>
+                    </g>
+
+                    <!-- AI Providers -->
+                    <g class="node">
+                        <rect x="950" y="450" width="200" height="100" rx="10" fill="#06b6d4" filter="url(#shadow)"/>
+                        <text x="1050" y="490" text-anchor="middle" fill="white" font-size="16" font-weight="bold">AI LLM</text>
+                        <text x="1050" y="515" text-anchor="middle" fill="white" font-size="12">MedGemma</text>
+                        <text x="1050" y="535" text-anchor="middle" fill="white" font-size="12">GPT-4 | Gemini</text>
+                    </g>
+
+                    <!-- Data Stores -->
+                    <g class="node">
+                        <circle cx="400" cy="650" r="60" fill="#4338ca" filter="url(#shadow)"/>
+                        <text x="400" y="645" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Documents</text>
+                        <text x="400" y="665" text-anchor="middle" fill="white" font-size="11">PDF, Images</text>
+                    </g>
+
+                    <g class="node">
+                        <circle cx="600" cy="650" r="60" fill="#4338ca" filter="url(#shadow)"/>
+                        <text x="600" y="645" text-anchor="middle" fill="white" font-size="14" font-weight="bold">User Data</text>
+                        <text x="600" y="665" text-anchor="middle" fill="white" font-size="11">Profiles</text>
+                    </g>
+
+                    <g class="node">
+                        <circle cx="800" cy="650" r="60" fill="#4338ca" filter="url(#shadow)"/>
+                        <text x="800" y="645" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Analysis</text>
+                        <text x="800" y="665" text-anchor="middle" fill="white" font-size="11">Results</text>
+                    </g>
+
+                    <g class="node">
+                        <circle cx="1000" cy="650" r="60" fill="#4338ca" filter="url(#shadow)"/>
+                        <text x="1000" y="645" text-anchor="middle" fill="white" font-size="14" font-weight="bold">Issues</text>
+                        <text x="1000" y="665" text-anchor="middle" fill="white" font-size="11">Findings</text>
+                    </g>
+
+                    <!-- Arrows to data -->
+                    <path d="M 400 550 L 400 590" stroke="#475569" stroke-width="2" fill="none"/>
+                    <polygon points="400,590 395,580 405,580" fill="#475569"/>
+
+                    <path d="M 800 550 L 600 590" stroke="#475569" stroke-width="2" fill="none"/>
+                    <polygon points="600,590 608,585 605,580" fill="#475569"/>
+
+                    <path d="M 800 550 L 800 590" stroke="#475569" stroke-width="2" fill="none"/>
+                    <polygon points="800,590 795,580 805,580" fill="#475569"/>
+
+                    <path d="M 1050 550 L 1000 590" stroke="#475569" stroke-width="2" fill="none"/>
+                    <polygon points="1000,590 1008,585 1005,580" fill="#475569"/>
+
+                    <!-- Labels -->
+                    <text x="620" y="190" text-anchor="middle" fill="#475569" font-size="12" font-style="italic">HTTPS / Bearer Token</text>
+                    <text x="325" y="400" text-anchor="middle" fill="#475569" font-size="11">Verify</text>
+                    <text x="470" y="400" text-anchor="middle" fill="#475569" font-size="11">Store/Retrieve</text>
+                    <text x="745" y="400" text-anchor="middle" fill="#475569" font-size="11">CRUD Ops</text>
+                    <text x="880" y="400" text-anchor="middle" fill="#475569" font-size="11">Analyze</text>
+                </svg>
+
+                <div class="tech-stack">
+                    <div class="tech-card">
+                        <h4>Frontend</h4>
+                        <ul>
+                            <li>React 18.2 + TypeScript</li>
+                            <li>Vite (Build Tool)</li>
+                            <li>Zustand (State)</li>
+                            <li>Tailwind CSS</li>
+                            <li>React Router DOM</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-card">
+                        <h4>Backend</h4>
+                        <ul>
+                            <li>FastAPI (Python 3.11)</li>
+                            <li>Uvicorn (ASGI Server)</li>
+                            <li>Pydantic (Validation)</li>
+                            <li>PyJWT (Authentication)</li>
+                            <li>Async/Await</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-card">
+                        <h4>Infrastructure</h4>
+                        <ul>
+                            <li>Supabase (PostgreSQL)</li>
+                            <li>Google Cloud Storage</li>
+                            <li>Firebase Auth</li>
+                            <li>Docker</li>
+                            <li>Google Cloud Run</li>
+                        </ul>
+                    </div>
+
+                    <div class="tech-card">
+                        <h4>AI/ML</h4>
+                        <ul>
+                            <li>MedGemma (Medical LLM)</li>
+                            <li>OpenAI GPT-4</li>
+                            <li>Google Gemini</li>
+                            <li>Custom Validators</li>
+                            <li>Coverage Matrix</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UPLOAD TAB -->
+            <div id="upload" class="flow-section">
+                <div class="description">
+                    <h3>Document Upload Flow</h3>
+                    <p>MedBillDozer uses a secure signed URL pattern for direct-to-cloud uploads. This approach bypasses the backend for file transfer, improving performance and scalability while maintaining security through time-limited, method-scoped URLs.</p>
+                </div>
+
+                <svg viewBox="0 0 1000 900" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <filter id="shadow">
+                            <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.2"/>
+                        </filter>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10"
+                                refX="10" refY="5" orient="auto">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+                        </marker>
+                    </defs>
+
+                    <rect width="1000" height="900" fill="#f8fafc"/>
+
+                    <!-- Step 1 -->
+                    <g class="node">
+                        <rect x="50" y="50" width="250" height="80" rx="8" fill="#3b82f6" filter="url(#shadow)"/>
+                        <text x="175" y="85" text-anchor="middle" fill="white" font-size="16" font-weight="bold">1. User Selects File</text>
+                        <text x="175" y="110" text-anchor="middle" fill="white" font-size="12">React Dropzone</text>
+                    </g>
+
+                    <path d="M 175 130 L 175 180" stroke="#475569" stroke-width="3" fill="none"/>
+                    <polygon points="175,180 170,170 180,170" fill="#475569"/>
+
+                    <!-- Step 2 -->
+                    <g class="node">
+                        <rect x="50" y="180" width="250" height="100" rx="8" fill="#10b981" filter="url(#shadow)"/>
+                        <text x="175" y="215" text-anchor="middle" fill="white" font-size="14" font-weight="bold">2. Request Signed URL</text>
+                        <text x="175" y="235" text-anchor="middle" fill="white" font-size="11">POST /api/documents/upload-url</text>
+                        <text x="175" y="255" text-anchor="middle" fill="white" font-size="10">{filename, content_type, type}</text>
+                    </g>
+
+                    <path d="M 300 230 L 400 230" stroke="#475569" stroke-width="3" fill="none"/>
+                    <polygon points="400,230 390,225 390,235" fill="#475569"/>
+
+                    <!-- Backend -->
+                    <g class="node">
+                        <rect x="400" y="180" width="250" height="100" rx="8" fill="#8b5cf6" filter="url(#shadow)"/>
+                        <text x="525" y="215" text-anchor="middle" fill="white" font-size="14" font-weight="bold">3. Backend Processing</text>
+                        <text x="525" y="235" text-anchor="middle" fill="white" font-size="11">Generate document_id (UUID)</text>
+                        <text x="525" y="255" text-anchor="middle" fill="white" font-size="11">Create GCS signed URL (15min)</text>
+                    </g>
+
+                    <path d="M 525 280 L 525 330" stroke="#475569" stroke-width="3" fill="none"/>
+                    <polygon points="525,330 520,320 530,320" fill="#475569"/>
+
+                    <!-- Response -->
+                    <g class="node">
+                        <rect x="400" y="330" width="250" height="100" rx="8" fill="#f59e0b" filter="url(#shadow)"/>
+                        <text x="525" y="365" text-anchor="middle" fill="white" font-size="14" font-weight="bold">4. Return Signed URL</text>
+                        <text x="525" y="385" text-anchor="middle" fill="white" font-size="10">{document_id, upload_url,</text>
+                        <text x="525" y="405" text-anchor="middle" fill="white" font-size="10">gcs_path, expires_at}</text>
+                    </g>
+
+                    <path d="M 400 380 L 300 380" stroke="#475569" stroke-width="3" fill="none"/>
+                    <polygon points="300,380 310,375 310,385" fill="#475569"/>
+
+                    <!-- Upload to GCS -->
+                    <g class="node">
+                        <rect x="50" y="330" width="250" height="100" rx="8" fill="#ec4899" filter="url(#shadow)"/>
+                        <text x="175" y="365" text-anchor="middle" fill="white" font-size="14" font-weight="bold">5. Upload to GCS</text>
+                        <text x="175" y="385" text-anchor="middle" fill="white" font-size="11">PUT {signed_url}</text>
+                        <text x="175" y="405" text-anchor="middle" fill="white" font-size="10">Direct to Google Cloud Storage</text>
+                    </g>
+
+                    <path d="M 175 430 L 175 480" stroke="#475569" stroke-width="3" fill="none"/>
+                    <polygon points="175,480 170,470 180,470" fill="#475569"/>
+
+                    <!-- GCS Storage -->
+                    <g class="node">
+                        <rect x="50" y="480" width="250" height="80" rx="8" fill="#06b6d4" filter="url(#shadow)"/>
+                        <text x="175" y="515" text-anchor="middle" fill="white" font-size="14" font-weight="bold">6. File Stored in GCS</text>
+                        <text x="175" y="540" text-anchor="middle" fill="white" font-size="11">{user_id}/{doc_id}/{filename}</text>
+                    </g>
+
+                    <path d="M 175 560 L 175 610" stroke="#475569" stroke-width="3" fill="none"/>
+                    <polygon points="175,610 170,600 180,600" fill="#475569"/>
+
+                    <!-- Confirm Upload -->
+                    <g class="node">
+                        <rect x="50" y="610" width="250" height="100" rx="8" fill="#10b981" filter="url(#shadow)"/>
+                        <text x="175" y="645" text-anchor="middle" fill="white" font-size="14" font-weight="bold">7. Confirm Upload</text>
+                        <text x="175" y="665" text-anchor="middle" fill="white" font-size="11">POST /api/documents/confirm</text>
+                        <text x="175" y="685" text-anchor="middle" fill="white" font-size="10">{doc_id, filename, path, size}</text>
+                    </g>
+
+                    <path d="M 300 660 L 400 660" stroke="#475569" stroke-width="3" fill="none"/>
+                    <polygon points="400,660 390,655 390,665" fill="#475569"/>
+
+                    <!-- Save Metadata -->
+                    <g class="node">
+                        <rect x="400" y="610" width="250" height="100" rx="8" fill="#8b5cf6" filter="url(#shadow)"/>
+                        <text x="525" y="645" text-anchor="middle" fill="white" font-size="14" font-weight="bold">8. Save Metadata</text>
+                        <text x="525" y="665" text-anchor="middle" fill="white" font-size="11">INSERT INTO documents</text>
+                        <text x="525" y="685" text-anchor="middle" fill="white" font-size="10">Supabase PostgreSQL</text>
+                    </g>
+
+                    <path d="M 525 710 L 525 760" stroke="#475569" stroke-width="3" fill="none"/>
+                    <polygon points="525,760 520,750 530,750" fill="#475569"/>
+
+                    <!-- Complete -->
+                    <g class="node">
+                        <rect x="400" y="760" width="250" height="80" rx="8" fill="#22c55e" filter="url(#shadow)"/>
+                        <text x="525" y="795" text-anchor="middle" fill="white" font-size="16" font-weight="bold">9. Upload Complete</text>
+                        <text x="525" y="820" text-anchor="middle" fill="white" font-size="12">Document Ready for Analysis</text>
+                    </g>
+
+                    <!-- Side note -->
+                    <g>
+                        <rect x="700" y="200" width="280" height="400" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="840" y="230" text-anchor="middle" fill="#78350f" font-size="16" font-weight="bold">Why Signed URLs?</text>
+
+                        <text x="720" y="270" fill="#78350f" font-size="13" font-weight="bold">Benefits:</text>
+                        <text x="720" y="295" fill="#78350f" font-size="12">✓ Performance: Direct upload</text>
+                        <text x="720" y="315" fill="#78350f" font-size="12">✓ No backend bottleneck</text>
+                        <text x="720" y="335" fill="#78350f" font-size="12">✓ Handles large files easily</text>
+                        <text x="720" y="355" fill="#78350f" font-size="12">✓ Reduced server costs</text>
+
+                        <text x="720" y="390" fill="#78350f" font-size="13" font-weight="bold">Security:</text>
+                        <text x="720" y="415" fill="#78350f" font-size="12">✓ Time-limited (15 minutes)</text>
+                        <text x="720" y="435" fill="#78350f" font-size="12">✓ Method-scoped (PUT only)</text>
+                        <text x="720" y="455" fill="#78350f" font-size="12">✓ Path-specific access</text>
+                        <text x="720" y="475" fill="#78350f" font-size="12">✓ No API key exposure</text>
+
+                        <text x="720" y="510" fill="#78350f" font-size="13" font-weight="bold">Flow:</text>
+                        <text x="720" y="535" fill="#78350f" font-size="11">1. Backend generates signed URL</text>
+                        <text x="720" y="555" fill="#78350f" font-size="11">2. Client uploads directly to GCS</text>
+                        <text x="720" y="575" fill="#78350f" font-size="11">3. Backend records metadata</text>
+                    </g>
+                </svg>
+
+                <div class="step-list">
+                    <h4>Detailed Upload Steps:</h4>
+                    <ol>
+                        <li><strong>User Action:</strong> Drag-and-drop or click to select file in React Dropzone component</li>
+                        <li><strong>Request:</strong> Frontend calls <code>POST /api/documents/upload-url</code> with file metadata</li>
+                        <li><strong>Backend:</strong> Generates UUID document_id, constructs GCS path, creates 15-minute signed PUT URL</li>
+                        <li><strong>Response:</strong> Returns {document_id, upload_url, gcs_path, expires_at}</li>
+                        <li><strong>Client Upload:</strong> Frontend uses Axios to PUT file bytes directly to signed GCS URL</li>
+                        <li><strong>Storage:</strong> Google Cloud Storage persists file at path {user_id}/{document_id}/{filename}</li>
+                        <li><strong>Confirmation:</strong> Frontend calls <code>POST /api/documents/confirm</code> with upload details</li>
+                        <li><strong>Database:</strong> Backend inserts document record in Supabase with metadata</li>
+                        <li><strong>Complete:</strong> Document appears in user's document list, ready for analysis</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- ANALYSIS TAB -->
+            <div id="analysis" class="flow-section">
+                <div class="description">
+                    <h3>Analysis Flow (Async Processing + Polling)</h3>
+                    <p>Analysis is performed asynchronously in the background to handle long-running AI processing (30s - 5min). The frontend polls for updates every 2-3 seconds, providing real-time status without blocking the UI or requiring WebSocket infrastructure.</p>
+                </div>
+
+                <svg viewBox="0 0 1100 950" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <filter id="shadow">
+                            <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.2"/>
+                        </filter>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10"
+                                refX="10" refY="5" orient="auto">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+                        </marker>
+                    </defs>
+
+                    <rect width="1100" height="950" fill="#f8fafc"/>
+
+                    <!-- User Action -->
+                    <g class="node">
+                        <rect x="50" y="50" width="280" height="80" rx="8" fill="#3b82f6" filter="url(#shadow)"/>
+                        <text x="190" y="85" text-anchor="middle" fill="white" font-size="16" font-weight="bold">1. User Clicks "Analyze"</text>
+                        <text x="190" y="110" text-anchor="middle" fill="white" font-size="12">Selects documents + provider</text>
+                    </g>
+
+                    <path d="M 190 130 L 190 180" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="190,180 185,170 195,170" fill="#475569"/>
+
+                    <!-- API Request -->
+                    <g class="node">
+                        <rect x="50" y="180" width="280" height="100" rx="8" fill="#10b981" filter="url(#shadow)"/>
+                        <text x="190" y="215" text-anchor="middle" fill="white" font-size="14" font-weight="bold">2. Trigger Analysis</text>
+                        <text x="190" y="235" text-anchor="middle" fill="white" font-size="11">POST /api/analyze/</text>
+                        <text x="190" y="255" text-anchor="middle" fill="white" font-size="10">{document_ids: [uuid...],</text>
+                        <text x="190" y="270" text-anchor="middle" fill="white" font-size="10">provider: "medgemma-ensemble"}</text>
+                    </g>
+
+                    <path d="M 330 230 L 430 230" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="430,230 420,225 420,235" fill="#475569"/>
+
+                    <!-- Backend Creates Job -->
+                    <g class="node">
+                        <rect x="430" y="180" width="280" height="100" rx="8" fill="#8b5cf6" filter="url(#shadow)"/>
+                        <text x="570" y="215" text-anchor="middle" fill="white" font-size="14" font-weight="bold">3. Create Analysis Job</text>
+                        <text x="570" y="235" text-anchor="middle" fill="white" font-size="11">INSERT INTO analyses</text>
+                        <text x="570" y="255" text-anchor="middle" fill="white" font-size="10">status: "queued"</text>
+                        <text x="570" y="270" text-anchor="middle" fill="white" font-size="10">Returns analysis_id immediately</text>
+                    </g>
+
+                    <path d="M 570 280 L 570 330" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="570,330 565,320 575,320" fill="#475569"/>
+
+                    <!-- Spawn Background Task -->
+                    <g class="node">
+                        <rect x="430" y="330" width="280" height="80" rx="8" fill="#f59e0b" filter="url(#shadow)"/>
+                        <text x="570" y="365" text-anchor="middle" fill="white" font-size="14" font-weight="bold">4. Spawn Background Task</text>
+                        <text x="570" y="390" text-anchor="middle" fill="white" font-size="11">asyncio.create_task()</text>
+                    </g>
+
+                    <!-- Split: Response + Background -->
+                    <path d="M 430 370 L 330 370" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="330,370 340,365 340,375" fill="#475569"/>
+                    <path d="M 710 370 L 810 370" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="810,370 800,365 800,375" fill="#475569"/>
+
+                    <!-- Immediate Response -->
+                    <g class="node">
+                        <rect x="50" y="330" width="280" height="80" rx="8" fill="#22c55e" filter="url(#shadow)"/>
+                        <text x="190" y="365" text-anchor="middle" fill="white" font-size="14" font-weight="bold">5. Immediate Response</text>
+                        <text x="190" y="390" text-anchor="middle" fill="white" font-size="10">{analysis_id, status: "queued"}</text>
+                    </g>
+
+                    <!-- Background Processing -->
+                    <g class="node">
+                        <rect x="810" y="320" width="260" height="550" rx="8" fill="#ddd6fe" stroke="#8b5cf6" stroke-width="3"/>
+                        <text x="940" y="355" text-anchor="middle" fill="#5b21b6" font-size="16" font-weight="bold">Background Processing</text>
+
+                        <!-- Step 1 -->
+                        <rect x="830" y="370" width="220" height="60" rx="6" fill="#8b5cf6"/>
+                        <text x="940" y="395" text-anchor="middle" fill="white" font-size="12">Update status:</text>
+                        <text x="940" y="415" text-anchor="middle" fill="white" font-size="12">"processing"</text>
+
+                        <!-- Step 2 -->
+                        <rect x="830" y="445" width="220" height="60" rx="6" fill="#8b5cf6"/>
+                        <text x="940" y="470" text-anchor="middle" fill="white" font-size="12">Download docs</text>
+                        <text x="940" y="490" text-anchor="middle" fill="white" font-size="12">from GCS</text>
+
+                        <!-- Step 3 -->
+                        <rect x="830" y="520" width="220" height="60" rx="6" fill="#8b5cf6"/>
+                        <text x="940" y="545" text-anchor="middle" fill="white" font-size="12">Run LLM Analysis</text>
+                        <text x="940" y="565" text-anchor="middle" fill="white" font-size="11">(MedGemma/GPT/Gemini)</text>
+
+                        <!-- Step 4 -->
+                        <rect x="830" y="595" width="220" height="60" rx="6" fill="#8b5cf6"/>
+                        <text x="940" y="620" text-anchor="middle" fill="white" font-size="12">Extract Issues +</text>
+                        <text x="940" y="640" text-anchor="middle" fill="white" font-size="12">Build Coverage Matrix</text>
+
+                        <!-- Step 5 -->
+                        <rect x="830" y="670" width="220" height="60" rx="6" fill="#8b5cf6"/>
+                        <text x="940" y="695" text-anchor="middle" fill="white" font-size="12">Calculate Total</text>
+                        <text x="940" y="715" text-anchor="middle" fill="white" font-size="12">Savings & Issue Count</text>
+
+                        <!-- Step 6 -->
+                        <rect x="830" y="745" width="220" height="60" rx="6" fill="#8b5cf6"/>
+                        <text x="940" y="770" text-anchor="middle" fill="white" font-size="12">Save Results + Issues</text>
+                        <text x="940" y="790" text-anchor="middle" fill="white" font-size="12">to Database</text>
+
+                        <!-- Step 7 -->
+                        <rect x="830" y="820" width="220" height="35" rx="6" fill="#22c55e"/>
+                        <text x="940" y="843" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Status: "completed"</text>
+                    </g>
+
+                    <!-- Frontend Polling -->
+                    <path d="M 190 410 L 190 460" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="190,460 185,450 195,450" fill="#475569"/>
+
+                    <g class="node">
+                        <rect x="50" y="460" width="280" height="100" rx="8" fill="#06b6d4" filter="url(#shadow)"/>
+                        <text x="190" y="495" text-anchor="middle" fill="white" font-size="14" font-weight="bold">6. Start Polling</text>
+                        <text x="190" y="515" text-anchor="middle" fill="white" font-size="11">GET /api/analyze/{id}</text>
+                        <text x="190" y="535" text-anchor="middle" fill="white" font-size="10">Every 2-3 seconds</text>
+                        <text x="190" y="550" text-anchor="middle" fill="white" font-size="10">(setInterval)</text>
+                    </g>
+
+                    <!-- Poll Loop -->
+                    <path d="M 190 560 L 190 610" stroke="#475569" stroke-width="3" fill="none" stroke-dasharray="5,5"/>
+                    <polygon points="190,610 185,600 195,600" fill="#475569"/>
+
+                    <g class="node">
+                        <rect x="50" y="610" width="280" height="80" rx="8" fill="#ec4899" filter="url(#shadow)"/>
+                        <text x="190" y="640" text-anchor="middle" fill="white" font-size="13" font-weight="bold">7. Check Status</text>
+                        <text x="190" y="665" text-anchor="middle" fill="white" font-size="11">If "completed" → stop polling</text>
+                        <text x="190" y="680" text-anchor="middle" fill="white" font-size="11">Else → continue</text>
+                    </g>
+
+                    <!-- Results -->
+                    <path d="M 190 690 L 190 740" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="190,740 185,730 195,730" fill="#475569"/>
+
+                    <g class="node">
+                        <rect x="50" y="740" width="280" height="120" rx="8" fill="#22c55e" filter="url(#shadow)"/>
+                        <text x="190" y="775" text-anchor="middle" fill="white" font-size="16" font-weight="bold">8. Display Results</text>
+                        <text x="190" y="800" text-anchor="middle" fill="white" font-size="12">Total Savings: $342.50</text>
+                        <text x="190" y="820" text-anchor="middle" fill="white" font-size="12">Issues Found: 5</text>
+                        <text x="190" y="840" text-anchor="middle" fill="white" font-size="12">Coverage Matrix</text>
+                    </g>
+
+                    <!-- Fetch Issues -->
+                    <path d="M 190 860 L 190 910" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="190,910 185,900 195,900" fill="#475569"/>
+
+                    <g class="node">
+                        <rect x="50" y="900" width="280" height="40" rx="8" fill="#3b82f6" filter="url(#shadow)"/>
+                        <text x="190" y="925" text-anchor="middle" fill="white" font-size="12">GET /api/issues?analysis_id={id}</text>
+                    </g>
+
+                    <!-- Timeline -->
+                    <g>
+                        <rect x="400" y="920" width="300" height="20" rx="4" fill="#e2e8f0"/>
+                        <text x="550" y="910" text-anchor="middle" fill="#475569" font-size="11" font-weight="bold">Processing Time: 30s - 5min</text>
+                    </g>
+                </svg>
+
+                <div class="step-list">
+                    <h4>Why Async + Polling?</h4>
+                    <ol>
+                        <li><strong>Long-running tasks:</strong> AI analysis can take 30 seconds to 5 minutes depending on document count and complexity</li>
+                        <li><strong>Non-blocking UI:</strong> User receives immediate response and can navigate away or wait</li>
+                        <li><strong>Scalability:</strong> Backend can queue and throttle analysis jobs without blocking API requests</li>
+                        <li><strong>Simple implementation:</strong> No WebSocket infrastructure needed, works with standard HTTP</li>
+                        <li><strong>Reliability:</strong> If connection drops, frontend can resume polling when reconnected</li>
+                        <li><strong>Resource efficiency:</strong> 2-3 second polling interval balances UX with server load</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- AUTH TAB -->
+            <div id="auth" class="flow-section">
+                <div class="description">
+                    <h3>Authentication Flow (Firebase + JWT)</h3>
+                    <p>MedBillDozer uses a hybrid authentication system: Firebase OAuth for user identity and JWT tokens for stateless API authentication. This provides the convenience of social login with the performance of token-based auth.</p>
+                </div>
+
+                <svg viewBox="0 0 1000 1100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <filter id="shadow">
+                            <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.2"/>
+                        </filter>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10"
+                                refX="10" refY="5" orient="auto">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+                        </marker>
+                    </defs>
+
+                    <rect width="1000" height="1100" fill="#f8fafc"/>
+
+                    <!-- User Action -->
+                    <g class="node">
+                        <rect x="50" y="50" width="280" height="80" rx="8" fill="#3b82f6" filter="url(#shadow)"/>
+                        <text x="190" y="85" text-anchor="middle" fill="white" font-size="16" font-weight="bold">1. User Clicks Sign In</text>
+                        <text x="190" y="110" text-anchor="middle" fill="white" font-size="12">Google / GitHub OAuth</text>
+                    </g>
+
+                    <path d="M 190 130 L 190 180" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="190,180 185,170 195,170" fill="#475569"/>
+
+                    <!-- Firebase Auth -->
+                    <g class="node">
+                        <rect x="50" y="180" width="280" height="100" rx="8" fill="#f59e0b" filter="url(#shadow)"/>
+                        <text x="190" y="215" text-anchor="middle" fill="white" font-size="14" font-weight="bold">2. Firebase OAuth Flow</text>
+                        <text x="190" y="235" text-anchor="middle" fill="white" font-size="11">User approves in popup</text>
+                        <text x="190" y="255" text-anchor="middle" fill="white" font-size="11">Firebase returns ID token</text>
+                        <text x="190" y="270" text-anchor="middle" fill="white" font-size="10">(JWT signed by Google)</text>
+                    </g>
+
+                    <path d="M 190 280 L 190 330" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="190,330 185,320 195,320" fill="#475569"/>
+
+                    <!-- Send to Backend -->
+                    <g class="node">
+                        <rect x="50" y="330" width="280" height="80" rx="8" fill="#10b981" filter="url(#shadow)"/>
+                        <text x="190" y="365" text-anchor="middle" fill="white" font-size="14" font-weight="bold">3. Send to Backend</text>
+                        <text x="190" y="390" text-anchor="middle" fill="white" font-size="11">POST /api/auth/login</text>
+                        <text x="190" y="405" text-anchor="middle" fill="white" font-size="10">{firebase_id_token}</text>
+                    </g>
+
+                    <path d="M 330 370 L 430 370" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="430,370 420,365 420,375" fill="#475569"/>
+
+                    <!-- Backend Verify -->
+                    <g class="node">
+                        <rect x="430" y="320" width="280" height="100" rx="8" fill="#8b5cf6" filter="url(#shadow)"/>
+                        <text x="570" y="355" text-anchor="middle" fill="white" font-size="14" font-weight="bold">4. Verify with Firebase</text>
+                        <text x="570" y="375" text-anchor="middle" fill="white" font-size="11">firebase_admin.auth</text>
+                        <text x="570" y="395" text-anchor="middle" fill="white" font-size="11">.verify_id_token()</text>
+                        <text x="570" y="410" text-anchor="middle" fill="white" font-size="10">Extract: uid, email, name</text>
+                    </g>
+
+                    <path d="M 570 420 L 570 470" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="570,470 565,460 575,460" fill="#475569"/>
+
+                    <!-- Create/Update User -->
+                    <g class="node">
+                        <rect x="430" y="470" width="280" height="100" rx="8" fill="#ec4899" filter="url(#shadow)"/>
+                        <text x="570" y="505" text-anchor="middle" fill="white" font-size="14" font-weight="bold">5. Create/Update User</text>
+                        <text x="570" y="525" text-anchor="middle" fill="white" font-size="11">INSERT INTO user_profiles</text>
+                        <text x="570" y="545" text-anchor="middle" fill="white" font-size="10">ON CONFLICT (firebase_uid)</text>
+                        <text x="570" y="560" text-anchor="middle" fill="white" font-size="10">DO UPDATE last_login_at</text>
+                    </g>
+
+                    <path d="M 570 570 L 570 620" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="570,620 565,610 575,610" fill="#475569"/>
+
+                    <!-- Generate JWT -->
+                    <g class="node">
+                        <rect x="430" y="620" width="280" height="120" rx="8" fill="#06b6d4" filter="url(#shadow)"/>
+                        <text x="570" y="655" text-anchor="middle" fill="white" font-size="14" font-weight="bold">6. Generate JWT Tokens</text>
+                        <text x="570" y="680" text-anchor="middle" fill="white" font-size="11">Access Token (1hr expiry):</text>
+                        <text x="570" y="695" text-anchor="middle" fill="white" font-size="10">{user_id, firebase_uid, email}</text>
+                        <text x="570" y="715" text-anchor="middle" fill="white" font-size="11">Refresh Token (7d expiry):</text>
+                        <text x="570" y="730" text-anchor="middle" fill="white" font-size="10">{sub: user_id, type: "refresh"}</text>
+                    </g>
+
+                    <path d="M 430 680 L 330 680" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="330,680 340,675 340,685" fill="#475569"/>
+
+                    <!-- Response -->
+                    <g class="node">
+                        <rect x="50" y="620" width="280" height="120" rx="8" fill="#22c55e" filter="url(#shadow)"/>
+                        <text x="190" y="655" text-anchor="middle" fill="white" font-size="14" font-weight="bold">7. Response + Cookie</text>
+                        <text x="190" y="675" text-anchor="middle" fill="white" font-size="11">{access_token, refresh_token,</text>
+                        <text x="190" y="690" text-anchor="middle" fill="white" font-size="11">user: {...}}</text>
+                        <text x="190" y="715" text-anchor="middle" fill="white" font-size="10">Set-Cookie: refresh_token=...;</text>
+                        <text x="190" y="730" text-anchor="middle" fill="white" font-size="10">HttpOnly; Secure; SameSite=Strict</text>
+                    </g>
+
+                    <path d="M 190 740 L 190 790" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="190,790 185,780 195,780" fill="#475569"/>
+
+                    <!-- Store Tokens -->
+                    <g class="node">
+                        <rect x="50" y="790" width="280" height="80" rx="8" fill="#3b82f6" filter="url(#shadow)"/>
+                        <text x="190" y="820" text-anchor="middle" fill="white" font-size="14" font-weight="bold">8. Store Tokens</text>
+                        <text x="190" y="840" text-anchor="middle" fill="white" font-size="11">Access: Zustand store (memory)</text>
+                        <text x="190" y="855" text-anchor="middle" fill="white" font-size="11">Refresh: httpOnly cookie</text>
+                    </g>
+
+                    <!-- Divider -->
+                    <line x1="50" y1="920" x2="950" y2="920" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="10,5"/>
+                    <text x="500" y="940" text-anchor="middle" fill="#64748b" font-size="14" font-weight="bold">SUBSEQUENT REQUESTS</text>
+
+                    <!-- API Request -->
+                    <g class="node">
+                        <rect x="50" y="960" width="280" height="80" rx="8" fill="#10b981" filter="url(#shadow)"/>
+                        <text x="190" y="990" text-anchor="middle" fill="white" font-size="14" font-weight="bold">9. API Request</text>
+                        <text x="190" y="1010" text-anchor="middle" fill="white" font-size="11">Authorization: Bearer {token}</text>
+                        <text x="190" y="1025" text-anchor="middle" fill="white" font-size="10">All protected endpoints</text>
+                    </g>
+
+                    <path d="M 330 1000 L 430 1000" stroke="#475569" stroke-width="3" fill="none" />
+                    <polygon points="430,1000 420,995 420,1005" fill="#475569"/>
+
+                    <!-- Verify JWT -->
+                    <g class="node">
+                        <rect x="430" y="960" width="280" height="80" rx="8" fill="#8b5cf6" filter="url(#shadow)"/>
+                        <text x="570" y="990" text-anchor="middle" fill="white" font-size="14" font-weight="bold">10. Verify JWT</text>
+                        <text x="570" y="1010" text-anchor="middle" fill="white" font-size="11">Check signature (HS256)</text>
+                        <text x="570" y="1025" text-anchor="middle" fill="white" font-size="10">Extract user_id → Lookup in DB</text>
+                    </g>
+
+                    <!-- Side Panel: Token Details -->
+                    <g>
+                        <rect x="750" y="50" width="230" height="550" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                        <text x="865" y="80" text-anchor="middle" fill="#78350f" font-size="16" font-weight="bold">Token Security</text>
+
+                        <text x="770" y="115" fill="#78350f" font-size="13" font-weight="bold">Access Token:</text>
+                        <text x="770" y="135" fill="#78350f" font-size="11">• Short-lived (1 hour)</text>
+                        <text x="770" y="153" fill="#78350f" font-size="11">• Stored in memory</text>
+                        <text x="770" y="171" fill="#78350f" font-size="11">• Lost on page refresh</text>
+                        <text x="770" y="189" fill="#78350f" font-size="11">• Sent in Authorization header</text>
+
+                        <text x="770" y="220" fill="#78350f" font-size="13" font-weight="bold">Refresh Token:</text>
+                        <text x="770" y="240" fill="#78350f" font-size="11">• Long-lived (7 days)</text>
+                        <text x="770" y="258" fill="#78350f" font-size="11">• httpOnly cookie</text>
+                        <text x="770" y="276" fill="#78350f" font-size="11">• XSS protected</text>
+                        <text x="770" y="294" fill="#78350f" font-size="11">• Auto-sent by browser</text>
+
+                        <text x="770" y="325" fill="#78350f" font-size="13" font-weight="bold">On Token Expiry:</text>
+                        <text x="770" y="345" fill="#78350f" font-size="11">1. API returns 401</text>
+                        <text x="770" y="363" fill="#78350f" font-size="11">2. Axios interceptor catches</text>
+                        <text x="770" y="381" fill="#78350f" font-size="11">3. POST /api/auth/refresh</text>
+                        <text x="770" y="399" fill="#78350f" font-size="11">4. Get new access token</text>
+                        <text x="770" y="417" fill="#78350f" font-size="11">5. Retry original request</text>
+
+                        <text x="770" y="448" fill="#78350f" font-size="13" font-weight="bold">JWT Payload:</text>
+                        <text x="770" y="468" fill="#78350f" font-size="10">Access:</text>
+                        <text x="770" y="483" fill="#78350f" font-size="9">{user_id, firebase_uid,</text>
+                        <text x="770" y="496" fill="#78350f" font-size="9">email, exp, iat}</text>
+
+                        <text x="770" y="516" fill="#78350f" font-size="10">Refresh:</text>
+                        <text x="770" y="531" fill="#78350f" font-size="9">{sub, type: "refresh",</text>
+                        <text x="770" y="544" fill="#78350f" font-size="9">exp, iat}</text>
+
+                        <text x="770" y="575" fill="#78350f" font-size="13" font-weight="bold">Signature:</text>
+                        <text x="770" y="590" fill="#78350f" font-size="9">HMACSHA256(</text>
+                        <text x="770" y="603" fill="#78350f" font-size="9">  base64(header) + "." +</text>
+                        <text x="770" y="616" fill="#78350f" font-size="9">  base64(payload),</text>
+                        <text x="770" y="629" fill="#78350f" font-size="9">  JWT_SECRET_KEY</text>
+                        <text x="770" y="642" fill="#78350f" font-size="9">)</text>
+                    </g>
+                </svg>
+
+                <div class="step-list">
+                    <h4>Security Benefits:</h4>
+                    <ol>
+                        <li><strong>OAuth 2.0:</strong> Delegates authentication to trusted providers (Google, GitHub)</li>
+                        <li><strong>No password storage:</strong> User credentials never touch your servers</li>
+                        <li><strong>Stateless auth:</strong> JWT enables horizontal scaling without session stores</li>
+                        <li><strong>XSS protection:</strong> Refresh tokens in httpOnly cookies can't be accessed by JavaScript</li>
+                        <li><strong>CSRF protection:</strong> SameSite=Strict prevents cross-site cookie sending</li>
+                        <li><strong>Time-limited:</strong> Short access token expiry limits damage from token theft</li>
+                        <li><strong>Automatic refresh:</strong> Seamless UX with Axios interceptors handling token renewal</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #3b82f6;"></div>
+                <span>Frontend / User Actions</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #10b981;"></div>
+                <span>API Requests</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8b5cf6;"></div>
+                <span>Backend Processing</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f59e0b;"></div>
+                <span>External Services</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #22c55e;"></div>
+                <span>Success / Complete</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.flow-section');
+            sections.forEach(section => section.classList.remove('active'));
+
+            // Remove active from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show selected section
+            document.getElementById(tabName).classList.add('active');
+
+            // Mark tab as active
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+
+</html>

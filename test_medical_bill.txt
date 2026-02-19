@@ -1,0 +1,79 @@
+═══════════════════════════════════════════════════════════════
+                    GENERAL HOSPITAL MEDICAL CENTER
+                         123 Healthcare Drive
+                      Cityville, ST 12345-6789
+                        Phone: (555) 123-4567
+═══════════════════════════════════════════════════════════════
+
+STATEMENT OF SERVICES
+
+Patient Name: John Doe
+Date of Birth: 01/15/1980
+Patient ID: PAT-987654
+Account Number: ACC-2024-0123
+
+Date of Service: February 10, 2024
+Provider: Dr. Sarah Johnson, MD
+Department: Emergency Department
+
+───────────────────────────────────────────────────────────────
+SERVICE DETAILS
+───────────────────────────────────────────────────────────────
+
+Date        Code      Description                      Charge
+────────────────────────────────────────────────────────────────
+02/10/24    99285     Emergency Dept Visit - High     $850.00
+02/10/24    70450     CT Scan Head without Contrast   $2,500.00
+02/10/24    36415     Routine Venipuncture           $25.00
+02/10/24    80053     Comprehensive Metabolic Panel   $150.00
+02/10/24    85025     Complete Blood Count (CBC)      $95.00
+02/10/24    J1100     Dexamethasone Injection        $45.00
+02/10/24    99285-25  Duplicate ED Visit Charge      $850.00
+
+                                        SUBTOTAL:      $4,515.00
+
+───────────────────────────────────────────────────────────────
+INSURANCE INFORMATION
+───────────────────────────────────────────────────────────────
+
+Primary Insurance: BlueCross BlueShield
+Policy Number: BC123456789
+Group Number: GRP-5678
+
+Insurance Payment:                              -$3,200.00
+Insurance Adjustment:                            -$500.00
+
+                                        BALANCE:       $815.00
+
+───────────────────────────────────────────────────────────────
+PAYMENT SUMMARY
+───────────────────────────────────────────────────────────────
+
+Total Charges:                                  $4,515.00
+Insurance Payments:                             -$3,200.00
+Insurance Adjustments:                           -$500.00
+
+PATIENT RESPONSIBILITY:                          $815.00
+
+Payment Due Date: March 10, 2024
+
+───────────────────────────────────────────────────────────────
+NOTES
+───────────────────────────────────────────────────────────────
+
+This bill contains potential billing errors for testing purposes:
+1. Duplicate charge for emergency visit (99285 appears twice)
+2. Possible upcoding - visit coded as highest level (99285)
+3. Unbundled services that should be included in ED visit
+
+If you have questions about this bill, please contact our
+billing department at (555) 123-4567 ext. 2.
+
+Payment Options:
+- Online: www.generalhospital.com/billing
+- Phone: (555) 123-4567
+- Mail: General Hospital, Billing Dept, PO Box 1234
+
+Thank you for choosing General Hospital Medical Center.
+
+═══════════════════════════════════════════════════════════════
