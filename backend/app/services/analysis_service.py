@@ -246,7 +246,19 @@ class AnalysisService:
                     )
 
                     # Run analysis with progress callback
-                    result = orchestrator.run(doc['raw_text'], progress_callback=progress_callback)
+                    try:
+                        result = orchestrator.run(doc['raw_text'], progress_callback=progress_callback)
+                    except KeyError as ke:
+                        logger.error(f"KeyError during orchestrator.run(): {ke}")
+                        logger.exception("Full traceback:")
+                        raise
+                    except Exception as e:
+                        logger.error(f"Error during orchestrator.run(): {type(e).__name__}: {e}")
+                        raise
+
+                    # Validate result structure
+                    if not isinstance(result, dict):
+                        raise ValueError(f"Orchestrator returned non-dict result: {type(result)}")
 
                     # Mark as complete
                     await self.db.update_document_progress(
@@ -261,7 +273,8 @@ class AnalysisService:
                         f"✅ Document analysis completed successfully",
                         analysis_id=analysis_id,
                         document_id=doc_id,
-                        filename=doc['filename']
+                        filename=doc['filename'],
+                        result_keys=list(result.keys()) if isinstance(result, dict) else "not-a-dict"
                     )
 
                     # Build document result with facts and analysis
