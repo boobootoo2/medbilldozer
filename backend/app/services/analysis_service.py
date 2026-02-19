@@ -151,7 +151,17 @@ class AnalysisService:
                         document_id=doc_id,
                         error=str(e)
                     )
-                    raw_text = doc_meta.get('extracted_text', '')
+                    raw_text = doc_meta.get('extracted_text') or ''
+
+                # Ensure raw_text is never None
+                if not raw_text or not isinstance(raw_text, str):
+                    log_with_context(
+                        logger, 40,
+                        f"❌ Document has no text content",
+                        analysis_id=analysis_id,
+                        document_id=doc_id
+                    )
+                    continue  # Skip this document
 
                 documents.append({
                     "document_id": doc_id,
