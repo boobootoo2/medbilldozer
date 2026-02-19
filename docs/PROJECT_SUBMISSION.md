@@ -4,11 +4,7 @@
 **MedBillDozer** - Intelligent Medical Billing Audit Platform
 
 ### Your Team
-**Team MedBillDozer** is a cross-functional team combining healthcare domain expertise, AI/ML engineering, and full-stack development:
-
-- **John Shultz** - Project Lead & Full-Stack Engineer: System architecture, FastAPI backend, React frontend, Google Cloud deployment
-- **AI/ML Specialists** - MedGemma integration, clinical validation pipeline, ensemble model development
-- **Healthcare Domain Experts** - Medical billing standards (CPT/CDT codes), insurance claims processing, regulatory compliance (HIPAA)
+**John Shultz** - Project Lead & Full-Stack Engineer with life sciences academic experience, focusing on AI/ML integration, system architecture, FastAPI backend, React frontend, and Google Cloud deployment.
 
 ### Problem Statement
 
@@ -39,13 +35,13 @@ MedBillDozer leverages **Google's MedGemma** (medical domain-specific AI) as the
 **2. Clinical Image Analysis** (X-rays, Histopathology, MRI, Ultrasound)
 - **MedGemma Vision Integration**: Validates billed procedures align with clinical evidence
 - **Multi-Modal Reasoning**: Detects when charged treatments are inconsistent with diagnoses or imaging findings
-- **False Positive Reduction**: Ensemble approach reduces hallucination risk by 43% vs. single-model systems
+- **Ensemble Validation**: Cross-model validation approach designed to reduce hallucination risk through consensus
 
 **Performance Results:**
 
 ![Detection Performance by Modality](images/detection_performance_heatmap.png)
 
-Our benchmarks show **MedGemma-Ensemble achieves 94% true positive detection** across medical imaging modalities while maintaining **89% true negative detection**, outperforming GPT-4o in clinical validation tasks. See our [interactive data flow diagram](docs/data_flow_diagram.html) for technical architecture.
+Our current benchmarks show **MedGemma-Ensemble achieves 78% detection rate** with **40% F1 score** (75% recall, 30% precision) across 61 test patients. While these early results outperform GPT-4o in detection rate (29% detection), there is significant room for improvement. **Our target is 90-94% accuracy** through expanded training data and model refinement. See our [interactive data flow diagram](docs/data_flow_diagram.html) for technical architecture.
 
 **Key Differentiators:**
 - **Domain-Specific AI**: Purpose-built medical models vs. general-purpose LLMs
@@ -59,7 +55,7 @@ Our benchmarks show **MedGemma-Ensemble achieves 94% true positive detection** a
 🎯 **Try MedBillDozer Now**: [https://medbilldozer.vercel.app/](https://medbilldozer.vercel.app/)
 🔐 **Access Code**: `2026MEDGEMMA`
 
-🧪 **Prototype & Learning Center**: [https://medbilldozer.streamlit.app/](https://medbilldozer.streamlit.app/)
+🧪 **Prototype & AI Agent Assistant & MedBillDozer Challenge Simulator**: [https://medbilldozer.streamlit.app/](https://medbilldozer.streamlit.app/)
 - Guided tour of medical billing error detection
 - Benchmark visualizations and performance metrics
 - MedBillDozer Challenge Game (interactive learning)
@@ -153,7 +149,8 @@ Full data strategy: [STREAMLINED_INTAKE_PLAN.md](STREAMLINED_INTAKE_PLAN.md)
 - Google Cloud Storage (HIPAA-eligible bucket)
 
 **Frontend:**
-- React 18 + TypeScript + Vite
+- React 18 + TypeScript + Vite (production application)
+- Streamlit (AI agent assistant & MedBillDozer Challenge simulator)
 - TailwindCSS for responsive design
 - Zustand for state management
 - Firebase Auth SDK
@@ -169,6 +166,16 @@ Full data strategy: [STREAMLINED_INTAKE_PLAN.md](STREAMLINED_INTAKE_PLAN.md)
 - 95%+ test coverage on core modules
 - Automated CodeQL security scanning
 - Benchmark suite (clinical validation accuracy)
+
+**Development Goals & Documentation:**
+- **Current Performance**: 78% detection rate, 40% F1 score (based on 61 test patients)
+- **Target Accuracy Goal**: 90-94% true positive detection with reduced false positives
+- **Path to Target**: Expanded training data, model refinement, and ensemble optimization
+- **Referenced Planning Documents**:
+  - [Regulatory Affairs Compliance Strategy](REGULATORY_AFFAIRS_COMPLIANCE_STRATEGY.md)
+  - [Release Timeline](RELEASE_TIMELINE.md)
+  - [Business Plan](BUSINESS_PLAN.md)
+  - [Streamlined Intake Plan](STREAMLINED_INTAKE_PLAN.md)
 
 #### Open Source & Reproducibility
 
@@ -186,14 +193,15 @@ Full data strategy: [STREAMLINED_INTAKE_PLAN.md](STREAMLINED_INTAKE_PLAN.md)
 
 ### Conclusion
 
-MedBillDozer demonstrates effective use of **MedGemma as a domain-specific foundation** for real-world healthcare financial applications. By combining medical AI expertise with ensemble validation and clinical image analysis, we achieve industry-leading accuracy while maintaining patient privacy and accessibility.
+MedBillDozer demonstrates effective use of **MedGemma as a domain-specific foundation** for real-world healthcare financial applications. By combining medical AI expertise with ensemble validation and clinical image analysis, we are building toward high-accuracy detection while maintaining patient privacy and accessibility. Current proof-of-concept shows promising results with clear pathways to production-grade performance.
 
 **Key Achievements:**
 - ✅ Production deployment with FastAPI + React frontend
-- ✅ MedGemma-Ensemble with 94% detection accuracy
+- ✅ MedGemma-Ensemble proof-of-concept (78% detection rate, targeting 90-94%)
 - ✅ Multi-modal analysis (text + clinical images)
 - ✅ HIPAA-ready architecture on Google Cloud Platform
 - ✅ Open-source benchmarks advancing medical AI research
+- 🎯 **In Progress**: Expanding training data to achieve 90-94% accuracy target
 
 **Try It Now**: [medbilldozer.vercel.app](https://medbilldozer.vercel.app/) | **Code**: `2026MEDGEMMA`
 

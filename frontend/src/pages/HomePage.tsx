@@ -1,11 +1,11 @@
 /**
  * Home page - Document upload and analysis
  */
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Play, Link as LinkIcon } from 'lucide-react';
 import { UserMenu } from '../components/auth/UserMenu';
 import { MultiFileUpload } from '../components/documents/MultiFileUpload';
-import { DocumentList } from '../components/documents/DocumentList';
+import { DocumentList, DocumentListRef } from '../components/documents/DocumentList';
 import { InsuranceConnectionModal } from '../components/insurance/InsuranceConnectionModal';
 import { AnalysisProgress } from '../components/analysis/AnalysisProgress';
 import { analysisService } from '../services/analysis.service';
@@ -13,9 +13,9 @@ import { analysisService } from '../services/analysis.service';
 export const HomePage = () => {
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [showInsuranceModal, setShowInsuranceModal] = useState(false);
   const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null);
+  const documentListRef = useRef<DocumentListRef>(null);
 
   const handleDocumentSelect = (documentId: string) => {
     setSelectedDocuments(prev =>
@@ -25,9 +25,20 @@ export const HomePage = () => {
     );
   };
 
-  const handleUploadComplete = () => {
-    // Refresh document list
-    setRefreshKey(prev => prev + 1);
+  const handleUploadComplete = async () => {
+    console.log('📤 HomePage: Upload complete, waiting briefly for DB commit...');
+    // Small delay to ensure database transaction completes
+    await new Promise(resolve => setTimeout(resolve, 500));
+    console.log('🔄 HomePage: Now refreshing document list...');
+    console.log('📍 HomePage: documentListRef.current =', documentListRef.current);
+
+    if (!documentListRef.current) {
+      console.error('❌ HomePage: documentListRef.current is null! Ref not attached.');
+      return;
+    }
+
+    await documentListRef.current.refresh();
+    console.log('✅ HomePage: Document list refresh complete');
   };
 
   const handleAnalyze = async () => {
@@ -51,11 +62,11 @@ export const HomePage = () => {
     }
   };
 
-  const handleBackToDocuments = () => {
+  const handleBackToDocuments = async () => {
     setCurrentAnalysisId(null);
     setAnalyzing(false);
     setSelectedDocuments([]);
-    setRefreshKey(prev => prev + 1);
+    await documentListRef.current?.refresh();
   };
 
   return (
@@ -88,8 +99,8 @@ export const HomePage = () => {
                 Upload medical bills, insurance EOBs, or receipts for analysis
               </p>
             </div>
-            <MultiFileUpload onUploadComplete={(documentIds) => {
-              handleUploadComplete();
+            <MultiFileUpload onUploadComplete={async (documentIds) => {
+              await handleUploadComplete();
               // Show success message
               if (documentIds.length > 0) {
                 alert(`Successfully uploaded ${documentIds.length} document(s)!`);
@@ -151,7 +162,7 @@ export const HomePage = () => {
             </div>
 
             <DocumentList
-              key={refreshKey}
+              ref={documentListRef}
               onDocumentSelect={handleDocumentSelect}
               selectedDocuments={selectedDocuments}
             />
