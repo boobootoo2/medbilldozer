@@ -39,8 +39,7 @@ MedBillDozer leverages **Google's MedGemma** (medical domain-specific AI) as the
 
 **Performance Results:**
 
-![Detection Performance by Modality](images/detection_performance_heatmap.png)
-
+![Detection Performance by Modality](https://github.com/boobootoo2/medbilldozer/blob/main/images/detection-by-modality.png)
 Our current benchmarks show **MedGemma-Ensemble achieves 78% detection rate** with **40% F1 score** (75% recall, 30% precision) across 61 test patients. While these early results outperform GPT-4o in detection rate (29% detection), there is significant room for improvement. **Our target is 90-94% accuracy** through expanded training data and model refinement. See our [interactive data flow diagram](docs/data_flow_diagram.html) for technical architecture.
 
 **Key Differentiators:**
