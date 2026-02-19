@@ -203,8 +203,6 @@ MedBillDozer demonstrates effective use of **MedGemma as a domain-specific found
 - ✅ Open-source benchmarks advancing medical AI research
 - 🎯 **In Progress**: Expanding training data to achieve 90-94% accuracy target
 
-**Try It Now**: [medbilldozer.vercel.app](https://medbilldozer.vercel.app/) | **Code**: `2026MEDGEMMA`
+**Try It Now**: [medbilldozer.vercel.app](https://medbilldozer.vercel.app/) | **Invite Code**: `2026MEDGEMMA`
 
----
 
-*Word Count: ~1,180*
