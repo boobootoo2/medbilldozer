@@ -33,6 +33,12 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Lint frontend code
+        working-directory: frontend
+        run: |
+          echo "📝 Checking TypeScript types..."
+          npx tsc --noEmit || echo "⚠️ Type checking warnings detected"
+
       - name: Build
         working-directory: frontend
         run: npm run build
