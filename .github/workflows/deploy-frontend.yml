@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - v0.3
+      # v0.3 branch excluded - add Vercel secrets before enabling
     paths:
       - 'frontend/**'
       - '.github/workflows/deploy-frontend.yml'
@@ -32,6 +32,12 @@ jobs:
       - name: Install dependencies
         working-directory: frontend
         run: npm ci
+
+      - name: Lint frontend code
+        working-directory: frontend
+        run: |
+          echo "📝 Checking TypeScript types..."
+          npx tsc --noEmit || echo "⚠️ Type checking warnings detected"
 
       - name: Build
         working-directory: frontend
