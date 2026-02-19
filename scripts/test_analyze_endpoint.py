@@ -47,7 +47,8 @@ def main():
     def test_list_documents():
         response = requests.get(
             f"{API_BASE_URL}/api/documents/?limit=50&offset=0",
-            headers=headers
+            headers=headers,
+            timeout=30
         )
         response.raise_for_status()
         data = response.json()
@@ -75,7 +76,8 @@ def main():
         response = requests.post(
             f"{API_BASE_URL}/api/analyze/",  # Trailing slash required (redirect_slashes=False)
             headers=headers,
-            json=payload
+            json=payload,
+            timeout=30
         )
         print(f"Status Code: {response.status_code}")
         print(f"Response: {response.text}")
@@ -98,7 +100,8 @@ def main():
             print(f"Poll attempt {attempt + 1}/{max_attempts}...", end=' ')
             response = requests.get(
                 f"{API_BASE_URL}/api/analyze/{analysis_id}",  # Fixed: analyze not analysis
-                headers=headers
+                headers=headers,
+                timeout=30
             )
             response.raise_for_status()
             data = response.json()
