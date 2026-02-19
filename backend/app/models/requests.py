@@ -1,7 +1,8 @@
 """Request/Response Pydantic models."""
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
+from enum import Enum
 
 
 # ============================================================================
@@ -81,11 +82,19 @@ class DocumentListResponse(BaseModel):
 # ANALYSIS
 # ============================================================================
 
+class AnalysisProvider(str, Enum):
+    """Allowed analysis providers."""
+    MEDGEMMA_ENSEMBLE = "medgemma-ensemble"
+    OPENAI = "openai"
+    GEMINI = "gemini"
+    SMART = "smart"
+
+
 class AnalyzeRequest(BaseModel):
     """Request to analyze documents."""
     document_ids: List[str] = Field(..., description="List of document IDs to analyze")
-    provider: Optional[str] = Field(
-        "medgemma-ensemble",
+    provider: Optional[AnalysisProvider] = Field(
+        default=AnalysisProvider.MEDGEMMA_ENSEMBLE,
         description="AI provider (medgemma-ensemble, openai, gemini, smart)"
     )
 

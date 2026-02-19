@@ -1,8 +1,9 @@
 """Structured logging utilities with correlation ID support."""
 import logging
 import sys
+import re
 from contextvars import ContextVar
-from typing import Optional
+from typing import Optional, Any
 from datetime import datetime
 import json
 
@@ -133,12 +134,57 @@ def get_correlation_id() -> Optional[str]:
     return correlation_id_var.get()
 
 
+def sanitize_log_value(value: Any, max_length: int = 1000) -> Any:
+    """
+    Sanitize a value for safe logging to prevent log injection attacks.
+
+    - Removes newlines, carriage returns, and control characters
+    - Removes ANSI escape sequences
+    - Truncates long strings
+    - Preserves non-string types
+    """
+    if not isinstance(value, str):
+        # For non-string types (int, float, bool, None), convert to string safely
+        if value is None or isinstance(value, (int, float, bool)):
+            return value
+        # For other types, convert to string and sanitize
+        value = str(value)
+
+    # Remove control characters (including newlines, carriage returns, tabs)
+    # Keep only printable ASCII and common Unicode characters
+    value = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]', '', value)
+
+    # Remove ANSI escape sequences
+    value = re.sub(r'\x1b\[[0-9;]*[a-zA-Z]', '', value)
+
+    # Replace newlines and carriage returns with spaces
+    value = value.replace('\n', ' ').replace('\r', ' ')
+
+    # Collapse multiple spaces
+    value = re.sub(r'\s+', ' ', value)
+
+    # Truncate if too long
+    if len(value) > max_length:
+        value = value[:max_length] + '...[truncated]'
+
+    return value.strip()
+
+
 def log_with_context(
     logger: logging.Logger,
     level: int,
     message: str,
     **context
 ) -> None:
-    """Log with additional context fields."""
-    extra = {k: v for k, v in context.items() if v is not None}
-    logger.log(level, message, extra=extra)
+    """
+    Log with additional context fields.
+
+    All context values are sanitized to prevent log injection attacks.
+    """
+    # Sanitize all context values
+    sanitized_context = {
+        k: sanitize_log_value(v)
+        for k, v in context.items()
+        if v is not None
+    }
+    logger.log(level, message, extra=sanitized_context)
