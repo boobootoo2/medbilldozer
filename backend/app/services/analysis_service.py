@@ -185,7 +185,18 @@ class AnalysisService:
 
             # Run orchestrator for each document (REUSE EXISTING CODE)
             results = []
+            log_with_context(
+                logger, 20,
+                f"🔄 Starting document loop with {len(documents)} documents",
+                analysis_id=analysis_id,
+                document_keys=str([list(d.keys()) for d in documents[:2]])  # Show keys of first 2 docs
+            )
             for idx, doc in enumerate(documents, 1):
+                log_with_context(
+                    logger, 20,
+                    f"📋 Processing document {idx}, type: {type(doc)}, keys: {list(doc.keys()) if isinstance(doc, dict) else 'NOT A DICT'}",
+                    analysis_id=analysis_id
+                )
                 doc_id = doc['document_id']
                 doc_started_at = datetime.utcnow().isoformat()
 
