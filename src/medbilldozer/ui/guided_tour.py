@@ -158,18 +158,18 @@ TOUR_STEPS = [
 
     TourStep(
         id=8,
-        title="Streamlit Prototype Interface",
+        title="Full Web Application",
         description=(
-            "🖥️ The Streamlit prototype interface provides an alternative way to interact with MedBillDozer. "
-            "This password-protected interface connects directly to the production Cloud Run backend, "
-            "allowing document upload and management. It's designed for quick access and testing, "
-            "with integration links to the full web application at medbilldozer.vercel.app for complete functionality."
+            "🖥️ The production web application at medbilldozer.vercel.app provides the complete MedBillDozer experience. "
+            "Built with React and a FastAPI backend deployed on Cloud Run, the full application offers "
+            "document upload, advanced analysis features, and comprehensive workflow management. "
+            "It's designed for seamless interaction with complete functionality and production-grade reliability."
         ),
         narration=(
-            "The Streamlit prototype interface provides an alternative way to interact with MedBillDozer. "
-            "This password-protected interface connects directly to the production Cloud Run backend, "
-            "allowing document upload and management. It's designed for quick access and testing, "
-            "with integration links to the full web application for complete functionality."
+            "The production web application at medbilldozer.vercel.app provides the complete MedBillDozer experience. "
+            "Built with React and a FastAPI backend deployed on Cloud Run, the full application offers "
+            "document upload, advanced analysis features, and comprehensive workflow management. "
+            "It's designed for seamless interaction with complete functionality and production-grade reliability."
         ),
         target="prototype_interface",
         position="top"

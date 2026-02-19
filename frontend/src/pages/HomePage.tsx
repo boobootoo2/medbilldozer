@@ -1,21 +1,21 @@
 /**
  * Home page - Document upload and analysis
  */
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef } from 'react';
 import { Play, Link as LinkIcon } from 'lucide-react';
 import { UserMenu } from '../components/auth/UserMenu';
 import { MultiFileUpload } from '../components/documents/MultiFileUpload';
-import { DocumentList } from '../components/documents/DocumentList';
+import { DocumentList, DocumentListRef } from '../components/documents/DocumentList';
 import { InsuranceConnectionModal } from '../components/insurance/InsuranceConnectionModal';
+import { AnalysisProgress } from '../components/analysis/AnalysisProgress';
 import { analysisService } from '../services/analysis.service';
 
 export const HomePage = () => {
-  const navigate = useNavigate();
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [showInsuranceModal, setShowInsuranceModal] = useState(false);
+  const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null);
+  const documentListRef = useRef<DocumentListRef>(null);
 
   const handleDocumentSelect = (documentId: string) => {
     setSelectedDocuments(prev =>
@@ -25,9 +25,20 @@ export const HomePage = () => {
     );
   };
 
-  const handleUploadComplete = () => {
-    // Refresh document list
-    setRefreshKey(prev => prev + 1);
+  const handleUploadComplete = async () => {
+    console.log('📤 HomePage: Upload complete, waiting briefly for DB commit...');
+    // Small delay to ensure database transaction completes
+    await new Promise(resolve => setTimeout(resolve, 500));
+    console.log('🔄 HomePage: Now refreshing document list...');
+    console.log('📍 HomePage: documentListRef.current =', documentListRef.current);
+
+    if (!documentListRef.current) {
+      console.error('❌ HomePage: documentListRef.current is null! Ref not attached.');
+      return;
+    }
+
+    await documentListRef.current.refresh();
+    console.log('✅ HomePage: Document list refresh complete');
   };
 
   const handleAnalyze = async () => {
@@ -40,16 +51,22 @@ export const HomePage = () => {
       setAnalyzing(true);
       const { analysis_id } = await analysisService.triggerAnalysis(
         selectedDocuments,
-        'medgemma-ensemble'
+        'medgemma-4b-it'
       );
 
-      // Navigate to analysis dashboard
-      navigate(`/analysis/${analysis_id}`);
+      // Show analysis progress inline (no navigation)
+      setCurrentAnalysisId(analysis_id);
     } catch (err: any) {
       alert('Failed to start analysis: ' + err.message);
-    } finally {
       setAnalyzing(false);
     }
+  };
+
+  const handleBackToDocuments = async () => {
+    setCurrentAnalysisId(null);
+    setAnalyzing(false);
+    setSelectedDocuments([]);
+    await documentListRef.current?.refresh();
   };
 
   return (
@@ -66,17 +83,24 @@ export const HomePage = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column - Upload */}
-          <div>
+        {/* Show Analysis Progress when analyzing */}
+        {currentAnalysisId ? (
+          <AnalysisProgress
+            analysisId={currentAnalysisId}
+            onBack={handleBackToDocuments}
+          />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left Column - Upload */}
+            <div>
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Upload Documents</h2>
               <p className="text-gray-600">
                 Upload medical bills, insurance EOBs, or receipts for analysis
               </p>
             </div>
-            <MultiFileUpload onUploadComplete={(documentIds) => {
-              handleUploadComplete();
+            <MultiFileUpload onUploadComplete={async (documentIds) => {
+              await handleUploadComplete();
               // Show success message
               if (documentIds.length > 0) {
                 alert(`Successfully uploaded ${documentIds.length} document(s)!`);
@@ -138,14 +162,16 @@ export const HomePage = () => {
             </div>
 
             <DocumentList
-              key={refreshKey}
+              ref={documentListRef}
               onDocumentSelect={handleDocumentSelect}
               selectedDocuments={selectedDocuments}
             />
           </div>
         </div>
+        )}
 
-        {/* Features */}
+        {/* Features - Only show when not analyzing */}
+        {!currentAnalysisId && (
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center">
             <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
@@ -177,6 +203,7 @@ export const HomePage = () => {
             </p>
           </div>
         </div>
+        )}
       </div>
 
       {/* Insurance Connection Modal */}

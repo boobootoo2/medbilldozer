@@ -10,6 +10,10 @@ def check_access_password() -> bool:
     Returns:
         bool: True if access is granted, False if password gate should be shown
     """
+    # Local development bypass - always grant access if explicitly disabled
+    if os.environ.get('DISABLE_PASSWORD', '').lower() in ('true', '1', 'yes'):
+        return True
+
     # Check if password is set via environment variable
     required_password = os.environ.get('APP_ACCESS_PASSWORD', '')
 

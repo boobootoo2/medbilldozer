@@ -1,6 +1,6 @@
 import json
 from typing import Dict, Optional
-from google import genai
+import google.generativeai as genai
 
 from medbilldozer.extractors.extraction_prompt import FACT_KEYS, build_fact_extraction_prompt
 

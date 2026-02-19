@@ -534,7 +534,8 @@ def render_header():
             <div style="display:flex;gap:18px;align-items:center;">
               <img src="https://raw.githubusercontent.com/boobootoo2/medbilldozer/refs/heads/main/static/images/avatars/transparent/billy__eyes_open__billdozer_up.png" alt="Billy character with eyes open looking up" style="
             height: 87px;
-            width: auto;" /> 
+            width: auto;
+            filter: sepia(0.25) saturate(1.1) hue-rotate(-5deg) brightness(1.02);" /> 
               <div>
                 <h1 style="margin:0;font-style:italic;">
                     medBill<span style="color:#2DA44E;">Dozer</span>

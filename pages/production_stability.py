@@ -886,26 +886,70 @@ if tab_clinical:
                     st.markdown("Detection accuracy for true positives (valid treatments) and true negatives (inappropriate treatments) across imaging modalities.")
                     
                     # Load latest clinical validation results to build heatmaps
-                    results_dir = PROJECT_ROOT / 'benchmarks/clinical_validation_results'
-                    
-                    if results_dir.exists():
+                    import numpy as np
+                    from collections import defaultdict
+
+                    # Load latest results for each model
+                    models = ['gpt-4o-mini', 'gpt-4o', 'medgemma', 'medgemma-ensemble']
+                    modalities = ['xray', 'histopathology', 'mri', 'ultrasound']
+
+                    model_results = {}
+                    data_source = "Unknown"
+
+                    # Try loading from Supabase first (check both production and beta environments)
+                    try:
+                        if clinical_data_access:
+                            # Try production first, then beta
+                            for env in ['production', 'beta']:
+                                if model_results:
+                                    break
+
+                                response = clinical_data_access.client.table('clinical_validation_snapshots') \
+                                    .select('*') \
+                                    .eq('environment', env) \
+                                    .order('created_at', desc=True) \
+                                    .limit(100) \
+                                    .execute()
+
+                                if response.data:
+                                    # Group by model and get latest for each
+                                    model_snapshots = {}
+                                    for snapshot in response.data:
+                                        model = snapshot.get('model_version', '')
+                                        if model in models and model not in model_snapshots:
+                                            model_snapshots[model] = snapshot
+
+                                    # Extract scenario_results from metrics
+                                    for model, snapshot in model_snapshots.items():
+                                        metrics = snapshot.get('metrics', {})
+                                        scenario_results = metrics.get('scenario_results', [])
+                                        if scenario_results:
+                                            model_results[model] = {'scenario_results': scenario_results}
+
+                                    if model_results:
+                                        data_source = f"Supabase {env.title()} Database"
+                    except Exception as db_error:
+                        st.warning(f"Could not load from Supabase: {db_error}")
+
+                    # Fall back to local files if Supabase didn't work
+                    if not model_results:
+                        results_dir = PROJECT_ROOT / 'benchmarks/clinical_validation_results'
+                        if results_dir.exists():
+                            try:
+                                for model in models:
+                                    model_files = sorted(results_dir.glob(f'{model}_*.json'), reverse=True)
+                                    if model_files:
+                                        import json
+                                        with open(model_files[0], 'r') as f:
+                                            model_results[model] = json.load(f)
+                                if model_results:
+                                    data_source = "Local Files"
+                            except Exception as file_error:
+                                st.warning(f"Could not load from local files: {file_error}")
+
+                    # Process results if we have any
+                    if model_results:
                         try:
-                            import numpy as np
-                            from collections import defaultdict
-                            
-                            # Load latest results for each model
-                            models = ['gpt-4o-mini', 'gpt-4o', 'medgemma', 'medgemma-ensemble']
-                            modalities = ['xray', 'histopathology', 'mri', 'ultrasound']
-                            
-                            model_results = {}
-                            for model in models:
-                                model_files = sorted(results_dir.glob(f'{model}_*.json'), reverse=True)
-                                if model_files:
-                                    import json
-                                    with open(model_files[0], 'r') as f:
-                                        model_results[model] = json.load(f)
-                            
-                            if model_results:
                                 # Calculate detection rates
                                 tp_rates = defaultdict(lambda: defaultdict(lambda: {'correct': 0, 'total': 0}))
                                 tn_rates = defaultdict(lambda: defaultdict(lambda: {'correct': 0, 'total': 0}))
@@ -1034,10 +1078,11 @@ if tab_clinical:
                                 
                                 # Add methodology accordion
                                 with st.expander("📊 Analysis Methodology & Sample Sizes"):
-                                    st.markdown("""
-                                    **Data Source:**
+                                    st.markdown(f"""
+                                    **Data Source:** {data_source}
                                     - Latest clinical validation benchmark results per model
-                                    - Results loaded from `benchmarks/clinical_validation_results/*.json`
+                                    - Primary: Supabase Production Database (automatic updates)
+                                    - Fallback: Local files at `benchmarks/clinical_validation_results/*.json`
                                     - Models analyzed: `gpt-4o-mini`, `gpt-4o`, `medgemma`, `medgemma-ensemble`
                                     - Modalities tested: X-ray, Histopathology, MRI, Ultrasound
                                     
@@ -1085,16 +1130,14 @@ if tab_clinical:
                                     - Scenarios span: Emergency care, chronic conditions, preventive care, procedural codes
                                     """)
                                 
-                            else:
-                                st.info("No detailed results available for heatmap generation. Run benchmarks to collect data.")
-                        
                         except Exception as hm_error:
                             st.warning(f"Could not generate heatmaps: {hm_error}")
                             import traceback
                             with st.expander("Show Error Details"):
                                 st.code(traceback.format_exc())
                     else:
-                        st.info("Results directory not found. Run clinical validation benchmarks first.")
+                        st.info("No clinical validation results available. Run benchmarks to collect data.")
+                        st.caption("Data sources checked: Supabase Production Database and Local Files")
                     
                 else:
                     st.info("📊 No clinical validation data available yet. Benchmarks run daily at midnight UTC.")

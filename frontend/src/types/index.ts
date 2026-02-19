@@ -56,6 +56,15 @@ export interface Issue {
   metadata?: Record<string, any>;
 }
 
+export interface DocumentProgress {
+  phase: 'pre_extraction_active' | 'extraction_active' | 'line_items_active' | 'analysis_active' | 'complete' | 'failed';
+  started_at: string;
+  updated_at?: string;
+  completed_at?: string;
+  failed_at?: string;
+  error_message?: string;
+}
+
 export interface Analysis {
   analysis_id: string;
   status: 'queued' | 'processing' | 'completed' | 'failed';
@@ -67,6 +76,9 @@ export interface Analysis {
     analysis?: {
       issues: Issue[];
     };
+    progress?: DocumentProgress;
+    error?: string;
+    status?: string;
   }[];
   coverage_matrix?: any;
   total_savings_detected?: number;

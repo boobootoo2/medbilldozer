@@ -1,7 +1,7 @@
 /**
  * Document list component
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { FileText, Download, Trash2, Clock } from 'lucide-react';
 import { documentsService } from '../../services/documents.service';
 import { Document } from '../../types';
@@ -11,29 +11,42 @@ interface DocumentListProps {
   selectedDocuments?: string[];
 }
 
-export const DocumentList = ({ onDocumentSelect, selectedDocuments = [] }: DocumentListProps) => {
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export interface DocumentListRef {
+  refresh: () => Promise<void>;
+}
 
-  useEffect(() => {
-    loadDocuments();
-  }, []);
+export const DocumentList = forwardRef<DocumentListRef, DocumentListProps>(
+  ({ onDocumentSelect, selectedDocuments = [] }, ref) => {
+    const [documents, setDocuments] = useState<Document[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-  const loadDocuments = async () => {
-    try {
-      setLoading(true);
-      const docs = await documentsService.listDocuments();
-      setDocuments(docs);
-      setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load documents');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const loadDocuments = async () => {
+      try {
+        console.log('📥 DocumentList: Loading documents...');
+        setLoading(true);
+        const docs = await documentsService.listDocuments();
+        console.log('✅ DocumentList: Loaded', docs.length, 'documents');
+        setDocuments(docs);
+        setError(null);
+      } catch (err: any) {
+        console.error('❌ DocumentList: Failed to load documents:', err);
+        setError(err.message || 'Failed to load documents');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleDelete = async (documentId: string) => {
+    useEffect(() => {
+      loadDocuments();
+    }, []);
+
+    // Expose refresh method to parent
+    useImperativeHandle(ref, () => ({
+      refresh: loadDocuments
+    }));
+
+    const handleDelete = async (documentId: string) => {
     if (!confirm('Are you sure you want to delete this document?')) return;
 
     try {
@@ -163,4 +176,6 @@ export const DocumentList = ({ onDocumentSelect, selectedDocuments = [] }: Docum
       })}
     </div>
   );
-};
+});
+
+DocumentList.displayName = 'DocumentList';

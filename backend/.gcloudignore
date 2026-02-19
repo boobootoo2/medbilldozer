@@ -1,0 +1,27 @@
+# Ignore Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Ignore virtual environments
+venv/
+env/
+ENV/
+
+# Ignore IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore test/dev files
+.pytest_cache/
+.coverage
+htmlcov/
+.env.local
+.env.*.local
+
+# But DO NOT ignore src/ - we need it for deployment
+!src/

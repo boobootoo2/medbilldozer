@@ -85,17 +85,14 @@ async def confirm_upload(
                 detail="File not found in storage"
             )
 
-        # Save metadata to database
+        # Save metadata to database (only include columns that exist)
         document_data = {
             "document_id": request.document_id,
             "user_id": current_user['user_id'],
             "filename": request.filename,
-            "original_filename": request.filename,
             "gcs_path": request.gcs_path,
             "content_type": "application/pdf",  # TODO: get from request
-            "size_bytes": request.size_bytes,
-            "status": "uploaded",
-            "document_type": request.document_type
+            "status": "uploaded"
         }
 
         document = await db.insert_document(document_data)
@@ -109,6 +106,9 @@ async def confirm_upload(
     except HTTPException:
         raise
     except Exception as e:
+        print(f"❌ CONFIRM UPLOAD ERROR: {type(e).__name__}: {str(e)}")
+        import traceback
+        print(f"❌ TRACEBACK:\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to confirm upload: {str(e)}"
@@ -149,7 +149,7 @@ async def get_document(
             document_id=document['document_id'],
             filename=document['filename'],
             content_type=document['content_type'],
-            size_bytes=document['size_bytes'],
+            size_bytes=document.get('size_bytes', 0),  # Default to 0 if column doesn't exist
             uploaded_at=document['uploaded_at'],
             status=document['status'],
             document_type=document.get('document_type'),
@@ -187,7 +187,7 @@ async def list_documents(
                 document_id=doc['document_id'],
                 filename=doc['filename'],
                 content_type=doc['content_type'],
-                size_bytes=doc['size_bytes'],
+                size_bytes=doc.get('size_bytes', 0),  # Default to 0 if column doesn't exist
                 uploaded_at=doc['uploaded_at'],
                 status=doc['status'],
                 document_type=doc.get('document_type')

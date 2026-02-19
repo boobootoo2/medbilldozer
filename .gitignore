@@ -51,6 +51,7 @@ benchmarks/clinical_validation_heatmaps/
 .artifacts/
 *.json.bak
 *.csv.bak
+frontend/dist/
 
 # Example outputs
 examples/output/
@@ -60,3 +61,4 @@ examples/*.log
 .streamlit/secrets.toml
 .vercel
 node_modules/
+

@@ -205,6 +205,64 @@ class DBService:
             .execute()
         return result.data[0]
 
+    async def update_document_progress(
+        self,
+        analysis_id: str,
+        document_id: str,
+        phase: str,
+        started_at: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Update progress for a specific document during analysis.
+
+        Args:
+            analysis_id: Analysis ID
+            document_id: Document ID
+            phase: Current phase (pre_extraction_active, extraction_active, etc.)
+            started_at: ISO timestamp when this document started processing
+        """
+        # Get current analysis
+        result = self.client.table("analyses")\
+            .select("results")\
+            .eq("analysis_id", analysis_id)\
+            .execute()
+
+        if not result.data:
+            return {}
+
+        current_results = result.data[0].get("results") or []
+
+        # Find or create document entry in results
+        doc_found = False
+        for doc_result in current_results:
+            if doc_result.get("document_id") == document_id:
+                doc_result["progress"] = {
+                    "phase": phase,
+                    "updated_at": datetime.utcnow().isoformat()
+                }
+                if started_at:
+                    doc_result["progress"]["started_at"] = started_at
+                doc_found = True
+                break
+
+        if not doc_found:
+            # Create new document entry with progress
+            current_results.append({
+                "document_id": document_id,
+                "progress": {
+                    "phase": phase,
+                    "started_at": started_at or datetime.utcnow().isoformat(),
+                    "updated_at": datetime.utcnow().isoformat()
+                }
+            })
+
+        # Update the results in database
+        update_result = self.client.table("analyses")\
+            .update({"results": current_results})\
+            .eq("analysis_id", analysis_id)\
+            .execute()
+
+        return update_result.data[0] if update_result.data else {}
+
     async def save_analysis_results(
         self,
         analysis_id: str,

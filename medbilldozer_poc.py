@@ -12,6 +12,10 @@ src_path = Path(__file__).parent / "src"
 if src_path.exists() and str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 import streamlit as st
 
 # Core modules
@@ -178,6 +182,13 @@ def main():
     # --------------------------------------------------
     if is_assistant_enabled() and st.session_state.get('privacy_acknowledged', False):
         render_doc_assistant()
+
+    # --------------------------------------------------
+    # Alert users about Billie the document assistant
+    # --------------------------------------------------
+    st.info(
+        "💡 **Have a question?** Open the side panel and scroll to **Billie the document assistant** avatar for help!"
+    )
 
     # ==================================================
     # TAB NAVIGATION: POC vs Prod Workflow
@@ -346,32 +357,34 @@ def main():
             # Save documents at start of analysis so they persist during tour navigation
             st.session_state.last_documents = documents
 
-            # Wrap entire analysis in a spinner
-            with st.spinner("Analyzing your documents..."):
-                # Show analyzing context
-                render_contextual_help('analyzing')
+            # Show analyzing context help
+            render_contextual_help('analyzing')
 
-                # Run document analysis
-                analysis_result = run_document_analysis(documents, agent, analyze_clicked)
+            # Create status section
+            st.markdown("## 📊 Analysis Progress")
+            st.markdown("Track real-time progress as each document moves through the analysis pipeline.")
 
-                if analysis_result:
-                    total_potential_savings = analysis_result["total_savings"]
-                    per_document_savings = analysis_result["per_document_savings"]
-                    documents = analysis_result["documents"]
+            # Status cards will be created and updated by analysis_runner
+            analysis_result = run_document_analysis(documents, agent, analyze_clicked)
 
-                    # Clear analyzing flag and set results for tour progression
-                    st.session_state.analyzing = False
-                    st.session_state.doc_results = True
+            if analysis_result:
+                total_potential_savings = analysis_result["total_savings"]
+                per_document_savings = analysis_result["per_document_savings"]
+                documents = analysis_result["documents"]
 
-                    # Advance tour step to review_issues
-                    if (st.session_state.get('tour_active', False) and
-                            st.session_state.get('tutorial_step') == 'analysis_running'):
-                        st.session_state.tour_needs_refresh = True
+                # Clear analyzing flag and set results for tour progression
+                st.session_state.analyzing = False
+                st.session_state.doc_results = True
 
-                    # Save analysis state for potential rerun
-                    st.session_state.last_documents = documents
-                    st.session_state.last_total_savings = total_potential_savings
-                    st.session_state.last_per_doc_savings = per_document_savings
+                # Advance tour step to review_issues
+                if (st.session_state.get('tour_active', False) and
+                        st.session_state.get('tutorial_step') == 'analysis_running'):
+                    st.session_state.tour_needs_refresh = True
+
+                # Save analysis state for potential rerun
+                st.session_state.last_documents = documents
+                st.session_state.last_total_savings = total_potential_savings
+                st.session_state.last_per_doc_savings = per_document_savings
 
         # Trigger rerun to update tour widget if needed (results will redisplay)
         if st.session_state.get('tour_needs_refresh', False):

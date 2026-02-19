@@ -12,17 +12,20 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
-COPY backend/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY backend/app ./app
+COPY app ./app
 
-# Copy existing medbilldozer source code (reuse existing modules)
+# Copy existing medbilldozer source code
 COPY src ./src
 
-# Set Python path to include src directory
-ENV PYTHONPATH=/app:$PYTHONPATH
+# Set Python path to include both app and src directories (so 'from medbilldozer.xxx' works)
+ENV PYTHONPATH=/app:/app/src:$PYTHONPATH
+
+# Note: Skipping import verification during build because some modules require API keys at import time
+# Import verification will happen at runtime when the app starts
 
 # Expose port (Cloud Run will set PORT env var, default to 8080)
 ENV PORT=8080

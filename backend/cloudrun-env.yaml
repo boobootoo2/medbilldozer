@@ -1,0 +1,6 @@
+DEBUG: "true"
+ENVIRONMENT: "production"
+FIREBASE_PROJECT_ID: "medbilldozer"
+GCS_PROJECT_ID: "medbilldozer"
+SUPABASE_URL: "https://zrhlpitzonhftigmdvgz.supabase.co"
+ALLOWED_ORIGINS: "http://localhost:5173,http://localhost:3000,https://medbilldozer.vercel.app"
