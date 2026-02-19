@@ -12,6 +12,11 @@ from app.services.storage_service import get_storage_service
 from app.services.db_service import get_db_service
 from app.utils import get_logger, log_with_context
 from medbilldozer.core.document_identity import maybe_enhance_identity
+from medbilldozer.core.transaction_normalization import (
+    normalize_line_items,
+    deduplicate_transactions,
+)
+from medbilldozer.core.coverage_matrix import build_coverage_matrix
 
 logger = get_logger(__name__)
 
@@ -326,6 +331,68 @@ class AnalysisService:
                         }
                     })
 
+            # Transaction normalization (cross-document, same as Streamlit)
+            all_normalized_transactions = []
+            transaction_provenance = {}
+            try:
+                log_with_context(
+                    logger, 20,
+                    f"💳 Normalizing transactions across {len(results)} documents",
+                    analysis_id=analysis_id
+                )
+
+                for doc_result in results:
+                    if 'error' in doc_result:
+                        continue  # Skip failed documents
+
+                    # Extract line items from facts
+                    line_items = doc_result.get('facts', {}).get('line_items', [])
+                    if not line_items:
+                        log_with_context(
+                            logger, 30,
+                            f"⚠️  No line items found in document",
+                            analysis_id=analysis_id,
+                            document_id=doc_result.get('document_id')
+                        )
+                        continue
+
+                    # Normalize line items
+                    normalized = normalize_line_items(
+                        line_items=line_items,
+                        source_document_id=doc_result.get('document_id', ''),
+                    )
+                    all_normalized_transactions.extend(normalized)
+
+                # Cross-document deduplication
+                if all_normalized_transactions:
+                    unique_transactions, transaction_provenance = deduplicate_transactions(
+                        all_normalized_transactions
+                    )
+                    log_with_context(
+                        logger, 20,
+                        f"✅ Transaction deduplication complete",
+                        analysis_id=analysis_id,
+                        total_transactions=len(all_normalized_transactions),
+                        unique_transactions=len(unique_transactions)
+                    )
+
+                    # Convert to dict for JSON serialization
+                    normalized_transactions_list = [
+                        tx.__dict__ for tx in unique_transactions.values()
+                    ]
+                else:
+                    normalized_transactions_list = []
+
+            except Exception as e:
+                log_with_context(
+                    logger, 30,
+                    f"⚠️  Transaction normalization failed",
+                    analysis_id=analysis_id,
+                    error=str(e)
+                )
+                normalized_transactions_list = []
+                transaction_provenance = {}
+
             # Build coverage matrix (REUSE EXISTING CODE)
             coverage_matrix = None
             try:
@@ -362,10 +429,18 @@ class AnalysisService:
                 documents_analyzed=len(results)
             )
 
+            # Prepare complete analysis results with all workflow outputs
+            analysis_results = {
+                "documents": results,
+                "coverage_matrix": coverage_matrix,
+                "normalized_transactions": normalized_transactions_list,
+                "transaction_provenance": transaction_provenance
+            }
+
             # Save results to database
             await self.db.save_analysis_results(
                 analysis_id=analysis_id,
-                results=results,
+                results=analysis_results,
                 coverage_matrix=coverage_matrix,
                 total_savings=total_savings,
                 issues_count=len(all_issues)
