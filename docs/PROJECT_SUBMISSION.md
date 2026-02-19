@@ -52,9 +52,10 @@ Our current benchmarks show **MedGemma-Ensemble achieves 78% detection rate** wi
 
 #### Live Demo
 🎯 **Try MedBillDozer Now**: [https://medbilldozer.vercel.app/](https://medbilldozer.vercel.app/)
-🔐 **Access Code**: `2026MEDGEMMA`
+🔐 **Invite Code**: `2026MEDGEMMA`
 
 🧪 **Prototype & AI Agent Assistant & MedBillDozer Challenge Simulator**: [https://medbilldozer.streamlit.app/](https://medbilldozer.streamlit.app/)
+🔐 **Passcode**: `2026MEDGEMMA`
 - Guided tour of medical billing error detection
 - Benchmark visualizations and performance metrics
 - MedBillDozer Challenge Game (interactive learning)
