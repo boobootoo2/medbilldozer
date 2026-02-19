@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      # v0.3 branch excluded - add Vercel secrets before enabling
+      - v0.3
     paths:
       - 'frontend/**'
       - '.github/workflows/deploy-frontend.yml'
