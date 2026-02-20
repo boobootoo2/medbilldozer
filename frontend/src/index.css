@@ -29,3 +29,23 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* reCAPTCHA container styles */
+#recaptcha-container {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 9999;
+}
+
+/* Fix autocomplete warnings in Firebase reCAPTCHA forms */
+iframe[src*="recaptcha"] {
+  position: fixed;
+  bottom: 14px;
+  right: 14px;
+}
+
+/* Ensure all form inputs have autocomplete attribute */
+input:not([autocomplete]) {
+  autocomplete: off;
+}

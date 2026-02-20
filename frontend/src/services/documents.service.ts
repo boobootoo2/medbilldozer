@@ -2,7 +2,17 @@
  * Document management service
  */
 import api from './api';
-import { Document, UploadUrlResponse } from '../types';
+import {
+  Document,
+  UploadUrlResponse,
+  EnrichedDocument,
+  DocumentListResponse,
+  DocumentActionUpdate,
+  DocumentMetadataUpdate,
+  DocumentActionStatistics,
+  BulkAnalyzeRequest,
+  BulkAnalyzeResponse
+} from '../types';
 
 export const documentsService = {
   /**
@@ -87,4 +97,93 @@ export const documentsService = {
   async deleteDocument(documentId: string): Promise<void> {
     await api.delete(`/api/documents/${documentId}`);
   },
+
+  // ============================================================================
+  // ENHANCED DOCUMENT MANAGEMENT
+  // ============================================================================
+
+  /**
+   * List documents with enhanced filtering
+   */
+  async listDocumentsEnhanced(params?: {
+    profile_id?: string;
+    action?: string;
+    flagged_only?: boolean;
+    status_filter?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<DocumentListResponse> {
+    const response = await api.get<DocumentListResponse>('/api/documents/', {
+      params: {
+        profile_id: params?.profile_id,
+        action: params?.action,
+        flagged_only: params?.flagged_only,
+        status_filter: params?.status_filter,
+        limit: params?.limit || 50,
+        offset: params?.offset || 0
+      }
+    });
+    return response.data;
+  },
+
+  /**
+   * Update document action status
+   */
+  async updateDocumentAction(
+    documentId: string,
+    update: DocumentActionUpdate
+  ): Promise<EnrichedDocument> {
+    const response = await api.patch<EnrichedDocument>(
+      `/api/documents/${documentId}/action`,
+      update
+    );
+    return response.data;
+  },
+
+  /**
+   * Update document metadata (profile info, amounts, etc)
+   */
+  async updateDocumentMetadata(
+    documentId: string,
+    metadata: DocumentMetadataUpdate
+  ): Promise<EnrichedDocument> {
+    const response = await api.patch<EnrichedDocument>(
+      `/api/documents/${documentId}/metadata`,
+      metadata
+    );
+    return response.data;
+  },
+
+  /**
+   * Trigger bulk analysis on multiple documents
+   */
+  async bulkAnalyze(request: BulkAnalyzeRequest): Promise<BulkAnalyzeResponse> {
+    const response = await api.post<BulkAnalyzeResponse>(
+      '/api/documents/analyze-bulk',
+      request
+    );
+    return response.data;
+  },
+
+  /**
+   * Get document action statistics
+   */
+  async getActionStatistics(profileId?: string): Promise<DocumentActionStatistics> {
+    const response = await api.get<DocumentActionStatistics>(
+      '/api/documents/statistics',
+      { params: { profile_id: profileId } }
+    );
+    return response.data;
+  },
+
+  /**
+   * Export actioned documents to CSV
+   */
+  async exportActionedDocuments(profileId?: string, format: 'csv' | 'json' = 'csv'): Promise<Blob> {
+    const response = await api.get('/api/documents/export/actioned', {
+      params: { profile_id: profileId, format },
+      responseType: format === 'csv' ? 'blob' : 'json'
+    });
+    return response.data;
+  }
 };
