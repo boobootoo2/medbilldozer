@@ -1,0 +1,101 @@
+# Pre-commit hooks configuration
+# See https://pre-commit.com for more information
+
+repos:
+  # General file quality checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(frontend/|.*\.md$)
+      - id: end-of-file-fixer
+        exclude: ^frontend/
+      - id: check-yaml
+        exclude: ^frontend/
+      - id: check-json
+        files: \.(json)$
+      - id: check-added-large-files
+        args: ['--maxkb=5000']
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  # Python code formatting
+  - repo: https://github.com/psf/black
+    rev: 24.1.1
+    hooks:
+      - id: black
+        files: ^(backend/|tests/|scripts/).*\.py$
+        args: ['--line-length=100', '--target-version=py312']
+
+  # Python import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        files: ^(backend/|tests/|scripts/).*\.py$
+        args: ['--profile', 'black', '--line-length', '100']
+
+  # Python linting
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        files: ^(backend/|tests/).*\.py$
+        args: ['--max-line-length=100', '--extend-ignore=E203,W503']
+
+  # Security checks
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        files: ^backend/.*\.py$
+        args: ['-ll', '-i', '--skip', 'B101,B601']
+
+  # CORS configuration validation (CUSTOM - prevents upload issues)
+  # Disabled: pytest not available in pre-commit environment
+  # Run manually with: pytest tests/test_cors_config.py -v
+  # - repo: local
+  #   hooks:
+  #     - id: validate-cors-config
+  #       name: Validate CORS Configuration
+  #       entry: pytest tests/test_cors_config.py::TestCORSConfigFile -v
+  #       language: system
+  #       files: ^config/gcs-cors\.json$
+  #       pass_filenames: false
+  #       always_run: false
+  #
+  #     - id: cors-config-smoke-test
+  #       name: CORS Config Smoke Test (always runs)
+  #       entry: pytest tests/test_cors_config.py::TestCORSConfigFile::test_cors_config_file_exists tests/test_cors_config.py::TestCORSConfigFile::test_cors_allows_put_method -v
+  #       language: system
+  #       pass_filenames: false
+  #       always_run: true
+
+  # TypeScript/JavaScript checks for frontend
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.0.0-beta.2
+    hooks:
+      - id: eslint
+        files: ^frontend/src/.*\.(ts|tsx|js|jsx)$
+        args: ['--fix']
+        additional_dependencies:
+          - eslint@8.57.0
+          - typescript@5.3.3
+          - '@typescript-eslint/parser@6.21.0'
+          - '@typescript-eslint/eslint-plugin@6.21.0'
+
+# Global settings
+default_language_version:
+  python: python3.11
+
+# CI mode (run all hooks, even if files aren't modified)
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [eslint]  # Skip eslint in CI if it has issues with dependencies
+  submodules: false

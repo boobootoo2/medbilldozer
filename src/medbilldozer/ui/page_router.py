@@ -6,6 +6,7 @@ from medbilldozer.ui.api_docs_page import render_api_docs_page
 from medbilldozer.ui.audio_controls import render_mute_button
 from medbilldozer.ui.guided_tour import run_guided_tour_runtime
 from medbilldozer.ui.bootstrap import should_enable_guided_tour
+from medbilldozer.ui.analytics import track_page_view
 
 
 def render_page_navigation():
@@ -24,11 +25,11 @@ def render_page_navigation():
     with st.sidebar:
         # Audio mute button at very top
         render_mute_button()
-        
+
         # Guided Tour at top of sidebar
         if should_enable_guided_tour():
             run_guided_tour_runtime()
-        
+
         st.markdown("## 📱 Navigation")
 
         col1, col2, col3 = st.columns(3)
@@ -36,17 +37,20 @@ def render_page_navigation():
         with col1:
             if st.button("🏠 Home", use_container_width=True, type="primary" if st.session_state.current_page == 'home' else "secondary"):
                 st.session_state.current_page = 'home'
+                track_page_view('/streamlit/home', 'Home')
                 st.rerun()
 
         with col2:
             if is_profile_editor_enabled():
                 if st.button("📋 Profile", use_container_width=True, type="primary" if st.session_state.current_page == 'profile' else "secondary"):
                     st.session_state.current_page = 'profile'
+                    track_page_view('/streamlit/profile', 'Profile')
                     st.rerun()
 
         with col3:
             if st.button("🔌 API", use_container_width=True, type="primary" if st.session_state.current_page == 'api' else "secondary"):
                 st.session_state.current_page = 'api'
+                track_page_view('/streamlit/api', 'API')
                 st.rerun()
 
         st.markdown("---")
