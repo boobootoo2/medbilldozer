@@ -1,8 +1,10 @@
 """Application configuration using Pydantic settings."""
-from pydantic_settings import BaseSettings
-from pydantic import Field
-from typing import Optional
+
 import os
+from typing import Optional
+
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -18,7 +20,9 @@ class Settings(BaseSettings):
     server_port: int = 8080
 
     # CORS
-    allowed_origins: str = "http://localhost:5173,http://localhost:3000"
+    allowed_origins: str = (
+        "http://localhost:5173,http://localhost:3000,https://medbilldozer.vercel.app,https://frontend-five-umber-24.vercel.app,https://frontend-eopdl2k8d-john-shultzs-projects.vercel.app,https://medbilldozer-git-v031-john-shultzs-projects.vercel.app,https://medbilldozer-kjcpsrtey-john-shultzs-projects.vercel.app"
+    )
 
     # Firebase Auth
     firebase_project_id: str
@@ -35,7 +39,8 @@ class Settings(BaseSettings):
         default_factory=lambda: os.getenv("SUPABASE_BETA_URL") or os.getenv("SUPABASE_URL", "")
     )
     supabase_service_role_key: str = Field(
-        default_factory=lambda: os.getenv("SUPABASE_BETA_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+        default_factory=lambda: os.getenv("SUPABASE_BETA_KEY")
+        or os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
     )
 
     # AI Providers
