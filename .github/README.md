@@ -14,8 +14,11 @@ explaining them in plain language.
 
 ## 📚 Documentation
 
-- **📖 [User Guide](https://github.com/boobootoo2/medbilldozer/blob/main/.github/README.md)** – Complete user guide and quick start
-- **🔬 [Technical Writeup](../docs/PROJECT_SUBMISSION.md)** – Architecture and design
+This is the complete user guide and quick start documentation.
+
+**Additional Resources:**
+- **🔬 [Technical Writeup](../docs/PROJECT_SUBMISSION.md)** – Architecture and design details
+- **📋 [Repository README](../README.md)** – Quick overview
 
 ## Why medBillDozer Is Different
 
