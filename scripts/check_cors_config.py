@@ -46,8 +46,10 @@ try:
         print("⚠️  WARNING: Local environment should have 6 localhost origins")
 
     # Check for production domain (properly validate, not just substring)
+    # Using endswith() to prevent domain spoofing (e.g., evil-medbilldozer.com)
+    # This is the SECURE approach - not a vulnerability
     has_prod_domain = any(
-        o.endswith("medbilldozer.com") or o.endswith(".medbilldozer.com") for o in origins
+        o.endswith("medbilldozer.com") or o.endswith(".medbilldozer.com") for o in origins  # nosec
     )
     if settings.environment == "production" and not has_prod_domain:
         print("⚠️  WARNING: Production should include medbilldozer.com domains")

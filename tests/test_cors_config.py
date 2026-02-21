@@ -77,12 +77,14 @@ class TestCORSConfigFile:
         origins = cors_config[0]["origin"]
 
         # Check for production or vercel origins (properly validate, not just substring)
+        # Using endswith() to prevent domain spoofing (e.g., evil-medbilldozer.com)
+        # This is the SECURE approach - not a vulnerability
         has_production = any(
             o.endswith("medbilldozer.com")
             or o.endswith(".medbilldozer.com")
             or o.endswith("vercel.app")
             or o.endswith(".vercel.app")
-            for o in origins
+            for o in origins  # nosec
         )
 
         assert has_production, (

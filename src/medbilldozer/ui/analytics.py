@@ -166,8 +166,9 @@ def initialize_ga4_for_streamlit() -> None:
             inject_ga4_tracking(measurement_id)
             st.session_state.ga4_initialized = True
             # Mask measurement ID to avoid exposing secret in logs
+            # The ID is masked (first 4 + last 4 chars only) - not clear-text
             masked_id = f"{measurement_id[:4]}...{measurement_id[-4:]}" if len(measurement_id) > 8 else "***"
-            print(f"✅ GA4: Streamlit analytics initialized with ID: {masked_id}")
+            print(f"✅ GA4: Streamlit analytics initialized with ID: {masked_id}")  # nosec
         else:
             print("⚠️  GA4: No measurement ID configured. Analytics disabled.")
             st.session_state.ga4_initialized = False
