@@ -3,7 +3,7 @@
  * Shows after user authentication to allow control over analytics and cookies
  */
 import { useState } from 'react';
-import { X, Cookie, Shield, BarChart3, Settings } from 'lucide-react';
+import { Cookie, Shield, BarChart3, Settings } from 'lucide-react';
 import { useCookieConsent, CookiePreferences } from '../hooks/useCookieConsent';
 import { useAuth } from '../hooks/useAuth';
 
@@ -12,7 +12,6 @@ export const CookieConsentDialog = () => {
   const {
     preferences: savedPreferences,
     showDialog,
-    setShowDialog,
     savePreferences,
     acceptAll,
     acceptNecessary,
