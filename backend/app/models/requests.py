@@ -63,6 +63,7 @@ class ConfirmUploadRequest(BaseModel):
     filename: str
     gcs_path: str
     size_bytes: int
+    content_type: Optional[str] = None
     document_type: Optional[str] = None
 
 
