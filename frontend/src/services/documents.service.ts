@@ -43,12 +43,13 @@ export const documentsService = {
   /**
    * Confirm document upload with backend
    */
-  async confirmUpload(documentId: string, filename: string, gcsPath: string, sizeBytes: number, documentType?: string): Promise<void> {
+  async confirmUpload(documentId: string, filename: string, gcsPath: string, sizeBytes: number, contentType?: string, documentType?: string): Promise<void> {
     await api.post('/api/documents/confirm', {
       document_id: documentId,
       filename,
       gcs_path: gcsPath,
       size_bytes: sizeBytes,
+      content_type: contentType,
       document_type: documentType
     });
   },
@@ -68,7 +69,7 @@ export const documentsService = {
     await this.uploadToGCS(file, upload_url);
 
     // 3. Confirm with backend
-    await this.confirmUpload(document_id, file.name, gcs_path, file.size, documentType);
+    await this.confirmUpload(document_id, file.name, gcs_path, file.size, file.type, documentType);
 
     return document_id;
   },

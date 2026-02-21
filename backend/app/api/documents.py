@@ -97,21 +97,22 @@ async def confirm_upload(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="File not found in storage"
             )
 
-        # Save metadata to database (only include columns that exist in current schema)
+        # Save metadata to database with all required fields
         document_data = {
             "document_id": request.document_id,
             "user_id": current_user["user_id"],
             "filename": request.filename,
+            "original_filename": request.filename,  # Use filename as original_filename
             "gcs_path": request.gcs_path,
+            "content_type": request.content_type
+            or "application/octet-stream",  # Default if not provided
+            "size_bytes": request.size_bytes,
             "status": "uploaded",
         }
 
-        # Optional columns - only add if they exist in DB schema
-        if hasattr(request, "content_type") and request.content_type:
-            document_data["content_type"] = request.content_type
-
-        # Note: size_bytes, original_filename, and document_type columns don't exist yet
-        # They need to be added via database migration
+        # Add optional document_type if provided
+        if request.document_type:
+            document_data["document_type"] = request.document_type
 
         document = await db.insert_document(document_data)
 
