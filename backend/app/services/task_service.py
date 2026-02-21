@@ -239,11 +239,9 @@ class TaskService:
         """
         logger.info("Scheduling daily sync for all active connections...")
 
-        # This will be implemented to query all active connections
-        # and create sync tasks for each one
-
-        # For now, this is a placeholder
-        pass
+        # TODO: Implement daily sync scheduling
+        # Will query all active connections and create sync tasks for each one
+        logger.warning("Daily sync scheduling not yet implemented")
 
     async def cancel_task(self, task_name: str) -> bool:
         """

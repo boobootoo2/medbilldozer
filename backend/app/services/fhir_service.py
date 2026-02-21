@@ -8,6 +8,7 @@ This service handles:
 - FHIR resource parsing
 """
 
+import hashlib
 import logging
 import os
 from datetime import datetime, timedelta
@@ -16,6 +17,14 @@ from typing import Any, Dict, List, Optional
 import httpx
 
 logger = logging.getLogger(__name__)
+
+
+def _hash_patient_id(patient_id: str) -> str:
+    """Hash patient ID for logging to protect PHI."""
+    if not patient_id:
+        return "NONE"
+    # Use SHA-256 hash of patient ID for logging (first 8 chars for brevity)
+    return hashlib.sha256(patient_id.encode()).hexdigest()[:8]
 
 
 class FHIRClient:
@@ -126,7 +135,8 @@ class FHIRClient:
             response.raise_for_status()
 
             data = response.json()
-            logger.info(f"Retrieved coverage for patient {patient_id}")
+            # Hash patient_id to protect PHI in logs
+            logger.info(f"Retrieved coverage for patient {_hash_patient_id(patient_id)}")
 
             return data
 
@@ -175,7 +185,10 @@ class FHIRClient:
             data = response.json()
             entries = data.get("entry", [])
 
-            logger.info(f"Retrieved {len(entries)} claims for patient {patient_id}")
+            # Hash patient_id to protect PHI in logs
+            logger.info(
+                f"Retrieved {len(entries)} claims for patient {_hash_patient_id(patient_id)}"
+            )
 
             return entries
 

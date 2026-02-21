@@ -11,6 +11,17 @@ from supabase import Client, create_client
 logger = logging.getLogger(__name__)
 
 
+def _sanitize_for_log(value: Any, max_len: int = 50) -> str:
+    """Sanitize user input for logging to prevent log injection attacks."""
+    s = str(value)
+    # Remove newlines and carriage returns that could inject fake log entries
+    s = s.replace("\n", "").replace("\r", "").replace("\t", " ")
+    # Truncate to prevent log flooding
+    if len(s) > max_len:
+        s = s[:max_len] + "..."
+    return s
+
+
 class DBService:
     """Handles database operations with Supabase."""
 
@@ -379,7 +390,8 @@ class DBService:
     ) -> Dict[str, Any]:
         """Create new analysis record."""
         # Get document metadata to initialize results with filenames
-        logger.info(f"🔍 Fetching metadata for {len(document_ids)} documents: {document_ids}")
+        safe_doc_ids = [_sanitize_for_log(doc_id) for doc_id in document_ids]
+        logger.info(f"🔍 Fetching metadata for {len(document_ids)} documents: {safe_doc_ids}")
         documents = []
         for doc_id in document_ids:
             doc_result = (
@@ -391,7 +403,7 @@ class DBService:
             )
 
             logger.info(
-                f"📄 Document query for {doc_id}: found {len(doc_result.data) if doc_result.data else 0} results"
+                f"📄 Document query for {_sanitize_for_log(doc_id)}: found {len(doc_result.data) if doc_result.data else 0} results"
             )
 
             if doc_result.data:
@@ -408,7 +420,9 @@ class DBService:
                     }
                 )
             else:
-                logger.warning(f"⚠️  Document {doc_id} not found in database for user {user_id}")
+                logger.warning(
+                    f"⚠️  Document {_sanitize_for_log(doc_id)} not found in database for user {_sanitize_for_log(user_id)}"
+                )
 
         logger.info(f"✅ Initialized results array with {len(documents)} documents")
 

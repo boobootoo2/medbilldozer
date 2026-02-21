@@ -76,8 +76,14 @@ class TestCORSConfigFile:
         """CORS should include production domain."""
         origins = cors_config[0]["origin"]
 
-        # Check for production or vercel origins
-        has_production = any("medbilldozer.com" in o or "vercel.app" in o for o in origins)
+        # Check for production or vercel origins (properly validate, not just substring)
+        has_production = any(
+            o.endswith("medbilldozer.com")
+            or o.endswith(".medbilldozer.com")
+            or o.endswith("vercel.app")
+            or o.endswith(".vercel.app")
+            for o in origins
+        )
 
         assert has_production, (
             "CORS config should include production origin (medbilldozer.com or *.vercel.app). "

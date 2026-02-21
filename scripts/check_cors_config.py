@@ -45,7 +45,11 @@ try:
     if settings.environment == "local" and len(origins) < 6:
         print("⚠️  WARNING: Local environment should have 6 localhost origins")
 
-    if settings.environment == "production" and not any("medbilldozer.com" in o for o in origins):
+    # Check for production domain (properly validate, not just substring)
+    has_prod_domain = any(
+        o.endswith("medbilldozer.com") or o.endswith(".medbilldozer.com") for o in origins
+    )
+    if settings.environment == "production" and not has_prod_domain:
         print("⚠️  WARNING: Production should include medbilldozer.com domains")
 
 except ImportError as e:
