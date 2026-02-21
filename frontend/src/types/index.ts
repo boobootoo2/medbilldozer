@@ -63,6 +63,36 @@ export interface DocumentProgress {
   completed_at?: string;
   failed_at?: string;
   error_message?: string;
+  workflow_log?: {
+    workflow_id: string;
+    timestamp: string;
+    pre_extraction?: {
+      classification: any;
+      facts: any;
+      extractor_selected: string;
+      extractor_reason: string;
+    };
+    extraction?: {
+      extractor: string;
+      facts: any;
+      fact_count: number;
+      receipt_item_count?: number;
+      medical_item_count?: number;
+      dental_item_count?: number;
+      insurance_item_count?: number;
+      fsa_item_count?: number;
+      receipt_extraction_error?: string;
+      medical_extraction_error?: string;
+      dental_extraction_error?: string;
+      insurance_extraction_error?: string;
+      fsa_extraction_error?: string;
+    };
+    analysis?: {
+      analyzer: string;
+      mode: string;
+      result: any;
+    };
+  };
 }
 
 export interface Analysis {
@@ -97,4 +127,83 @@ export interface LoginResponse {
   refresh_token: string;
   token_type: string;
   user: User;
+}
+
+// ============================================================================
+// DOCUMENT MANAGEMENT (Enhanced)
+// ============================================================================
+
+export interface EnrichedDocument extends Document {
+  // Profile metadata
+  profile_id?: string;
+  profile_name?: string;
+  profile_type?: 'policyholder' | 'dependent';
+  provider_name?: string;
+  service_date?: string;
+  patient_responsibility_amount?: number;
+
+  // Action tracking
+  action?: 'ignored' | 'followup' | 'resolved' | null;
+  action_notes?: string;
+  action_date?: string;
+  action_updated_by?: string;
+
+  // Computed fields
+  flagged: boolean;
+  high_confidence_issues_count: number;
+  total_issues_count: number;
+}
+
+export interface DocumentListResponse {
+  documents: EnrichedDocument[];
+  total: number;
+  offset: number;
+  limit: number;
+}
+
+export interface DocumentActionUpdate {
+  action?: 'ignored' | 'followup' | 'resolved' | null;
+  action_notes?: string;
+}
+
+export interface DocumentMetadataUpdate {
+  profile_id?: string;
+  profile_name?: string;
+  profile_type?: 'policyholder' | 'dependent';
+  provider_name?: string;
+  service_date?: string;
+  patient_responsibility_amount?: number;
+}
+
+export interface DocumentActionStatistics {
+  user_id: string;
+  profile_id?: string;
+  profile_name?: string;
+  total_documents: number;
+  followup_count: number;
+  ignored_count: number;
+  resolved_count: number;
+  pending_count: number;
+  completed_count: number;
+  followup_amount: number;
+  resolved_amount: number;
+  total_amount: number;
+  last_action_date?: string;
+  last_upload_date?: string;
+}
+
+export interface BulkAnalyzeRequest {
+  document_ids: string[];
+  profile_id?: string;
+  exclude_flagged?: boolean;
+  provider?: string;
+}
+
+export interface BulkAnalyzeResponse {
+  analysis_id: string;
+  status: string;
+  documents_submitted: number;
+  documents_excluded: number;
+  excluded_reason?: string;
+  estimated_completion: string;
 }

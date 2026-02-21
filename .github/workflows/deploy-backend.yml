@@ -42,6 +42,33 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          pip install ruff pytest python-dotenv
+
+      - name: Run pre-deployment checks
+        run: |
+          # Backend code quality
+          cd backend
+          echo "📝 Running ruff linting..."
+          ruff check app/ || echo "⚠️ Linting warnings detected"
+
+          # Backend imports test
+          echo "🚀 Testing backend imports..."
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+          from app.main import app
+          print('✅ Backend imports successfully')
+          "
+
       - name: Configure Docker for GCR
         run: gcloud auth configure-docker
 

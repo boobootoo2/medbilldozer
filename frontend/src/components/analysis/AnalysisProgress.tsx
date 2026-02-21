@@ -27,6 +27,7 @@ interface ErrorDetails {
 export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) => {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState<ErrorDetails | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!analysisId) return;
@@ -37,6 +38,7 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
           analysisId,
           (updatedAnalysis) => {
             setAnalysis(updatedAnalysis);
+            setLoading(false);
           }
         );
       } catch (err: any) {
@@ -65,6 +67,7 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
         }
 
         setError(errorDetails);
+        setLoading(false);
       }
     };
 
@@ -76,6 +79,17 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
   const isFailed = analysis?.status === 'failed';
 
   const allIssues = analysis?.results?.flatMap(result => result.analysis?.issues || []) || [];
+
+  // Show loading spinner while waiting for first poll
+  if (loading && !analysis && !error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
+        <p className="text-lg font-medium text-gray-700">Starting analysis...</p>
+        <p className="text-sm text-gray-500 mt-2">This may take a moment</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

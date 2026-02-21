@@ -1,4 +1,4 @@
- [![Run Tests](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml/badge.svg)](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml)
+[![Run Tests](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml/badge.svg)](https://github.com/boobootoo2/medbilldozer/actions/workflows/python-app.yml)
 
 ![CodeQL](https://github.com/boobootoo2/medbilldozer/actions/workflows/codeql.yml/badge.svg)
 
@@ -14,12 +14,8 @@ explaining them in plain language.
 
 ## 📚 Documentation
 
-- **📖 [README](https://github.com/boobootoo2/medbilldozer/blob/develop/README.md)** – Complete user guide and quick start
-- **🔬 [Technical Writeup](https://github.com/boobootoo2/medbilldozer/blob/develop/docs/TECHNICAL_WRITEUP.md)** – Architecture and design
-- **⚙️ [API Reference](https://github.com/boobootoo2/medbilldozer/blob/develop/docs/API.md)** – Developer documentation
-- **📦 [Module Documentation](https://github.com/boobootoo2/medbilldozer/blob/develop/docs/MODULES.md)** – Code structure
-- **🔗 [Dependencies](https://github.com/boobootoo2/medbilldozer/blob/develop/docs/DEPENDENCIES.md)** – Third-party libraries
-
+- **📖 [README](../README.md)** – Complete user guide and quick start
+- **🔬 [Technical Writeup](../docs/PROJECT_SUBMISSION.md)** – Architecture and design
 
 ## Why medBillDozer Is Different
 

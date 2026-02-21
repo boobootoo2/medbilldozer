@@ -8,13 +8,78 @@
 
 **Choose your problem:**
 
-1. [App won't start](#app-wont-start)
-2. [Analysis fails or errors](#analysis-fails-or-errors)
-3. [No results or empty results](#no-results-or-empty-results)
-4. [API key issues](#api-key-issues)
-5. [Slow performance](#slow-performance)
-6. [Results don't make sense](#results-dont-make-sense)
-7. [UI issues / blank page](#ui-issues--blank-page)
+1. [CORS errors with file uploads](#-cors-errors-with-file-uploads) ⭐ **New**
+2. [App won't start](#app-wont-start)
+3. [Analysis fails or errors](#analysis-fails-or-errors)
+4. [No results or empty results](#no-results-or-empty-results)
+5. [API key issues](#api-key-issues)
+6. [Slow performance](#slow-performance)
+7. [Results don't make sense](#results-dont-make-sense)
+8. [UI issues / blank page](#ui-issues--blank-page)
+
+---
+
+## 🚫 CORS Errors with File Uploads
+
+### Symptoms:
+- Browser console shows: `Access to fetch has been blocked by CORS policy`
+- File uploads fail immediately
+- Error mentions `No 'Access-Control-Allow-Origin' header`
+
+### Root Cause:
+The Google Cloud Storage bucket doesn't have CORS (Cross-Origin Resource Sharing) configured to allow uploads from your frontend application.
+
+### Quick Fix:
+
+#### Step 1: Authenticate with Google Cloud
+```bash
+gcloud auth login
+gcloud config set project medbilldozer
+```
+
+#### Step 2: Run the Setup Script
+```bash
+./scripts/setup_gcs_cors.sh
+```
+
+That's it! The script will configure your GCS bucket to accept uploads from:
+- Local development servers (localhost:5173-5176)
+- Vercel preview deployments
+- Production domain
+
+### Manual Configuration (Alternative)
+
+If the script doesn't work, apply CORS manually:
+
+```bash
+gcloud storage buckets update gs://medbilldozer-documents \
+    --cors-file=config/gcs-cors.json
+```
+
+Or using gsutil (legacy):
+```bash
+gsutil cors set config/gcs-cors.json gs://medbilldozer-documents
+```
+
+### Verify It Worked
+
+Check the CORS configuration:
+```bash
+gcloud storage buckets describe gs://medbilldozer-documents --format="json(cors_config)"
+```
+
+### Custom Port?
+
+If you're running the frontend on a different port (e.g., 5180), add it to [config/gcs-cors.json](../config/gcs-cors.json):
+
+```json
+{
+  "origin": ["http://localhost:5180", ...],
+  ...
+}
+```
+
+Then reapply the configuration.
 
 ---
 

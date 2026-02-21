@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { LogOut, User } from 'lucide-react';
+import { trackLogout } from '../../utils/analytics';
 
 export const UserMenu = () => {
   const { user, logout } = useAuth();
@@ -61,6 +62,7 @@ export const UserMenu = () => {
             <button
               onClick={() => {
                 setIsOpen(false);
+                trackLogout();
                 logout();
               }}
               className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"

@@ -2,7 +2,8 @@
  * Home page - Document upload and analysis
  */
 import { useState, useRef } from 'react';
-import { Play, Link as LinkIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Play, Link as LinkIcon, FileText } from 'lucide-react';
 import { UserMenu } from '../components/auth/UserMenu';
 import { MultiFileUpload } from '../components/documents/MultiFileUpload';
 import { DocumentList, DocumentListRef } from '../components/documents/DocumentList';
@@ -11,6 +12,7 @@ import { AnalysisProgress } from '../components/analysis/AnalysisProgress';
 import { analysisService } from '../services/analysis.service';
 
 export const HomePage = () => {
+  const navigate = useNavigate();
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
   const [showInsuranceModal, setShowInsuranceModal] = useState(false);
@@ -51,7 +53,7 @@ export const HomePage = () => {
       setAnalyzing(true);
       const { analysis_id } = await analysisService.triggerAnalysis(
         selectedDocuments,
-        'medgemma-4b-it'
+        'medgemma-ensemble'
       );
 
       // Show analysis progress inline (no navigation)
@@ -78,7 +80,16 @@ export const HomePage = () => {
             <h1 className="text-2xl font-bold text-gray-900">MedBillDozer</h1>
             <p className="text-sm text-gray-600">AI-Powered Medical Billing Analysis</p>
           </div>
-          <UserMenu />
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/documents')}
+              className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium"
+            >
+              <FileText className="w-5 h-5" />
+              Manage Documents
+            </button>
+            <UserMenu />
+          </div>
         </div>
       </header>
 

@@ -24,24 +24,98 @@ const PHASE_MAP = {
 
 const ALL_PHASES = ['pre_extraction_active', 'extraction_active', 'line_items_active', 'analysis_active', 'complete'];
 
+// Helper function to parse substeps from workflow_log
+const parseSubsteps = (progress?: DocumentProgress) => {
+  if (!progress?.workflow_log?.extraction) return [];
+
+  const extraction = progress.workflow_log.extraction;
+  const substeps = [];
+
+  if (extraction.receipt_item_count !== undefined) {
+    substeps.push({
+      type: 'Receipt items',
+      count: extraction.receipt_item_count,
+      error: extraction.receipt_extraction_error
+    });
+  }
+  if (extraction.medical_item_count !== undefined) {
+    substeps.push({
+      type: 'Medical items',
+      count: extraction.medical_item_count,
+      error: extraction.medical_extraction_error
+    });
+  }
+  if (extraction.dental_item_count !== undefined) {
+    substeps.push({
+      type: 'Dental items',
+      count: extraction.dental_item_count,
+      error: extraction.dental_extraction_error
+    });
+  }
+  if (extraction.insurance_item_count !== undefined) {
+    substeps.push({
+      type: 'Insurance claims',
+      count: extraction.insurance_item_count,
+      error: extraction.insurance_extraction_error
+    });
+  }
+  if (extraction.fsa_item_count !== undefined) {
+    substeps.push({
+      type: 'FSA claims',
+      count: extraction.fsa_item_count,
+      error: extraction.fsa_extraction_error
+    });
+  }
+
+  return substeps;
+};
+
 export const DocumentStatusCard = ({ documentId, filename, progress, error }: DocumentStatusCardProps) => {
   const [elapsedTime, setElapsedTime] = useState(0);
 
   // Calculate elapsed time
   useEffect(() => {
-    if (!progress?.started_at) return;
+    const currentPhase = progress?.phase || 'pre_extraction_active';
+    const isComplete = currentPhase === 'complete';
+    const isFailed = currentPhase === 'failed' || error;
 
+    // If we have completed_at and started_at, calculate final time
+    if ((isComplete || isFailed) && progress?.completed_at && progress?.started_at) {
+      const startTime = new Date(progress.started_at).getTime();
+      const endTime = new Date(progress.completed_at).getTime();
+      const elapsed = Math.floor((endTime - startTime) / 1000);
+      setElapsedTime(elapsed > 0 ? elapsed : 0); // Prevent negative
+      return;
+    }
+
+    // If processing but no started_at, can't calculate elapsed time
+    if (!progress?.started_at) {
+      setElapsedTime(0);
+      return;
+    }
+
+    // Stop the timer if complete or failed (even without completed_at)
+    if (isComplete || isFailed) {
+      const startTime = new Date(progress.started_at).getTime();
+      const endTime = Date.now();
+      const elapsed = Math.floor((endTime - startTime) / 1000);
+      setElapsedTime(elapsed > 0 ? elapsed : 0); // Prevent negative
+      return;
+    }
+
+    // Still processing - update timer every second
     const calculateElapsed = () => {
       const startTime = new Date(progress.started_at).getTime();
       const now = Date.now();
-      setElapsedTime(Math.floor((now - startTime) / 1000));
+      const elapsed = Math.floor((now - startTime) / 1000);
+      setElapsedTime(elapsed > 0 ? elapsed : 0); // Prevent negative
     };
 
     calculateElapsed();
     const interval = setInterval(calculateElapsed, 1000);
 
     return () => clearInterval(interval);
-  }, [progress?.started_at]);
+  }, [progress?.started_at, progress?.completed_at, progress?.phase, error]);
 
   const formatTime = (seconds: number): string => {
     if (seconds < 60) return `${seconds}s`;
@@ -123,30 +197,61 @@ export const DocumentStatusCard = ({ documentId, filename, progress, error }: Do
           const isPhaseFailed = currentPhase === phaseKey && isFailed;
 
           return (
-            <div key={phaseKey} className="flex items-center gap-2 text-sm">
-              {isPhaseComplete && (
-                <>
-                  <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span className="text-gray-900 font-medium">{phase.label}</span>
-                </>
-              )}
-              {isPhaseActive && (
-                <>
-                  <Loader2 className="w-4 h-4 text-blue-600 animate-spin flex-shrink-0" />
-                  <span className="text-blue-900 font-medium">{phase.label} — {phase.desc}...</span>
-                </>
-              )}
-              {isPhaseFailed && (
-                <>
-                  <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-                  <span className="text-red-900 font-medium">{phase.label} — Failed</span>
-                </>
-              )}
-              {!isPhaseComplete && !isPhaseActive && !isPhaseFailed && (
-                <>
-                  <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0" />
-                  <span className="text-gray-500">{phase.label}</span>
-                </>
+            <div key={phaseKey}>
+              <div className="flex items-center gap-2 text-sm">
+                {isPhaseComplete && (
+                  <>
+                    <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <span className="text-gray-900 font-medium">{phase.label}</span>
+                  </>
+                )}
+                {isPhaseActive && (
+                  <>
+                    <Loader2 className="w-4 h-4 text-blue-600 animate-spin flex-shrink-0" />
+                    <span className="text-blue-900 font-medium">{phase.label} — {phase.desc}...</span>
+                  </>
+                )}
+                {isPhaseFailed && (
+                  <>
+                    <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                    <span className="text-red-900 font-medium">{phase.label} — Failed</span>
+                  </>
+                )}
+                {!isPhaseComplete && !isPhaseActive && !isPhaseFailed && (
+                  <>
+                    <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                    <span className="text-gray-500">{phase.label}</span>
+                  </>
+                )}
+              </div>
+
+              {/* Expandable substep details for line_items_active phase */}
+              {isPhaseActive && phaseKey === 'line_items_active' && (
+                <details className="ml-8 mt-2 text-sm">
+                  <summary className="cursor-pointer text-gray-600 hover:text-gray-900 select-none">
+                    View details
+                  </summary>
+                  <div className="mt-2 space-y-1 ml-4">
+                    {parseSubsteps(progress).map((substep, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        {substep.error ? (
+                          <>
+                            <AlertCircle className="w-3 h-3 text-yellow-600 flex-shrink-0" />
+                            <span className="text-yellow-700">{substep.type} — Error</span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="w-3 h-3 text-green-600 flex-shrink-0" />
+                            <span className="text-gray-700">{substep.type} ({substep.count})</span>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                    {parseSubsteps(progress).length === 0 && (
+                      <span className="text-gray-500 italic text-xs">No line items detected</span>
+                    )}
+                  </div>
+                </details>
               )}
             </div>
           );

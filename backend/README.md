@@ -54,9 +54,11 @@ psql $SUPABASE_URL -f ../sql/schema_production_api.sql
 gsutil mb gs://medbilldozer-documents
 gsutil mb gs://medbilldozer-clinical
 
-# Enable CORS for direct uploads
-gsutil cors set cors.json gs://medbilldozer-documents
+# Enable CORS for direct uploads (IMPORTANT!)
+../scripts/setup_gcs_cors.sh
 ```
+
+> **Note**: CORS configuration is critical for file uploads. Without it, uploads will fail with browser security errors. See [Troubleshooting Guide](../docs/TROUBLESHOOTING.md#-cors-errors-with-file-uploads) if you encounter CORS issues.
 
 **Firebase:**
 - Create Firebase project at https://console.firebase.google.com

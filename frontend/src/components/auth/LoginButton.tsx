@@ -1,20 +1,35 @@
 /**
  * Login button with Google/GitHub OAuth
  */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { trackLogin } from '../../utils/analytics';
 
 export const LoginButton = () => {
   const { loginWithGoogle, loginWithGithub, loading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [loginMethod, setLoginMethod] = useState<string | null>(null);
 
   // Redirect to home page after successful login
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && loginMethod) {
+      // Track successful login with method
+      trackLogin(loginMethod);
+      setLoginMethod(null);
       navigate('/', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, loginMethod, navigate]);
+
+  const handleGoogleLogin = () => {
+    setLoginMethod('google');
+    loginWithGoogle();
+  };
+
+  const handleGithubLogin = () => {
+    setLoginMethod('github');
+    loginWithGithub();
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -29,7 +44,7 @@ export const LoginButton = () => {
           <p className="text-xs text-gray-600 text-center mb-3 font-medium">Sign in with</p>
           <div className="flex gap-3">
             <button
-              onClick={loginWithGoogle}
+              onClick={handleGoogleLogin}
               disabled={loading}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-blue-400 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
             >
@@ -43,7 +58,7 @@ export const LoginButton = () => {
             </button>
 
             <button
-              onClick={loginWithGithub}
+              onClick={handleGithubLogin}
               disabled={loading}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >

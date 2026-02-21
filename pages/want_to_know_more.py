@@ -157,8 +157,43 @@ def render_recaptcha_v3(site_key: str) -> str:
                 }});
             }});
         }}
+
+        // Fix autocomplete warnings in reCAPTCHA forms
+        function fixRecaptchaAutocomplete() {{
+            // Find all iframes created by reCAPTCHA
+            const iframes = document.querySelectorAll('iframe[src*="recaptcha"]');
+            iframes.forEach(iframe => {{
+                try {{
+                    // Try to access iframe content (may fail due to CORS)
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (iframeDoc) {{
+                        // Fix inputs without autocomplete
+                        const inputs = iframeDoc.querySelectorAll('input:not([autocomplete]), input[autocomplete=""]');
+                        inputs.forEach(input => {{
+                            input.setAttribute('autocomplete', 'off');
+                        }});
+                    }}
+                }} catch (e) {{
+                    // Ignore CORS errors - we can't access cross-origin iframes
+                }}
+            }});
+
+            // Also fix any inputs in the main document
+            const allInputs = document.querySelectorAll('input:not([autocomplete]), input[autocomplete=""]');
+            allInputs.forEach(input => {{
+                input.setAttribute('autocomplete', 'off');
+            }});
+        }}
+
         // Execute immediately
         executeRecaptcha();
+
+        // Fix autocomplete after a short delay (allow reCAPTCHA to load)
+        setTimeout(fixRecaptchaAutocomplete, 500);
+
+        // Observe DOM changes to catch dynamically added elements
+        const observer = new MutationObserver(fixRecaptchaAutocomplete);
+        observer.observe(document.body, {{ childList: true, subtree: true }});
 
         // Listen for submission requests
         window.addEventListener('message', function(event) {{
@@ -168,6 +203,7 @@ def render_recaptcha_v3(site_key: str) -> str:
         }});
     </script>
     <style>
+        /* reCAPTCHA notice styling */
         .recaptcha-notice {{
             text-align: center;
             padding: 10px;
@@ -186,6 +222,27 @@ def render_recaptcha_v3(site_key: str) -> str:
             .recaptcha-notice a {{
                 color: #8ab4f8;
             }}
+        }}
+
+        /* Fix reCAPTCHA badge position */
+        .grecaptcha-badge {{
+            visibility: visible !important;
+            position: fixed !important;
+            bottom: 14px !important;
+            right: 14px !important;
+            z-index: 9999 !important;
+        }}
+
+        /* Ensure all inputs have autocomplete attribute */
+        input:not([autocomplete]) {{
+            autocomplete: off;
+        }}
+
+        /* Fix reCAPTCHA iframe positioning */
+        iframe[src*="recaptcha"] {{
+            position: fixed;
+            bottom: 14px;
+            right: 14px;
         }}
     </style>
     <div class="recaptcha-notice">
