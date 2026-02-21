@@ -3,8 +3,8 @@
 #
 # To apply: gcloud run services update medbilldozer-api --region=us-central1 --env-vars-file=cloud-run-custom-domain-env.yaml
 
-ALLOWED_ORIGINS: "https://app.medbilldozer.com,http://localhost:3000,http://localhost:5173"
+ALLOWED_ORIGINS: "https://medbilldozer.com,https://www.medbilldozer.com,http://localhost:3000,http://localhost:5173"
 ENVIRONMENT: "production"
-FRONTEND_URL: "https://app.medbilldozer.com"
+FRONTEND_URL: "https://medbilldozer.com"
 FIREBASE_PROJECT_ID: "medbilldozer"
 GCS_PROJECT_ID: "medbilldozer"
