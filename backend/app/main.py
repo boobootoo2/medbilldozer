@@ -87,7 +87,12 @@ app.add_middleware(
 @app.get("/")
 async def root():
     """Health check endpoint."""
-    return {"app": settings.app_name, "version": settings.app_version, "status": "healthy"}
+    return {
+        "app": settings.app_name,
+        "version": settings.app_version,
+        "status": "healthy",
+        "build": "2026-02-21-cors-fix",
+    }
 
 
 @app.get("/health")
