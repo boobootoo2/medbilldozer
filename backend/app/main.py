@@ -65,9 +65,14 @@ app = FastAPI(
 app.add_middleware(LoggingMiddleware)
 
 # CORS middleware for React frontend
+cors_origins = settings.all_cors_origins
+logger.info(f"🔧 Configuring CORS for {len(cors_origins)} origins:")
+for origin in cors_origins:
+    logger.info(f"   ✅ {origin}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.all_cors_origins,
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept", "X-Request-ID"],
@@ -92,6 +97,18 @@ async def health_check():
         "status": "healthy",
         "api_version": settings.app_version,
         "environment": "production" if not settings.debug else "development",
+    }
+
+
+@app.get("/debug/cors")
+async def debug_cors():
+    """Debug endpoint to verify CORS configuration."""
+    return {
+        "allowed_origins": settings.all_cors_origins,
+        "environment": settings.environment,
+        "frontend_url": settings.frontend_url,
+        "raw_allowed_origins_env_var": settings.allowed_origins,
+        "backend_cors_origins": settings.backend_cors_origins,
     }
 
 
