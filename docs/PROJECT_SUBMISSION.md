@@ -39,9 +39,8 @@ MedBillDozer leverages **Google's MedGemma** (medical domain-specific AI) as the
 
 **Performance Results:**
 
-![Detection Performance by Modality](images/detection_performance_heatmap.png)
-
-Our current benchmarks show **MedGemma-Ensemble achieves 78% detection rate** with **40% F1 score** (75% recall, 30% precision) across 61 test patients. While these early results outperform GPT-4o in detection rate (29% detection), there is significant room for improvement. **Our target is 90-94% accuracy** through expanded training data and model refinement. See our [interactive data flow diagram](docs/data_flow_diagram.html) for technical architecture.
+![Detection Performance by Modality](https://github.com/boobootoo2/medbilldozer/blob/main/images/detection-by-modality.png)
+Our current benchmarks show **MedGemma-Ensemble achieves 78% detection rate** with **40% F1 score** (75% recall, 30% precision) across 61 test patients. While these early results outperform GPT-4o in detection rate (29% detection), there is significant room for improvement. **Our target is 90-94% accuracy** through expanded training data and model refinement. See our [interactive data flow diagram](https://boobootoo2.github.io/medbilldozer/data_flow_diagram.html) for technical architecture.
 
 **Key Differentiators:**
 - **Domain-Specific AI**: Purpose-built medical models vs. general-purpose LLMs
@@ -53,9 +52,10 @@ Our current benchmarks show **MedGemma-Ensemble achieves 78% detection rate** wi
 
 #### Live Demo
 🎯 **Try MedBillDozer Now**: [https://medbilldozer.vercel.app/](https://medbilldozer.vercel.app/)
-🔐 **Access Code**: `2026MEDGEMMA`
+🔐 **Invite Code**: `2026MEDGEMMA`
 
 🧪 **Prototype & AI Agent Assistant & MedBillDozer Challenge Simulator**: [https://medbilldozer.streamlit.app/](https://medbilldozer.streamlit.app/)
+🔐 **Passcode**: `2026MEDGEMMA`
 - Guided tour of medical billing error detection
 - Benchmark visualizations and performance metrics
 - MedBillDozer Challenge Game (interactive learning)
@@ -87,7 +87,7 @@ Our current benchmarks show **MedGemma-Ensemble achieves 78% detection rate** wi
 |---------|------|--------|-----------|
 | v0.1 | Feb 13, 2026 | ✅ Released | Initial proof of concept - Streamlit prototype |
 | v0.2 | Feb 15, 2026 | ✅ Released | Clinical imaging dataset & MedGemma benchmarks |
-| v0.3 | Feb 17, 2026 | 🚧 Current | Production deployment - FastAPI backend, React frontend |
+| v0.3 | Feb 17, 2026 | ✅ Released | Production deployment - FastAPI backend, React frontend |
 
 **Roadmap:**
 | Phase | Timeline | Objective | Funding Gate |
@@ -203,8 +203,6 @@ MedBillDozer demonstrates effective use of **MedGemma as a domain-specific found
 - ✅ Open-source benchmarks advancing medical AI research
 - 🎯 **In Progress**: Expanding training data to achieve 90-94% accuracy target
 
-**Try It Now**: [medbilldozer.vercel.app](https://medbilldozer.vercel.app/) | **Code**: `2026MEDGEMMA`
+**Try It Now**: [medbilldozer.vercel.app](https://medbilldozer.vercel.app/) | **Invite Code**: `2026MEDGEMMA`
 
----
 
-*Word Count: ~1,180*

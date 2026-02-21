@@ -6,7 +6,7 @@
 |---------|-------|-------------|--------|-------------|
 | v0.1 | POC | Feb 13, 2026 | ✅ Released | Initial proof of concept |
 | v0.2 | POC | Feb 15, 2026 | ✅ Released | Clinical imaging dataset & benchmarks |
-| v0.3 | Prototype | Feb 19, 2026 | ✅ Released | Production React + FastAPI architecture |
+| v0.3 | Prototype | Feb 17, 2026 | ✅ Released | Presenting to investors |
 
 ## Planned Releases with Fundraising Gates
 
