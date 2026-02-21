@@ -67,7 +67,7 @@ const DocumentManagementPage: React.FC = () => {
   }, [profileFilter, actionFilter, flaggedOnly]);
 
   // Handle document action update
-  const handleDocumentUpdate = async (documentId: string) => {
+  const handleDocumentUpdate = async () => {
     // Reload documents to reflect changes
     await loadDocuments();
   };
@@ -189,7 +189,7 @@ const DocumentManagementPage: React.FC = () => {
                 <ExpandableDocumentCard
                   key={document.document_id}
                   document={document}
-                  onUpdate={() => handleDocumentUpdate(document.document_id)}
+                  onUpdate={handleDocumentUpdate}
                 />
               ))}
             </div>

@@ -35,7 +35,7 @@ const ActionManagementPanel: React.FC<ActionManagementPanelProps> = ({ document,
       setSaveSuccess(false);
 
       await documentsService.updateDocumentAction(document.document_id, {
-        action: action === 'none' ? null : action,
+        action: action === 'none' ? null : (action as 'resolved' | 'ignored' | 'followup'),
         action_notes: actionNotes || undefined
       });
 
