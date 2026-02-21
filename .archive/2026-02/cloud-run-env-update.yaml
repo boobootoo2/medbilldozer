@@ -1,0 +1,13 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: medbilldozer-api
+spec:
+  template:
+    spec:
+      containers:
+      - env:
+        - name: ENVIRONMENT
+          value: production
+        - name: ALLOWED_ORIGINS
+          value: "https://medbilldozer.vercel.app,https://medbilldozer-git-v031-john-shultzs-projects.vercel.app,https://medbilldozer-git-v03-john-shultzs-projects.vercel.app,http://localhost:3000,http://localhost:5173"

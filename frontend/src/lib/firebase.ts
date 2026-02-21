@@ -19,6 +19,18 @@ export const app = initializeApp(firebaseConfig);
 // Initialize Auth
 export const auth = getAuth(app);
 
+// Configure reCAPTCHA settings to prevent autocomplete warnings
+if (typeof window !== 'undefined') {
+  // Set reCAPTCHA language and size
+  (window as any).recaptchaOptions = {
+    useRecaptchaNet: true,
+    badge: 'bottomright'
+  };
+
+  // Disable autocomplete warnings by setting the reCAPTCHA verifier to use invisible mode
+  auth.settings.appVerificationDisabledForTesting = false;
+}
+
 // Auth providers
 export const googleProvider = new GoogleAuthProvider();
 export const githubProvider = new GithubAuthProvider();

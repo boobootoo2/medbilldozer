@@ -1,0 +1,5 @@
+ALLOWED_ORIGINS: "https://medbilldozer.vercel.app,https://medbilldozer-git-v031-john-shultzs-projects.vercel.app,https://medbilldozer-git-v03-john-shultzs-projects.vercel.app,https://medbilldozer-git-develop-john-shultzs-projects.vercel.app,http://localhost:3000,http://localhost:5173"
+ENVIRONMENT: "production"
+FRONTEND_URL: "https://medbilldozer.vercel.app"
+FIREBASE_PROJECT_ID: "medbilldozer"
+GCS_PROJECT_ID: "medbilldozer"

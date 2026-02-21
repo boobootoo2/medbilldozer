@@ -5,6 +5,7 @@ import streamlit as st
 from medbilldozer.ui.ui import setup_page, inject_css, render_header, render_demo_documents
 from medbilldozer.ui.doc_assistant import render_contextual_help
 from medbilldozer.utils.config import is_guided_tour_enabled
+from medbilldozer.ui.analytics import initialize_ga4_for_streamlit
 
 
 def should_enable_guided_tour() -> bool:
@@ -27,12 +28,15 @@ def should_enable_guided_tour() -> bool:
 def bootstrap_ui_minimal():
     """Initialize minimal UI components for all pages.
 
-    Sets up page configuration, CSS styles, and header.
+    Sets up page configuration, CSS styles, header, and analytics.
     Should be called on all pages (home and profile).
     """
     setup_page()
     inject_css()
     render_header()
+
+    # Initialize Google Analytics 4 (privacy-focused)
+    initialize_ga4_for_streamlit()
 
 
 def bootstrap_home_page():

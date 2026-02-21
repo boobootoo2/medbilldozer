@@ -1,4 +1,5 @@
 """FastAPI application entry point for MedBillDozer API."""
+
 import sys
 from pathlib import Path
 
@@ -13,15 +14,16 @@ if str(app_root) not in sys.path:
     print(f"✅ Added {app_root} to Python path")
 print(f"🐍 Python path: {sys.path[:5]}...")
 
+from contextlib import asynccontextmanager
+
+from app.api import analyze, auth, documents, issues, profile
+from app.config import settings
+from app.middleware.logging_middleware import LoggingMiddleware
+from app.utils import get_logger, setup_logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from contextlib import asynccontextmanager
 
-from app.config import settings
-from app.api import auth, documents, analyze, profile, issues
-from app.utils import setup_logging, get_logger
-from app.middleware.logging_middleware import LoggingMiddleware
 # from app.middleware.auth_middleware import AuthMiddleware
 
 # Setup structured logging
@@ -35,7 +37,8 @@ async def lifespan(app: FastAPI):
     # Startup: Initialize providers
     logger.info("🚀 Initializing MedBillDozer providers...")
     try:
-        from medbilldozer.providers.provider_registry import register_providers, ProviderRegistry
+        from medbilldozer.providers.provider_registry import ProviderRegistry, register_providers
+
         register_providers()
         providers = list(ProviderRegistry.list())
         logger.info(f"✅ Registered providers: {providers}")
@@ -55,21 +58,26 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan,
-    redirect_slashes=False  # Prevent 307 redirects that lose Authorization headers
+    redirect_slashes=False,  # Prevent 307 redirects that lose Authorization headers
 )
 
 # Request/Response logging middleware
 app.add_middleware(LoggingMiddleware)
 
 # CORS middleware for React frontend
-origins = settings.allowed_origins.split(",")
+cors_origins = settings.all_cors_origins
+logger.info(f"🔧 Configuring CORS for {len(cors_origins)} origins:")
+for origin in cors_origins:
+    logger.info(f"   ✅ {origin}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["X-Correlation-ID"],  # Expose correlation ID to frontend
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "X-Request-ID"],
+    expose_headers=["X-Request-ID", "X-Correlation-ID"],
+    max_age=600,
 )
 
 # Custom authentication middleware
@@ -82,7 +90,8 @@ async def root():
     return {
         "app": settings.app_name,
         "version": settings.app_version,
-        "status": "healthy"
+        "status": "healthy",
+        "build": "2026-02-21-cors-fix",
     }
 
 
@@ -92,7 +101,19 @@ async def health_check():
     return {
         "status": "healthy",
         "api_version": settings.app_version,
-        "environment": "production" if not settings.debug else "development"
+        "environment": "production" if not settings.debug else "development",
+    }
+
+
+@app.get("/debug/cors")
+async def debug_cors():
+    """Debug endpoint to verify CORS configuration."""
+    return {
+        "allowed_origins": settings.all_cors_origins,
+        "environment": settings.environment,
+        "frontend_url": settings.frontend_url,
+        "raw_allowed_origins_env_var": settings.allowed_origins,
+        "backend_cors_origins": settings.backend_cors_origins,
     }
 
 
@@ -117,23 +138,18 @@ async def global_exception_handler(request, exc):
         "message": str(exc) if settings.debug else "An unexpected error occurred",
         "correlation_id": correlation_id,
         "path": str(request.url.path),
-        "method": request.method
+        "method": request.method,
     }
 
     if settings.debug:
         error_response["exception_type"] = type(exc).__name__
 
-    return JSONResponse(
-        status_code=500,
-        content=error_response
-    )
+    return JSONResponse(status_code=500, content=error_response)
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
-        "main:app",
-        host=settings.server_host,
-        port=settings.server_port,
-        reload=settings.debug
+        "main:app", host=settings.server_host, port=settings.server_port, reload=settings.debug
     )
