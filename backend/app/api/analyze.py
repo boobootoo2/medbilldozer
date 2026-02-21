@@ -1,13 +1,14 @@
 """Analysis API endpoints."""
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+
 from datetime import datetime, timedelta
 from uuid import uuid4
 
-from app.models.requests import AnalyzeRequest, AnalyzeResponse, AnalysisResultResponse
+from app.dependencies import get_current_user
+from app.models.requests import AnalysisResultResponse, AnalyzeRequest, AnalyzeResponse
 from app.services.analysis_service import AnalysisService, get_analysis_service
 from app.services.db_service import DBService, get_db_service
-from app.dependencies import get_current_user
-from app.utils import get_logger, log_with_context, get_correlation_id
+from app.utils import get_correlation_id, get_logger, log_with_context
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -19,7 +20,7 @@ async def trigger_analysis(
     background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user),
     analysis_service: AnalysisService = Depends(get_analysis_service),
-    db: DBService = Depends(get_db_service)
+    db: DBService = Depends(get_db_service),
 ):
     """
     Trigger document analysis (async background task).
@@ -31,7 +32,7 @@ async def trigger_analysis(
     4. Backend immediately returns analysis_id
     5. Client polls GET /analyze/{analysis_id} for results
     """
-    user_id = current_user['user_id']
+    user_id = current_user["user_id"]
     correlation_id = get_correlation_id()
 
     try:
@@ -39,20 +40,18 @@ async def trigger_analysis(
         provider_str = request.provider.value if request.provider else "medgemma-ensemble"
 
         log_with_context(
-            logger, 20,
+            logger,
+            20,
             f"📊 Analysis requested for {len(request.document_ids)} document(s)",
             user_id=user_id,
             document_count=len(request.document_ids),
-            provider=provider_str
+            provider=provider_str,
         )
 
         # Generate analysis ID
         analysis_id = str(uuid4())
         log_with_context(
-            logger, 20,
-            f"📊 Generated analysis ID",
-            user_id=user_id,
-            analysis_id=analysis_id
+            logger, 20, f"📊 Generated analysis ID", user_id=user_id, analysis_id=analysis_id
         )
 
         # Validate documents belong to user
@@ -61,11 +60,12 @@ async def trigger_analysis(
             doc = await db.get_document(doc_id, user_id)
             if not doc:
                 log_with_context(
-                    logger, 30,
+                    logger,
+                    30,
                     f"⚠️  Document not found or unauthorized",
                     user_id=user_id,
                     document_id=doc_id,
-                    analysis_id=analysis_id
+                    analysis_id=analysis_id,
                 )
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -73,8 +73,8 @@ async def trigger_analysis(
                         "error": "Document not found",
                         "message": f"Document {doc_id} not found or you don't have access to it",
                         "document_id": doc_id,
-                        "correlation_id": correlation_id
-                    }
+                        "correlation_id": correlation_id,
+                    },
                 )
 
         # Create analysis record
@@ -82,13 +82,14 @@ async def trigger_analysis(
             analysis_id=analysis_id,
             user_id=user_id,
             document_ids=request.document_ids,
-            provider=provider_str
+            provider=provider_str,
         )
         log_with_context(
-            logger, 20,
+            logger,
+            20,
             f"✅ Created analysis record in database",
             user_id=user_id,
-            analysis_id=analysis_id
+            analysis_id=analysis_id,
         )
 
         # Queue background task for analysis
@@ -97,29 +98,31 @@ async def trigger_analysis(
             analysis_id=analysis_id,
             document_ids=request.document_ids,
             user_id=user_id,
-            provider=provider_str
+            provider=provider_str,
         )
         log_with_context(
-            logger, 20,
+            logger,
+            20,
             f"🚀 Queued background analysis task",
             user_id=user_id,
-            analysis_id=analysis_id
+            analysis_id=analysis_id,
         )
 
         return AnalyzeResponse(
             analysis_id=analysis_id,
             status="queued",
-            estimated_completion=datetime.utcnow() + timedelta(minutes=2)
+            estimated_completion=datetime.utcnow() + timedelta(minutes=2),
         )
 
     except HTTPException:
         raise
     except Exception as e:
         log_with_context(
-            logger, 40,
+            logger,
+            40,
             f"❌ Failed to trigger analysis: {type(e).__name__}",
             user_id=user_id,
-            error=str(e)
+            error=str(e),
         )
         logger.exception("Analysis trigger failed")
         raise HTTPException(
@@ -127,8 +130,8 @@ async def trigger_analysis(
             detail={
                 "error": "Analysis trigger failed",
                 "message": f"Failed to trigger analysis: {str(e)}",
-                "correlation_id": correlation_id
-            }
+                "correlation_id": correlation_id,
+            },
         )
 
 
@@ -136,36 +139,27 @@ async def trigger_analysis(
 async def get_analysis(
     analysis_id: str,
     current_user: dict = Depends(get_current_user),
-    db: DBService = Depends(get_db_service)
+    db: DBService = Depends(get_db_service),
 ):
     """
     Get analysis results (polling endpoint).
 
     Client should poll this endpoint every 2-3 seconds until status is 'completed' or 'failed'.
     """
-    user_id = current_user['user_id']
+    user_id = current_user["user_id"]
     correlation_id = get_correlation_id()
 
     try:
         log_with_context(
-            logger, 20,
-            f"📊 Fetching analysis status",
-            user_id=user_id,
-            analysis_id=analysis_id
+            logger, 20, f"📊 Fetching analysis status", user_id=user_id, analysis_id=analysis_id
         )
 
         # Get analysis from database
-        analysis = await db.get_analysis(
-            analysis_id=analysis_id,
-            user_id=user_id
-        )
+        analysis = await db.get_analysis(analysis_id=analysis_id, user_id=user_id)
 
         if not analysis:
             log_with_context(
-                logger, 30,
-                f"⚠️  Analysis not found",
-                user_id=user_id,
-                analysis_id=analysis_id
+                logger, 30, f"⚠️  Analysis not found", user_id=user_id, analysis_id=analysis_id
             )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -174,39 +168,42 @@ async def get_analysis(
                     "message": f"Analysis {analysis_id} not found. It may have been deleted or you don't have access to it.",
                     "analysis_id": analysis_id,
                     "correlation_id": correlation_id,
-                    "help": "Make sure you're using the correct analysis ID and that it belongs to your account."
-                }
+                    "help": "Make sure you're using the correct analysis ID and that it belongs to your account.",
+                },
             )
 
         log_with_context(
-            logger, 20,
+            logger,
+            20,
             f"✅ Analysis found: {analysis['status']}",
             user_id=user_id,
             analysis_id=analysis_id,
-            status=analysis['status']
+            status=analysis["status"],
         )
 
+        # Build response with proper defaults for missing fields
         return AnalysisResultResponse(
-            analysis_id=analysis['analysis_id'],
-            status=analysis['status'],
-            provider=analysis['provider'],
-            results=analysis.get('results'),
-            coverage_matrix=analysis.get('coverage_matrix'),
-            total_savings_detected=analysis.get('total_savings_detected'),
-            issues_count=analysis.get('issues_count', 0),
-            created_at=analysis['created_at'],
-            completed_at=analysis.get('completed_at')
+            analysis_id=analysis["analysis_id"],
+            status=analysis["status"],
+            provider=analysis.get("provider", "medgemma-ensemble"),  # Default provider if missing
+            results=analysis.get("results"),
+            coverage_matrix=analysis.get("coverage_matrix"),
+            total_savings_detected=analysis.get("total_savings_detected"),
+            issues_count=analysis.get("issues_count", 0),
+            created_at=analysis.get("created_at") or datetime.utcnow(),  # Default to now if missing
+            completed_at=analysis.get("completed_at"),
         )
 
     except HTTPException:
         raise
     except Exception as e:
         log_with_context(
-            logger, 40,
+            logger,
+            40,
             f"❌ Failed to get analysis: {type(e).__name__}",
             user_id=user_id,
             analysis_id=analysis_id,
-            error=str(e)
+            error=str(e),
         )
         logger.exception("Get analysis failed")
         raise HTTPException(
@@ -215,8 +212,8 @@ async def get_analysis(
                 "error": "Failed to retrieve analysis",
                 "message": f"An error occurred while retrieving the analysis: {str(e)}",
                 "analysis_id": analysis_id,
-                "correlation_id": correlation_id
-            }
+                "correlation_id": correlation_id,
+            },
         )
 
 
@@ -225,27 +222,20 @@ async def list_analyses(
     limit: int = 20,
     offset: int = 0,
     current_user: dict = Depends(get_current_user),
-    db: DBService = Depends(get_db_service)
+    db: DBService = Depends(get_db_service),
 ):
     """
     List all analyses for current user.
     """
     try:
         analyses = await db.list_user_analyses(
-            user_id=current_user['user_id'],
-            limit=limit,
-            offset=offset
+            user_id=current_user["user_id"], limit=limit, offset=offset
         )
 
-        return {
-            "analyses": analyses,
-            "total": len(analyses),
-            "offset": offset,
-            "limit": limit
-        }
+        return {"analyses": analyses, "total": len(analyses), "offset": offset, "limit": limit}
 
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to list analyses: {str(e)}"
+            detail=f"Failed to list analyses: {str(e)}",
         )
