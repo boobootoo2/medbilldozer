@@ -10,6 +10,7 @@ import { AnalysisDashboard } from './components/analysis/AnalysisDashboard';
 import DocumentManagementPage from './pages/DocumentManagementPage';
 import { DisclaimerModal } from './components/DisclaimerModal';
 import { CookieConsentDialog } from './components/CookieConsentDialog';
+import { SecurityBanner } from './components/SecurityBanner';
 import { initGA, trackPageView } from './utils/analytics';
 
 /**
@@ -36,6 +37,7 @@ function App() {
   return (
     <BrowserRouter>
       <AnalyticsTracker />
+      <SecurityBanner />
       <DisclaimerModal />
       <CookieConsentDialog />
       <Routes>
