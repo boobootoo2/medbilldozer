@@ -1,0 +1,14 @@
+River Valley Medical Center – Itemized Statement
+Patient: John Doe
+
+Charges:
+- 01/12/2026 | 45378 | Colonoscopy, diagnostic | Qty:1 | $3,200
+- 01/12/2026 | 45378 | Colonoscopy, diagnostic | Qty:1 | $3,200 (DUPLICATE)
+- 01/12/2026 | 00812 | Anesthesia for colonoscopy | Qty:1 | $1,500
+- 01/12/2026 | 99199 | Operating room supplies | Qty:1 | $850
+- 01/12/2026 | G0121 | Screening colonoscopy | Qty:1 | $2,900 (CONFLICT)
+
+Notes:
+* Duplicate CPT billed
+* Screening and diagnostic billed same encounter
+* Unjustified OR supplies

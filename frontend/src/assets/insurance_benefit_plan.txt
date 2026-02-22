@@ -1,0 +1,26 @@
+Synthetic Insurance Benefit Plan Summary (Demo Use Only)
+
+Plan Overview
+This document is synthetic and provided for demonstration purposes only. It represents a typical commercial PPO-style health insurance plan.
+
+Deductibles & Cost Sharing
+• Annual deductible: $2,000 (individual)
+• Coinsurance: 20% after deductible
+• Out-of-pocket maximum: $6,500
+
+Covered Services
+• Preventive screening colonoscopy: Covered at 100% when billed as screening
+• Diagnostic colonoscopy: Subject to deductible and coinsurance
+• Imaging (CT/MRI): Covered with medical necessity documentation
+• Chemotherapy infusion: Covered with prior authorization
+
+Exclusions & Limitations
+• Duplicate or unbundled services are not reimbursed
+• Incompatible procedure combinations may be denied
+• Excessive units require clinical justification
+
+Member Responsibilities
+• Verify accuracy of bills and EOBs
+• Request itemization when charges are unclear
+• Appeal denied or questionable claims within 180 days
+

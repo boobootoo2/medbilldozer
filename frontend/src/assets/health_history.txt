@@ -1,0 +1,28 @@
+Synthetic Patient Health History (Demo Use Only)
+
+Patient Summary
+This document is synthetic and created for demonstration and benchmarking purposes only. No real patient data is included.
+
+Demographics
+Name: Alex Johnson
+DOB: 1972-08-14
+Sex: Male
+Height/Weight: 5'10" / 185 lbs
+
+Relevant Medical History
+• Family history of colorectal cancer
+• Osteoarthritis of right knee
+• Hypertension (controlled)
+• History of abdominal pain under evaluation
+
+Recent Encounters
+• Screening/diagnostic colonoscopy
+• Right knee surgical intervention
+• Abdominal CT imaging
+• Oncology infusion therapy (prior authorization required)
+
+Medications
+• Lisinopril 10 mg daily
+• NSAIDs as needed
+• Chemotherapy agents per oncology protocol
+
