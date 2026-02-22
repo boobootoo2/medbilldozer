@@ -181,13 +181,18 @@ async def get_analysis(
             status=analysis["status"],
         )
 
+        # Normalize coverage_matrix: build_coverage_matrix may return [] instead of None/dict
+        coverage_matrix = analysis.get("coverage_matrix")
+        if not isinstance(coverage_matrix, dict):
+            coverage_matrix = None
+
         # Build response with proper defaults for missing fields
         return AnalysisResultResponse(
             analysis_id=analysis["analysis_id"],
             status=analysis["status"],
             provider=analysis.get("provider", "medgemma-ensemble"),  # Default provider if missing
             results=analysis.get("results"),
-            coverage_matrix=analysis.get("coverage_matrix"),
+            coverage_matrix=coverage_matrix,
             total_savings_detected=analysis.get("total_savings_detected"),
             issues_count=analysis.get("issues_count", 0),
             created_at=analysis.get("created_at") or datetime.utcnow(),  # Default to now if missing
