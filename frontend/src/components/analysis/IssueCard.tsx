@@ -39,7 +39,13 @@ export const IssueCard = ({ issue, onStatusUpdate }: IssueCardProps) => {
   const [notes, setNotes] = useState(issue.notes || '');
   const [showNotesInput, setShowNotesInput] = useState(false);
 
-  const StatusIcon = STATUS_ICONS[issue.status];
+  // Issues returned from analysis may not have a status yet; default to 'open'
+  const safeStatus: keyof typeof STATUS_COLORS =
+    issue.status && issue.status in STATUS_COLORS
+      ? (issue.status as keyof typeof STATUS_COLORS)
+      : 'open';
+
+  const StatusIcon = STATUS_ICONS[safeStatus];
   const confidenceColor = {
     high: 'bg-red-100 text-red-800',
     medium: 'bg-yellow-100 text-yellow-800',
@@ -90,7 +96,7 @@ export const IssueCard = ({ issue, onStatusUpdate }: IssueCardProps) => {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <div className="flex items-start gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${STATUS_COLORS[issue.status].replace('text-', 'bg-').replace('800', '200')}`}>
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${STATUS_COLORS[safeStatus].replace('text-', 'bg-').replace('800', '200')}`}>
               <StatusIcon className="w-5 h-5 text-gray-700" />
             </div>
 
@@ -131,13 +137,13 @@ export const IssueCard = ({ issue, onStatusUpdate }: IssueCardProps) => {
           <button
             onClick={() => setShowStatusMenu(!showStatusMenu)}
             disabled={updatingStatus}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium transition-colors ${STATUS_COLORS[issue.status]} hover:shadow-md disabled:opacity-50`}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium transition-colors ${STATUS_COLORS[safeStatus]} hover:shadow-md disabled:opacity-50`}
           >
             {updatingStatus ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
             ) : (
               <>
-                {STATUS_LABELS[issue.status]}
+                {STATUS_LABELS[safeStatus]}
                 <ChevronDown size={14} />
               </>
             )}
@@ -150,7 +156,7 @@ export const IssueCard = ({ issue, onStatusUpdate }: IssueCardProps) => {
                   key={status}
                   onClick={() => handleStatusChange(status as Issue['status'])}
                   className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
-                    status === issue.status ? 'font-semibold bg-gray-50' : ''
+                    status === safeStatus ? 'font-semibold bg-gray-50' : ''
                   }`}
                 >
                   {label}
