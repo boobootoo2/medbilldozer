@@ -78,7 +78,13 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
   const isComplete = analysis?.status === 'completed';
   const isFailed = analysis?.status === 'failed';
 
-  const allIssues = analysis?.results?.flatMap(result => result.analysis?.issues || []) || [];
+  // Normalize results - can be array (processing) or object (completed)
+  const rawDocuments = Array.isArray(analysis?.results)
+    ? analysis.results
+    : (analysis?.results as any)?.documents;
+  const documents = Array.isArray(rawDocuments) ? rawDocuments : [];
+
+  const allIssues = documents?.flatMap(result => result.analysis?.issues || []) || [];
 
   // Show loading spinner while waiting for first poll
   if (loading && !analysis && !error) {
@@ -113,7 +119,7 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
             </h2>
           </div>
           <p className="text-gray-600">
-            {analysis?.results?.length || 0} document(s) • {analysis?.provider || 'medgemma-ensemble'}
+            {documents?.length || 0} document(s) • {analysis?.provider || 'medgemma-ensemble'}
           </p>
         </div>
       </div>
@@ -202,11 +208,11 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
       )}
 
       {/* Document Status Cards */}
-      {analysis?.results && analysis.results.length > 0 && (
+      {documents && documents.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900">Document Progress</h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {analysis.results.map((result) => (
+            {documents.map((result) => (
               <DocumentStatusCard
                 key={result.document_id}
                 documentId={result.document_id}

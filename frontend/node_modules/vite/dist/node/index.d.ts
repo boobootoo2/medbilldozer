@@ -880,7 +880,7 @@ declare class ModuleGraph {
     getModulesByFile(file: string): Set<ModuleNode> | undefined;
     onFileChange(file: string): void;
     onFileDelete(file: string): void;
-    invalidateModule(mod: ModuleNode, seen?: Set<ModuleNode>, timestamp?: number, isHmr?: boolean, 
+    invalidateModule(mod: ModuleNode, seen?: Set<ModuleNode>, timestamp?: number, isHmr?: boolean,
     ): void;
     invalidateAll(): void;
     /**
@@ -891,7 +891,7 @@ declare class ModuleGraph {
      * @param staticImportedUrls Subset of `importedModules` where they're statically imported in code.
      *   This is only used for soft invalidations so `undefined` is fine but may cause more runtime processing.
      */
-    updateModuleInfo(mod: ModuleNode, importedModules: Set<string | ModuleNode>, importedBindings: Map<string, Set<string>> | null, acceptedModules: Set<string | ModuleNode>, acceptedExports: Set<string> | null, isSelfAccepting: boolean, ssr?: boolean, 
+    updateModuleInfo(mod: ModuleNode, importedModules: Set<string | ModuleNode>, importedBindings: Map<string, Set<string>> | null, acceptedModules: Set<string | ModuleNode>, acceptedExports: Set<string> | null, isSelfAccepting: boolean, ssr?: boolean,
     ): Promise<Set<ModuleNode> | undefined>;
     ensureEntryFromUrl(rawUrl: string, ssr?: boolean, setIsSelfAccepting?: boolean): Promise<ModuleNode>;
     createFileOnlyEntry(file: string): ModuleNode;

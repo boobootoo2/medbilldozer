@@ -627,7 +627,7 @@ const ERROR_NAME = 'FirebaseError';
 class FirebaseError extends Error {
     constructor(
     /** The error code for this error. */
-    code, message, 
+    code, message,
     /** Custom data for this error. */
     customData) {
         super(message);
