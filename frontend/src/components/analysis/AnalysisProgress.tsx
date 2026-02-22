@@ -118,7 +118,7 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
             </h2>
           </div>
           <p className="text-gray-600">
-            {analysis?.results?.length || 0} document(s) • {analysis?.provider || 'medgemma-ensemble'}
+            {documents.length || 0} document(s) • {analysis?.provider || 'medgemma-ensemble'}
           </p>
         </div>
       </div>
