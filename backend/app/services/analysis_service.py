@@ -508,6 +508,9 @@ class AnalysisService:
                 if len(results) > 1:
                     logger.info(f"🔗 Building coverage matrix for {len(results)} documents...")
                     coverage_matrix = build_coverage_matrix(results)
+                    # Ensure it's a dict or None — build_coverage_matrix may return []
+                    if not isinstance(coverage_matrix, dict):
+                        coverage_matrix = None
                     logger.info(f"✅ Coverage matrix built successfully")
             except Exception as e:
                 log_with_context(

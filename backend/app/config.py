@@ -108,6 +108,7 @@ class Settings(BaseSettings):
                         # Vercel deployments
                         "https://medbilldozer.vercel.app",
                         # Vercel preview deployments (git branches)
+                        "https://medbilldozer-git-develop-john-shultzs-projects.vercel.app",
                         "https://medbilldozer-git-v03-john-shultzs-projects.vercel.app",
                         "https://medbilldozer-git-v031-john-shultzs-projects.vercel.app",
                     ]
