@@ -298,6 +298,42 @@ async def list_documents(
         )
 
 
+@router.get("/{document_id}/extracted-text")
+async def get_document_extracted_text(
+    document_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: DBService = Depends(get_db_service),
+):
+    """
+    Get the raw extracted text from a document (used for AI analysis).
+
+    Returns the cached extracted text if available after analysis has run.
+    """
+    try:
+        document = await db.get_document(document_id=document_id, user_id=current_user["user_id"])
+
+        if not document:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+        extracted_text = document.get("extracted_text")
+
+        return {
+            "document_id": document_id,
+            "filename": document.get("filename"),
+            "extracted_text": extracted_text,
+            "has_text": bool(extracted_text),
+            "char_count": len(extracted_text) if extracted_text else 0,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get extracted text: {str(e)}",
+        )
+
+
 @router.delete("/{document_id}")
 async def delete_document(
     document_id: str,
