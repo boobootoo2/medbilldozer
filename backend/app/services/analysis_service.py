@@ -238,6 +238,28 @@ class AnalysisService:
                             )
                             continue  # Skip this document
 
+                # Cache extracted text to database so it can be displayed in the UI
+                try:
+                    await self.db.update_document_extracted_text(
+                        document_id=doc_id,
+                        extracted_text=raw_text,
+                    )
+                    log_with_context(
+                        logger,
+                        20,
+                        f"💾 Cached extracted text ({len(raw_text)} chars)",
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                    )
+                except Exception as cache_err:
+                    log_with_context(
+                        logger,
+                        30,
+                        f"⚠️  Failed to cache extracted text: {str(cache_err)}",
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                    )
+
                 documents.append(
                     {
                         "document_id": doc_id,
