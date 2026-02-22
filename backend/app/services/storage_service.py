@@ -1,8 +1,10 @@
 """Google Cloud Storage service for document uploads using signed URLs."""
+
 from datetime import timedelta
+
+from app.config import settings
 from google.cloud import storage
 from google.oauth2 import service_account
-from app.config import settings
 
 
 class StorageService:
@@ -15,7 +17,7 @@ class StorageService:
             credentials_dict = {
                 "type": "service_account",
                 "project_id": settings.firebase_project_id,
-                "private_key": settings.firebase_private_key.replace('\\n', '\n'),
+                "private_key": settings.firebase_private_key.replace("\\n", "\n"),
                 "client_email": settings.firebase_client_email,
                 "token_uri": "https://oauth2.googleapis.com/token",
             }
@@ -31,11 +33,7 @@ class StorageService:
         self.clinical_bucket = settings.gcs_bucket_clinical_images
 
     def generate_signed_upload_url(
-        self,
-        bucket_name: str,
-        blob_path: str,
-        content_type: str,
-        expires_in_minutes: int = 15
+        self, bucket_name: str, blob_path: str, content_type: str, expires_in_minutes: int = 15
     ) -> str:
         """
         Generate a signed URL for client to upload file directly to GCS.
@@ -62,10 +60,7 @@ class StorageService:
         return url
 
     def generate_signed_download_url(
-        self,
-        bucket_name: str,
-        blob_path: str,
-        expires_in_minutes: int = 10
+        self, bucket_name: str, blob_path: str, expires_in_minutes: int = 10
     ) -> str:
         """
         Generate a signed URL for client to download file from GCS.
@@ -102,7 +97,12 @@ class StorageService:
         """
         bucket = self.client.bucket(bucket_name)
         blob = bucket.blob(blob_path)
-        content = blob.download_as_text()
+        try:
+            content = blob.download_as_text(encoding="utf-8")
+        except (UnicodeDecodeError, Exception):
+            # Fallback: download raw bytes and decode, replacing any bad chars
+            raw = blob.download_as_bytes()
+            content = raw.decode("utf-8", errors="replace")
         return content
 
     async def download_bytes(self, bucket_name: str, blob_path: str) -> bytes:

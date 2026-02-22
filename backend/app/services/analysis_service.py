@@ -175,43 +175,68 @@ class AnalysisService:
                         document_id=doc_id,
                     )
 
-                    # Try to extract text from PDF using Gemini Vision API
-                    try:
-                        raw_text = await self._extract_text_from_pdf(doc_meta["gcs_path"], doc_id)
+                    content_type = doc_meta.get("content_type", "")
 
-                        if raw_text:
-                            # Note: Caching disabled - extracted_text column doesn't exist in Supabase
-                            # TODO: Add column migration and uncomment caching
-                            # await self.db.update_document_extracted_text(
-                            #     document_id=doc_id,
-                            #     extracted_text=raw_text
-                            # )
+                    # For plain-text files, download bytes and decode directly
+                    # (avoids erroneously running PyPDF2 on .txt content)
+                    if "text" in content_type:
+                        try:
+                            raw_bytes = await self.storage.download_bytes(
+                                bucket_name=self.storage.documents_bucket,
+                                blob_path=doc_meta["gcs_path"],
+                            )
+                            raw_text = raw_bytes.decode("utf-8", errors="replace")
                             log_with_context(
                                 logger,
                                 20,
-                                f"✅ Extracted text on-demand ({len(raw_text)} chars)",
+                                f"✅ Decoded text file directly ({len(raw_text)} chars)",
                                 analysis_id=analysis_id,
                                 document_id=doc_id,
                             )
-                        else:
+                        except Exception as txt_error:
                             log_with_context(
                                 logger,
                                 40,
-                                f"❌ On-demand extraction failed - no text extracted",
+                                f"❌ Text file decode failed: {str(txt_error)}",
                                 analysis_id=analysis_id,
                                 document_id=doc_id,
+                                error=str(txt_error),
                             )
                             continue  # Skip this document
-                    except Exception as extract_error:
-                        log_with_context(
-                            logger,
-                            40,
-                            f"❌ On-demand text extraction failed: {str(extract_error)}",
-                            analysis_id=analysis_id,
-                            document_id=doc_id,
-                            error=str(extract_error),
-                        )
-                        continue  # Skip this document
+                    else:
+                        # For binary formats (PDF, etc.), extract with PyPDF2
+                        try:
+                            raw_text = await self._extract_text_from_pdf(
+                                doc_meta["gcs_path"], doc_id
+                            )
+
+                            if raw_text:
+                                log_with_context(
+                                    logger,
+                                    20,
+                                    f"✅ Extracted text on-demand ({len(raw_text)} chars)",
+                                    analysis_id=analysis_id,
+                                    document_id=doc_id,
+                                )
+                            else:
+                                log_with_context(
+                                    logger,
+                                    40,
+                                    f"❌ On-demand extraction failed - no text extracted",
+                                    analysis_id=analysis_id,
+                                    document_id=doc_id,
+                                )
+                                continue  # Skip this document
+                        except Exception as extract_error:
+                            log_with_context(
+                                logger,
+                                40,
+                                f"❌ On-demand text extraction failed: {str(extract_error)}",
+                                analysis_id=analysis_id,
+                                document_id=doc_id,
+                                error=str(extract_error),
+                            )
+                            continue  # Skip this document
 
                 documents.append(
                     {
