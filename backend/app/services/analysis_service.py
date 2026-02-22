@@ -110,18 +110,49 @@ class AnalysisService:
                 register_providers,
             )
 
-            # Ensure provider is registered
+            # Ensure providers are registered
             register_providers()
+
+            # Guarantee medgemma-ensemble is always available by wrapping OpenAI with the
+            # ensemble's canonicalization + deterministic heuristics when HF token is absent.
+            if "medgemma-ensemble" not in ProviderRegistry.list():
+                try:
+                    from medbilldozer.providers.medgemma_ensemble_provider import (
+                        MedGemmaEnsembleProvider,
+                    )
+                    from medbilldozer.providers.openai_analysis_provider import (
+                        OpenAIAnalysisProvider,
+                    )
+
+                    # Bypass __init__ so this works with both old and new provider versions
+                    ensemble = MedGemmaEnsembleProvider.__new__(MedGemmaEnsembleProvider)
+                    ensemble.medgemma = OpenAIAnalysisProvider("gpt-4o-mini")
+                    ensemble.enable_openai = False
+                    ProviderRegistry.register("medgemma-ensemble", ensemble)
+                    log_with_context(
+                        logger,
+                        20,
+                        "✅ Registered medgemma-ensemble with OpenAI fallback",
+                        analysis_id=analysis_id,
+                    )
+                except Exception as reg_err:
+                    log_with_context(
+                        logger,
+                        30,
+                        f"⚠️  medgemma-ensemble fallback registration failed: {str(reg_err)}",
+                        analysis_id=analysis_id,
+                    )
+
             if provider not in ProviderRegistry.list():
                 log_with_context(
                     logger,
                     30,
-                    f"⚠️  Provider '{provider}' not registered, falling back to 'smart'",
+                    f"⚠️  Provider '{provider}' not registered, falling back to 'medgemma-ensemble'",
                     analysis_id=analysis_id,
                     user_id=user_id,
                     requested_provider=provider,
                 )
-                provider = "smart"  # Fallback to smart mode
+                provider = "medgemma-ensemble"  # Fallback to ensemble
 
             logger.info(f"📚 Downloading {len(document_ids)} document(s) from storage...")
 
@@ -411,12 +442,18 @@ class AnalysisService:
                         ),
                     )
 
+                    # Convert AnalysisResult dataclass to a plain dict for JSON serialization.
+                    # The orchestrator returns an AnalysisResult object, not a dict;
+                    # dict-style access ("issues" in analysis_obj) raises TypeError otherwise.
+                    raw_analysis = result.get("analysis")
+                    analysis_dict = self._serialize_analysis(raw_analysis)
+
                     # Build document result with facts and analysis
                     doc_result = {
                         "document_id": doc_id,
                         "filename": doc["filename"],
                         "facts": result.get("facts", {}),
-                        "analysis": result.get("analysis", {}),
+                        "analysis": analysis_dict,
                         "orchestration": result.get("_orchestration", {}),
                         "progress": {
                             "phase": "complete",
@@ -569,16 +606,33 @@ class AnalysisService:
                 )
 
             # Calculate total savings and issue count
+            # Note: result["analysis"] is now a plain dict (serialized from AnalysisResult)
             total_savings = 0
             all_issues = []
             for result in results:
-                if "analysis" in result and "issues" in result["analysis"]:
-                    issues = result["analysis"]["issues"]
+                if "analysis" in result:
+                    issues = (
+                        result["analysis"].get("issues", [])
+                        if isinstance(result["analysis"], dict)
+                        else []
+                    )
                     all_issues.extend(issues)
                     for issue in issues:
-                        savings = issue.get("max_savings", 0)
+                        savings = issue.get("max_savings", 0) if isinstance(issue, dict) else 0
                         if isinstance(savings, (int, float)):
                             total_savings += savings
+
+            # Cross-document analysis: detect errors spanning multiple documents
+            if len(documents) > 1:
+                cross_issues = await self._run_cross_document_analysis(
+                    documents=documents,
+                    analysis_id=analysis_id,
+                )
+                for issue in cross_issues:
+                    all_issues.append(issue)
+                    savings = issue.get("max_savings", 0)
+                    if isinstance(savings, (int, float)):
+                        total_savings += savings
 
             log_with_context(
                 logger,
@@ -612,12 +666,15 @@ class AnalysisService:
                 logger.info(f"💾 Inserting {len(all_issues)} issues into database...")
                 issues_to_insert = []
                 for i, issue in enumerate(all_issues):
-                    # Find which document this issue belongs to
-                    document_id = None
-                    for result in results:
-                        if "analysis" in result and issue in result["analysis"].get("issues", []):
-                            document_id = result.get("document_id")
-                            break
+                    # Find which document this issue belongs to.
+                    # Cross-document issues have source="cross_document" and no owner doc.
+                    document_id = issue.get("document_id")  # may be pre-set for cross-doc issues
+                    if document_id is None:
+                        for result in results:
+                            if "analysis" in result and isinstance(result["analysis"], dict):
+                                if issue in result["analysis"].get("issues", []):
+                                    document_id = result.get("document_id")
+                                    break
 
                     issues_to_insert.append(
                         {
@@ -802,6 +859,111 @@ class AnalysisService:
             # Save error to database
             await self.db.update_analysis_status(analysis_id, "failed", error_message=str(e))
             return {"analysis_id": analysis_id, "status": "failed", "error": str(e)}
+
+    def _serialize_analysis(self, analysis_obj) -> dict:
+        """Convert an AnalysisResult dataclass to a JSON-serializable dict.
+
+        The orchestrator returns an AnalysisResult dataclass, not a plain dict.
+        Dict-style membership checks (``"issues" in analysis_obj``) raise TypeError
+        on a dataclass, so we normalize it here before any further processing.
+        """
+        if isinstance(analysis_obj, dict):
+            return analysis_obj
+        if analysis_obj is None:
+            return {"issues": [], "meta": {}}
+
+        issues_list = []
+        for iss in getattr(analysis_obj, "issues", None) or []:
+            if isinstance(iss, dict):
+                issues_list.append(iss)
+            else:
+                issues_list.append(
+                    {
+                        "type": getattr(iss, "type", "unknown"),
+                        "summary": getattr(iss, "summary", ""),
+                        "evidence": getattr(iss, "evidence", None),
+                        "code": getattr(iss, "code", None),
+                        "date": getattr(iss, "date", None),
+                        "recommended_action": getattr(iss, "recommended_action", None),
+                        "max_savings": getattr(iss, "max_savings", None),
+                        "source": getattr(iss, "source", "llm"),
+                        "confidence": getattr(iss, "confidence", None),
+                    }
+                )
+
+        return {
+            "issues": issues_list,
+            "meta": getattr(analysis_obj, "meta", {}) or {},
+        }
+
+    async def _run_cross_document_analysis(
+        self,
+        documents: list,
+        analysis_id: str,
+    ) -> list:
+        """Analyze all documents together to find cross-document billing errors.
+
+        Combines document texts with ``--- DOCUMENT N ---`` markers (which the
+        medgemma-ensemble duplicate-charge heuristic already understands) and
+        submits them to the registered ensemble provider.  Issues found here are
+        tagged with ``source="cross_document"`` so the UI can surface them
+        distinctly.
+        """
+        if len(documents) < 2:
+            return []
+
+        try:
+            from medbilldozer.providers.llm_interface import ProviderRegistry
+
+            provider = ProviderRegistry.get("medgemma-ensemble") or ProviderRegistry.get(
+                "gpt-4o-mini"
+            )
+            if not provider:
+                return []
+
+            # Build combined text using the marker format the ensemble heuristics expect
+            parts = []
+            for i, doc in enumerate(documents, 1):
+                parts.append(f"--- DOCUMENT {i}: {doc['filename']} ---\n{doc['raw_text']}")
+            combined_text = "\n\n".join(parts)
+
+            cross_doc_prefix = (
+                "[MULTI-DOCUMENT CROSS-ANALYSIS MODE]\n"
+                "Analyze ALL documents together and identify issues that span ACROSS documents:\n"
+                "- duplicate_charge: same procedure/CPT billed in multiple documents on the same date\n"
+                "- cross_bill_discrepancy: same service appears with different amounts across documents\n"
+                "- drug_drug_interaction: conflicting medications mentioned across documents\n"
+                "- temporal_violation: impossible timelines or contradictory dates across documents\n"
+                "- diagnosis_procedure_mismatch: procedure in one doc contradicts diagnosis in another\n"
+                "Only flag issues with evidence from MULTIPLE documents.\n\n"
+            )
+
+            result = provider.analyze_document(cross_doc_prefix + combined_text)
+
+            cross_issues = []
+            for iss in self._serialize_analysis(result).get("issues", []):
+                iss_copy = dict(iss)
+                iss_copy["source"] = "cross_document"
+                iss_copy.setdefault("document_id", None)
+                cross_issues.append(iss_copy)
+
+            log_with_context(
+                logger,
+                20,
+                f"✅ Cross-document analysis found {len(cross_issues)} issue(s)",
+                analysis_id=analysis_id,
+                document_count=len(documents),
+            )
+            return cross_issues
+
+        except Exception as e:
+            log_with_context(
+                logger,
+                30,
+                f"⚠️  Cross-document analysis failed: {str(e)}",
+                analysis_id=analysis_id,
+            )
+            return []
 
     async def _extract_text_from_pdf(self, gcs_path: str, document_id: str) -> str:
         """
