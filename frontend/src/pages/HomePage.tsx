@@ -3,7 +3,7 @@
  */
 import { useState, useRef, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Link as LinkIcon, FileText, ChevronDown, ChevronUp, Upload, Receipt, HeartPulse, ShieldCheck } from 'lucide-react';
+import { Play, Link as LinkIcon, FileText, ChevronDown, ChevronUp, Upload, Download, Receipt, HeartPulse, ShieldCheck } from 'lucide-react';
 import { UserMenu } from '../components/auth/UserMenu';
 import { MultiFileUpload } from '../components/documents/MultiFileUpload';
 import { DocumentList, DocumentListRef } from '../components/documents/DocumentList';
@@ -311,20 +311,111 @@ export const HomePage = () => {
   const documentListRef = useRef<DocumentListRef>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
+  const [selectedFormats, setSelectedFormats] = useState<Record<string, 'TXT' | 'PDF' | 'PNG' | 'JPG'>>({});
 
   const toggleSection = (id: string) => {
     setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const getFormat = (docName: string): 'TXT' | 'PDF' | 'PNG' | 'JPG' =>
+    selectedFormats[docName] || 'TXT';
+
+  const generateFile = async (doc: MockDoc, format: 'TXT' | 'PDF' | 'PNG' | 'JPG'): Promise<File> => {
+    const baseName = doc.name.replace(/\.[^.]+$/, '');
+
+    if (format === 'TXT') {
+      return new File([new Blob([doc.content], { type: 'text/plain' })], `${baseName}.txt`, { type: 'text/plain' });
+    }
+
+    if (format === 'PDF') {
+      const { jsPDF } = await import('jspdf');
+      const pdf = new jsPDF({ unit: 'mm', format: 'letter' });
+      pdf.setFont('Courier', 'normal');
+      pdf.setFontSize(9);
+      const pageW = pdf.internal.pageSize.getWidth();
+      const margin = 15;
+      const maxW = pageW - margin * 2;
+      const lineH = 4.5;
+      let y = margin;
+      const pageH = pdf.internal.pageSize.getHeight() - margin;
+      for (const rawLine of doc.content.split('\n')) {
+        const wrapped = pdf.splitTextToSize(rawLine || ' ', maxW) as string[];
+        for (const line of wrapped) {
+          if (y > pageH) { pdf.addPage(); y = margin; }
+          pdf.text(line, margin, y);
+          y += lineH;
+        }
+      }
+      return new File([pdf.output('blob')], `${baseName}.pdf`, { type: 'application/pdf' });
+    }
+
+    // PNG or JPG via Canvas
+    return new Promise<File>((resolve) => {
+      const fontSize = 13;
+      const lineH = 19;
+      const padding = 28;
+      const canvasW = 850;
+      const offscreen = document.createElement('canvas');
+      offscreen.width = canvasW;
+      offscreen.height = 100;
+      const ctx2 = offscreen.getContext('2d')!;
+      ctx2.font = `${fontSize}px 'Courier New', monospace`;
+
+      // Pre-wrap all lines
+      const wrapped: string[] = [];
+      for (const raw of doc.content.split('\n')) {
+        if (raw.trim() === '') { wrapped.push(''); continue; }
+        const words = raw.split(' ');
+        let cur = '';
+        for (const w of words) {
+          const test = cur ? `${cur} ${w}` : w;
+          if (ctx2.measureText(test).width > canvasW - padding * 2 && cur) {
+            wrapped.push(cur); cur = w;
+          } else { cur = test; }
+        }
+        wrapped.push(cur);
+      }
+
+      const canvasH = wrapped.length * lineH + padding * 2;
+      offscreen.width = canvasW;
+      offscreen.height = canvasH;
+
+      // Re-set font after resize
+      const ctx = offscreen.getContext('2d')!;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvasW, canvasH);
+      ctx.fillStyle = '#1a1a1a';
+      ctx.font = `${fontSize}px 'Courier New', monospace`;
+      wrapped.forEach((line, i) => {
+        ctx.fillText(line, padding, padding + (i + 1) * lineH);
+      });
+
+      const mimeType = format === 'PNG' ? 'image/png' : 'image/jpeg';
+      const ext = format === 'PNG' ? '.png' : '.jpg';
+      offscreen.toBlob((blob) => {
+        resolve(new File([blob!], `${baseName}${ext}`, { type: mimeType }));
+      }, mimeType, 0.92);
+    });
+  };
+
+  const handleDemoDownload = async (doc: MockDoc) => {
+    const file = await generateFile(doc, getFormat(doc.name));
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleDemoUpload = async (doc: MockDoc) => {
     const key = doc.name;
     setUploadingDoc(key);
     try {
-      const blob = new Blob([doc.content], { type: 'text/plain' });
-      const file = new File([blob], doc.name, { type: 'text/plain' });
+      const file = await generateFile(doc, getFormat(doc.name));
       await documentsService.uploadDocument(file, doc.documentType);
       await handleUploadComplete();
-      alert(`Demo document "${doc.name}" uploaded successfully!`);
+      alert(`Demo document "${file.name}" uploaded successfully!`);
     } catch (err: any) {
       alert(`Upload failed: ${err.message}`);
     } finally {
@@ -573,30 +664,52 @@ export const HomePage = () => {
                           <div className="flex items-center gap-3 min-w-0">
                             <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-gray-800 truncate">{doc.name}</p>
+                              <p className="text-sm font-medium text-gray-800 truncate">{doc.name.replace(/\.[^.]+$/, '')}</p>
                               <p className="text-xs text-gray-500">{doc.description}</p>
                             </div>
-                            <span className="flex-shrink-0 px-2 py-0.5 bg-gray-200 text-gray-600 text-xs font-medium rounded">
-                              {doc.format}
-                            </span>
+                            {/* Format selector */}
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              {(['TXT', 'PDF', 'PNG', 'JPG'] as const).map(fmt => (
+                                <button
+                                  key={fmt}
+                                  onClick={() => setSelectedFormats(prev => ({ ...prev, [doc.name]: fmt }))}
+                                  className={`px-2 py-0.5 text-xs font-medium rounded transition-colors ${
+                                    getFormat(doc.name) === fmt
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                                  }`}
+                                >
+                                  {fmt}
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                          <button
-                            onClick={() => handleDemoUpload(doc)}
-                            disabled={uploadingDoc === doc.name}
-                            className="ml-4 flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {uploadingDoc === doc.name ? (
-                              <>
-                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white" />
-                                Uploading...
-                              </>
-                            ) : (
-                              <>
-                                <Upload className="w-3 h-3" />
-                                Upload Demo
-                              </>
-                            )}
-                          </button>
+                          <div className="ml-4 flex-shrink-0 flex items-center gap-2">
+                            <button
+                              onClick={() => handleDemoDownload(doc)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-200 transition-colors border border-gray-300"
+                            >
+                              <Download className="w-3 h-3" />
+                              Download
+                            </button>
+                            <button
+                              onClick={() => handleDemoUpload(doc)}
+                              disabled={uploadingDoc === doc.name}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {uploadingDoc === doc.name ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white" />
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="w-3 h-3" />
+                                  Upload
+                                </>
+                              )}
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
