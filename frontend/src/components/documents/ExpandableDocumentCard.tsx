@@ -13,9 +13,11 @@ import {
   User,
   FileText,
   AlertCircle,
-  Building2
+  Building2,
+  Code2
 } from 'lucide-react';
 import ActionManagementPanel from './ActionManagementPanel';
+import { documentsService } from '../../services/documents.service';
 
 interface ExpandableDocumentCardProps {
   document: EnrichedDocument;
@@ -24,6 +26,26 @@ interface ExpandableDocumentCardProps {
 
 const ExpandableDocumentCard: React.FC<ExpandableDocumentCardProps> = ({ document, onUpdate }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showRawText, setShowRawText] = useState(false);
+  const [rawText, setRawText] = useState<string | null>(null);
+  const [rawTextLoading, setRawTextLoading] = useState(false);
+  const [rawTextError, setRawTextError] = useState<string | null>(null);
+
+  const handleToggleRawText = async () => {
+    if (!showRawText && rawText === null && !rawTextLoading) {
+      setRawTextLoading(true);
+      setRawTextError(null);
+      try {
+        const data = await documentsService.getExtractedText(document.document_id);
+        setRawText(data.extracted_text);
+      } catch (err: any) {
+        setRawTextError(err.message || 'Failed to load extracted text');
+      } finally {
+        setRawTextLoading(false);
+      }
+    }
+    setShowRawText(prev => !prev);
+  };
 
   // Format date
   const formatDate = (dateString?: string) => {
@@ -277,6 +299,59 @@ const ExpandableDocumentCard: React.FC<ExpandableDocumentCardProps> = ({ documen
               </div>
             </div>
           )}
+
+          {/* Raw Extracted Text Sub-Accordion */}
+          <div className="mt-4 border border-gray-200 rounded-lg overflow-hidden">
+            <button
+              onClick={handleToggleRawText}
+              className="w-full flex items-center justify-between px-4 py-3 bg-gray-100 hover:bg-gray-200 transition-colors text-left"
+            >
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <Code2 className="w-4 h-4 text-gray-500" />
+                Raw Extracted Text
+                {rawText !== null && (
+                  <span className="text-xs font-normal text-gray-500">
+                    ({rawText.length.toLocaleString()} chars)
+                  </span>
+                )}
+              </div>
+              {showRawText ? (
+                <ChevronUp className="w-4 h-4 text-gray-500" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+              )}
+            </button>
+
+            {showRawText && (
+              <div className="bg-white p-4">
+                {rawTextLoading && (
+                  <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    Loading extracted text...
+                  </div>
+                )}
+
+                {rawTextError && (
+                  <div className="flex items-center gap-2 text-sm text-red-600 py-2">
+                    <AlertCircle className="w-4 h-4" />
+                    {rawTextError}
+                  </div>
+                )}
+
+                {!rawTextLoading && !rawTextError && rawText === null && (
+                  <p className="text-sm text-gray-500 italic py-2">
+                    No extracted text available. Text is populated after the document has been analyzed.
+                  </p>
+                )}
+
+                {!rawTextLoading && !rawTextError && rawText !== null && (
+                  <pre className="text-xs font-mono text-gray-800 whitespace-pre-wrap break-words max-h-80 overflow-y-auto leading-relaxed bg-gray-50 p-3 rounded border border-gray-100">
+                    {rawText}
+                  </pre>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

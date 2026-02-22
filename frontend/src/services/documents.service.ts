@@ -178,6 +178,20 @@ export const documentsService = {
   },
 
   /**
+   * Get raw extracted text from a document
+   */
+  async getExtractedText(documentId: string): Promise<{
+    document_id: string;
+    filename: string;
+    extracted_text: string | null;
+    has_text: boolean;
+    char_count: number;
+  }> {
+    const response = await api.get(`/api/documents/${documentId}/extracted-text`);
+    return response.data;
+  },
+
+  /**
    * Export actioned documents to CSV
    */
   async exportActionedDocuments(profileId?: string, format: 'csv' | 'json' = 'csv'): Promise<Blob> {
