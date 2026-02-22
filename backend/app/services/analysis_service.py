@@ -752,98 +752,248 @@ class AnalysisService:
     async def _run_multimodal_analysis(
         self, analysis_id: str, document_ids: List[str], user_id: str, provider: str
     ) -> Dict[str, Any]:
-        """Run multimodal analysis combining text and images."""
+        """Run analysis when the batch includes image documents (PNG/JPG/etc).
+
+        The legacy MultimodalAnalysisService called StorageService.download_document()
+        which never existed, causing all downloads to silently fail.  This
+        replacement routes each document to the correct pipeline:
+          - text/plain, application/pdf  → orchestrator (same as text-only path)
+          - image/*                       → GPT-4o vision (reads bill as image)
+        Cross-document heuristics run after all per-doc passes complete.
+        """
         try:
-            # Execute multimodal analysis
-            results = await self.multimodal_service.analyze_documents(
-                document_ids=document_ids, user_id=user_id, provider=provider
+            from medbilldozer.core.orchestrator_agent import OrchestratorAgent
+            from medbilldozer.providers.provider_registry import (
+                ProviderRegistry,
+                register_providers,
             )
 
-            # Extract summary metrics
-            summary = results.get("summary", {})
-            total_savings = summary.get("total_potential_savings", 0)
-            total_issues = summary.get("total_issues", 0)
-
-            # Save results to database
-            await self.db.save_analysis_results(
-                analysis_id=analysis_id,
-                results=results,
-                coverage_matrix=results.get("cross_document_findings"),
-                total_savings=total_savings,
-                issues_count=total_issues,
-            )
-
-            # Insert individual issues
-            all_issues = []
-
-            # Add billing issues from text analysis
-            for text_result in results.get("text_analysis", []):
-                if "analysis" in text_result and "issues" in text_result["analysis"]:
-                    for issue in text_result["analysis"]["issues"]:
-                        all_issues.append(
-                            {
-                                "document_id": text_result.get("document_id"),
-                                "issue_type": issue.get("type", "billing_error"),
-                                "summary": issue.get("summary", ""),
-                                "evidence": issue.get("evidence", ""),
-                                "code": issue.get("code", ""),
-                                "recommended_action": issue.get("recommended_action", ""),
-                                "max_savings": issue.get("max_savings", 0),
-                                "confidence": issue.get("confidence", "medium"),
-                                "source": "text_analysis",
-                                "metadata": issue.get("metadata", {}),
-                            }
-                        )
-
-            # Add clinical issues from image analysis
-            for image_result in results.get("image_analysis", []):
-                findings = image_result.get("findings", {})
-                for issue in findings.get("issues", []):
-                    all_issues.append(
-                        {
-                            "document_id": image_result.get("document_id"),
-                            "issue_type": "clinical_finding",
-                            "summary": issue,
-                            "evidence": f"Medical image: {image_result.get('filename')}",
-                            "code": "",
-                            "recommended_action": "Review clinical findings",
-                            "max_savings": 0,
-                            "confidence": "high",
-                            "source": "image_analysis",
-                            "metadata": findings,
-                        }
+            register_providers()
+            if "medgemma-ensemble" not in ProviderRegistry.list():
+                try:
+                    from medbilldozer.providers.medgemma_ensemble_provider import (
+                        MedGemmaEnsembleProvider,
+                    )
+                    from medbilldozer.providers.openai_analysis_provider import (
+                        OpenAIAnalysisProvider,
                     )
 
-            # Add cross-reference inconsistencies
-            for inconsistency in results.get("cross_reference_findings", {}).get(
-                "inconsistencies", []
-            ):
-                all_issues.append(
-                    {
-                        "document_id": None,  # Cross-document issue
-                        "issue_type": inconsistency.get("type", "inconsistency"),
-                        "summary": inconsistency.get("description", ""),
-                        "evidence": inconsistency.get("evidence", ""),
-                        "code": "",
-                        "recommended_action": inconsistency.get("recommended_action", ""),
-                        "max_savings": inconsistency.get("potential_savings", 0),
-                        "confidence": inconsistency.get("severity", "medium"),
-                        "source": "cross_reference",
-                        "metadata": inconsistency,
+                    ens = MedGemmaEnsembleProvider.__new__(MedGemmaEnsembleProvider)
+                    ens.medgemma = OpenAIAnalysisProvider("gpt-4o-mini")
+                    ens.enable_openai = False
+                    ProviderRegistry.register("medgemma-ensemble", ens)
+                except Exception:
+                    pass
+
+            effective_provider = (
+                provider if provider in ProviderRegistry.list() else "medgemma-ensemble"
+            )
+
+            # --- Classify documents ---
+            text_doc_metas: list = []
+            image_doc_metas: list = []
+            for doc_id in document_ids:
+                doc_meta = await self.db.get_document(doc_id, user_id)
+                if not doc_meta:
+                    continue
+                if doc_meta.get("content_type", "").startswith("image/"):
+                    image_doc_metas.append(doc_meta)
+                else:
+                    text_doc_metas.append(doc_meta)
+
+            results: list = []
+            all_issues: list = []
+            total_savings: float = 0.0
+
+            # --- Analyze text documents via orchestrator ---
+            for doc_meta in text_doc_metas:
+                doc_id = doc_meta["document_id"]
+                doc_started_at = datetime.utcnow().isoformat()
+                try:
+                    gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
+                    content_type = doc_meta.get("content_type", "text/plain")
+                    raw_text = ""
+                    if gcs_path:
+                        try:
+                            if content_type.startswith("text/"):
+                                raw_text = await self.storage.download_text(
+                                    bucket_name=self.storage.documents_bucket,
+                                    blob_path=gcs_path,
+                                )
+                            else:
+                                raw_text = await self._extract_text_from_pdf(gcs_path, doc_id)
+                        except Exception:
+                            raw_text = doc_meta.get("extracted_text", "") or ""
+
+                    if not raw_text or len(raw_text.strip()) < 20:
+                        results.append(
+                            {
+                                "document_id": doc_id,
+                                "filename": doc_meta["filename"],
+                                "error": "insufficient text",
+                                "status": "failed",
+                                "raw_text": "",
+                            }
+                        )
+                        continue
+
+                    orchestrator = OrchestratorAgent(analyzer_override=effective_provider)
+                    orch_result = orchestrator.run(raw_text)
+                    analysis_dict = self._serialize_analysis(orch_result.get("analysis"))
+
+                    doc_result = {
+                        "document_id": doc_id,
+                        "filename": doc_meta["filename"],
+                        "facts": orch_result.get("facts", {}),
+                        "analysis": analysis_dict,
+                        "raw_text": raw_text,
                     }
+                    results.append(doc_result)
+
+                    for iss in analysis_dict.get("issues", []):
+                        savings = iss.get("max_savings") or 0
+                        all_issues.append({**iss, "document_id": doc_id})
+                        if isinstance(savings, (int, float)):
+                            total_savings += savings
+
+                    try:
+                        await self.db.update_document_extracted_text(
+                            document_id=doc_id, extracted_text=raw_text
+                        )
+                    except Exception:
+                        pass
+
+                except Exception as text_err:
+                    log_with_context(
+                        logger,
+                        40,
+                        f"❌ Text doc analysis failed: {text_err}",
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                    )
+                    results.append(
+                        {
+                            "document_id": doc_id,
+                            "filename": doc_meta.get("filename", ""),
+                            "error": str(text_err),
+                            "status": "failed",
+                            "raw_text": "",
+                        }
+                    )
+                finally:
+                    await self.db.update_document_progress(
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                        phase="complete",
+                        started_at=doc_started_at,
+                    )
+
+            # --- Analyze image documents with GPT-4o vision ---
+            for doc_meta in image_doc_metas:
+                doc_id = doc_meta["document_id"]
+                doc_started_at = datetime.utcnow().isoformat()
+                try:
+                    vision_issues = await self._analyze_image_with_vision(doc_meta, analysis_id)
+                    doc_result = {
+                        "document_id": doc_id,
+                        "filename": doc_meta["filename"],
+                        "analysis": {
+                            "issues": vision_issues,
+                            "meta": {"source": "vision"},
+                        },
+                        "raw_text": "",
+                    }
+                    results.append(doc_result)
+                    for iss in vision_issues:
+                        savings = iss.get("max_savings") or 0
+                        all_issues.append({**iss, "document_id": doc_id})
+                        if isinstance(savings, (int, float)):
+                            total_savings += savings
+                except Exception as img_err:
+                    log_with_context(
+                        logger,
+                        40,
+                        f"❌ Image doc analysis failed: {img_err}",
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                    )
+                    results.append(
+                        {
+                            "document_id": doc_id,
+                            "filename": doc_meta.get("filename", ""),
+                            "error": str(img_err),
+                            "status": "failed",
+                            "raw_text": "",
+                        }
+                    )
+                finally:
+                    await self.db.update_document_progress(
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                        phase="complete",
+                        started_at=doc_started_at,
+                    )
+
+            # --- Cross-document analysis ---
+            cross_docs = [
+                {
+                    "document_id": r["document_id"],
+                    "filename": r["filename"],
+                    "raw_text": r["raw_text"],
+                }
+                for r in results
+                if r.get("raw_text")
+            ]
+            if len(cross_docs) > 1:
+                cross_issues = await self._run_cross_document_analysis(
+                    documents=cross_docs, analysis_id=analysis_id
                 )
+                for iss in cross_issues:
+                    all_issues.append(iss)
+                    savings = iss.get("max_savings") or 0
+                    if isinstance(savings, (int, float)):
+                        total_savings += savings
+
+            # --- Save combined results ---
+            combined_results = {
+                "documents": results,
+                "analysis_type": "multimodal",
+                "documents_analyzed": {
+                    "text": len(text_doc_metas),
+                    "images": len(image_doc_metas),
+                },
+            }
+            await self.db.save_analysis_results(
+                analysis_id=analysis_id,
+                results=combined_results,
+                coverage_matrix=None,
+                total_savings=total_savings,
+                issues_count=len(all_issues),
+            )
 
             if all_issues:
-                await self.db.insert_issues(analysis_id, all_issues)
+                issues_to_insert = []
+                for i, iss in enumerate(all_issues):
+                    issues_to_insert.append(
+                        {
+                            "document_id": iss.get("document_id"),
+                            "issue_type": iss.get("type", "unknown"),
+                            "summary": iss.get("summary", ""),
+                            "evidence": iss.get("evidence", ""),
+                            "code": iss.get("code") or f"ISSUE-{i + 1}",
+                            "recommended_action": iss.get(
+                                "recommended_action", "Review this charge."
+                            ),
+                            "max_savings": iss.get("max_savings", 0),
+                            "confidence": iss.get("confidence", "medium"),
+                            "source": iss.get("source", "analysis"),
+                            "metadata": {},
+                        }
+                    )
+                await self.db.insert_issues(analysis_id, issues_to_insert)
 
-            return {
-                "analysis_id": analysis_id,
-                "status": "completed",
-                "total_savings": total_savings,
-                "issues_count": total_issues,
-                "documents_analyzed": len(document_ids),
-                "multimodal": True,
-            }
+            await self.db.update_analysis_status(analysis_id, "completed")
+            return {"analysis_id": analysis_id, "status": "completed"}
 
         except Exception as e:
             log_with_context(
@@ -855,10 +1005,141 @@ class AnalysisService:
                 error=str(e),
             )
             logger.exception("Multimodal analysis failed")
-
-            # Save error to database
             await self.db.update_analysis_status(analysis_id, "failed", error_message=str(e))
             return {"analysis_id": analysis_id, "status": "failed", "error": str(e)}
+
+    async def _analyze_image_with_vision(self, doc_meta: dict, analysis_id: str) -> list:
+        """Analyze a medical bill image with GPT-4o vision.
+
+        Downloads the image from GCS and asks GPT-4o to read the bill and
+        identify billing errors, returning issues in the same dict format
+        as the text-based orchestrator pipeline.
+        """
+        import base64
+        import json as _json
+
+        doc_id = doc_meta["document_id"]
+        gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
+        content_type = doc_meta.get("content_type", "image/png")
+
+        if not gcs_path:
+            log_with_context(
+                logger,
+                30,
+                "⚠️  No GCS path for image doc",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+            return []
+
+        try:
+            image_bytes = await self.storage.download_bytes(
+                bucket_name=self.storage.documents_bucket, blob_path=gcs_path
+            )
+        except Exception as dl_err:
+            log_with_context(
+                logger,
+                30,
+                f"⚠️  Image download failed: {dl_err}",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+            return []
+
+        image_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
+
+        billing_prompt = """You are a healthcare billing expert. Carefully read ALL text in this medical bill image and identify billing errors.
+
+ISSUE TYPES TO DETECT:
+1. duplicate_charge: Same CPT code billed multiple times on the same date
+2. overbilling: Unusually high charges or excessive facility fees (>$500)
+3. coding_error: Procedure coded at higher complexity than documented
+4. unbundling: Related services billed separately instead of as a bundle
+5. gender_mismatch: Procedures for anatomy the patient doesn't have
+6. age_inappropriate_procedure: Procedures outside recommended age ranges
+7. anatomical_contradiction: Procedures on absent or removed organs
+8. procedure_inconsistent_with_health_history: No supporting diagnosis
+9. diagnosis_procedure_mismatch: Procedure doesn't match the diagnosis
+10. temporal_violation: Procedures violating medical timelines
+
+Return ONLY a valid JSON array. If no issues: []
+[{"type":"issue_type","summary":"brief description","evidence":"exact text/amounts from bill","code":"CPT code or null","max_savings":0.00}]"""
+
+        try:
+            from openai import OpenAI
+
+            client = OpenAI()
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                temperature=0,
+                max_tokens=2000,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You analyze healthcare billing images and return ONLY valid JSON arrays. No prose.",
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{content_type};base64,{image_b64}",
+                                    "detail": "high",
+                                },
+                            },
+                            {"type": "text", "text": billing_prompt},
+                        ],
+                    },
+                ],
+            )
+
+            content = response.choices[0].message.content or "[]"
+            import re as _re
+
+            content = _re.sub(r"```(?:json)?\s*", "", content).strip().rstrip("`").strip()
+            raw_issues = _json.loads(content)
+            if not isinstance(raw_issues, list):
+                raw_issues = []
+
+            issues = []
+            for item in raw_issues:
+                max_savings = item.get("max_savings")
+                if max_savings is not None:
+                    try:
+                        max_savings = float(max_savings)
+                    except (TypeError, ValueError):
+                        max_savings = None
+                issues.append(
+                    {
+                        "type": item.get("type", "billing_error"),
+                        "summary": item.get("summary", ""),
+                        "evidence": item.get("evidence", ""),
+                        "code": item.get("code"),
+                        "max_savings": max_savings,
+                        "source": "vision",
+                        "confidence": 0.8,
+                    }
+                )
+
+            log_with_context(
+                logger,
+                20,
+                f"✅ Vision analysis found {len(issues)} issue(s)",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+            return issues
+
+        except Exception as vision_err:
+            log_with_context(
+                logger,
+                30,
+                f"⚠️  Vision analysis error: {vision_err}",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+            return []
 
     def _serialize_analysis(self, analysis_obj) -> dict:
         """Convert an AnalysisResult dataclass to a JSON-serializable dict.
