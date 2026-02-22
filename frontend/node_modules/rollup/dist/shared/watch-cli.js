@@ -355,7 +355,7 @@ class SignalExit extends SignalExitBase {
 const process$1 = globalThis.process;
 // wrap so that we call the method on the actual handler, without
 // exporting it directly.
-const { 
+const {
 /**
  * Called when the process is exiting, whether via signal, explicit
  * exit, or running out of stuff to do.

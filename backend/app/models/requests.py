@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
@@ -196,7 +196,7 @@ class AnalysisResultResponse(BaseModel):
     analysis_id: str
     status: str
     provider: str
-    results: Optional[list] = None  # List of document results with progress
+    results: Optional[Union[list, dict]] = None  # List during processing, dict when completed
     coverage_matrix: Optional[dict] = None
     total_savings_detected: Optional[float] = None
     issues_count: int = 0

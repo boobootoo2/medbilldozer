@@ -78,7 +78,12 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
   const isComplete = analysis?.status === 'completed';
   const isFailed = analysis?.status === 'failed';
 
-  const allIssues = analysis?.results?.flatMap(result => result.analysis?.issues || []) || [];
+  // results is an array during processing, or { documents: [...], ... } when completed
+  const documents: NonNullable<Analysis['results']> = Array.isArray(analysis?.results)
+    ? analysis.results
+    : (analysis?.results as any)?.documents ?? [];
+
+  const allIssues = documents.flatMap(result => result.analysis?.issues || []);
 
   // Show loading spinner while waiting for first poll
   if (loading && !analysis && !error) {
@@ -113,7 +118,7 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
             </h2>
           </div>
           <p className="text-gray-600">
-            {analysis?.results?.length || 0} document(s) • {analysis?.provider || 'medgemma-ensemble'}
+            {documents.length || 0} document(s) • {analysis?.provider || 'medgemma-ensemble'}
           </p>
         </div>
       </div>
