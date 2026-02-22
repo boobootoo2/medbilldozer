@@ -1,0 +1,11 @@
+Metro Diagnostics – Radiology Statement
+Patient: Alex Johnson
+
+Charges:
+- 03/15/2026 | 74177 | CT abdomen & pelvis w/ contrast | Qty:1 | $4,800
+- 03/15/2026 | 74176 | CT abdomen & pelvis w/o contrast | Qty:1 | $4,600 (DUPLICATE MODALITY)
+- 03/15/2026 | 96374 | IV contrast administration | Qty:2 | $900 (OVERBILLED)
+
+Notes:
+* Contrast and non-contrast CT billed same encounter
+* IV contrast administration billed twice

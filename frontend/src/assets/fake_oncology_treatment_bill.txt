@@ -1,0 +1,11 @@
+Northshore Cancer Institute – Treatment Summary
+Patient: Maria Lopez
+
+Charges:
+- 04/01/2026 | 96413 | Chemotherapy infusion, initial hour | Qty:1 | $3,600
+- 04/01/2026 | 96415 | Chemotherapy infusion, each additional hour | Qty:4 | $5,200 (EXCESSIVE)
+- 04/01/2026 | J9190 | Fluorouracil, 500 mg | Qty:5 | $7,500 (DOSING MISMATCH)
+
+Notes:
+* Excessive additional infusion hours billed
+* Medication units inconsistent with standard dosing
