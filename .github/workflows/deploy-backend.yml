@@ -99,7 +99,7 @@ jobs:
             --min-instances 0 \
             --timeout 300 \
             --set-env-vars "DEBUG=false,ENVIRONMENT=production" \
-            --set-secrets "FIREBASE_PRIVATE_KEY=firebase-private-key:latest,FIREBASE_CLIENT_EMAIL=firebase-client-email:latest,SUPABASE_SERVICE_ROLE_KEY=supabase-service-role-key:latest,JWT_SECRET_KEY=jwt-secret-key:latest,OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
+            --set-secrets "FIREBASE_PRIVATE_KEY=firebase-private-key:latest,FIREBASE_CLIENT_EMAIL=firebase-client-email:latest,SUPABASE_SERVICE_ROLE_KEY=supabase-service-role-key:latest,JWT_SECRET_KEY=jwt-secret-key:latest,OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest,HF_API_TOKEN=hf-api-token:latest"
 
       - name: Get Cloud Run URL
         id: deploy-url
