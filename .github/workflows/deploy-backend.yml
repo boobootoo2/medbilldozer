@@ -57,11 +57,17 @@ jobs:
           uv pip install --system ruff pytest python-dotenv
 
       - name: Run pre-deployment checks
+        env:
+          # Dummy values so Pydantic settings validation passes during import check.
+          # These are NOT used at runtime - Cloud Run injects the real secrets.
+          OPENAI_API_KEY: dummy-import-check
+          FIREBASE_PROJECT_ID: dummy
+          GCS_PROJECT_ID: dummy
         run: |
           # Backend code quality
           cd backend
           echo "📝 Running ruff linting..."
-          ruff check app/ || echo "⚠️ Linting warnings detected"
+          ruff check app/
 
           # Backend imports test
           echo "🚀 Testing backend imports..."

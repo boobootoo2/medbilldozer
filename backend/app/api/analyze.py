@@ -51,7 +51,7 @@ async def trigger_analysis(
         # Generate analysis ID
         analysis_id = str(uuid4())
         log_with_context(
-            logger, 20, f"📊 Generated analysis ID", user_id=user_id, analysis_id=analysis_id
+            logger, 20, "📊 Generated analysis ID", user_id=user_id, analysis_id=analysis_id
         )
 
         # Validate documents belong to user
@@ -62,7 +62,7 @@ async def trigger_analysis(
                 log_with_context(
                     logger,
                     30,
-                    f"⚠️  Document not found or unauthorized",
+                    "⚠️  Document not found or unauthorized",
                     user_id=user_id,
                     document_id=doc_id,
                     analysis_id=analysis_id,
@@ -87,7 +87,7 @@ async def trigger_analysis(
         log_with_context(
             logger,
             20,
-            f"✅ Created analysis record in database",
+            "✅ Created analysis record in database",
             user_id=user_id,
             analysis_id=analysis_id,
         )
@@ -103,7 +103,7 @@ async def trigger_analysis(
         log_with_context(
             logger,
             20,
-            f"🚀 Queued background analysis task",
+            "🚀 Queued background analysis task",
             user_id=user_id,
             analysis_id=analysis_id,
         )
@@ -151,7 +151,7 @@ async def get_analysis(
 
     try:
         log_with_context(
-            logger, 20, f"📊 Fetching analysis status", user_id=user_id, analysis_id=analysis_id
+            logger, 20, "📊 Fetching analysis status", user_id=user_id, analysis_id=analysis_id
         )
 
         # Get analysis from database
@@ -159,7 +159,7 @@ async def get_analysis(
 
         if not analysis:
             log_with_context(
-                logger, 30, f"⚠️  Analysis not found", user_id=user_id, analysis_id=analysis_id
+                logger, 30, "⚠️  Analysis not found", user_id=user_id, analysis_id=analysis_id
             )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
