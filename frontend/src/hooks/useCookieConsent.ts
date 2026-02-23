@@ -59,6 +59,7 @@ export const useCookieConsent = () => {
     setHasConsented(true);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     localStorage.setItem(CONSENT_SHOWN_KEY, 'true');
+    window.dispatchEvent(new Event('medbilldozer:consent'));
     setShowDialog(false);
   };
 

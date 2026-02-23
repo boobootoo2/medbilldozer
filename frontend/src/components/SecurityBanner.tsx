@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useCookieConsent } from '../hooks/useCookieConsent';
+
+const checkConsents = () =>
+    !!localStorage.getItem('disclaimer_accepted') &&
+    !!localStorage.getItem('medbilldozer_consent_shown');
 
 export const SecurityBanner: React.FC = () => {
     const { isAuthenticated } = useAuth();
-    const { hasConsented } = useCookieConsent();
+    const [consentsGiven, setConsentsGiven] = useState(checkConsents);
 
-    if (!isAuthenticated || !hasConsented) {
+    useEffect(() => {
+        const handler = () => setConsentsGiven(checkConsents());
+        window.addEventListener('medbilldozer:consent', handler);
+        return () => window.removeEventListener('medbilldozer:consent', handler);
+    }, []);
+
+    if (!isAuthenticated || !consentsGiven) {
         return null;
     }
 
