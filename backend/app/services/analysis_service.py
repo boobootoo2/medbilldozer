@@ -1,10 +1,9 @@
 """Analysis service wrapping existing MedBillDozer orchestrator."""
 
-import asyncio
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 # Add parent directory to path for importing medbilldozer modules
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
@@ -13,7 +12,6 @@ from app.services.db_service import get_db_service
 from app.services.storage_service import get_storage_service
 from app.utils import get_logger, log_with_context
 
-from medbilldozer.core.coverage_matrix import build_coverage_matrix
 from medbilldozer.core.document_identity import maybe_enhance_identity
 from medbilldozer.core.transaction_normalization import (
     deduplicate_transactions,
@@ -66,7 +64,7 @@ class AnalysisService:
             log_with_context(
                 logger,
                 20,
-                f"🚀 Starting analysis workflow",
+                "🚀 Starting analysis workflow",
                 analysis_id=analysis_id,
                 user_id=user_id,
                 document_count=len(document_ids),
@@ -78,7 +76,7 @@ class AnalysisService:
             log_with_context(
                 logger,
                 20,
-                f"📝 Updated analysis status to 'processing'",
+                "📝 Updated analysis status to 'processing'",
                 analysis_id=analysis_id,
                 user_id=user_id,
             )
@@ -175,7 +173,7 @@ class AnalysisService:
                     log_with_context(
                         logger,
                         30,
-                        f"⚠️  Document not found in database",
+                        "⚠️  Document not found in database",
                         analysis_id=analysis_id,
                         user_id=user_id,
                         document_id=doc_id,
@@ -190,7 +188,7 @@ class AnalysisService:
                     log_with_context(
                         logger,
                         20,
-                        f"✅ Downloaded document from GCS",
+                        "✅ Downloaded document from GCS",
                         analysis_id=analysis_id,
                         document_id=doc_id,
                         filename=doc_meta["filename"],
@@ -200,7 +198,7 @@ class AnalysisService:
                     log_with_context(
                         logger,
                         30,
-                        f"⚠️  GCS download failed, using extracted_text fallback",
+                        "⚠️  GCS download failed, using extracted_text fallback",
                         analysis_id=analysis_id,
                         document_id=doc_id,
                         error=str(e),
@@ -212,7 +210,7 @@ class AnalysisService:
                     log_with_context(
                         logger,
                         30,
-                        f"⚠️  No extracted text found, attempting on-demand extraction",
+                        "⚠️  No extracted text found, attempting on-demand extraction",
                         analysis_id=analysis_id,
                         document_id=doc_id,
                     )
@@ -264,7 +262,7 @@ class AnalysisService:
                                 log_with_context(
                                     logger,
                                     40,
-                                    f"❌ On-demand extraction failed - no text extracted",
+                                    "❌ On-demand extraction failed - no text extracted",
                                     analysis_id=analysis_id,
                                     document_id=doc_id,
                                 )
@@ -316,7 +314,7 @@ class AnalysisService:
                 log_with_context(
                     logger,
                     40,
-                    f"❌ No documents could be loaded for analysis",
+                    "❌ No documents could be loaded for analysis",
                     analysis_id=analysis_id,
                     user_id=user_id,
                 )
@@ -402,7 +400,7 @@ class AnalysisService:
                             log_with_context(
                                 logger,
                                 30,
-                                f"⚠️  Progress update failed",
+                                "⚠️  Progress update failed",
                                 analysis_id=analysis_id,
                                 document_id=doc_id,
                                 error=str(e),
@@ -444,7 +442,7 @@ class AnalysisService:
                     log_with_context(
                         logger,
                         20,
-                        f"✅ Document analysis completed successfully",
+                        "✅ Document analysis completed successfully",
                         analysis_id=analysis_id,
                         document_id=doc_id,
                         document_filename=doc["filename"],
@@ -480,7 +478,7 @@ class AnalysisService:
                         log_with_context(
                             logger,
                             20,
-                            f"✅ Document identity enhanced",
+                            "✅ Document identity enhanced",
                             analysis_id=analysis_id,
                             document_id=doc_id,
                             friendly_id=doc_result.get("document_id"),
@@ -552,7 +550,7 @@ class AnalysisService:
                         log_with_context(
                             logger,
                             30,
-                            f"⚠️  No line items found in document",
+                            "⚠️  No line items found in document",
                             analysis_id=analysis_id,
                             document_id=doc_result.get("document_id"),
                         )
@@ -573,7 +571,7 @@ class AnalysisService:
                     log_with_context(
                         logger,
                         20,
-                        f"✅ Transaction deduplication complete",
+                        "✅ Transaction deduplication complete",
                         analysis_id=analysis_id,
                         total_transactions=len(all_normalized_transactions),
                         unique_transactions=len(unique_transactions),
@@ -590,7 +588,7 @@ class AnalysisService:
                 log_with_context(
                     logger,
                     30,
-                    f"⚠️  Transaction normalization failed",
+                    "⚠️  Transaction normalization failed",
                     analysis_id=analysis_id,
                     error=str(e),
                 )
@@ -606,12 +604,12 @@ class AnalysisService:
                     # Ensure it's a dict or None — build_coverage_matrix may return []
                     if not isinstance(coverage_matrix, dict):
                         coverage_matrix = None
-                    logger.info(f"✅ Coverage matrix built successfully")
+                    logger.info("✅ Coverage matrix built successfully")
             except Exception as e:
                 log_with_context(
                     logger,
                     30,
-                    f"⚠️  Coverage matrix build failed",
+                    "⚠️  Coverage matrix build failed",
                     analysis_id=analysis_id,
                     error=str(e),
                 )
@@ -648,7 +646,7 @@ class AnalysisService:
             log_with_context(
                 logger,
                 20,
-                f"💾 Saving analysis results",
+                "💾 Saving analysis results",
                 analysis_id=analysis_id,
                 total_savings=total_savings,
                 issues_count=len(all_issues),
@@ -703,7 +701,7 @@ class AnalysisService:
                     )
 
                 await self.db.insert_issues(analysis_id, issues_to_insert)
-                logger.info(f"✅ Issues inserted successfully")
+                logger.info("✅ Issues inserted successfully")
 
             # Update analysis status to completed in database
             await self.db.update_analysis_status(analysis_id, "completed")
@@ -711,7 +709,7 @@ class AnalysisService:
             log_with_context(
                 logger,
                 20,
-                f"🎉 Analysis completed successfully!",
+                "🎉 Analysis completed successfully!",
                 analysis_id=analysis_id,
                 user_id=user_id,
                 total_savings=total_savings,
@@ -755,7 +753,7 @@ class AnalysisService:
                     return True
             except Exception as e:
                 log_with_context(
-                    logger, 30, f"⚠️  Error checking document type", document_id=doc_id, error=str(e)
+                    logger, 30, "⚠️  Error checking document type", document_id=doc_id, error=str(e)
                 )
                 continue
         return False
@@ -1295,7 +1293,7 @@ Return ONLY a valid JSON array. If no issues: []
             )
 
             # Extract text using PyPDF2
-            log_with_context(logger, 20, f"📄 Extracting text with PyPDF2", document_id=document_id)
+            log_with_context(logger, 20, "📄 Extracting text with PyPDF2", document_id=document_id)
 
             pdf_file = io.BytesIO(pdf_bytes)
             pdf_reader = PyPDF2.PdfReader(pdf_file)

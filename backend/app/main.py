@@ -14,15 +14,15 @@ if str(app_root) not in sys.path:
     print(f"✅ Added {app_root} to Python path")
 print(f"🐍 Python path: {sys.path[:5]}...")
 
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager  # noqa: E402
 
-from app.api import analyze, auth, documents, issues, profile
-from app.config import settings
-from app.middleware.logging_middleware import LoggingMiddleware
-from app.utils import get_logger, setup_logging
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from app.api import analyze, auth, documents, issues, profile  # noqa: E402
+from app.config import settings  # noqa: E402
+from app.middleware.logging_middleware import LoggingMiddleware  # noqa: E402
+from app.utils import get_logger, setup_logging  # noqa: E402
+from fastapi import FastAPI  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from fastapi.responses import JSONResponse  # noqa: E402
 
 # from app.middleware.auth_middleware import AuthMiddleware
 

@@ -3,18 +3,16 @@
 import csv
 import io
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Optional
 from uuid import uuid4
 
 from app.dependencies import get_current_user
 from app.models.requests import (
-    AnalysisProvider,
     BulkAnalyzeRequest,
     BulkAnalyzeResponse,
     ConfirmUploadRequest,
     DocumentActionStatistics,
     DocumentActionUpdate,
-    DocumentListResponse,
     DocumentMetadataUpdate,
     DocumentResponse,
     EnrichedDocumentResponse,
@@ -114,7 +112,7 @@ async def confirm_upload(
         if request.document_type:
             document_data["document_type"] = request.document_type
 
-        document = await db.insert_document(document_data)
+        await db.insert_document(document_data)
 
         return {
             "status": "confirmed",
@@ -212,7 +210,7 @@ async def list_documents(
                 limit=limit,
                 offset=offset,
             )
-        except Exception as e:
+        except Exception:
             # Fall back to basic query if enhanced query fails (migrations not run yet)
             if action or profile_id:
                 # Cannot filter by action/profile without migrations
@@ -523,7 +521,7 @@ async def analyze_documents_bulk(
     """
     try:
         # Import here to avoid circular dependency
-        from app.services.analysis_service import AnalysisService, get_analysis_service
+        from app.services.analysis_service import get_analysis_service
 
         analysis_service = get_analysis_service()
 
