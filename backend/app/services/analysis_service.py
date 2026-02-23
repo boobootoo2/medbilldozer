@@ -1118,7 +1118,7 @@ class AnalysisService:
 
         try:
             genai.configure(api_key=settings.gemini_api_key)
-            model = genai.GenerativeModel("gemini-1.5-flash")
+            model = genai.GenerativeModel("gemini-2.0-flash-exp")
             image = PIL.Image.open(io.BytesIO(image_bytes))
             log_with_context(
                 logger,
@@ -1225,7 +1225,7 @@ Return ONLY a valid JSON array. If no issues: []
         try:
             genai.configure(api_key=settings.gemini_api_key)
             model = genai.GenerativeModel(
-                "gemini-1.5-flash",
+                "gemini-2.0-flash-exp",
                 system_instruction="You analyze healthcare billing images and return ONLY valid JSON arrays. No prose.",
             )
             image = PIL.Image.open(io.BytesIO(image_bytes))
