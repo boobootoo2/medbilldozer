@@ -1085,8 +1085,8 @@ class AnalysisService:
 
         image_b64 = base64.b64encode(image_bytes).decode()
 
-        # REST API requires camelCase field names
-        payload: dict = {
+        # v1beta supports systemInstruction + gemini-2.5-flash (v1 does not support systemInstruction)
+        payload_v1beta: dict = {
             "systemInstruction": {"parts": [{"text": system_instruction}]},
             "contents": [
                 {
@@ -1099,11 +1099,25 @@ class AnalysisService:
             "generationConfig": {"temperature": 0, "maxOutputTokens": 4096},
         }
 
-        # Try v1 first (stable), fall back to v1beta
-        for api_version in ("v1", "v1beta"):
+        # v1 does not support systemInstruction - fold it into the user message
+        payload_v1: dict = {
+            "contents": [
+                {
+                    "parts": [
+                        {"inlineData": {"mimeType": mime_type, "data": image_b64}},
+                        {"text": f"{system_instruction}\n\n{prompt}"},
+                    ]
+                }
+            ],
+            "generationConfig": {"temperature": 0, "maxOutputTokens": 4096},
+        }
+
+        # Try v1beta first (supports systemInstruction), fall back to v1
+        # gemini-1.5-flash is discontinued; gemini-2.5-flash is available in both
+        for api_version, payload in (("v1beta", payload_v1beta), ("v1", payload_v1)):
             url = (
                 f"https://generativelanguage.googleapis.com/{api_version}"
-                f"/models/gemini-1.5-flash:generateContent?key={api_key}"
+                f"/models/gemini-2.5-flash:generateContent?key={api_key}"
             )
             log_with_context(
                 logger,
