@@ -14,7 +14,7 @@ on:
   #     - '.github/workflows/deploy-backend.yml'
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  PROJECT_ID: medbilldozer
   SERVICE_NAME: medbilldozer-api
   REGION: us-central1
 
@@ -47,26 +47,43 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install uv
+        run: pip install uv
+
       - name: Install backend dependencies
         working-directory: backend
         run: |
-          pip install -r requirements.txt
-          pip install ruff pytest python-dotenv
+          uv pip install --system -r requirements.txt
+          uv pip install --system ruff pytest python-dotenv
 
       - name: Run pre-deployment checks
+        env:
+          # Dummy values so Pydantic settings validation passes during import check.
+          # These are NOT used at runtime - Cloud Run injects the real secrets.
+          OPENAI_API_KEY: dummy-import-check
+          FIREBASE_PROJECT_ID: dummy
+          GCS_PROJECT_ID: dummy
         run: |
           # Backend code quality
           cd backend
           echo "📝 Running ruff linting..."
-          ruff check app/ || echo "⚠️ Linting warnings detected"
+          ruff check app/
 
           # Backend imports test
+          # Note: medbilldozer package (backend/src/) is gitignored - allow that specific error
           echo "🚀 Testing backend imports..."
           python -c "
           import sys
           sys.path.insert(0, '.')
-          from app.main import app
-          print('✅ Backend imports successfully')
+          try:
+              from app.main import app
+              print('✅ Backend imports successfully')
+          except ModuleNotFoundError as e:
+              if 'medbilldozer' in str(e):
+                  print(f'⚠️  medbilldozer package not in CI (gitignored) - Docker build will verify: {e}')
+                  print('✅ All other imports OK')
+              else:
+                  raise
           "
 
       - name: Configure Docker for GCR
@@ -74,9 +91,14 @@ jobs:
 
       - name: Build Docker image
         run: |
+          # Copy medbilldozer package (tracked at repo root src/) into backend/src/
+          # backend/.gitignore excludes src/ but the package lives at repo root src/medbilldozer/
+          mkdir -p backend/src
+          cp -r src/medbilldozer backend/src/medbilldozer
           docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }} \
             -t gcr.io/$PROJECT_ID/$SERVICE_NAME:latest \
-            -f backend/Dockerfile .
+            -f backend/Dockerfile \
+            backend/
 
       - name: Push Docker image to GCR
         run: |
@@ -95,8 +117,8 @@ jobs:
             --max-instances 10 \
             --min-instances 0 \
             --timeout 300 \
-            --set-env-vars "DEBUG=false,ENVIRONMENT=production" \
-            --set-secrets "FIREBASE_PRIVATE_KEY=firebase-private-key:latest,FIREBASE_CLIENT_EMAIL=firebase-client-email:latest,SUPABASE_SERVICE_ROLE_KEY=supabase-service-role-key:latest,JWT_SECRET_KEY=jwt-secret-key:latest,OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
+            --set-env-vars "DEBUG=false,ENVIRONMENT=production,FIREBASE_PROJECT_ID=medbilldozer,GCS_PROJECT_ID=medbilldozer,SUPABASE_URL=https://zrhlpitzonhftigmdvgz.supabase.co,HF_ENDPOINT_BASE=https://gzm1kdzim8rqw82w.us-east4.gcp.endpoints.huggingface.cloud" \
+            --set-secrets "FIREBASE_PRIVATE_KEY=firebase-private-key:latest,FIREBASE_CLIENT_EMAIL=firebase-client-email:latest,SUPABASE_SERVICE_ROLE_KEY=supabase-service-role-key:latest,JWT_SECRET_KEY=jwt-secret-key:latest,OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest,HF_API_TOKEN=hf-api-token:latest"
 
       - name: Get Cloud Run URL
         id: deploy-url

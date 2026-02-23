@@ -52,6 +52,8 @@ benchmarks/clinical_validation_heatmaps/
 *.json.bak
 *.csv.bak
 frontend/dist/
+frontend/node_modules/
+frontend/node_modules/.package-lock.json
 
 # Example outputs
 examples/output/
