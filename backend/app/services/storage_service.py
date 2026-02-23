@@ -109,6 +109,10 @@ class StorageService:
         """
         Download file content as bytes.
 
+        Tries direct GCS download first. If that fails (e.g. service account
+        lacks Storage Object Viewer), falls back to a short-lived signed URL
+        fetched via httpx.
+
         Args:
             bucket_name: GCS bucket name
             blob_path: Path within bucket
@@ -116,10 +120,35 @@ class StorageService:
         Returns:
             File content as bytes
         """
-        bucket = self.client.bucket(bucket_name)
-        blob = bucket.blob(blob_path)
-        content = blob.download_as_bytes()
-        return content
+        try:
+            bucket = self.client.bucket(bucket_name)
+            blob = bucket.blob(blob_path)
+            return blob.download_as_bytes()
+        except Exception as direct_err:
+            # Fallback: use a signed download URL + httpx
+            # This works even when the service account lacks objectViewer.
+            try:
+                signed_url = self.generate_signed_download_url(
+                    bucket_name=bucket_name,
+                    blob_path=blob_path,
+                    expires_in_minutes=5,
+                )
+                import httpx
+
+                async with httpx.AsyncClient(timeout=60.0) as http_client:
+                    resp = await http_client.get(signed_url)
+                    resp.raise_for_status()
+                    print(
+                        f"⚠️  direct download failed ({direct_err}); "
+                        f"signed-URL fallback succeeded ({len(resp.content)} bytes)"
+                    )
+                    return resp.content
+            except Exception as url_err:
+                raise RuntimeError(
+                    f"GCS download failed. "
+                    f"Direct: {direct_err!r}. "
+                    f"Signed-URL fallback: {url_err!r}"
+                ) from url_err
 
     def delete_file(self, bucket_name: str, blob_path: str) -> bool:
         """

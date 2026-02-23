@@ -65,3 +65,5 @@ examples/*.log
 node_modules/
 
 .env*.local
+
+frontend/.vite/

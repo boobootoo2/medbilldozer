@@ -906,27 +906,58 @@ class AnalysisService:
                         started_at=doc_started_at,
                     )
 
-            # --- Analyze image documents with GPT-4o vision ---
+            # --- Analyze image documents: OCR → orchestrator (fallback: direct vision) ---
             for doc_meta in image_doc_metas:
                 doc_id = doc_meta["document_id"]
                 doc_started_at = datetime.utcnow().isoformat()
                 try:
-                    vision_issues = await self._analyze_image_with_vision(doc_meta, analysis_id)
-                    doc_result = {
-                        "document_id": doc_id,
-                        "filename": doc_meta["filename"],
-                        "analysis": {
-                            "issues": vision_issues,
-                            "meta": {"source": "vision"},
-                        },
-                        "raw_text": "",
-                    }
+                    # Step 1: extract text from the image via GPT-4o OCR
+                    raw_text = await self._extract_text_from_image(doc_meta, analysis_id)
+
+                    if raw_text and len(raw_text.strip()) >= 20:
+                        # Step 2: cache the extracted text so the UI can show it
+                        try:
+                            await self.db.update_document_extracted_text(
+                                document_id=doc_id, extracted_text=raw_text
+                            )
+                        except Exception:  # nosec B110 - non-critical cache; analysis continues
+                            pass
+
+                        # Step 3: run through the same orchestrator as text/PDF docs
+                        orchestrator = OrchestratorAgent(analyzer_override=effective_provider)
+                        orch_result = orchestrator.run(raw_text)
+                        analysis_dict = self._serialize_analysis(orch_result.get("analysis"))
+                        doc_result = {
+                            "document_id": doc_id,
+                            "filename": doc_meta["filename"],
+                            "facts": orch_result.get("facts", {}),
+                            "analysis": analysis_dict,
+                            "raw_text": raw_text,
+                        }
+                    else:
+                        # Fallback: direct vision issue detection (no text available)
+                        log_with_context(
+                            logger,
+                            30,
+                            "⚠️  OCR returned no text, falling back to direct vision analysis",
+                            analysis_id=analysis_id,
+                            document_id=doc_id,
+                        )
+                        vision_issues = await self._analyze_image_with_vision(doc_meta, analysis_id)
+                        doc_result = {
+                            "document_id": doc_id,
+                            "filename": doc_meta["filename"],
+                            "analysis": {"issues": vision_issues, "meta": {"source": "vision"}},
+                            "raw_text": "",
+                        }
+
                     results.append(doc_result)
-                    for iss in vision_issues:
+                    for iss in doc_result.get("analysis", {}).get("issues", []):
                         savings = self._infer_max_savings(iss)
                         all_issues.append({**iss, "document_id": doc_id})
                         if isinstance(savings, (int, float)):
                             total_savings += savings
+
                 except Exception as img_err:
                     log_with_context(
                         logger,
@@ -1026,45 +1057,189 @@ class AnalysisService:
             await self.db.update_analysis_status(analysis_id, "failed", error_message=str(e))
             return {"analysis_id": analysis_id, "status": "failed", "error": str(e)}
 
-    async def _analyze_image_with_vision(self, doc_meta: dict, analysis_id: str) -> list:
-        """Analyze a medical bill image with GPT-4o vision.
+    async def _call_gemini_vision(
+        self,
+        image_bytes: bytes,
+        prompt: str,
+        system_instruction: str,
+        analysis_id: str,
+        doc_id: str,
+    ) -> str:
+        """Call Gemini vision via direct REST API (bypasses SDK model-name issues).
 
-        Downloads the image from GCS and asks GPT-4o to read the bill and
-        identify billing errors, returning issues in the same dict format
-        as the text-based orchestrator pipeline.
+        Uses the v1 endpoint with gemini-1.5-flash directly via httpx so we are
+        not subject to whatever API version the installed google-generativeai SDK
+        defaults to.
         """
         import base64
+
+        import httpx
+        from app.config import settings
+
+        api_key = settings.gemini_api_key
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY is not configured")
+
+        # Detect mime type from magic bytes
+        mime_type = "image/png" if image_bytes[:4] == b"\x89PNG" else "image/jpeg"
+
+        image_b64 = base64.b64encode(image_bytes).decode()
+
+        # v1beta supports systemInstruction + gemini-2.5-flash (v1 does not support systemInstruction)
+        payload_v1beta: dict = {
+            "systemInstruction": {"parts": [{"text": system_instruction}]},
+            "contents": [
+                {
+                    "parts": [
+                        {"inlineData": {"mimeType": mime_type, "data": image_b64}},
+                        {"text": prompt},
+                    ]
+                }
+            ],
+            "generationConfig": {"temperature": 0, "maxOutputTokens": 4096},
+        }
+
+        # v1 does not support systemInstruction - fold it into the user message
+        payload_v1: dict = {
+            "contents": [
+                {
+                    "parts": [
+                        {"inlineData": {"mimeType": mime_type, "data": image_b64}},
+                        {"text": f"{system_instruction}\n\n{prompt}"},
+                    ]
+                }
+            ],
+            "generationConfig": {"temperature": 0, "maxOutputTokens": 4096},
+        }
+
+        # Try v1beta first (supports systemInstruction), fall back to v1
+        # gemini-1.5-flash is discontinued; gemini-2.5-flash is available in both
+        for api_version, payload in (("v1beta", payload_v1beta), ("v1", payload_v1)):
+            url = (
+                f"https://generativelanguage.googleapis.com/{api_version}"
+                f"/models/gemini-2.5-flash:generateContent?key={api_key}"
+            )
+            log_with_context(
+                logger,
+                20,
+                f"🔍 Gemini REST {api_version} | mime={mime_type} size={len(image_bytes)}",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                resp = await client.post(url, json=payload)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    text = data["candidates"][0]["content"]["parts"][0]["text"]
+                    log_with_context(
+                        logger,
+                        20,
+                        f"✅ Gemini REST {api_version} OK | chars={len(text)} preview={text[:100]!r}",
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                    )
+                    return text
+                log_with_context(
+                    logger,
+                    30,
+                    f"⚠️  Gemini REST {api_version} → {resp.status_code}: {resp.text[:500]}",
+                    analysis_id=analysis_id,
+                    document_id=doc_id,
+                )
+
+        raise RuntimeError("All Gemini REST endpoints failed")
+
+    async def _extract_text_from_image(self, doc_meta: dict, analysis_id: str) -> str:
+        """Use Gemini vision to OCR a medical document image into plain text."""
+        doc_id = doc_meta["document_id"]
+        gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
+
+        log_with_context(
+            logger,
+            20,
+            f"🖼️  OCR start | gcs_path={gcs_path!r}",
+            analysis_id=analysis_id,
+            document_id=doc_id,
+        )
+
+        if not gcs_path:
+            return ""
+
+        try:
+            image_bytes = await self.storage.download_bytes(
+                bucket_name=self.storage.documents_bucket,
+                blob_path=gcs_path,
+            )
+            log_with_context(
+                logger,
+                20,
+                f"✅ OCR: downloaded {len(image_bytes)} bytes",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+        except Exception as dl_err:
+            log_with_context(
+                logger,
+                40,
+                f"❌ OCR: download failed: {dl_err}",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+            return ""
+
+        ocr_prompt = (
+            "Transcribe ALL text visible in this medical document image exactly as shown. "
+            "Preserve the layout, including every number, CPT/ICD/NDC code, date, dollar "
+            "amount, and label. Return only the transcribed text with no commentary."
+        )
+
+        try:
+            extracted = await self._call_gemini_vision(
+                image_bytes,
+                ocr_prompt,
+                "You are an OCR assistant. Return only transcribed text.",
+                analysis_id,
+                doc_id,
+            )
+            return extracted
+        except Exception as ocr_err:
+            log_with_context(
+                logger,
+                40,
+                f"❌ OCR (Gemini REST) failed: {type(ocr_err).__name__}: {ocr_err}",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+            return ""
+
+    async def _analyze_image_with_vision(self, doc_meta: dict, analysis_id: str) -> list:
+        """Analyze a medical bill image with Gemini vision via direct REST API."""
         import json as _json
+        import re as _re
 
         doc_id = doc_meta["document_id"]
         gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
-        content_type = doc_meta.get("content_type", "image/png")
 
         if not gcs_path:
             log_with_context(
-                logger,
-                30,
-                "⚠️  No GCS path for image doc",
-                analysis_id=analysis_id,
-                document_id=doc_id,
+                logger, 30, "⚠️  Vision: no gcs_path", analysis_id=analysis_id, document_id=doc_id
             )
             return []
 
         try:
             image_bytes = await self.storage.download_bytes(
-                bucket_name=self.storage.documents_bucket, blob_path=gcs_path
+                bucket_name=self.storage.documents_bucket,
+                blob_path=gcs_path,
             )
         except Exception as dl_err:
             log_with_context(
                 logger,
                 30,
-                f"⚠️  Image download failed: {dl_err}",
+                f"⚠️  Vision: download failed: {dl_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
             return []
-
-        image_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
 
         billing_prompt = """You are a healthcare billing expert. Carefully read ALL text in this medical bill image and identify billing errors.
 
@@ -1084,36 +1259,13 @@ Return ONLY a valid JSON array. If no issues: []
 [{"type":"issue_type","summary":"brief description","evidence":"exact text/amounts from bill","code":"CPT code or null","max_savings":0.00}]"""
 
         try:
-            from openai import OpenAI
-
-            client = OpenAI()
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                temperature=0,
-                max_tokens=2000,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You analyze healthcare billing images and return ONLY valid JSON arrays. No prose.",
-                    },
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:{content_type};base64,{image_b64}",
-                                    "detail": "high",
-                                },
-                            },
-                            {"type": "text", "text": billing_prompt},
-                        ],
-                    },
-                ],
+            content = await self._call_gemini_vision(
+                image_bytes,
+                billing_prompt,
+                "You analyze healthcare billing images and return ONLY valid JSON arrays. No prose.",
+                analysis_id,
+                doc_id,
             )
-
-            content = response.choices[0].message.content or "[]"
-            import re as _re
 
             content = _re.sub(r"```(?:json)?\s*", "", content).strip().rstrip("`").strip()
             raw_issues = _json.loads(content)
@@ -1143,7 +1295,7 @@ Return ONLY a valid JSON array. If no issues: []
             log_with_context(
                 logger,
                 20,
-                f"✅ Vision analysis found {len(issues)} issue(s)",
+                f"✅ Vision analysis (Gemini) found {len(issues)} issue(s)",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
@@ -1153,7 +1305,7 @@ Return ONLY a valid JSON array. If no issues: []
             log_with_context(
                 logger,
                 30,
-                f"⚠️  Vision analysis error: {vision_err}",
+                f"⚠️  Vision (Gemini) failed: {type(vision_err).__name__}: {vision_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )

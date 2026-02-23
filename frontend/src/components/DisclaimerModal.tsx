@@ -16,6 +16,7 @@ export const DisclaimerModal = () => {
 
   const handleAccept = () => {
     localStorage.setItem('disclaimer_accepted', 'true');
+    window.dispatchEvent(new Event('medbilldozer:consent'));
     setIsOpen(false);
   };
 

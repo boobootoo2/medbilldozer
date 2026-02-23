@@ -1,6 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
+
+const checkConsents = () =>
+    !!localStorage.getItem('disclaimer_accepted') &&
+    !!localStorage.getItem('medbilldozer_consent_shown');
 
 export const SecurityBanner: React.FC = () => {
+    const { isAuthenticated } = useAuth();
+    const [consentsGiven, setConsentsGiven] = useState(checkConsents);
+
+    useEffect(() => {
+        const handler = () => setConsentsGiven(checkConsents());
+        window.addEventListener('medbilldozer:consent', handler);
+        return () => window.removeEventListener('medbilldozer:consent', handler);
+    }, []);
+
+    if (!isAuthenticated || !consentsGiven) {
+        return null;
+    }
+
     return (
         <div style={{
             backgroundColor: '#fff3cd',
