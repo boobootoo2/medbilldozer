@@ -906,27 +906,58 @@ class AnalysisService:
                         started_at=doc_started_at,
                     )
 
-            # --- Analyze image documents with GPT-4o vision ---
+            # --- Analyze image documents: OCR → orchestrator (fallback: direct vision) ---
             for doc_meta in image_doc_metas:
                 doc_id = doc_meta["document_id"]
                 doc_started_at = datetime.utcnow().isoformat()
                 try:
-                    vision_issues = await self._analyze_image_with_vision(doc_meta, analysis_id)
-                    doc_result = {
-                        "document_id": doc_id,
-                        "filename": doc_meta["filename"],
-                        "analysis": {
-                            "issues": vision_issues,
-                            "meta": {"source": "vision"},
-                        },
-                        "raw_text": "",
-                    }
+                    # Step 1: extract text from the image via GPT-4o OCR
+                    raw_text = await self._extract_text_from_image(doc_meta, analysis_id)
+
+                    if raw_text and len(raw_text.strip()) >= 20:
+                        # Step 2: cache the extracted text so the UI can show it
+                        try:
+                            await self.db.update_document_extracted_text(
+                                document_id=doc_id, extracted_text=raw_text
+                            )
+                        except Exception:  # nosec B110 - non-critical cache; analysis continues
+                            pass
+
+                        # Step 3: run through the same orchestrator as text/PDF docs
+                        orchestrator = OrchestratorAgent(analyzer_override=effective_provider)
+                        orch_result = orchestrator.run(raw_text)
+                        analysis_dict = self._serialize_analysis(orch_result.get("analysis"))
+                        doc_result = {
+                            "document_id": doc_id,
+                            "filename": doc_meta["filename"],
+                            "facts": orch_result.get("facts", {}),
+                            "analysis": analysis_dict,
+                            "raw_text": raw_text,
+                        }
+                    else:
+                        # Fallback: direct vision issue detection (no text available)
+                        log_with_context(
+                            logger,
+                            30,
+                            "⚠️  OCR returned no text, falling back to direct vision analysis",
+                            analysis_id=analysis_id,
+                            document_id=doc_id,
+                        )
+                        vision_issues = await self._analyze_image_with_vision(doc_meta, analysis_id)
+                        doc_result = {
+                            "document_id": doc_id,
+                            "filename": doc_meta["filename"],
+                            "analysis": {"issues": vision_issues, "meta": {"source": "vision"}},
+                            "raw_text": "",
+                        }
+
                     results.append(doc_result)
-                    for iss in vision_issues:
+                    for iss in doc_result.get("analysis", {}).get("issues", []):
                         savings = self._infer_max_savings(iss)
                         all_issues.append({**iss, "document_id": doc_id})
                         if isinstance(savings, (int, float)):
                             total_savings += savings
+
                 except Exception as img_err:
                     log_with_context(
                         logger,
@@ -1025,6 +1056,86 @@ class AnalysisService:
             logger.exception("Multimodal analysis failed")
             await self.db.update_analysis_status(analysis_id, "failed", error_message=str(e))
             return {"analysis_id": analysis_id, "status": "failed", "error": str(e)}
+
+    async def _extract_text_from_image(self, doc_meta: dict, analysis_id: str) -> str:
+        """Use GPT-4o vision to OCR a medical document image into plain text.
+
+        The extracted text is then fed into the normal orchestrator pipeline,
+        giving image documents the same analysis quality as TXT/PDF files and
+        populating the 'Raw Extracted Text' field in the UI.
+        """
+        import base64
+
+        doc_id = doc_meta["document_id"]
+        gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
+        content_type = doc_meta.get("content_type", "image/png")
+
+        if not gcs_path:
+            return ""
+
+        try:
+            image_bytes = await self.storage.download_bytes(
+                bucket_name=self.storage.documents_bucket, blob_path=gcs_path
+            )
+        except Exception as dl_err:
+            log_with_context(
+                logger,
+                30,
+                f"⚠️  Image OCR download failed: {dl_err}",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+            return ""
+
+        image_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
+        ocr_prompt = (
+            "Transcribe ALL text visible in this medical document image exactly as shown. "
+            "Preserve the layout, including every number, CPT/ICD/NDC code, date, dollar "
+            "amount, and label. Return only the transcribed text with no commentary."
+        )
+
+        try:
+            from openai import OpenAI
+
+            client = OpenAI()
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                temperature=0,
+                max_tokens=4000,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{content_type};base64,{image_b64}",
+                                    "detail": "high",
+                                },
+                            },
+                            {"type": "text", "text": ocr_prompt},
+                        ],
+                    }
+                ],
+            )
+            extracted = response.choices[0].message.content or ""
+            log_with_context(
+                logger,
+                20,
+                f"✅ Image OCR extracted {len(extracted)} chars",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+            return extracted
+        except Exception as ocr_err:
+            log_with_context(
+                logger,
+                30,
+                f"⚠️  Image OCR failed: {ocr_err}",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+            return ""
 
     async def _analyze_image_with_vision(self, doc_meta: dict, analysis_id: str) -> list:
         """Analyze a medical bill image with GPT-4o vision.
