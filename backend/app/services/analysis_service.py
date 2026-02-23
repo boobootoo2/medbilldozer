@@ -782,7 +782,7 @@ class AnalysisService:
                     ens.medgemma = OpenAIAnalysisProvider("gpt-4o-mini")
                     ens.enable_openai = False
                     ProviderRegistry.register("medgemma-ensemble", ens)
-                except Exception:
+                except Exception:  # nosec B110 - intentional silent fallback
                     pass
 
             effective_provider = (
@@ -860,7 +860,7 @@ class AnalysisService:
                         await self.db.update_document_extracted_text(
                             document_id=doc_id, extracted_text=raw_text
                         )
-                    except Exception:
+                    except Exception:  # nosec B110 - non-critical text cache; analysis continues
                         pass
 
                 except Exception as text_err:
