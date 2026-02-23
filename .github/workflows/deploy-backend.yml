@@ -91,9 +91,14 @@ jobs:
 
       - name: Build Docker image
         run: |
+          # Copy medbilldozer package (tracked at repo root src/) into backend/src/
+          # backend/.gitignore excludes src/ but the package lives at repo root src/medbilldozer/
+          mkdir -p backend/src
+          cp -r src/medbilldozer backend/src/medbilldozer
           docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:${{ github.sha }} \
             -t gcr.io/$PROJECT_ID/$SERVICE_NAME:latest \
-            -f backend/Dockerfile .
+            -f backend/Dockerfile \
+            backend/
 
       - name: Push Docker image to GCR
         run: |
