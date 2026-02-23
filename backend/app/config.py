@@ -105,6 +105,8 @@ class Settings(BaseSettings):
                     [
                         "https://medbilldozer.com",
                         "https://www.medbilldozer.com",
+                        # Custom subdomains
+                        "https://develop.medbilldozer.com",
                         # Vercel deployments
                         "https://medbilldozer.vercel.app",
                         # Vercel preview deployments (git branches)
