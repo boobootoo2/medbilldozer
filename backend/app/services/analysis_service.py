@@ -700,8 +700,11 @@ class AnalysisService:
                         }
                     )
 
-                await self.db.insert_issues(analysis_id, issues_to_insert)
-                logger.info("✅ Issues inserted successfully")
+                try:
+                    await self.db.insert_issues(analysis_id, issues_to_insert)
+                    logger.info("✅ Issues inserted successfully")
+                except Exception as insert_err:
+                    logger.warning(f"⚠️  insert_issues failed (non-fatal): {insert_err}")
 
             # Update analysis status to completed in database
             await self.db.update_analysis_status(analysis_id, "completed")
@@ -1039,7 +1042,15 @@ class AnalysisService:
                             "metadata": {},
                         }
                     )
-                await self.db.insert_issues(analysis_id, issues_to_insert)
+                try:
+                    await self.db.insert_issues(analysis_id, issues_to_insert)
+                except Exception as insert_err:
+                    log_with_context(
+                        logger,
+                        30,
+                        f"⚠️  insert_issues failed (non-fatal): {insert_err}",
+                        analysis_id=analysis_id,
+                    )
 
             await self.db.update_analysis_status(analysis_id, "completed")
             return {"analysis_id": analysis_id, "status": "completed"}
