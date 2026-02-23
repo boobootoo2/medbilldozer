@@ -1104,9 +1104,9 @@ class AnalysisService:
         )
 
         try:
-            from openai import OpenAI
+            from openai import AsyncOpenAI
 
-            client = OpenAI()
+            client = AsyncOpenAI()
             log_with_context(
                 logger,
                 20,
@@ -1114,7 +1114,7 @@ class AnalysisService:
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
-            response = client.chat.completions.create(
+            response = await client.chat.completions.create(
                 model="gpt-4o",
                 temperature=0,
                 max_tokens=4000,
@@ -1211,10 +1211,10 @@ Return ONLY a valid JSON array. If no issues: []
 [{"type":"issue_type","summary":"brief description","evidence":"exact text/amounts from bill","code":"CPT code or null","max_savings":0.00}]"""
 
         try:
-            from openai import OpenAI
+            from openai import AsyncOpenAI
 
-            client = OpenAI()
-            response = client.chat.completions.create(
+            client = AsyncOpenAI()
+            response = await client.chat.completions.create(
                 model="gpt-4o",
                 temperature=0,
                 max_tokens=2000,
