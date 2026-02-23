@@ -1077,13 +1077,22 @@ class AnalysisService:
             image_bytes = await self.storage.download_bytes(
                 bucket_name=self.storage.documents_bucket, blob_path=gcs_path
             )
+            log_with_context(
+                logger,
+                20,
+                f"✅ Image downloaded for OCR ({len(image_bytes)} bytes)",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
         except Exception as dl_err:
             log_with_context(
                 logger,
-                30,
-                f"⚠️  Image OCR download failed: {dl_err}",
+                40,
+                f"❌ Image OCR download failed: {dl_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
+                gcs_path=gcs_path,
+                bucket=self.storage.documents_bucket,
             )
             return ""
 
@@ -1098,6 +1107,13 @@ class AnalysisService:
             from openai import OpenAI
 
             client = OpenAI()
+            log_with_context(
+                logger,
+                20,
+                f"🔍 Sending image to GPT-4o for OCR ({len(image_b64)} base64 chars)",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
             response = client.chat.completions.create(
                 model="gpt-4o",
                 temperature=0,
@@ -1130,8 +1146,8 @@ class AnalysisService:
         except Exception as ocr_err:
             log_with_context(
                 logger,
-                30,
-                f"⚠️  Image OCR failed: {ocr_err}",
+                40,
+                f"❌ Image OCR (GPT-4o) failed: {ocr_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
