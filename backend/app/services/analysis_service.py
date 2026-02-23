@@ -113,39 +113,35 @@ class AnalysisService:
             # Ensure providers are registered
             register_providers()
 
-            # When HF_API_TOKEN is absent (always the case in Cloud Run), override any
-            # medgemma-ensemble registration from register_providers() with an OpenAI-backed
-            # version so the ensemble's deterministic heuristics still run but the LLM call
-            # goes to GPT-4o-mini instead of the unavailable HF endpoint.
-            import os
+            # Always override medgemma-ensemble with an OpenAI-backed version.
+            # The HF-hosted MedGemma endpoint (google/medgemma-4b-it) is a gated model
+            # that returns 400 on the serverless router even with a valid token.
+            # The ensemble wrapper still runs all deterministic heuristics; only the
+            # inner LLM call is routed to gpt-4o-mini.
+            try:
+                from medbilldozer.providers.medgemma_ensemble_provider import (
+                    MedGemmaEnsembleProvider,
+                )
+                from medbilldozer.providers.openai_analysis_provider import OpenAIAnalysisProvider
 
-            if not os.getenv("HF_API_TOKEN"):
-                try:
-                    from medbilldozer.providers.medgemma_ensemble_provider import (
-                        MedGemmaEnsembleProvider,
-                    )
-                    from medbilldozer.providers.openai_analysis_provider import (
-                        OpenAIAnalysisProvider,
-                    )
-
-                    # Bypass __init__ so this works with both old and new provider versions
-                    ensemble = MedGemmaEnsembleProvider.__new__(MedGemmaEnsembleProvider)
-                    ensemble.medgemma = OpenAIAnalysisProvider("gpt-4o-mini")
-                    ensemble.enable_openai = False
-                    ProviderRegistry.register("medgemma-ensemble", ensemble)
-                    log_with_context(
-                        logger,
-                        20,
-                        "✅ Overrode medgemma-ensemble with OpenAI fallback (no HF_API_TOKEN)",
-                        analysis_id=analysis_id,
-                    )
-                except Exception as reg_err:
-                    log_with_context(
-                        logger,
-                        30,
-                        f"⚠️  medgemma-ensemble OpenAI override failed: {str(reg_err)}",
-                        analysis_id=analysis_id,
-                    )
+                # Bypass __init__ so this works with both old and new provider versions
+                ensemble = MedGemmaEnsembleProvider.__new__(MedGemmaEnsembleProvider)
+                ensemble.medgemma = OpenAIAnalysisProvider("gpt-4o-mini")
+                ensemble.enable_openai = False
+                ProviderRegistry.register("medgemma-ensemble", ensemble)
+                log_with_context(
+                    logger,
+                    20,
+                    "✅ Registered medgemma-ensemble with gpt-4o-mini as inner provider",
+                    analysis_id=analysis_id,
+                )
+            except Exception as reg_err:
+                log_with_context(
+                    logger,
+                    30,
+                    f"⚠️  medgemma-ensemble registration failed: {str(reg_err)}",
+                    analysis_id=analysis_id,
+                )
 
             if provider not in ProviderRegistry.list():
                 log_with_context(
@@ -773,23 +769,18 @@ class AnalysisService:
             )
 
             register_providers()
-            import os
+            try:
+                from medbilldozer.providers.medgemma_ensemble_provider import (
+                    MedGemmaEnsembleProvider,
+                )
+                from medbilldozer.providers.openai_analysis_provider import OpenAIAnalysisProvider
 
-            if not os.getenv("HF_API_TOKEN"):
-                try:
-                    from medbilldozer.providers.medgemma_ensemble_provider import (
-                        MedGemmaEnsembleProvider,
-                    )
-                    from medbilldozer.providers.openai_analysis_provider import (
-                        OpenAIAnalysisProvider,
-                    )
-
-                    ens = MedGemmaEnsembleProvider.__new__(MedGemmaEnsembleProvider)
-                    ens.medgemma = OpenAIAnalysisProvider("gpt-4o-mini")
-                    ens.enable_openai = False
-                    ProviderRegistry.register("medgemma-ensemble", ens)
-                except Exception:  # nosec B110 - intentional silent fallback
-                    pass
+                ens = MedGemmaEnsembleProvider.__new__(MedGemmaEnsembleProvider)
+                ens.medgemma = OpenAIAnalysisProvider("gpt-4o-mini")
+                ens.enable_openai = False
+                ProviderRegistry.register("medgemma-ensemble", ens)
+            except Exception:  # nosec B110 - intentional silent fallback
+                pass
 
             effective_provider = (
                 provider if provider in ProviderRegistry.list() else "medgemma-ensemble"
