@@ -1085,12 +1085,13 @@ class AnalysisService:
 
         image_b64 = base64.b64encode(image_bytes).decode()
 
+        # REST API requires camelCase field names
         payload: dict = {
-            "system_instruction": {"parts": [{"text": system_instruction}]},
+            "systemInstruction": {"parts": [{"text": system_instruction}]},
             "contents": [
                 {
                     "parts": [
-                        {"inline_data": {"mime_type": mime_type, "data": image_b64}},
+                        {"inlineData": {"mimeType": mime_type, "data": image_b64}},
                         {"text": prompt},
                     ]
                 }
@@ -1127,7 +1128,7 @@ class AnalysisService:
                 log_with_context(
                     logger,
                     30,
-                    f"⚠️  Gemini REST {api_version} → {resp.status_code}: {resp.text[:200]}",
+                    f"⚠️  Gemini REST {api_version} → {resp.status_code}: {resp.text[:500]}",
                     analysis_id=analysis_id,
                     document_id=doc_id,
                 )
