@@ -1,6 +1,15 @@
 import React from 'react';
+import { useAuth } from '../hooks/useAuth';
+import { useCookieConsent } from '../hooks/useCookieConsent';
 
 export const SecurityBanner: React.FC = () => {
+    const { isAuthenticated } = useAuth();
+    const { hasConsented } = useCookieConsent();
+
+    if (!isAuthenticated || !hasConsented) {
+        return null;
+    }
+
     return (
         <div style={{
             backgroundColor: '#fff3cd',
