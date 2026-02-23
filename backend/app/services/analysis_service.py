@@ -1057,35 +1057,97 @@ class AnalysisService:
             await self.db.update_analysis_status(analysis_id, "failed", error_message=str(e))
             return {"analysis_id": analysis_id, "status": "failed", "error": str(e)}
 
-    async def _extract_text_from_image(self, doc_meta: dict, analysis_id: str) -> str:
-        """Use Gemini vision to OCR a medical document image into plain text.
+    async def _call_gemini_vision(
+        self,
+        image_bytes: bytes,
+        prompt: str,
+        system_instruction: str,
+        analysis_id: str,
+        doc_id: str,
+    ) -> str:
+        """Call Gemini vision via direct REST API (bypasses SDK model-name issues).
 
-        Downloads image bytes from GCS, opens as PIL.Image, and sends to
-        Gemini 1.5 Flash async. Gemini is used instead of GPT-4o because
-        Cloud Run cannot reach api.openai.com.
+        Uses the v1 endpoint with gemini-1.5-flash directly via httpx so we are
+        not subject to whatever API version the installed google-generativeai SDK
+        defaults to.
         """
-        import asyncio
-        import io
+        import base64
 
-        import google.generativeai as genai
-        import PIL.Image
+        import httpx
         from app.config import settings
 
+        api_key = settings.gemini_api_key
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY is not configured")
+
+        # Detect mime type from magic bytes
+        mime_type = "image/png" if image_bytes[:4] == b"\x89PNG" else "image/jpeg"
+
+        image_b64 = base64.b64encode(image_bytes).decode()
+
+        payload: dict = {
+            "system_instruction": {"parts": [{"text": system_instruction}]},
+            "contents": [
+                {
+                    "parts": [
+                        {"inline_data": {"mime_type": mime_type, "data": image_b64}},
+                        {"text": prompt},
+                    ]
+                }
+            ],
+            "generationConfig": {"temperature": 0, "maxOutputTokens": 4096},
+        }
+
+        # Try v1 first (stable), fall back to v1beta
+        for api_version in ("v1", "v1beta"):
+            url = (
+                f"https://generativelanguage.googleapis.com/{api_version}"
+                f"/models/gemini-1.5-flash:generateContent?key={api_key}"
+            )
+            log_with_context(
+                logger,
+                20,
+                f"🔍 Gemini REST {api_version} | mime={mime_type} size={len(image_bytes)}",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                resp = await client.post(url, json=payload)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    text = data["candidates"][0]["content"]["parts"][0]["text"]
+                    log_with_context(
+                        logger,
+                        20,
+                        f"✅ Gemini REST {api_version} OK | chars={len(text)} preview={text[:100]!r}",
+                        analysis_id=analysis_id,
+                        document_id=doc_id,
+                    )
+                    return text
+                log_with_context(
+                    logger,
+                    30,
+                    f"⚠️  Gemini REST {api_version} → {resp.status_code}: {resp.text[:200]}",
+                    analysis_id=analysis_id,
+                    document_id=doc_id,
+                )
+
+        raise RuntimeError("All Gemini REST endpoints failed")
+
+    async def _extract_text_from_image(self, doc_meta: dict, analysis_id: str) -> str:
+        """Use Gemini vision to OCR a medical document image into plain text."""
         doc_id = doc_meta["document_id"]
         gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
 
         log_with_context(
             logger,
             20,
-            f"🖼️  OCR start | gcs_path={gcs_path!r} key_set={bool(settings.gemini_api_key)}",
+            f"🖼️  OCR start | gcs_path={gcs_path!r}",
             analysis_id=analysis_id,
             document_id=doc_id,
         )
 
         if not gcs_path:
-            log_with_context(
-                logger, 40, "❌ OCR: no gcs_path", analysis_id=analysis_id, document_id=doc_id
-            )
             return ""
 
         try:
@@ -1117,65 +1179,31 @@ class AnalysisService:
         )
 
         try:
-            genai.configure(api_key=settings.gemini_api_key)
-            model = genai.GenerativeModel("gemini-2.0-flash-exp")
-            image = PIL.Image.open(io.BytesIO(image_bytes))
-            log_with_context(
-                logger,
-                20,
-                f"🔍 OCR: calling Gemini 1.5 Flash | image_size={image.size}",
-                analysis_id=analysis_id,
-                document_id=doc_id,
-            )
-            # Run sync generate_content in a thread to avoid blocking the event loop
-            response = await asyncio.get_event_loop().run_in_executor(
-                None, lambda: model.generate_content([image, ocr_prompt])
-            )
-            extracted = response.text or ""
-            log_with_context(
-                logger,
-                20,
-                f"✅ OCR (Gemini): extracted {len(extracted)} chars | preview={extracted[:100]!r}",
-                analysis_id=analysis_id,
-                document_id=doc_id,
+            extracted = await self._call_gemini_vision(
+                image_bytes,
+                ocr_prompt,
+                "You are an OCR assistant. Return only transcribed text.",
+                analysis_id,
+                doc_id,
             )
             return extracted
         except Exception as ocr_err:
             log_with_context(
                 logger,
                 40,
-                f"❌ OCR (Gemini) failed: {type(ocr_err).__name__}: {ocr_err}",
+                f"❌ OCR (Gemini REST) failed: {type(ocr_err).__name__}: {ocr_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
             return ""
 
     async def _analyze_image_with_vision(self, doc_meta: dict, analysis_id: str) -> list:
-        """Analyze a medical bill image with Gemini vision.
-
-        Downloads the image from GCS and passes it inline to Gemini 2.0 Flash.
-        Gemini is used instead of GPT-4o because Cloud Run cannot reach
-        api.openai.com (connection errors); Google APIs are reachable.
-        """
-        import asyncio
-        import io
+        """Analyze a medical bill image with Gemini vision via direct REST API."""
         import json as _json
         import re as _re
 
-        import google.generativeai as genai
-        import PIL.Image
-        from app.config import settings
-
         doc_id = doc_meta["document_id"]
         gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
-
-        log_with_context(
-            logger,
-            20,
-            f"🖼️  Vision start | gcs_path={gcs_path!r} key_set={bool(settings.gemini_api_key)}",
-            analysis_id=analysis_id,
-            document_id=doc_id,
-        )
 
         if not gcs_path:
             log_with_context(
@@ -1187,13 +1215,6 @@ class AnalysisService:
             image_bytes = await self.storage.download_bytes(
                 bucket_name=self.storage.documents_bucket,
                 blob_path=gcs_path,
-            )
-            log_with_context(
-                logger,
-                20,
-                f"✅ Vision: downloaded {len(image_bytes)} bytes",
-                analysis_id=analysis_id,
-                document_id=doc_id,
             )
         except Exception as dl_err:
             log_with_context(
@@ -1223,32 +1244,14 @@ Return ONLY a valid JSON array. If no issues: []
 [{"type":"issue_type","summary":"brief description","evidence":"exact text/amounts from bill","code":"CPT code or null","max_savings":0.00}]"""
 
         try:
-            genai.configure(api_key=settings.gemini_api_key)
-            model = genai.GenerativeModel(
-                "gemini-2.0-flash-exp",
-                system_instruction="You analyze healthcare billing images and return ONLY valid JSON arrays. No prose.",
-            )
-            image = PIL.Image.open(io.BytesIO(image_bytes))
-            log_with_context(
-                logger,
-                20,
-                f"🔍 Vision: calling Gemini 1.5 Flash | image_size={image.size}",
-                analysis_id=analysis_id,
-                document_id=doc_id,
-            )
-            # Run sync generate_content in a thread to avoid blocking the event loop
-            response = await asyncio.get_event_loop().run_in_executor(
-                None, lambda: model.generate_content([image, billing_prompt])
-            )
-            log_with_context(
-                logger,
-                20,
-                f"✅ Vision: Gemini raw response | preview={response.text[:200] if response.text else 'EMPTY'}",
-                analysis_id=analysis_id,
-                document_id=doc_id,
+            content = await self._call_gemini_vision(
+                image_bytes,
+                billing_prompt,
+                "You analyze healthcare billing images and return ONLY valid JSON arrays. No prose.",
+                analysis_id,
+                doc_id,
             )
 
-            content = response.text or "[]"
             content = _re.sub(r"```(?:json)?\s*", "", content).strip().rstrip("`").strip()
             raw_issues = _json.loads(content)
             if not isinstance(raw_issues, list):
