@@ -117,7 +117,7 @@ jobs:
             --max-instances 10 \
             --min-instances 0 \
             --timeout 300 \
-            --set-env-vars "DEBUG=false,ENVIRONMENT=production" \
+            --set-env-vars "DEBUG=false,ENVIRONMENT=production,FIREBASE_PROJECT_ID=medbilldozer,GCS_PROJECT_ID=medbilldozer,SUPABASE_URL=https://zrhlpitzonhftigmdvgz.supabase.co,HF_ENDPOINT_BASE=https://gzm1kdzim8rqw82w.us-east4.gcp.endpoints.huggingface.cloud" \
             --set-secrets "FIREBASE_PRIVATE_KEY=firebase-private-key:latest,FIREBASE_CLIENT_EMAIL=firebase-client-email:latest,SUPABASE_SERVICE_ROLE_KEY=supabase-service-role-key:latest,JWT_SECRET_KEY=jwt-secret-key:latest,OPENAI_API_KEY=openai-api-key:latest,GEMINI_API_KEY=gemini-api-key:latest,HF_API_TOKEN=hf-api-token:latest"
 
       - name: Get Cloud Run URL
