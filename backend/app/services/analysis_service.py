@@ -1060,10 +1060,11 @@ class AnalysisService:
     async def _extract_text_from_image(self, doc_meta: dict, analysis_id: str) -> str:
         """Use Gemini vision to OCR a medical document image into plain text.
 
-        Downloads the image from GCS and passes it inline to Gemini 2.0 Flash.
-        Gemini is used instead of GPT-4o because Cloud Run cannot reach
-        api.openai.com (connection errors); Google APIs are reachable.
+        Downloads image bytes from GCS, opens as PIL.Image, and sends to
+        Gemini 1.5 Flash async. Gemini is used instead of GPT-4o because
+        Cloud Run cannot reach api.openai.com.
         """
+        import asyncio
         import io
 
         import google.generativeai as genai
@@ -1073,7 +1074,18 @@ class AnalysisService:
         doc_id = doc_meta["document_id"]
         gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
 
+        log_with_context(
+            logger,
+            20,
+            f"🖼️  OCR start | gcs_path={gcs_path!r} key_set={bool(settings.gemini_api_key)}",
+            analysis_id=analysis_id,
+            document_id=doc_id,
+        )
+
         if not gcs_path:
+            log_with_context(
+                logger, 40, "❌ OCR: no gcs_path", analysis_id=analysis_id, document_id=doc_id
+            )
             return ""
 
         try:
@@ -1081,11 +1093,18 @@ class AnalysisService:
                 bucket_name=self.storage.documents_bucket,
                 blob_path=gcs_path,
             )
+            log_with_context(
+                logger,
+                20,
+                f"✅ OCR: downloaded {len(image_bytes)} bytes",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
         except Exception as dl_err:
             log_with_context(
                 logger,
                 40,
-                f"❌ Failed to download image for OCR: {dl_err}",
+                f"❌ OCR: download failed: {dl_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
@@ -1099,21 +1118,24 @@ class AnalysisService:
 
         try:
             genai.configure(api_key=settings.gemini_api_key)
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-1.5-flash")
             image = PIL.Image.open(io.BytesIO(image_bytes))
             log_with_context(
                 logger,
                 20,
-                "🔍 Sending image to Gemini for OCR",
+                f"🔍 OCR: calling Gemini 1.5 Flash | image_size={image.size}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
-            response = model.generate_content([image, ocr_prompt])
+            # Run sync generate_content in a thread to avoid blocking the event loop
+            response = await asyncio.get_event_loop().run_in_executor(
+                None, lambda: model.generate_content([image, ocr_prompt])
+            )
             extracted = response.text or ""
             log_with_context(
                 logger,
                 20,
-                f"✅ Image OCR (Gemini) extracted {len(extracted)} chars",
+                f"✅ OCR (Gemini): extracted {len(extracted)} chars | preview={extracted[:100]!r}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
@@ -1122,7 +1144,7 @@ class AnalysisService:
             log_with_context(
                 logger,
                 40,
-                f"❌ Image OCR (Gemini) failed: {ocr_err}",
+                f"❌ OCR (Gemini) failed: {type(ocr_err).__name__}: {ocr_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
@@ -1135,6 +1157,7 @@ class AnalysisService:
         Gemini is used instead of GPT-4o because Cloud Run cannot reach
         api.openai.com (connection errors); Google APIs are reachable.
         """
+        import asyncio
         import io
         import json as _json
         import re as _re
@@ -1146,13 +1169,17 @@ class AnalysisService:
         doc_id = doc_meta["document_id"]
         gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
 
+        log_with_context(
+            logger,
+            20,
+            f"🖼️  Vision start | gcs_path={gcs_path!r} key_set={bool(settings.gemini_api_key)}",
+            analysis_id=analysis_id,
+            document_id=doc_id,
+        )
+
         if not gcs_path:
             log_with_context(
-                logger,
-                30,
-                "⚠️  No GCS path for image doc",
-                analysis_id=analysis_id,
-                document_id=doc_id,
+                logger, 30, "⚠️  Vision: no gcs_path", analysis_id=analysis_id, document_id=doc_id
             )
             return []
 
@@ -1161,11 +1188,18 @@ class AnalysisService:
                 bucket_name=self.storage.documents_bucket,
                 blob_path=gcs_path,
             )
+            log_with_context(
+                logger,
+                20,
+                f"✅ Vision: downloaded {len(image_bytes)} bytes",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
         except Exception as dl_err:
             log_with_context(
                 logger,
                 30,
-                f"⚠️  Failed to download image for vision analysis: {dl_err}",
+                f"⚠️  Vision: download failed: {dl_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
@@ -1191,11 +1225,28 @@ Return ONLY a valid JSON array. If no issues: []
         try:
             genai.configure(api_key=settings.gemini_api_key)
             model = genai.GenerativeModel(
-                "gemini-2.0-flash",
+                "gemini-1.5-flash",
                 system_instruction="You analyze healthcare billing images and return ONLY valid JSON arrays. No prose.",
             )
             image = PIL.Image.open(io.BytesIO(image_bytes))
-            response = model.generate_content([image, billing_prompt])
+            log_with_context(
+                logger,
+                20,
+                f"🔍 Vision: calling Gemini 1.5 Flash | image_size={image.size}",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
+            # Run sync generate_content in a thread to avoid blocking the event loop
+            response = await asyncio.get_event_loop().run_in_executor(
+                None, lambda: model.generate_content([image, billing_prompt])
+            )
+            log_with_context(
+                logger,
+                20,
+                f"✅ Vision: Gemini raw response | preview={response.text[:200] if response.text else 'EMPTY'}",
+                analysis_id=analysis_id,
+                document_id=doc_id,
+            )
 
             content = response.text or "[]"
             content = _re.sub(r"```(?:json)?\s*", "", content).strip().rstrip("`").strip()
@@ -1236,7 +1287,7 @@ Return ONLY a valid JSON array. If no issues: []
             log_with_context(
                 logger,
                 30,
-                f"⚠️  Vision analysis (Gemini) error: {vision_err}",
+                f"⚠️  Vision (Gemini) failed: {type(vision_err).__name__}: {vision_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
