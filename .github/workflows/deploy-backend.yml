@@ -14,7 +14,7 @@ on:
   #     - '.github/workflows/deploy-backend.yml'
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  PROJECT_ID: medbilldozer
   SERVICE_NAME: medbilldozer-api
   REGION: us-central1
 
