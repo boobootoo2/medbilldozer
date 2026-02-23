@@ -113,9 +113,13 @@ class AnalysisService:
             # Ensure providers are registered
             register_providers()
 
-            # Guarantee medgemma-ensemble is always available by wrapping OpenAI with the
-            # ensemble's canonicalization + deterministic heuristics when HF token is absent.
-            if "medgemma-ensemble" not in ProviderRegistry.list():
+            # When HF_API_TOKEN is absent (always the case in Cloud Run), override any
+            # medgemma-ensemble registration from register_providers() with an OpenAI-backed
+            # version so the ensemble's deterministic heuristics still run but the LLM call
+            # goes to GPT-4o-mini instead of the unavailable HF endpoint.
+            import os
+
+            if not os.getenv("HF_API_TOKEN"):
                 try:
                     from medbilldozer.providers.medgemma_ensemble_provider import (
                         MedGemmaEnsembleProvider,
@@ -132,14 +136,14 @@ class AnalysisService:
                     log_with_context(
                         logger,
                         20,
-                        "✅ Registered medgemma-ensemble with OpenAI fallback",
+                        "✅ Overrode medgemma-ensemble with OpenAI fallback (no HF_API_TOKEN)",
                         analysis_id=analysis_id,
                     )
                 except Exception as reg_err:
                     log_with_context(
                         logger,
                         30,
-                        f"⚠️  medgemma-ensemble fallback registration failed: {str(reg_err)}",
+                        f"⚠️  medgemma-ensemble OpenAI override failed: {str(reg_err)}",
                         analysis_id=analysis_id,
                     )
 
@@ -769,7 +773,9 @@ class AnalysisService:
             )
 
             register_providers()
-            if "medgemma-ensemble" not in ProviderRegistry.list():
+            import os
+
+            if not os.getenv("HF_API_TOKEN"):
                 try:
                     from medbilldozer.providers.medgemma_ensemble_provider import (
                         MedGemmaEnsembleProvider,
