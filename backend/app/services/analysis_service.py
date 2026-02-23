@@ -113,26 +113,37 @@ class AnalysisService:
             # Ensure providers are registered
             register_providers()
 
-            # Always override medgemma-ensemble with an OpenAI-backed version.
-            # The HF-hosted MedGemma endpoint (google/medgemma-4b-it) is a gated model
-            # that returns 400 on the serverless router even with a valid token.
-            # The ensemble wrapper still runs all deterministic heuristics; only the
-            # inner LLM call is routed to gpt-4o-mini.
+            # Wire medgemma-ensemble inner provider:
+            #   - HF_ENDPOINT_BASE set → use MedGemmaHostedProvider (dedicated endpoint)
+            #   - otherwise           → use gpt-4o-mini (HF serverless returns 400 for gated models)
+            import os
+
             try:
                 from medbilldozer.providers.medgemma_ensemble_provider import (
                     MedGemmaEnsembleProvider,
                 )
-                from medbilldozer.providers.openai_analysis_provider import OpenAIAnalysisProvider
 
-                # Bypass __init__ so this works with both old and new provider versions
                 ensemble = MedGemmaEnsembleProvider.__new__(MedGemmaEnsembleProvider)
-                ensemble.medgemma = OpenAIAnalysisProvider("gpt-4o-mini")
                 ensemble.enable_openai = False
+                if os.getenv("HF_ENDPOINT_BASE"):
+                    from medbilldozer.providers.medgemma_hosted_provider import (
+                        MedGemmaHostedProvider,
+                    )
+
+                    ensemble.medgemma = MedGemmaHostedProvider()
+                    inner = "MedGemma (dedicated endpoint)"
+                else:
+                    from medbilldozer.providers.openai_analysis_provider import (
+                        OpenAIAnalysisProvider,
+                    )
+
+                    ensemble.medgemma = OpenAIAnalysisProvider("gpt-4o-mini")
+                    inner = "gpt-4o-mini (fallback)"
                 ProviderRegistry.register("medgemma-ensemble", ensemble)
                 log_with_context(
                     logger,
                     20,
-                    "✅ Registered medgemma-ensemble with gpt-4o-mini as inner provider",
+                    f"✅ Registered medgemma-ensemble with {inner}",
                     analysis_id=analysis_id,
                 )
             except Exception as reg_err:
@@ -769,15 +780,27 @@ class AnalysisService:
             )
 
             register_providers()
+            import os
+
             try:
                 from medbilldozer.providers.medgemma_ensemble_provider import (
                     MedGemmaEnsembleProvider,
                 )
-                from medbilldozer.providers.openai_analysis_provider import OpenAIAnalysisProvider
 
                 ens = MedGemmaEnsembleProvider.__new__(MedGemmaEnsembleProvider)
-                ens.medgemma = OpenAIAnalysisProvider("gpt-4o-mini")
                 ens.enable_openai = False
+                if os.getenv("HF_ENDPOINT_BASE"):
+                    from medbilldozer.providers.medgemma_hosted_provider import (
+                        MedGemmaHostedProvider,
+                    )
+
+                    ens.medgemma = MedGemmaHostedProvider()
+                else:
+                    from medbilldozer.providers.openai_analysis_provider import (
+                        OpenAIAnalysisProvider,
+                    )
+
+                    ens.medgemma = OpenAIAnalysisProvider("gpt-4o-mini")
                 ProviderRegistry.register("medgemma-ensemble", ens)
             except Exception:  # nosec B110 - intentional silent fallback
                 pass
