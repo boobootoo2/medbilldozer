@@ -627,7 +627,7 @@ class AnalysisService:
                     )
                     all_issues.extend(issues)
                     for issue in issues:
-                        savings = issue.get("max_savings", 0) if isinstance(issue, dict) else 0
+                        savings = self._infer_max_savings(issue) if isinstance(issue, dict) else 0
                         if isinstance(savings, (int, float)):
                             total_savings += savings
 
@@ -639,7 +639,7 @@ class AnalysisService:
                 )
                 for issue in cross_issues:
                     all_issues.append(issue)
-                    savings = issue.get("max_savings", 0)
+                    savings = self._infer_max_savings(issue)
                     if isinstance(savings, (int, float)):
                         total_savings += savings
 
@@ -693,7 +693,7 @@ class AnalysisService:
                             "evidence": issue.get("evidence", ""),
                             "code": issue.get("code", f"ISSUE-{i+1}"),
                             "recommended_action": issue.get("recommended_action", ""),
-                            "max_savings": issue.get("max_savings", 0),
+                            "max_savings": self._infer_max_savings(issue),
                             "confidence": issue.get("confidence", "medium"),
                             "source": issue.get("source", "llm"),
                             "metadata": issue.get("metadata", {}),
@@ -869,7 +869,7 @@ class AnalysisService:
                     results.append(doc_result)
 
                     for iss in analysis_dict.get("issues", []):
-                        savings = iss.get("max_savings") or 0
+                        savings = self._infer_max_savings(iss)
                         all_issues.append({**iss, "document_id": doc_id})
                         if isinstance(savings, (int, float)):
                             total_savings += savings
@@ -923,7 +923,7 @@ class AnalysisService:
                     }
                     results.append(doc_result)
                     for iss in vision_issues:
-                        savings = iss.get("max_savings") or 0
+                        savings = self._infer_max_savings(iss)
                         all_issues.append({**iss, "document_id": doc_id})
                         if isinstance(savings, (int, float)):
                             total_savings += savings
@@ -968,7 +968,7 @@ class AnalysisService:
                 )
                 for iss in cross_issues:
                     all_issues.append(iss)
-                    savings = iss.get("max_savings") or 0
+                    savings = self._infer_max_savings(iss)
                     if isinstance(savings, (int, float)):
                         total_savings += savings
 
@@ -1002,7 +1002,7 @@ class AnalysisService:
                             "recommended_action": iss.get(
                                 "recommended_action", "Review this charge."
                             ),
-                            "max_savings": iss.get("max_savings", 0),
+                            "max_savings": self._infer_max_savings(iss),
                             "confidence": iss.get("confidence", "medium"),
                             "source": iss.get("source", "analysis"),
                             "metadata": {},
@@ -1194,6 +1194,30 @@ Return ONLY a valid JSON array. If no issues: []
             "issues": issues_list,
             "meta": getattr(analysis_obj, "meta", {}) or {},
         }
+
+    @staticmethod
+    def _infer_max_savings(issue: dict) -> float:
+        """Extract max_savings from issue text when the LLM left it as 0 or null.
+
+        For duplicate charges the savings equals the duplicated charge amount,
+        which is always mentioned in the summary or evidence text.
+        """
+        existing = issue.get("max_savings")
+        if existing and isinstance(existing, (int, float)) and existing > 0:
+            return float(existing)
+
+        import re
+
+        text = f"{issue.get('summary', '')} {issue.get('evidence', '')}"
+        amounts = re.findall(r"\$\s*([\d,]+(?:\.\d{2})?)", text)
+        for raw in amounts:
+            try:
+                val = float(raw.replace(",", ""))
+                if val > 0:
+                    return val
+            except ValueError:
+                continue
+        return 0.0
 
     async def _run_cross_document_analysis(
         self,
