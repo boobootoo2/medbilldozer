@@ -3,7 +3,7 @@
  */
 import { useState, useRef, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Link as LinkIcon, FileText, ChevronDown, ChevronUp, Upload, Download, Receipt, HeartPulse, ShieldCheck } from 'lucide-react';
+import { Play, Link as LinkIcon, FileText, ChevronDown, ChevronUp, Upload, Download, Receipt, HeartPulse, ShieldCheck, Trash2, CheckSquare, Square } from 'lucide-react';
 import { UserMenu } from '../components/auth/UserMenu';
 import { MultiFileUpload } from '../components/documents/MultiFileUpload';
 import { DocumentList, DocumentListRef } from '../components/documents/DocumentList';
@@ -474,6 +474,27 @@ export const HomePage = () => {
     }
   };
 
+  const handleSelectAll = () => {
+    const allIds = documentListRef.current?.getAllDocumentIds() ?? [];
+    if (selectedDocuments.length === allIds.length && allIds.length > 0) {
+      setSelectedDocuments([]);
+    } else {
+      setSelectedDocuments(allIds);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${selectedDocuments.length} document(s)? This cannot be undone.`)) return;
+    try {
+      await Promise.all(selectedDocuments.map(id => documentsService.deleteDocument(id)));
+      setSelectedDocuments([]);
+      await documentListRef.current?.refresh();
+    } catch (err: any) {
+      alert('Failed to delete documents: ' + err.message);
+      await documentListRef.current?.refresh();
+    }
+  };
+
   const handleBackToDocuments = async () => {
     setCurrentAnalysisId(null);
     setAnalyzing(false);
@@ -561,33 +582,50 @@ export const HomePage = () => {
 
           {/* Right Column - Documents & Analysis */}
           <div>
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Documents</h2>
-                <p className="text-gray-600">
+                <h2 className="text-2xl font-bold text-gray-900 mb-1">Your Documents</h2>
+                <p className="text-gray-600 text-sm">
                   Select documents to analyze for billing errors
                 </p>
               </div>
-              {selectedDocuments.length > 0 && (
+              <button
+                onClick={handleSelectAll}
+                className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >
+                {selectedDocuments.length > 0 &&
+                 selectedDocuments.length === (documentListRef.current?.getAllDocumentIds().length ?? -1)
+                  ? <><CheckSquare size={16} className="text-blue-600" /> Deselect All</>
+                  : <><Square size={16} /> Select All</>
+                }
+              </button>
+            </div>
+
+            {selectedDocuments.length > 0 && (
+              <div className="mb-3 flex items-center gap-2 px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+                <span className="text-sm text-blue-800 font-medium flex-1">
+                  {selectedDocuments.length} document{selectedDocuments.length !== 1 ? 's' : ''} selected
+                </span>
                 <button
                   onClick={handleAnalyze}
                   disabled={analyzing}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {analyzing ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Analyzing...
-                    </>
+                    <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />Analyzing...</>
                   ) : (
-                    <>
-                      <Play size={20} />
-                      Analyze ({selectedDocuments.length})
-                    </>
+                    <><Play size={14} />Analyze ({selectedDocuments.length})</>
                   )}
                 </button>
-              )}
-            </div>
+                <button
+                  onClick={handleBulkDelete}
+                  className="flex items-center gap-1.5 px-4 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  <Trash2 size={14} />
+                  Delete ({selectedDocuments.length})
+                </button>
+              </div>
+            )}
 
             <DocumentList
               ref={documentListRef}

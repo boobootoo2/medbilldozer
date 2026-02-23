@@ -13,6 +13,7 @@ interface DocumentListProps {
 
 export interface DocumentListRef {
   refresh: () => Promise<void>;
+  getAllDocumentIds: () => string[];
 }
 
 export const DocumentList = forwardRef<DocumentListRef, DocumentListProps>(
@@ -41,9 +42,10 @@ export const DocumentList = forwardRef<DocumentListRef, DocumentListProps>(
       loadDocuments();
     }, []);
 
-    // Expose refresh method to parent
+    // Expose refresh and getAllDocumentIds methods to parent
     useImperativeHandle(ref, () => ({
-      refresh: loadDocuments
+      refresh: loadDocuments,
+      getAllDocumentIds: () => documents.map(doc => doc.document_id),
     }));
 
     const handleDelete = async (documentId: string) => {
