@@ -1,7 +1,7 @@
 /**
  * Document Status Card - Real-time pipeline progress tracking
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CheckCircle, Loader2, AlertCircle, Clock } from 'lucide-react';
 import { DocumentProgress } from '../../types';
 
@@ -72,48 +72,35 @@ const parseSubsteps = (progress?: DocumentProgress) => {
 
 export const DocumentStatusCard = ({ documentId, filename, progress, error }: DocumentStatusCardProps) => {
   const [elapsedTime, setElapsedTime] = useState(0);
+  // Capture mount time so the timer starts immediately, even before the
+  // backend sets started_at on the first progress update.
+  const mountTimeRef = useRef(Date.now());
 
   // Calculate elapsed time
   useEffect(() => {
     const currentPhase = progress?.phase || 'pre_extraction_active';
     const isComplete = currentPhase === 'complete';
-    const isFailed = currentPhase === 'failed' || error;
+    const isFailed = currentPhase === 'failed' || !!error;
 
-    // If we have completed_at and started_at, calculate final time
-    if ((isComplete || isFailed) && progress?.completed_at && progress?.started_at) {
-      const startTime = new Date(progress.started_at).getTime();
-      const endTime = new Date(progress.completed_at).getTime();
-      const elapsed = Math.floor((endTime - startTime) / 1000);
-      setElapsedTime(elapsed > 0 ? elapsed : 0); // Prevent negative
-      return;
-    }
+    // Use backend-provided started_at if available, otherwise fall back to
+    // the time this card was first rendered.
+    const startMs = progress?.started_at
+      ? new Date(progress.started_at).getTime()
+      : mountTimeRef.current;
 
-    // If processing but no started_at, can't calculate elapsed time
-    if (!progress?.started_at) {
-      setElapsedTime(0);
-      return;
-    }
-
-    // Stop the timer if complete or failed (even without completed_at)
+    // If completed, show the final elapsed time and stop.
     if (isComplete || isFailed) {
-      const startTime = new Date(progress.started_at).getTime();
-      const endTime = Date.now();
-      const elapsed = Math.floor((endTime - startTime) / 1000);
-      setElapsedTime(elapsed > 0 ? elapsed : 0); // Prevent negative
+      const endMs = progress?.completed_at
+        ? new Date(progress.completed_at).getTime()
+        : Date.now();
+      setElapsedTime(Math.max(0, Math.floor((endMs - startMs) / 1000)));
       return;
     }
 
-    // Still processing - update timer every second
-    const calculateElapsed = () => {
-      const startTime = new Date(progress.started_at).getTime();
-      const now = Date.now();
-      const elapsed = Math.floor((now - startTime) / 1000);
-      setElapsedTime(elapsed > 0 ? elapsed : 0); // Prevent negative
-    };
-
-    calculateElapsed();
-    const interval = setInterval(calculateElapsed, 1000);
-
+    // Still processing — tick every second from startMs.
+    const tick = () => setElapsedTime(Math.max(0, Math.floor((Date.now() - startMs) / 1000)));
+    tick();
+    const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
   }, [progress?.started_at, progress?.completed_at, progress?.phase, error]);
 
