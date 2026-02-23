@@ -47,11 +47,14 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install uv
+        run: pip install uv
+
       - name: Install backend dependencies
         working-directory: backend
         run: |
-          pip install -r requirements.txt
-          pip install ruff pytest python-dotenv
+          uv pip install --system -r requirements.txt
+          uv pip install --system ruff pytest python-dotenv
 
       - name: Run pre-deployment checks
         run: |
