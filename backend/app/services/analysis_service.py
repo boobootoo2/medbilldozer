@@ -1063,40 +1063,41 @@ class AnalysisService:
         The extracted text is then fed into the normal orchestrator pipeline,
         giving image documents the same analysis quality as TXT/PDF files and
         populating the 'Raw Extracted Text' field in the UI.
-        """
-        import base64
 
+        Uses a signed GCS URL instead of base64 so the request body stays small
+        (Cloud Run → OpenAI with a ~130 KB base64 payload was causing connection
+        errors; now OpenAI fetches the image itself via the signed URL).
+        """
         doc_id = doc_meta["document_id"]
         gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
-        content_type = doc_meta.get("content_type", "image/png")
 
         if not gcs_path:
             return ""
 
         try:
-            image_bytes = await self.storage.download_bytes(
-                bucket_name=self.storage.documents_bucket, blob_path=gcs_path
+            image_url = self.storage.generate_signed_download_url(
+                bucket_name=self.storage.documents_bucket,
+                blob_path=gcs_path,
+                expires_in_minutes=10,
             )
             log_with_context(
                 logger,
                 20,
-                f"✅ Image downloaded for OCR ({len(image_bytes)} bytes)",
+                "✅ Generated signed URL for OCR",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
-        except Exception as dl_err:
+        except Exception as url_err:
             log_with_context(
                 logger,
                 40,
-                f"❌ Image OCR download failed: {dl_err}",
+                f"❌ Failed to generate signed URL for OCR: {url_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
                 gcs_path=gcs_path,
-                bucket=self.storage.documents_bucket,
             )
             return ""
 
-        image_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
         ocr_prompt = (
             "Transcribe ALL text visible in this medical document image exactly as shown. "
             "Preserve the layout, including every number, CPT/ICD/NDC code, date, dollar "
@@ -1110,7 +1111,7 @@ class AnalysisService:
             log_with_context(
                 logger,
                 20,
-                f"🔍 Sending image to GPT-4o for OCR ({len(image_b64)} base64 chars)",
+                "🔍 Sending image URL to GPT-4o for OCR",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
@@ -1124,10 +1125,7 @@ class AnalysisService:
                         "content": [
                             {
                                 "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:{content_type};base64,{image_b64}",
-                                    "detail": "high",
-                                },
+                                "image_url": {"url": image_url, "detail": "high"},
                             },
                             {"type": "text", "text": ocr_prompt},
                         ],
@@ -1156,16 +1154,13 @@ class AnalysisService:
     async def _analyze_image_with_vision(self, doc_meta: dict, analysis_id: str) -> list:
         """Analyze a medical bill image with GPT-4o vision.
 
-        Downloads the image from GCS and asks GPT-4o to read the bill and
-        identify billing errors, returning issues in the same dict format
-        as the text-based orchestrator pipeline.
+        Uses a signed GCS URL instead of base64 to keep request bodies small.
+        OpenAI fetches the image itself; Cloud Run sends only the URL.
         """
-        import base64
         import json as _json
 
         doc_id = doc_meta["document_id"]
         gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
-        content_type = doc_meta.get("content_type", "image/png")
 
         if not gcs_path:
             log_with_context(
@@ -1178,20 +1173,20 @@ class AnalysisService:
             return []
 
         try:
-            image_bytes = await self.storage.download_bytes(
-                bucket_name=self.storage.documents_bucket, blob_path=gcs_path
+            image_url = self.storage.generate_signed_download_url(
+                bucket_name=self.storage.documents_bucket,
+                blob_path=gcs_path,
+                expires_in_minutes=10,
             )
-        except Exception as dl_err:
+        except Exception as url_err:
             log_with_context(
                 logger,
                 30,
-                f"⚠️  Image download failed: {dl_err}",
+                f"⚠️  Failed to generate signed URL for vision: {url_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
             return []
-
-        image_b64 = base64.standard_b64encode(image_bytes).decode("utf-8")
 
         billing_prompt = """You are a healthcare billing expert. Carefully read ALL text in this medical bill image and identify billing errors.
 
@@ -1228,10 +1223,7 @@ Return ONLY a valid JSON array. If no issues: []
                         "content": [
                             {
                                 "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:{content_type};base64,{image_b64}",
-                                    "detail": "high",
-                                },
+                                "image_url": {"url": image_url, "detail": "high"},
                             },
                             {"type": "text", "text": billing_prompt},
                         ],
