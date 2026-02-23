@@ -2,7 +2,7 @@
  * Analysis Progress - Polls for analysis status and displays per-document progress
  */
 import { useState, useEffect, useRef } from 'react';
-import { AlertCircle, ArrowLeft, Share2, Download, Mail } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Share2, Download, Mail, Clock } from 'lucide-react';
 import { analysisService } from '../../services/analysis.service';
 import { Analysis } from '../../types';
 import { DocumentStatusCard } from './DocumentStatusCard';
@@ -28,6 +28,9 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState<ErrorDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [totalElapsed, setTotalElapsed] = useState(0);
+  const mountTimeRef = useRef(Date.now());
+  const peakElapsedRef = useRef(0);
 
   useEffect(() => {
     if (!analysisId) return;
@@ -77,6 +80,38 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
   const isProcessing = analysis?.status === 'queued' || analysis?.status === 'processing';
   const isComplete = analysis?.status === 'completed';
   const isFailed = analysis?.status === 'failed';
+
+  // Overall analysis timer
+  useEffect(() => {
+    const startMs = analysis?.created_at
+      ? new Date(analysis.created_at).getTime()
+      : mountTimeRef.current;
+
+    if (isComplete || isFailed) {
+      const endMs = analysis?.completed_at
+        ? new Date(analysis.completed_at).getTime()
+        : Date.now();
+      const backendTime = Math.max(0, Math.floor((endMs - startMs) / 1000));
+      setTotalElapsed(Math.max(peakElapsedRef.current, backendTime));
+      return;
+    }
+
+    const tick = () => {
+      const t = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+      peakElapsedRef.current = Math.max(peakElapsedRef.current, t);
+      setTotalElapsed(t);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [analysis?.created_at, analysis?.completed_at, isComplete, isFailed]);
+
+  const formatTime = (seconds: number): string => {
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}m ${secs}s`;
+  };
 
   // results is an array during processing, or { documents: [...], ... } when completed
   const documents: NonNullable<Analysis['results']> = Array.isArray(analysis?.results)
@@ -197,9 +232,15 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
               {isFailed && '❌ Analysis Failed'}
             </h2>
           </div>
-          <p className="text-gray-600">
-            {documents.length || 0} document(s) • {analysis?.provider || 'medgemma-ensemble'}
-          </p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <p className="text-gray-600">
+              {documents.length || 0} document(s) • {analysis?.provider || 'medgemma-ensemble'}
+            </p>
+            <span className="flex items-center gap-1 text-sm text-gray-500">
+              <Clock size={14} />
+              {isComplete ? `Completed in ${formatTime(totalElapsed)}` : formatTime(totalElapsed)}
+            </span>
+          </div>
         </div>
 
         {/* Share / Export — only when complete */}

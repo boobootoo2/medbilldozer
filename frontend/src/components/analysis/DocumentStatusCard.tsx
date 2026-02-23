@@ -75,6 +75,10 @@ export const DocumentStatusCard = ({ documentId, filename, progress, error }: Do
   // Capture mount time so the timer starts immediately, even before the
   // backend sets started_at on the first progress update.
   const mountTimeRef = useRef(Date.now());
+  // Track the highest elapsed time seen — prevents the clock from snapping
+  // back to 0 when backend started_at/completed_at timestamps are missing or
+  // have sub-second precision.
+  const peakElapsedRef = useRef(0);
 
   // Calculate elapsed time
   useEffect(() => {
@@ -89,16 +93,23 @@ export const DocumentStatusCard = ({ documentId, filename, progress, error }: Do
       : mountTimeRef.current;
 
     // If completed, show the final elapsed time and stop.
+    // Use the peak elapsed time as a floor so the clock never resets to 0.
     if (isComplete || isFailed) {
       const endMs = progress?.completed_at
         ? new Date(progress.completed_at).getTime()
         : Date.now();
-      setElapsedTime(Math.max(0, Math.floor((endMs - startMs) / 1000)));
+      const backendTime = Math.max(0, Math.floor((endMs - startMs) / 1000));
+      const finalTime = Math.max(peakElapsedRef.current, backendTime);
+      setElapsedTime(finalTime);
       return;
     }
 
     // Still processing — tick every second from startMs.
-    const tick = () => setElapsedTime(Math.max(0, Math.floor((Date.now() - startMs) / 1000)));
+    const tick = () => {
+      const t = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+      peakElapsedRef.current = Math.max(peakElapsedRef.current, t);
+      setElapsedTime(t);
+    };
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);

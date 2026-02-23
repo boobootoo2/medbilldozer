@@ -1058,16 +1058,18 @@ class AnalysisService:
             return {"analysis_id": analysis_id, "status": "failed", "error": str(e)}
 
     async def _extract_text_from_image(self, doc_meta: dict, analysis_id: str) -> str:
-        """Use GPT-4o vision to OCR a medical document image into plain text.
+        """Use Gemini vision to OCR a medical document image into plain text.
 
-        The extracted text is then fed into the normal orchestrator pipeline,
-        giving image documents the same analysis quality as TXT/PDF files and
-        populating the 'Raw Extracted Text' field in the UI.
-
-        Uses a signed GCS URL instead of base64 so the request body stays small
-        (Cloud Run → OpenAI with a ~130 KB base64 payload was causing connection
-        errors; now OpenAI fetches the image itself via the signed URL).
+        Downloads the image from GCS and passes it inline to Gemini 2.0 Flash.
+        Gemini is used instead of GPT-4o because Cloud Run cannot reach
+        api.openai.com (connection errors); Google APIs are reachable.
         """
+        import io
+
+        import google.generativeai as genai
+        import PIL.Image
+        from app.config import get_settings
+
         doc_id = doc_meta["document_id"]
         gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
 
@@ -1075,26 +1077,17 @@ class AnalysisService:
             return ""
 
         try:
-            image_url = self.storage.generate_signed_download_url(
+            image_bytes = await self.storage.download_bytes(
                 bucket_name=self.storage.documents_bucket,
                 blob_path=gcs_path,
-                expires_in_minutes=10,
             )
-            log_with_context(
-                logger,
-                20,
-                "✅ Generated signed URL for OCR",
-                analysis_id=analysis_id,
-                document_id=doc_id,
-            )
-        except Exception as url_err:
+        except Exception as dl_err:
             log_with_context(
                 logger,
                 40,
-                f"❌ Failed to generate signed URL for OCR: {url_err}",
+                f"❌ Failed to download image for OCR: {dl_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
-                gcs_path=gcs_path,
             )
             return ""
 
@@ -1105,38 +1098,23 @@ class AnalysisService:
         )
 
         try:
-            from openai import AsyncOpenAI
-
-            client = AsyncOpenAI()
+            settings = get_settings()
+            genai.configure(api_key=settings.gemini_api_key)
+            model = genai.GenerativeModel("gemini-2.0-flash")
+            image = PIL.Image.open(io.BytesIO(image_bytes))
             log_with_context(
                 logger,
                 20,
-                "🔍 Sending image URL to GPT-4o for OCR",
+                "🔍 Sending image to Gemini for OCR",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
-            response = await client.chat.completions.create(
-                model="gpt-4o",
-                temperature=0,
-                max_tokens=4000,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image_url",
-                                "image_url": {"url": image_url, "detail": "high"},
-                            },
-                            {"type": "text", "text": ocr_prompt},
-                        ],
-                    }
-                ],
-            )
-            extracted = response.choices[0].message.content or ""
+            response = model.generate_content([image, ocr_prompt])
+            extracted = response.text or ""
             log_with_context(
                 logger,
                 20,
-                f"✅ Image OCR extracted {len(extracted)} chars",
+                f"✅ Image OCR (Gemini) extracted {len(extracted)} chars",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
@@ -1145,19 +1123,26 @@ class AnalysisService:
             log_with_context(
                 logger,
                 40,
-                f"❌ Image OCR (GPT-4o) failed: {ocr_err}",
+                f"❌ Image OCR (Gemini) failed: {ocr_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
             return ""
 
     async def _analyze_image_with_vision(self, doc_meta: dict, analysis_id: str) -> list:
-        """Analyze a medical bill image with GPT-4o vision.
+        """Analyze a medical bill image with Gemini vision.
 
-        Uses a signed GCS URL instead of base64 to keep request bodies small.
-        OpenAI fetches the image itself; Cloud Run sends only the URL.
+        Downloads the image from GCS and passes it inline to Gemini 2.0 Flash.
+        Gemini is used instead of GPT-4o because Cloud Run cannot reach
+        api.openai.com (connection errors); Google APIs are reachable.
         """
+        import io
         import json as _json
+        import re as _re
+
+        import google.generativeai as genai
+        import PIL.Image
+        from app.config import get_settings
 
         doc_id = doc_meta["document_id"]
         gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
@@ -1173,16 +1158,15 @@ class AnalysisService:
             return []
 
         try:
-            image_url = self.storage.generate_signed_download_url(
+            image_bytes = await self.storage.download_bytes(
                 bucket_name=self.storage.documents_bucket,
                 blob_path=gcs_path,
-                expires_in_minutes=10,
             )
-        except Exception as url_err:
+        except Exception as dl_err:
             log_with_context(
                 logger,
                 30,
-                f"⚠️  Failed to generate signed URL for vision: {url_err}",
+                f"⚠️  Failed to download image for vision analysis: {dl_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
@@ -1206,34 +1190,16 @@ Return ONLY a valid JSON array. If no issues: []
 [{"type":"issue_type","summary":"brief description","evidence":"exact text/amounts from bill","code":"CPT code or null","max_savings":0.00}]"""
 
         try:
-            from openai import AsyncOpenAI
-
-            client = AsyncOpenAI()
-            response = await client.chat.completions.create(
-                model="gpt-4o",
-                temperature=0,
-                max_tokens=2000,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You analyze healthcare billing images and return ONLY valid JSON arrays. No prose.",
-                    },
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image_url",
-                                "image_url": {"url": image_url, "detail": "high"},
-                            },
-                            {"type": "text", "text": billing_prompt},
-                        ],
-                    },
-                ],
+            settings = get_settings()
+            genai.configure(api_key=settings.gemini_api_key)
+            model = genai.GenerativeModel(
+                "gemini-2.0-flash",
+                system_instruction="You analyze healthcare billing images and return ONLY valid JSON arrays. No prose.",
             )
+            image = PIL.Image.open(io.BytesIO(image_bytes))
+            response = model.generate_content([image, billing_prompt])
 
-            content = response.choices[0].message.content or "[]"
-            import re as _re
-
+            content = response.text or "[]"
             content = _re.sub(r"```(?:json)?\s*", "", content).strip().rstrip("`").strip()
             raw_issues = _json.loads(content)
             if not isinstance(raw_issues, list):
@@ -1262,7 +1228,7 @@ Return ONLY a valid JSON array. If no issues: []
             log_with_context(
                 logger,
                 20,
-                f"✅ Vision analysis found {len(issues)} issue(s)",
+                f"✅ Vision analysis (Gemini) found {len(issues)} issue(s)",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
@@ -1272,7 +1238,7 @@ Return ONLY a valid JSON array. If no issues: []
             log_with_context(
                 logger,
                 30,
-                f"⚠️  Vision analysis error: {vision_err}",
+                f"⚠️  Vision analysis (Gemini) error: {vision_err}",
                 analysis_id=analysis_id,
                 document_id=doc_id,
             )
