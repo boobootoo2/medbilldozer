@@ -311,10 +311,16 @@ export const HomePage = () => {
   const documentListRef = useRef<DocumentListRef>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
+  const sampleDocsRef = useRef<HTMLDivElement>(null);
   const [selectedFormats, setSelectedFormats] = useState<Record<string, 'TXT' | 'PDF' | 'PNG' | 'JPG'>>({});
 
   const toggleSection = (id: string) => {
     setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleViewDemoDocuments = () => {
+    setOpenSections({ bills: true, health: true, insurance: true });
+    sampleDocsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const getFormat = (docName: string): 'TXT' | 'PDF' | 'PNG' | 'JPG' =>
@@ -513,6 +519,13 @@ export const HomePage = () => {
               <p className="text-gray-600">
                 Upload medical bills, insurance EOBs, or receipts for analysis
               </p>
+              <button
+                onClick={handleViewDemoDocuments}
+                className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-800 text-sm font-medium rounded-lg border border-amber-200 hover:bg-amber-100 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Try demo documents
+              </button>
             </div>
             <MultiFileUpload onUploadComplete={async (documentIds) => {
               await handleUploadComplete();
@@ -622,7 +635,7 @@ export const HomePage = () => {
 
         {/* Sample Documents Accordion - Only show when not analyzing */}
         {!currentAnalysisId && (
-          <div className="mt-12">
+          <div className="mt-12" ref={sampleDocsRef}>
             <div className="mb-4">
               <h2 className="text-xl font-bold text-gray-900">Sample Documents for Testing</h2>
               <p className="text-sm text-gray-600 mt-1">
