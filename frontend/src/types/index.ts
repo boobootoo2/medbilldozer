@@ -115,6 +115,7 @@ export interface Analysis {
   issues_count: number;
   created_at: string;
   completed_at?: string;
+  error_message?: string;
 }
 
 export interface AnalyzeRequest {

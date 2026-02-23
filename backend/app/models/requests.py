@@ -202,6 +202,7 @@ class AnalysisResultResponse(BaseModel):
     issues_count: int = 0
     created_at: datetime
     completed_at: Optional[datetime] = None
+    error_message: Optional[str] = None
 
 
 class BulkAnalyzeRequest(BaseModel):

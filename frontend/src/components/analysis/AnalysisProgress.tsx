@@ -137,9 +137,19 @@ export const AnalysisProgress = ({ analysisId, onBack }: AnalysisProgressProps) 
       {isFailed && (
         <div className="p-6 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
           <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
-          <div>
+          <div className="flex-1">
             <h3 className="text-lg font-semibold text-red-900">Analysis Failed</h3>
             <p className="text-red-700 mt-1">An error occurred during analysis. Please try again.</p>
+            {analysis?.error_message && (
+              <details className="mt-3 text-sm">
+                <summary className="cursor-pointer text-red-800 hover:text-red-900 font-medium">
+                  🔍 Error Details
+                </summary>
+                <div className="mt-2 p-3 bg-white rounded border border-red-200 font-mono text-xs text-red-900 whitespace-pre-wrap break-all">
+                  {analysis.error_message}
+                </div>
+              </details>
+            )}
           </div>
         </div>
       )}

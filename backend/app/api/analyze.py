@@ -197,6 +197,7 @@ async def get_analysis(
             issues_count=analysis.get("issues_count", 0),
             created_at=analysis.get("created_at") or datetime.utcnow(),  # Default to now if missing
             completed_at=analysis.get("completed_at"),
+            error_message=analysis.get("error_message"),
         )
 
     except HTTPException:
