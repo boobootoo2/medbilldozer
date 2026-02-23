@@ -1068,7 +1068,7 @@ class AnalysisService:
 
         import google.generativeai as genai
         import PIL.Image
-        from app.config import get_settings
+        from app.config import settings
 
         doc_id = doc_meta["document_id"]
         gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
@@ -1098,7 +1098,6 @@ class AnalysisService:
         )
 
         try:
-            settings = get_settings()
             genai.configure(api_key=settings.gemini_api_key)
             model = genai.GenerativeModel("gemini-2.0-flash")
             image = PIL.Image.open(io.BytesIO(image_bytes))
@@ -1142,7 +1141,7 @@ class AnalysisService:
 
         import google.generativeai as genai
         import PIL.Image
-        from app.config import get_settings
+        from app.config import settings
 
         doc_id = doc_meta["document_id"]
         gcs_path = doc_meta.get("gcs_path") or doc_meta.get("file_path", "")
@@ -1190,7 +1189,6 @@ Return ONLY a valid JSON array. If no issues: []
 [{"type":"issue_type","summary":"brief description","evidence":"exact text/amounts from bill","code":"CPT code or null","max_savings":0.00}]"""
 
         try:
-            settings = get_settings()
             genai.configure(api_key=settings.gemini_api_key)
             model = genai.GenerativeModel(
                 "gemini-2.0-flash",
