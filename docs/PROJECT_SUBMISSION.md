@@ -137,7 +137,7 @@ Full data strategy: [STREAMLINED_INTAKE_PLAN.md](STREAMLINED_INTAKE_PLAN.md)
 #### Technology Stack
 
 **AI/ML:**
-- MedGemma-4B-IT (Vertex AI Hosted)
+- MedGemma-4B-IT (Hugging Face Inference API)
 - GPT-4o-mini (OpenAI API for ensemble validation)
 - Google Vision API (clinical image analysis)
 - Custom deterministic rules engine (20,000+ LOC)
@@ -204,5 +204,3 @@ MedBillDozer demonstrates effective use of **MedGemma as a domain-specific found
 - 🎯 **In Progress**: Expanding training data to achieve 90-94% accuracy target
 
 **Try It Now**: [medbilldozer.vercel.app](https://medbilldozer.vercel.app/) | **Invite Code**: `2026MEDGEMMA`
-
-
