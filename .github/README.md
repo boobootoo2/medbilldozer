@@ -12,6 +12,17 @@
 and explanations of benefits (EOBs) by detecting likely billing errors and
 explaining them in plain language.
 
+---
+
+## 🚀 Prototype Preview
+
+[![medBillDozer Prototype Preview](https://raw.githubusercontent.com/boobootoo2/medbilldozer/main/images/prototype-preview.webp)](https://www.medbilldozer.com/)
+
+🔗 **Live Prototype:** https://www.medbilldozer.com/  
+🔑 **Invite Code:** `2026MEDGEMMA`
+
+---
+
 ## 📚 Documentation
 
 This is the complete user guide and quick start documentation.
