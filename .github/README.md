@@ -49,6 +49,13 @@ streamlit run medBillDozer.py
 
 ### 5-Minute Tutorial
 
+#### 🔍 Proof-of-Concept Preview
+
+[![medBillDozer POC Preview](https://raw.githubusercontent.com/boobootoo2/medbilldozer/main/images/poc-preview.webp)](https://medbilldozer.streamlit.app/)
+
+🔗 **Live POC:** https://medbilldozer.streamlit.app/  
+🔑 **Passcode:** `2026MEDGEMMA`
+
 1. **Set up an API key** (optional - or use free "Local Heuristic" mode):
    ```bash
    export OPENAI_API_KEY="your-key-here"
