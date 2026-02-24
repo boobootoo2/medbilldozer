@@ -130,9 +130,30 @@ Your data never leaves your control:
 
 ## Benchmark Results
 
-📊 **Live benchmark dashboard:** [https://medbilldozer.streamlit.app/production_stability](https://medbilldozer.streamlit.app/production_stability)
+## 📊 Benchmark Dashboard Preview
 
-For the latest model performance metrics, accuracy analysis, and regression tracking.
+[![medBillDozer Benchmark Dashboard Preview](https://raw.githubusercontent.com/boobootoo2/medbilldozer/main/images/benchmarks-preview-ezgif.com-video-to-webp-converter.webp)](https://medbilldozer.streamlit.app/production_stability)
+
+🔗 **Live Benchmark Dashboard:**  
+https://medbilldozer.streamlit.app/production_stability
+
+This dashboard provides **live visibility into medBillDozer’s model performance and system stability**
+across simulated medical billing scenarios.
+
+It is designed to support **regression tracking, validation, and explainability** rather than
+single-point accuracy claims.
+
+Key metrics and views include:
+- Detection accuracy and trend stability over time
+- Scenario-level performance comparisons
+- Regression detection across model or ruleset updates
+- Confidence score distributions
+- End-to-end system health indicators
+
+The benchmark dashboard reinforces the core philosophy of medBillDozer:
+**medical billing AI must be observable, testable, and accountable — not a black box.**
+
+**No authentication or passcode is required** for this dashboard.
 
 **Run locally:**
 ```bash
