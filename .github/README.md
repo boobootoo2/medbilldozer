@@ -23,6 +23,38 @@ explaining them in plain language.
 
 ---
 
+## 🧪 MedBillDozer Challenge Preview
+
+[![MedBillDozer Challenge Preview](https://raw.githubusercontent.com/boobootoo2/medbilldozer/main/images/medbilldozer-challenge.webp)](https://medbilldozer.streamlit.app/medbilldozer_challenge)
+
+🔗 **Live Challenge Demo:** https://medbilldozer.streamlit.app/medbilldozer_challenge
+
+The **MedBillDozer Challenge** is an interactive simulation designed to contextualize
+the real-world complexity of medical billing reconciliation.
+
+Rather than analyzing a single document in isolation, the challenge models the
+**end-to-end billing lifecycle** across multiple actors and documents:
+
+- A **clinical scenario** establishes medical context and intent  
+- A **provider-side claim** reflects revenue-maximizing but policy-constrained billing behavior  
+- An **insurance Explanation of Benefits (EOB)** represents payer adjudication and adjustments  
+- A **patient-facing bill** exposes inconsistencies, duplication, and unexplained charges  
+
+Participants experience how billing errors emerge **not from one incorrect document**,
+but from **misalignment across systems**.
+
+medBillDozer evaluates this simulated ecosystem by:
+- Reconciling bills, claims, and EOBs against clinical context  
+- Flagging implausible, duplicate, or unsupported charges  
+- Explaining findings in plain language with confidence scoring  
+- Demonstrating how AI-assisted reasoning can surface errors patients rarely catch on their own  
+
+This challenge preview highlights the core insight behind medBillDozer:
+
+**Medical billing errors are a systems problem — and reconciliation is where truth emerges.**
+
+---
+
 ## 📚 Documentation
 
 This is the complete user guide and quick start documentation.
