@@ -34,7 +34,7 @@ from medbilldozer.ui.bootstrap import (
 )
 from medbilldozer.ui.page_router import render_page_navigation, route_to_page
 from medbilldozer.ui.privacy_ui import render_privacy_dialog
-from medbilldozer.ui.documents import render_document_inputs
+from medbilldozer.ui.ui_documents import render_document_inputs
 from medbilldozer.ui.doc_assistant import render_doc_assistant, render_contextual_help
 from medbilldozer.ui.guided_tour import (
     initialize_tour_state,
@@ -87,7 +87,17 @@ from medbilldozer.utils.config import (
     is_privacy_ui_enabled,
     is_coverage_matrix_enabled,
 )
-from medbilldozer.utils.streamlit_analytics import inject_ga, track_event, track_page_view
+
+# Optional analytics - won't break if module not found
+try:
+    from medbilldozer.utils.streamlit_analytics import inject_ga, track_event, track_page_view
+    ANALYTICS_ENABLED = True
+except (ImportError, ModuleNotFoundError):
+    # Fallback no-op functions if analytics module not available
+    def inject_ga(): pass
+    def track_event(*args, **kwargs): pass
+    def track_page_view(*args, **kwargs): pass
+    ANALYTICS_ENABLED = False
 
 
 # ==================================================
@@ -110,17 +120,20 @@ def main():
     # --------------------------------------------------
     # Initialize Google Analytics
     # --------------------------------------------------
-    inject_ga()
-    track_page_view('MedBillDozer POC', '/poc')
+    if ANALYTICS_ENABLED:
+        inject_ga()
+        track_page_view('MedBillDozer POC', '/poc')
 
     # --------------------------------------------------
     # Access Control Gate
     # --------------------------------------------------
     if not check_access_password():
-        track_event('access_denied', {'reason': 'no_password'})
+        if ANALYTICS_ENABLED:
+            track_event('access_denied', {'reason': 'no_password'})
         return  # Stop rendering if password not entered
 
-    track_event('access_granted')
+    if ANALYTICS_ENABLED:
+        track_event('access_granted')
 
     # --------------------------------------------------
     # Audio Preference Dialog (before splash if tour enabled)
