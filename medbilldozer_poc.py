@@ -34,7 +34,7 @@ from medbilldozer.ui.bootstrap import (
 )
 from medbilldozer.ui.page_router import render_page_navigation, route_to_page
 from medbilldozer.ui.privacy_ui import render_privacy_dialog
-from medbilldozer.ui.documents import render_document_inputs
+from medbilldozer.ui.ui_documents import render_document_inputs
 from medbilldozer.ui.doc_assistant import render_doc_assistant, render_contextual_help
 from medbilldozer.ui.guided_tour import (
     initialize_tour_state,
