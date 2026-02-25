@@ -34,7 +34,7 @@ from medbilldozer.ui.bootstrap import (
 )
 from medbilldozer.ui.page_router import render_page_navigation, route_to_page
 from medbilldozer.ui.privacy_ui import render_privacy_dialog
-from medbilldozer.ui.ui_documents import render_document_inputs
+from medbilldozer.ui.documents import render_document_inputs
 from medbilldozer.ui.doc_assistant import render_doc_assistant, render_contextual_help
 from medbilldozer.ui.guided_tour import (
     initialize_tour_state,
@@ -87,6 +87,7 @@ from medbilldozer.utils.config import (
     is_privacy_ui_enabled,
     is_coverage_matrix_enabled,
 )
+from medbilldozer.utils.streamlit_analytics import inject_ga, track_event, track_page_view
 
 
 # ==================================================
@@ -107,16 +108,26 @@ def main():
     7. Render coverage matrix and debug info
     """
     # --------------------------------------------------
+    # Initialize Google Analytics
+    # --------------------------------------------------
+    inject_ga()
+    track_page_view('MedBillDozer POC', '/poc')
+
+    # --------------------------------------------------
     # Access Control Gate
     # --------------------------------------------------
     if not check_access_password():
+        track_event('access_denied', {'reason': 'no_password'})
         return  # Stop rendering if password not entered
+
+    track_event('access_granted')
 
     # --------------------------------------------------
     # Audio Preference Dialog (before splash if tour enabled)
     # --------------------------------------------------
     if should_enable_guided_tour() and should_show_audio_preference_dialog():
         render_audio_preference_dialog()
+        track_event('audio_preference_dialog_shown')
         return  # Stop rendering until audio preference is set
 
     # --------------------------------------------------
@@ -124,12 +135,18 @@ def main():
     # --------------------------------------------------
     if should_enable_guided_tour():
         initialize_tour_state()
+        if not st.session_state.get('tour_initialized_tracked', False):
+            track_event('tour_initialized')
+            st.session_state.tour_initialized_tracked = True
 
     # --------------------------------------------------
     # Splash Screen (blocks everything until dismissed)
     # --------------------------------------------------
     if should_enable_guided_tour() and should_show_splash_screen():
         render_splash_screen()
+        if not st.session_state.get('splash_screen_tracked', False):
+            track_event('splash_screen_shown')
+            st.session_state.splash_screen_tracked = True
         return  # Stop rendering until splash is dismissed
 
     # --------------------------------------------------
@@ -143,13 +160,16 @@ def main():
 
         if should_show_touring_modal():
             render_touring_modal()
+            if not st.session_state.get('touring_modal_tracked', False):
+                track_event('touring_modal_shown')
+                st.session_state.touring_modal_tracked = True
             # Modal floats on top with z-index: 9999, main page stays in DOM
 
     # --------------------------------------------------
     # Minimal Bootstrap (for all pages)
     # --------------------------------------------------
     bootstrap_ui_minimal()
-    
+
     # --------------------------------------------------
     # Audio Controls (initialize state)
     # --------------------------------------------------
@@ -159,6 +179,9 @@ def main():
     # Page Navigation (sidebar - at top)
     # --------------------------------------------------
     current_page = render_page_navigation()
+    if current_page != st.session_state.get('last_tracked_page'):
+        track_page_view(current_page, f'/{current_page.lower().replace(" ", "_")}')
+        st.session_state.last_tracked_page = current_page
 
     # --------------------------------------------------
     # Route to other pages if selected
@@ -176,12 +199,18 @@ def main():
     # --------------------------------------------------
     if is_privacy_ui_enabled():
         render_privacy_dialog()
+        if st.session_state.get('privacy_acknowledged') and not st.session_state.get('privacy_acknowledged_tracked', False):
+            track_event('privacy_acknowledged')
+            st.session_state.privacy_acknowledged_tracked = True
 
     # --------------------------------------------------
     # Documentation Assistant (sidebar) - only after privacy acknowledged
     # --------------------------------------------------
     if is_assistant_enabled() and st.session_state.get('privacy_acknowledged', False):
         render_doc_assistant()
+        if not st.session_state.get('doc_assistant_tracked', False):
+            track_event('doc_assistant_opened')
+            st.session_state.doc_assistant_tracked = True
 
     # --------------------------------------------------
     # Alert users about Billie the document assistant
@@ -194,14 +223,22 @@ def main():
     # TAB NAVIGATION: POC vs Prod Workflow
     # ==================================================
     tab1, tab2 = st.tabs(["🧪 Demo POC", "🏭 Demo Prod Workflow"])
-    
+
+    # Track tab selection
+    if 'active_tab' not in st.session_state:
+        st.session_state.active_tab = 'poc'
+
     # --------------------------------------------------
     # TAB 1: DEMO POC WORKFLOW (Original)
     # --------------------------------------------------
     with tab1:
+        if st.session_state.active_tab != 'poc':
+            track_event('tab_switched', {'from': st.session_state.active_tab, 'to': 'poc'})
+            st.session_state.active_tab = 'poc'
+
         # Home Page Specific UI
         bootstrap_home_page()
-        
+
         # --------------------------------------------------
         # Defaults (can be overridden in debug)
         # --------------------------------------------------
@@ -212,14 +249,14 @@ def main():
         # Document input (UI ONCE)
         # --------------------------------------------------
         render_contextual_help('input')
-        
+
         # Preserve documents during tour navigation to prevent clearing analysis state
-        # This includes: completed analysis (doc_results), ongoing analysis (analyzing), 
+        # This includes: completed analysis (doc_results), ongoing analysis (analyzing),
         # and pending analysis (pending_analysis)
-        if (st.session_state.get('tour_active', False) and 
-            st.session_state.get('last_documents') and 
-            (st.session_state.get('doc_results', False) or 
-             st.session_state.get('analyzing', False) or 
+        if (st.session_state.get('tour_active', False) and
+            st.session_state.get('last_documents') and
+            (st.session_state.get('doc_results', False) or
+             st.session_state.get('analyzing', False) or
              st.session_state.get('pending_analysis', False))):
             # During active tour with results/analysis, preserve the documents
             documents = st.session_state.last_documents
@@ -235,13 +272,13 @@ def main():
         # Provider Overview (Engine + Health Profile)
         # --------------------------------------------------
         st.markdown("### 📊 Analysis Overview")
-        
+
         # Use config debug setting OR legacy runtime flag
         debug_mode = is_debug_enabled() or debug_enabled()
 
         # Create columns for provider/engine and health profile
         col1, col2 = st.columns([1, 1])
-        
+
         with col1:
             if debug_mode:
                 providers = ProviderRegistry.list()
@@ -253,7 +290,6 @@ def main():
                     index=0,
                 )
                 selected_provider = ENGINE_OPTIONS[engine_label]
-        
 
         st.markdown("---")
 
@@ -295,12 +331,10 @@ def main():
         if selected_provider is None:
             selected_provider = "gpt-4o-mini"
 
-
         agent = OrchestratorAgent(
             extractor_override=extractor_override,
             analyzer_override=analyzer_override or selected_provider
         )
-
 
         # --------------------------------------------------
         # Analyze action
@@ -353,7 +387,7 @@ def main():
             # Clear pending flag and proceed with analysis
             st.session_state.pending_analysis = False
             st.session_state.analyzing = True
-            
+
             # Save documents at start of analysis so they persist during tour navigation
             st.session_state.last_documents = documents
 
@@ -371,6 +405,14 @@ def main():
                 total_potential_savings = analysis_result["total_savings"]
                 per_document_savings = analysis_result["per_document_savings"]
                 documents = analysis_result["documents"]
+
+                # Track successful analysis
+                track_event('analysis_completed', {
+                    'provider': selected_provider,
+                    'document_count': len(documents),
+                    'total_savings': total_potential_savings,
+                    'success': True
+                })
 
                 # Clear analyzing flag and set results for tour progression
                 st.session_state.analyzing = False
@@ -393,9 +435,9 @@ def main():
 
         # Display previously analyzed results if they exist (e.g., after tour rerun)
         # Only show cached results if we're NOT currently in an analysis run
-        elif (st.session_state.get('last_documents') and 
-              st.session_state.get('doc_results', False) and 
-              not st.session_state.get('analyzing', False) and 
+        elif (st.session_state.get('last_documents') and
+              st.session_state.get('doc_results', False) and
+              not st.session_state.get('analyzing', False) and
               not analyze_clicked):
             documents = st.session_state.last_documents
             total_potential_savings = st.session_state.get('last_total_savings', 0.0)
@@ -423,20 +465,23 @@ def main():
 
                 st.markdown("### Session State")
                 st.json(dict(st.session_state))
-                
+
                 st.markdown("### Normalized Transactions")
                 st.json(st.session_state.get("normalized_transactions", []))
 
                 st.markdown("### Transaction Provenance")
                 st.json(st.session_state.get("transaction_provenance", {}))
-    
+
     # --------------------------------------------------
     # TAB 2: DEMO PROD WORKFLOW (Profile-based)
     # --------------------------------------------------
     with tab2:
+        if st.session_state.active_tab != 'prod':
+            track_event('tab_switched', {'from': st.session_state.active_tab, 'to': 'prod'})
+            st.session_state.active_tab = 'prod'
+
         from medbilldozer.ui.prod_workflow import render_prod_workflow
         render_prod_workflow()
-
 
     # --------------------------------------------------
     # Footer (ONCE)
@@ -446,4 +491,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
