@@ -11,7 +11,7 @@ python-jose[cryptography]
 passlib[bcrypt]
 
 # Google Cloud
-google-crc32c==1.5.0
+google-crc32c==1.8.0
 google-cloud-storage
 google-cloud-secret-manager
 
