@@ -2,7 +2,7 @@
 # These are the minimal requirements to run the test suite
 # without needing API keys or heavy dependencies
 
-pytest==8.3.4
+pytest==9.0.2
 pytest-mock==3.14.0
 flake8>=7.0.0  # Code linting
 bandit>=1.9.0  # Security scanning
