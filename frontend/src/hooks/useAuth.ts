@@ -12,6 +12,7 @@ import { auth, googleProvider, githubProvider } from '../lib/firebase';
 import { useAuthStore } from '../stores/authStore';
 import api from '../services/api';
 import { LoginResponse } from '../types';
+import axios from 'axios';
 
 export const useAuth = () => {
   const { user, accessToken, loading, error, setUser, setAccessToken, setLoading, setError, logout } = useAuthStore();
@@ -51,13 +52,23 @@ export const useAuth = () => {
 
         try {
           console.log('🔄 Authenticating with backend...');
-          // Get Firebase ID token
-          const idToken = await firebaseUser.getIdToken();
 
-          // Exchange Firebase token with backend
-          const response = await api.post<LoginResponse>('/api/auth/login', {
-            firebase_id_token: idToken
-          });
+          // Add token debugging
+          const idToken = await firebaseUser.getIdToken();
+          console.log('🔑 ID Token length:', idToken.length);
+          console.log('🔑 Token preview:', idToken.substring(0, 50) + '...');
+
+          const response = await axios.post(
+            `${import.meta.env.VITE_API_URL}/api/auth/login`,
+            {},
+            {
+              headers: {
+                'Authorization': `Bearer ${idToken}`,
+                'Content-Type': 'application/json',
+              },
+              withCredentials: true, // Important for cookies
+            }
+          );
 
           const { access_token, refresh_token, user: backendUser } = response.data;
 
@@ -72,7 +83,19 @@ export const useAuth = () => {
           console.log('✅ Authentication successful!');
         } catch (err: any) {
           console.error('Backend authentication failed:', err);
-          setError(err.message || 'Authentication failed');
+          
+          // Provide user-friendly error messages
+          let errorMessage = 'Authentication failed';
+          
+          if (err.response?.status === 503 || err.response?.status === 500) {
+            errorMessage = 'Service temporarily unavailable. Please try again in a moment.';
+          } else if (err.response?.status === 401) {
+            errorMessage = 'Authentication failed. Please try logging in again.';
+          } else if (err.code === 'ERR_NETWORK') {
+            errorMessage = 'Network error. Please check your connection.';
+          }
+          
+          setError(errorMessage);
           setLoading(false);
           // Sign out from Firebase on backend auth failure
           await signOut(auth);

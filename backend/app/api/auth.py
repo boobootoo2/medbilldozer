@@ -1,9 +1,14 @@
 """Authentication API endpoints."""
 
+import logging
+
 from app.models.requests import LoginRequest, LoginResponse, RefreshTokenRequest
 from app.services.auth_service import AuthService, get_auth_service
 from app.services.db_service import DBService, get_db_service
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from firebase_admin import auth
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -25,10 +30,10 @@ async def login(
     5. Backend returns JWT access token + sets refresh token cookie
     """
     try:
-        print("🔍 Login attempt - verifying Firebase token...")
+        logger.info("🔍 Login attempt - verifying Firebase token...")
         # Verify Firebase token
         firebase_user = await auth_service.verify_firebase_token(request.firebase_id_token)
-        print(f"✅ Token verified for: {firebase_user.get('email')}")
+        logger.info(f"✅ Token verified for: {firebase_user.get('email')}")
 
         # Extract user info
         firebase_uid = firebase_user["uid"]
@@ -70,8 +75,14 @@ async def login(
             },
         )
 
+    except auth.InvalidIdTokenError as e:
+        logger.error(f"❌ Invalid Firebase token: {str(e)}")
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
+    except auth.ExpiredIdTokenError as e:
+        logger.error(f"❌ Expired Firebase token: {str(e)}")
+        raise HTTPException(status_code=401, detail="Token expired")
     except Exception as e:
-        print(f"❌ Login failed: {type(e).__name__}: {str(e)}")
+        logger.error(f"❌ Authentication error: {str(e)}")
         import traceback
 
         traceback.print_exc()
