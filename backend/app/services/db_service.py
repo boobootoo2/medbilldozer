@@ -1,6 +1,7 @@
 """Supabase database service."""
 
 import logging
+import os
 import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -40,44 +41,77 @@ class DBService:
         firebase_uid: str,
         email: str,
         display_name: Optional[str] = None,
-        avatar_url: Optional[str] = None,
+        photo_url: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Create or update user profile - using simple select/insert to avoid PostgREST cache issues."""
-        try:
-            print(f"🔄 Checking if user exists: {firebase_uid}")
+        """Create or update user in database with retry logic"""
+        import time
 
-            # Check if user already exists
-            existing = (
-                self.client.table("user_profiles")
-                .select("*")
-                .eq("firebase_uid", firebase_uid)
-                .execute()
-            )
+        max_retries = 3
+        retry_delay = 1  # seconds
 
-            if existing and existing.data and len(existing.data) > 0:
-                print(f"✅ User already exists: {email}")
-                # Skip updating last_login_at due to PostgREST cache issue
-                # Just return the existing user
-                return existing.data[0]
-            else:
-                print(f"🔄 Creating new user with minimal fields: {email}")
-                # Generate user_id in Python since PostgREST cache won't use the database default
-                user_id = str(uuid.uuid4())
-                new_user = (
-                    self.client.table("user_profiles")
-                    .insert({"user_id": user_id, "firebase_uid": firebase_uid, "email": email})
+        for attempt in range(max_retries):
+            try:
+                logger.info(
+                    f"🔄 Checking if user exists: {firebase_uid} (attempt {attempt + 1}/{max_retries})"
+                )
+
+                # Check if user exists
+                response = (
+                    self.client.table("users")
+                    .select("*")
+                    .eq("firebase_uid", firebase_uid)
                     .execute()
                 )
 
-                if new_user.data:
-                    print(f"✅ Created minimal user profile: {email}")
-                    return new_user.data[0]
+                if response.data and len(response.data) > 0:
+                    logger.info(f"✅ User already exists: {email}")
+                    return response.data[0]
                 else:
-                    raise Exception("Insert returned no data")
+                    logger.info(f"🔄 Creating new user: {email}")
+                    user_id = str(uuid.uuid4())
+                    new_user = (
+                        self.client.table("users")
+                        .insert(
+                            {
+                                "user_id": user_id,
+                                "firebase_uid": firebase_uid,
+                                "email": email,
+                                "display_name": display_name,
+                                "photo_url": photo_url,
+                            }
+                        )
+                        .execute()
+                    )
 
-        except Exception as e:
-            print(f"❌ User creation error: {e}")
-            raise Exception(f"Failed to create/update user: {e}")
+                    if new_user.data:
+                        logger.info(f"✅ Created new user: {email}")
+                        return new_user.data[0]
+                    else:
+                        raise Exception("Insert returned no data")
+
+            except Exception as e:
+                error_msg = str(e)
+
+                # Check if it's a connection error
+                if "Name or service not known" in error_msg or "ConnectError" in error_msg:
+                    logger.error(
+                        f"❌ Database connection error (attempt {attempt + 1}/{max_retries}): {error_msg}"
+                    )
+
+                    if attempt < max_retries - 1:
+                        logger.info(f"⏳ Retrying in {retry_delay} seconds...")
+                        time.sleep(retry_delay)
+                        retry_delay *= 2  # Exponential backoff
+                        continue
+                    else:
+                        logger.error("❌ Max retries reached - database is unreachable")
+                        raise Exception(
+                            f"Database connection failed after {max_retries} attempts. Please check Supabase connectivity."
+                        )
+
+                # Other errors
+                logger.error(f"❌ User creation error: {error_msg}")
+                raise Exception(f"Failed to create/update user: {e}")
 
     async def get_user_by_firebase_uid(self, firebase_uid: str) -> Optional[Dict[str, Any]]:
         """Get user by Firebase UID."""
@@ -692,3 +726,41 @@ def get_db_service() -> DBService:
     if _db_service is None:
         _db_service = DBService()
     return _db_service
+
+
+class DatabaseService:
+    def __init__(self):
+        supabase_url = os.getenv("SUPABASE_URL")
+        supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+        if not supabase_url or not supabase_key:
+            logger.error("❌ SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set")
+            raise ValueError("Missing Supabase configuration")
+
+        # Validate URL format
+        if not supabase_url.startswith("https://") or not supabase_url.endswith(".supabase.co"):
+            logger.error(f"❌ Invalid Supabase URL format: {supabase_url}")
+            raise ValueError(f"Invalid Supabase URL: {supabase_url}")
+
+        logger.info(f"🔗 Connecting to Supabase: {supabase_url}")
+
+        try:
+            self.client: Client = create_client(supabase_url, supabase_key)
+            # Test connection
+            self._test_connection()
+            logger.info("✅ Database connection established")
+        except Exception as e:
+            logger.error(f"❌ Failed to connect to Supabase: {e}")
+            raise
+
+    def _test_connection(self):
+        """Test database connectivity on initialization"""
+        try:
+            # Simple query to verify connection
+            self.client.table("users").select("id").limit(1).execute()
+            logger.info("✅ Database connectivity verified")
+        except Exception as e:
+            logger.error(f"❌ Database connectivity test failed: {e}")
+            raise Exception(
+                f"Cannot connect to Supabase database. Please verify SUPABASE_URL is correct and project is active."
+            )

@@ -1,14 +1,16 @@
 name: Run Benchmarks
 
+disabled: true
+
 on:
   # Run on schedule (daily at 2am UTC)
   # Note: HF endpoint warmup runs at 1am UTC (see warmup_hf_endpoint.yml)
   schedule:
     - cron: '0 2 * * *'
-  
+
   # Run manually
   workflow_dispatch:
-  
+
   # Run on pushes to develop
   push:
     branches:
@@ -26,17 +28,17 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write  # Allow workflow to push commits
-    
+
     steps:
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}  # Use built-in token for auth
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -48,7 +50,7 @@ jobs:
           pip install -r requirements-benchmarks.txt
           # Verify installation
           python -c "import sys; print('Python path:', sys.path); import medbilldozer; print(f'medbilldozer {medbilldozer.__version__} imported successfully from {medbilldozer.__file__}')"
-      
+
       - name: Run benchmarks
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -60,7 +62,7 @@ jobs:
           # NOTE: Only running OpenAI in CI since HF Inference Endpoint auto-pauses
           # Run MedGemma models locally when needed, or manually start HF endpoint before workflow
           python3 scripts/run_benchmarks_v2.py --model all
-      
+
       - name: Convert results to monitoring format
         if: always()
         run: |
@@ -75,7 +77,7 @@ jobs:
                 --model "${model}"
             fi
           done
-      
+
       - name: Calculate ROI and cost savings
         if: always()
         run: |
@@ -84,7 +86,7 @@ jobs:
             --results-dir benchmark-artifacts \
             --output benchmark-artifacts/roi_summary.json \
             --report benchmark-artifacts/roi_report.md
-      
+
       - name: Push results to Supabase
         if: always()
         env:
@@ -106,7 +108,7 @@ jobs:
                 --verify || echo "⚠️ Failed to push ${model} to Supabase"
             fi
           done
-      
+
       - name: Display ROI summary
         if: always()
         run: |
@@ -114,7 +116,7 @@ jobs:
           echo "💰 ROI & COST SAVINGS SUMMARY"
           echo "═══════════════════════════════════════════════════════════"
           cat benchmark-artifacts/roi_report.md
-      
+
       - name: Upload benchmark results as artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -124,14 +126,14 @@ jobs:
             benchmark-artifacts/*.json
             benchmark-artifacts/*.md
           retention-days: 90
-      
+
       - name: Comment on PR with results
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
           script: |
             const fs = require('fs');
-            
+
             // Load ROI summary
             let roiData;
             try {
@@ -140,10 +142,10 @@ jobs:
               console.log('ROI data not found, skipping PR comment');
               return;
             }
-            
+
             // Build comment with ROI metrics
             let comment = '## � Benchmark Results: ROI & Cost Savings\n\n';
-            
+
             // Executive summary
             const summary = roiData.summary;
             comment += '### Executive Summary\n\n';
@@ -151,29 +153,29 @@ jobs:
             comment += `- **Total Analysis Cost**: $${summary.total_cost.toFixed(2)}\n`;
             comment += `- **Net Benefit**: $${summary.total_net_benefit.toLocaleString()}\n`;
             comment += `- **Overall ROI**: ${(summary.total_potential_savings / summary.total_cost).toFixed(1)}x\n\n`;
-            
+
             // Model comparison table
             comment += '### Model Performance & ROI\n\n';
             comment += '| Model | Savings | Cost | Net Benefit | ROI | F1 |\n';
             comment += '|-------|---------|------|-------------|-----|----|\n';
-            
+
             // Sort by ROI
-            const sortedResults = roiData.model_results.sort((a, b) => 
+            const sortedResults = roiData.model_results.sort((a, b) =>
               b.roi_metrics.roi_ratio - a.roi_metrics.roi_ratio
             );
-            
+
             for (const result of sortedResults) {
               const savings = result.consumer_savings.total_potential_savings;
               const cost = result.cost_breakdown.total_cost;
               const net = result.roi_metrics.net_benefit;
               const roi = result.roi_metrics.roi_ratio;
               const f1 = result.performance_metrics.f1;
-              
+
               comment += `| ${result.model_name} | $${savings.toLocaleString()} | $${cost.toFixed(2)} | $${net.toLocaleString()} | ${roi.toFixed(1)}x | ${f1.toFixed(3)} |\n`;
             }
-            
+
             comment += '\n📊 [View detailed report →](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n';
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
